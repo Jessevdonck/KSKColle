@@ -14,7 +14,7 @@ export default function Navbar() {
         
         <div className="hidden md:flex space-x-6">
           <NavItem href="/" icon={<Home size={20} />} text="Home" />
-          <NavItem href="/over-ons" icon={<Users size={20} />} text="Over Ons" />
+          <NavItem href="/about" icon={<Users size={20} />} text="Over Ons" />
           <NavItem href="/kalender" icon={<CalendarDays size={20} />} text="Kalender" />
           <NavItem href="/toernooien" icon={<Trophy size={20} />} text="Toernooien" />
           <NavItem href="/spelers" icon={<ChartColumnBig size={20} />} text="Spelers" />
