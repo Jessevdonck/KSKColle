@@ -10,8 +10,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div className='flex flex-col items-center'>
             <h3 className="text-2xl font-bold mb-4">KSK Colle</h3>
-            <p className="text-lg mb-4">
-              Schaakclub KSK Colle Sint-Niklaas
+            
+            <p className='text-center'>
+            Taverne De Graanmaat <br/>
+            Grote Markt 24 <br/>
+            9100 Sint-Niklaas <br/>
+            Tel 03/776.23.26
             </p>
           </div>
 

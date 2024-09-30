@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html{
+  scroll-behavior: smooth;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -68,6 +72,6 @@
 
 ::selection {
   color: #FAF7F0;
-  background: #B17457;
+  background-color: #B17457;
 }
 
