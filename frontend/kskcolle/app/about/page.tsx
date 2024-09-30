@@ -45,10 +45,6 @@ export default function AboutUs() {
 
               Misschien was dan ook in België die schaakrage ontstaan die Nederland gekend heeft na Euwe. Het is duidelijk tot waar die rage Nederland uiteindelijk gebracht heeft in het internationale schaakwezen.
               </p>
-              <p className="mb-4">
-                Van bescheiden beginnen zijn we uitgegroeid tot een van de meest gerespecteerde clubs in de regio, 
-                met een sterke focus op jeugdontwikkeling en gemeenschapsbetrokkenheid.
-              </p>
             </div>
             <div className="flex flex-1 justify-center">
               <Image
@@ -69,7 +65,6 @@ export default function AboutUs() {
               { icon: <Trophy className="w-12 h-12 text-[#B17457]" />, title: "Competities", description: "We organiseren het hele jaar door competities tussen clubleden!" },
               { icon: <Users className="w-12 h-12 text-[#B17457]" />, title: "Jeugdwerking", description: "Elke donderdag van 18:30 tot 19:45 worden er schaaklessen gegeven door ervaren schakers!" },
               { icon: <SunIcon className="w-12 h-12 text-[#B17457]" />, title: "Zomerkampen", description: "Tijdens de zomer van 2024 organiseert Schaakclub KSK Colle samen met de stad Sint-Niklaas een zomerkamp schaken." },
-              { icon: <MapPin className="w-12 h-12 text-[#B17457]" />, title: "Gemeenschap", description: "We zijn trots op onze rol in de lokale gemeenschap." },
             ].map((value, index) => (
               <div key={index} className="flex flex-col items-center text-center w-64 p-4 bg-white rounded-lg shadow-md">
                 {value.icon}
