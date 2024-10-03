@@ -128,6 +128,7 @@ export const playersData: Player[] = [
     title: string;
     date: Date;
     type: 'tournament' | 'training' | 'meeting' | 'other';
+    description: string;
   };
   
   export const calendarEvents: CalendarEvent[] = [
@@ -135,30 +136,42 @@ export const playersData: Player[] = [
       id: '1',
       title: 'Clubkampioenschap Ronde 1',
       date: new Date(2024, 0, 15),
-      type: 'tournament'
+      type: 'tournament',
+      description: 'test',
     },
     {
       id: '2',
       title: 'Jeugdtraining',
       date: new Date(2024, 1, 5),
-      type: 'training'
+      type: 'training',
+      description: 'test',
     },
     {
       id: '3',
       title: 'Bestuursvergadering',
       date: new Date(2024, 2, 10),
-      type: 'meeting'
+      type: 'meeting',
+      description: 'test',
     },
     {
       id: '4',
       title: 'Paastornooi',
       date: new Date(2024, 3, 12),
-      type: 'tournament'
+      type: 'tournament',
+      description: 'test',
     },
     {
       id: '5',
       title: 'Zomerkamp',
-      date: new Date(2024, 6, 15),
-      type: 'other'
+      date: new Date(2024, 10, 15),
+      type: 'other',
+      description: 'test',
+    },
+    {
+      id: '5',
+      title: 'Speeldag',
+      date: new Date(2024, 10, 16),
+      type: 'tournament',
+      description: 'test',
     },
   ];

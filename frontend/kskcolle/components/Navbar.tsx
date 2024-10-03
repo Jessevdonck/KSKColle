@@ -23,7 +23,7 @@ export default function Navbar() {
   const navItems = [
     { href: "/", icon: <Home size={20} />, text: "Home" },
     { href: "/about", icon: <Users size={20} />, text: "Over Ons" },
-    { href: "/kalender", icon: <CalendarDays size={20} />, text: "Kalender" },
+    { href: "/calendar", icon: <CalendarDays size={20} />, text: "Kalender" },
     { href: "/toernooien", icon: <Trophy size={20} />, text: "Toernooien" },
     { href: "/spelers", icon: <ChartColumnBig size={20} />, text: "Spelers" },
   ]
