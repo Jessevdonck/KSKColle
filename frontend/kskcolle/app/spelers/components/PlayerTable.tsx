@@ -44,7 +44,7 @@ export default function players({ players, sortKey, sortOrder, onSort }: PlayerP
           </thead>
           <tbody>
             {players.map((player, index) => (
-              <tr key={player.name} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+              <tr key={player.name} className={index % 2 === 0 ? 'bg-[#ebe8e0]' : 'bg-[#f3f1ea]'}>
                 <td className="px-4 py-2 border-b">{player.name}</td>
                 <td className="px-4 py-2 border-b">{player.elio_01_24}</td>
                 <td className="px-4 py-2 border-b">{player.elio_07_24}</td>

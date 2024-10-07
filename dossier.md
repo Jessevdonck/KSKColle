@@ -31,6 +31,73 @@
 ## Projectbeschrijving
 
 > Omschrijf hier duidelijk waarover jouw project gaat. Voeg een domeinmodel (of EERD) toe om jouw entiteiten te verduidelijken.
+ERD in Mermaid:
+
+```mermaid
+erDiagram
+    User {
+        string user_id PK
+        string voornaam
+        string achternaam
+        date geboortedatum
+        integer leeftijd
+        string speler_id "Unique"
+        integer schaakrating_elo
+        boolean is_admin
+        datetime created_at
+        datetime updated_at
+    }
+
+    Tournament {
+        string tournament_id PK
+        string naam
+        integer rondes
+        datetime created_at
+        datetime updated_at
+    }
+
+    Round {
+        string round_id PK
+        string tournament_id FK
+        integer ronde_nummer
+        datetime created_at
+        datetime updated_at
+    }
+
+    Game {
+        string game_id PK
+        string pairing_id FK
+        string tournament_id FK
+        string winner_id FK
+        date date
+        string result
+        datetime created_at
+        datetime updated_at
+    }
+
+    Participation {
+        string user_id FK
+        string tournament_id FK
+    }
+
+    Pairing {
+        string pairing_id PK
+        string round_id FK
+        string player1_id FK
+        string player2_id FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    User ||--o{ Participation : "deelneemt aan"
+    Tournament ||--o{ Participation : "heeft"
+    Tournament ||--o{ Round : "heeft"
+    Round ||--o{ Pairing : "heeft"
+    Tournament ||--o{ Game : "heeft"
+    Game ||--o{ User : "bevat"
+    Pairing ||--o{ Game : "heeft"
+    Pairing ||--o{ User : "bevat" 
+```
 
 ## Screenshots
 
@@ -43,10 +110,52 @@
 > Dit is weinig zinvol indien je enkel Front-end Web Development volgt, verwijder dan deze sectie.
 > Indien je als extra Swagger koos, dan voeg je hier een link toe naar jouw online documentatie. Swagger geeft nl. exact (en nog veel meer) wat je hieronder moet schrijven.
 
-### Gebruikers
+#### Gebruikers
 
-- `GET /api/users`: alle gebruikers ophalen
-- `GET /api/users/:id`: gebruiker met een bepaald id ophalen
+- `GET /api/users`: Alle gebruikers ophalen
+- `GET /api/users/:user_id`: Gebruiker met een bepaald ID ophalen
+- `POST /api/users`: Maak een nieuwe gebruiker aan
+- `PUT /api/users/:user_id`: Update een bestaande gebruiker
+- `DELETE /api/users/:user_id`: Verwijder een specifieke gebruiker
+
+#### Toernooien
+
+- `GET /api/tournaments`: Alle toernooien ophalen
+- `GET /api/tournaments/:tournament_id`: Toernooi met specifiek ID ophalen
+- `POST /api/tournaments`: Maak een nieuw toernooi aan
+- `PUT /api/tournaments/:tournament_id`: Toernooi met specifiek ID aanpassen
+- `DELETE /api/tournaments/:tournament_id`: Toernooi met specifiek ID verwijderen
+
+#### Rondes
+
+- `GET /api/tournaments/:tournament_id/rounds`: Geef alle rondes van een bepaald toernooi
+- `GET /api/rounds/:round_id`: Geef ronde met een specifiek ID
+- `POST /api/tournaments/:tournament_id/rounds`: Maak een nieuwe ronde aan
+- `PUT /api/rounds/:round_id`: Update een ronde met specifiek ID
+- `DELETE /api/rounds/:round_id`: Verwijder ronde met specifiek ID
+
+#### Spellen
+
+- `GET /api/rounds/:round_id/games`: Haal alle spellen op met een specifiek Ironde_id
+- `GET /api/games/:game_id`: Haal een spel met specifiek ID op
+- `POST /api/games`: Maak een nieuw spel
+- `PUT /api/games/:game_id`: Update een spel met specifiek ID
+- `DELETE /api/games/:game_id`: Verwijder een spel met specifiek ID
+
+#### Deelname
+
+- `GET /api/participations`: Geef alle deelnames
+- `GET /api/participations/users/:user_id`: Geef alle deelnames van een specifieke gebruiker
+- `POST /api/participations`: Maak een nieuwe deelname aan
+- `DELETE /api/participations/users/:user_id/tournaments/:tournament_id`: Deelname verwijderen van specifieke gebruiker in een specifiek toernooi
+
+#### Paringen
+
+- `GET /api/rounds/:round_id/pairings`: Geef alle paringen in een specifieke ronde
+- `GET /api/pairings/:pairing_id`: Geef een specifieke pairing met een ID op
+- `POST /api/rounds/:round_id/pairings`: Maak een nieuwe pairing aan in een specifieke ronde
+- `PUT /api/pairings/:pairing_id`: Update een bestaande pairing
+- `DELETE /api/pairings/:pairing_id`: Verwijder een specifieke pairing
 
 ## Behaalde minimumvereisten
 
