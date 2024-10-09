@@ -26,6 +26,25 @@ router.post('/api/spelers', async (ctx: any) => {
   };
 });
 
+router.get('/api/spelers/:id', async (ctx) => {
+  // 👇 1
+  ctx.body = logicaService.getSpelerByID(Number(ctx.params.id)); // 👈 2
+});
+
+router.put('/api/spelers/:id', async (ctx) => {
+  const spelerId = Number(ctx.params.id); 
+  const updatedSpeler = logicaService.updateSpeler(spelerId, ctx.request.body); 
+
+  ctx.body = updatedSpeler; 
+  
+});
+
+router.delete('/api/spelers/:id', async (ctx) => {
+  const spelerId = Number(ctx.params.id);
+  logicaService.removeSpeler(spelerId);
+  ctx.status = 204; 
+});
+
 app
   .use(router.routes()) 
   .use(router.allowedMethods()); 

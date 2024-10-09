@@ -1,4 +1,4 @@
-import { TOERNOOIEN, RONDES, PARINGEN, SPELLEN, DEELNAMES, SPELERS } from './mock_data';
+import { TOERNOOIEN, RONDES, PARINGEN, SPELLEN, DEELNAMES, SPELERS } from './data/mock_data';
 import type {Toernooi, Ronde, Paring, Spellen, Deelnames, Speler} from "./types";
 /*-------------------------------------------SPELERS-------------------------------------------*/
 
@@ -58,6 +58,28 @@ export const addSpeler = (newSpeler: Speler) => {
   SPELERS.push(spelerToAdd);
   
   return spelerToAdd;
+};
+
+export const updateSpeler = (id: number, updatedSpeler: any) => {
+  const index = SPELERS.findIndex((speler) => speler.user_id === id);
+
+  const updated = {
+    ...SPELERS[index],  
+    ...updatedSpeler,   
+  };
+
+  SPELERS[index] = updated; 
+
+  return updated; 
+};
+
+export const removeSpeler = (id: number) => {
+  const index = SPELERS.findIndex((speler) => speler.user_id === id);
+  if (index !== -1) {
+    SPELERS.splice(index, 1);
+  } else {
+    throw new Error('Speler niet gevonden');
+  }
 };
 
 /*-------------------------------------------TOERNOOIEN-------------------------------------------*/

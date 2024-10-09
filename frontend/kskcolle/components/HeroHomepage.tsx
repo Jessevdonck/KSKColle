@@ -9,7 +9,7 @@ const HeroHomepage = () => {
       <div
         className="absolute inset-0 bg-cover bg-no-repeat bg-center filter blur-[2px]"
         style={{
-          backgroundImage: "url('/images/background_hero.jpg')", 
+          backgroundImage: "url('/images/background_hero.jpg')" 
         }}
       ></div>
 
