@@ -39,40 +39,31 @@ erDiagram
         string user_id PK
         string voornaam
         string achternaam
-        date geboortedatum
         integer leeftijd
         string speler_id "Unique"
         integer schaakrating_elo
         boolean is_admin
-        datetime created_at
-        datetime updated_at
+        date lid_sinds 
     }
 
     Tournament {
         string tournament_id PK
         string naam
         integer rondes
-        datetime created_at
-        datetime updated_at
     }
 
     Round {
         string round_id PK
         string tournament_id FK
         integer ronde_nummer
-        datetime created_at
-        datetime updated_at
     }
 
     Game {
         string game_id PK
-        string pairing_id FK
+        string round_id FK
         string tournament_id FK
         string winner_id FK
-        date date
         string result
-        datetime created_at
-        datetime updated_at
     }
 
     Participation {
@@ -80,23 +71,11 @@ erDiagram
         string tournament_id FK
     }
 
-    Pairing {
-        string pairing_id PK
-        string round_id FK
-        string player1_id FK
-        string player2_id FK
-        datetime created_at
-        datetime updated_at
-    }
-
     User ||--o{ Participation : "deelneemt aan"
     Tournament ||--o{ Participation : "heeft"
     Tournament ||--o{ Round : "heeft"
-    Round ||--o{ Pairing : "heeft"
-    Tournament ||--o{ Game : "heeft"
-    Game ||--o{ User : "bevat"
-    Pairing ||--o{ Game : "heeft"
-    Pairing ||--o{ User : "bevat" 
+    Round ||--o{ Game : "heeft"
+    Game ||--o{ User : "bevat" 
 ```
 
 ## Screenshots
