@@ -40,9 +40,10 @@ erDiagram
         string voornaam
         string achternaam
         integer leeftijd
-        string speler_id "Unique"
         integer schaakrating_elo
         boolean is_admin
+        integer fide_id "Unique"
+        integer nationaal_id "Unique"
         date lid_sinds 
     }
 
@@ -56,14 +57,17 @@ erDiagram
         string round_id PK
         string tournament_id FK
         integer ronde_nummer
+        ronde_datum DateTime
     }
 
     Game {
         string game_id PK
         string round_id FK
-        string tournament_id FK
-        string winner_id FK
+        string speler1_id FK
+        string speler2_id FK
+        string winnaar_id FK
         string result
+        date uitgestelde_datum
     }
 
     Participation {
@@ -75,7 +79,10 @@ erDiagram
     Tournament ||--o{ Participation : "heeft"
     Tournament ||--o{ Round : "heeft"
     Round ||--o{ Game : "heeft"
-    Game ||--o{ User : "bevat" 
+    
+    User ||--o{ Game : "is speler1"
+    User ||--o{ Game : "is speler2"
+    User ||--o{ Game : "is winnaar"
 ```
 
 ## Screenshots

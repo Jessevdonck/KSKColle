@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id            Int            @id @default(autoincrement())
+  voornaam           String
+  achternaam         String
+  leeftijd           Int
+  schaakrating_elo   Int
+  is_admin           Boolean
+  fide_id            Int            @unique
+  nationaal_id       Int            @unique
+  lid_sinds          DateTime
+  
+  participations     Participation[]    
+  speler1Games       Game[]          @relation("Speler1")
+  speler2Games       Game[]          @relation("Speler2")
+  gewonnenGames      Game[]          @relation("Winnaar")
+}
+
+model Tournament {
+  tournament_id      String            @id @default(cuid())
+  naam               String
+  rondes             Int
+  
+  participations     Participation[]    
+  rounds             Round[]           
+  games              Game[]            
+}
+
+model Round {
+  round_id           String            @id @default(cuid())
+  tournament_id      String
+  ronde_nummer       Int
+  ronde_datum        DateTime
+  
+  tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id])
+  games              Game[]            @relation("RoundGames") 
+}
+
+model Game {
+  game_id            String            @id @default(cuid())
+  round_id           String
+  tournament_id      String
+  speler1_id        Int               
+  speler2_id        Int               
+  winnaar_id        Int?               
+  result             String?
+  uitgestelde_datum   DateTime?
+
+  round              Round             @relation("RoundGames", fields: [round_id], references: [round_id]) 
+  tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id]) 
+  speler1           User              @relation("Speler1", fields: [speler1_id], references: [user_id])
+  speler2           User              @relation("Speler2", fields: [speler2_id], references: [user_id])
+  winnaar           User?             @relation("Winnaar", fields: [winnaar_id], references: [user_id]) 
+}
+
+model Participation {
+  user_id            Int
+  tournament_id      String
+
+  user               User              @relation(fields: [user_id], references: [user_id])
+  tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id])
+
+  @@id([user_id, tournament_id]) 
+}
