@@ -33,7 +33,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4 flex justify-center items-center">Volg Ons</h3>
             <div className="flex space-x-4 justify-center">
-              <a href="#" className="text-[#4A4947] hover:text-[#B17457] transition-colors">
+              <a href="https://www.facebook.com/groups/KSKColleSintNiklaas" target="_blank" rel="noopener noreferrer" className="text-[#4A4947] hover:text-[#B17457] transition-colors">
                 <SiFacebook size={24} />
                 <span className="sr-only">Facebook</span>
               </a>
