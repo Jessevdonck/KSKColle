@@ -11,8 +11,10 @@ model User {
   user_id            Int            @id @default(autoincrement())
   voornaam           String
   achternaam         String
-  leeftijd           Int
+  geboortedatum      DateTime
   schaakrating_elo   Int
+  schaakrating_difference Int
+  schaakrating_max Int
   is_admin           Boolean
   fide_id            Int            @unique
   nationaal_id       Int            @unique
@@ -35,9 +37,9 @@ model Tournament {
 }
 
 model Round {
-  round_id           String            @id @default(cuid())
+  round_id           Int              @id @default(autoincrement())
   tournament_id      String
-  ronde_nummer       Int
+  ronde_nummer       Int            
   ronde_datum        DateTime
   
   tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id])
@@ -46,7 +48,7 @@ model Round {
 
 model Game {
   game_id            String            @id @default(cuid())
-  round_id           String
+  round_id           Int
   tournament_id      String
   speler1_id        Int               
   speler2_id        Int               

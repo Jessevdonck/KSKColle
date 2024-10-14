@@ -1,4 +1,4 @@
-import type { Toernooi } from "./types";
+import type { Toernooi } from "./data/types";
 import { TOERNOOIEN } from "./data/mock_data";
 
 export const getAllTournament = () => {

@@ -1,16 +1,16 @@
 import Router from '@koa/router';
 import * as spelerService from '../service/spelersService';
 import type { Context } from 'koa';
-import type { Speler } from '../service/types';
 
 const getAllSpelers = async (ctx: Context) => {
+  const spelers =  await spelerService.getAllSpelers();
   ctx.body = {
-    items: spelerService.getAllSpelersRatingGrootNaarKlein(),
+    items: spelers,
   };
 };
 
 const createSpeler = async (ctx: Context) => {
-  const newSpeler: Speler = spelerService.addSpeler(ctx.request.body as Speler);
+  const newSpeler: any = spelerService.addSpeler(ctx.request.body as any);
   ctx.status = 201; 
   ctx.body = {
     message: 'Speler succesvol toegevoegd',
@@ -19,12 +19,12 @@ const createSpeler = async (ctx: Context) => {
 };
 
 const getSpelerByID = async (ctx: Context) => {
-  ctx.body = spelerService.getSpelerByID(Number(ctx.params.id));
+  ctx.body = spelerService.getSpelerById(Number(ctx.params.id));
 };
 
-const updateSpeler = async (ctx: Context) => {
+const updateSpeler = async (ctx: any) => {
   const spelerId = Number(ctx.params.id); 
-  const updatedSpeler = spelerService.updateSpeler(spelerId, ctx.request.body); 
+  const updatedSpeler = spelerService.updateUser(spelerId, ctx.request.body); 
   
   ctx.body = updatedSpeler; 
 };

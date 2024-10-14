@@ -1,4 +1,4 @@
-import type { Deelnames } from "./types";
+import type { Deelnames } from "./data/types";
 import { DEELNAMES } from "./data/mock_data";
 
 // alle deelnames op te halen

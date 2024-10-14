@@ -17,14 +17,16 @@ export type Paring = {
   player2_id: string;
 };
   
-export type Speler = {
-  user_id: number;
-  name: string;
-  elio_01_24: number;
-  elio_07_24: number;
-  difference: number;
-  max: number;
-};
+interface Speler {
+  voornaam: string;
+  achternaam: string;
+  geboortedatum: Date; 
+  schaakrating_elo: number;
+  is_admin: boolean;
+  fide_id: number;
+  nationaal_id: number;
+  lid_sinds: Date; 
+}
   
 export type Spellen = {
   game_id: string,
