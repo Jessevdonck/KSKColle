@@ -13,8 +13,8 @@ model User {
   achternaam         String
   geboortedatum      DateTime
   schaakrating_elo   Int
-  schaakrating_difference Int
-  schaakrating_max Int
+  schaakrating_difference Int?
+  schaakrating_max   Int?
   is_admin           Boolean
   fide_id            Int            @unique
   nationaal_id       Int            @unique
@@ -33,7 +33,6 @@ model Tournament {
   
   participations     Participation[]    
   rounds             Round[]           
-  games              Game[]            
 }
 
 model Round {
@@ -49,7 +48,6 @@ model Round {
 model Game {
   game_id            String            @id @default(cuid())
   round_id           Int
-  tournament_id      String
   speler1_id        Int               
   speler2_id        Int               
   winnaar_id        Int?               
@@ -57,7 +55,6 @@ model Game {
   uitgestelde_datum   DateTime?
 
   round              Round             @relation("RoundGames", fields: [round_id], references: [round_id]) 
-  tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id]) 
   speler1           User              @relation("Speler1", fields: [speler1_id], references: [user_id])
   speler2           User              @relation("Speler2", fields: [speler2_id], references: [user_id])
   winnaar           User?             @relation("Winnaar", fields: [winnaar_id], references: [user_id]) 

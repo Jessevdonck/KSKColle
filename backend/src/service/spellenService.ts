@@ -1,4 +1,4 @@
-import type { Spellen } from "./data/types";
+import type { Spellen } from "../types/types";
 import { SPELLEN } from "./data/mock_data";
 
 // Haal alle spellen op

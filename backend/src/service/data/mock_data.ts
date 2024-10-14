@@ -1,4 +1,4 @@
-import type {Toernooi, Ronde, Paring, Spellen, Deelnames, Speler} from "./types";
+import type {Toernooi, Ronde, Paring, Spellen, Deelnames, Speler} from "../../types/types";
 
 export const TOERNOOIEN: Toernooi[] = [
   {

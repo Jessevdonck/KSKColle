@@ -1,4 +1,4 @@
-import type { Paring } from "./data/types";
+import type { Paring } from "../types/types";
 import { PARINGEN } from "./data/mock_data";
 
 export const getAllParingen = () => {

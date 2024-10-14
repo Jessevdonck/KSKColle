@@ -35,54 +35,57 @@ ERD in Mermaid:
 
 ```mermaid
 erDiagram
-    User {
-        string user_id PK
+
+    TOERNOOI {
+        string toernooi_id PK
+        string naam
+        int rondes
+    }
+
+    USER {
+        int user_id PK
         string voornaam
         string achternaam
-        integer leeftijd
-        integer schaakrating_elo
+        DateTime geboortedatum
+        int schaakrating_elo
+        int schaakrating_difference
+        int schaakrating_max
         boolean is_admin
-        integer fide_id "Unique"
-        integer nationaal_id "Unique"
-        date lid_sinds 
+        int fide_id
+        int nationaal_id
+        DateTime lid_sinds
     }
 
-    Tournament {
-        string tournament_id PK
-        string naam
-        integer rondes
+    INSCHRIJVING {
+        int user_id FK
+        string toernooi_id FK
     }
 
-    Round {
-        string round_id PK
-        string tournament_id FK
-        integer ronde_nummer
-        ronde_datum DateTime
+    RONDE {
+        int ronde_id PK
+        string toernooi_id FK
+        int ronde_nummer
+        DateTime ronde_datum
     }
 
-    Game {
+    GAME {
         string game_id PK
-        string round_id FK
-        string speler1_id FK
-        string speler2_id FK
-        string winnaar_id FK
+        int round_id FK
+        int speler1_id FK
+        int speler2_id FK
+        int winnaar_id FK
         string result
-        date uitgestelde_datum
+        DateTime uitgestelde_datum
     }
 
-    Participation {
-        string user_id FK
-        string tournament_id FK
-    }
-
-    User ||--o{ Participation : "deelneemt aan"
-    Tournament ||--o{ Participation : "heeft"
-    Tournament ||--o{ Round : "heeft"
-    Round ||--o{ Game : "heeft"
-    
-    User ||--o{ Game : "is speler1"
-    User ||--o{ Game : "is speler2"
-    User ||--o{ Game : "is winnaar"
+    %% Relaties
+    TOERNOOI ||--o{ RONDE : "bestaat uit"
+    USER ||--o{ INSCHRIJVING : "inschrijft"
+    TOERNOOI ||--o{ INSCHRIJVING : "heeft"
+    RONDE ||--o{ GAME : "bevat"
+    USER ||--o{ GAME : "speelt wit"
+    USER ||--o{ GAME : "speelt zwart"
+    USER ||--o{ GAME : "is winnaar"
 ```
 
 ## Screenshots

@@ -1,4 +1,4 @@
-import type { Ronde } from "./data/types";
+import type { Ronde } from "../types/types";
 import { RONDES } from "./data/mock_data";
 
 export const getAllRondes = () => {

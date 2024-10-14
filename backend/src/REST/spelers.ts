@@ -10,7 +10,7 @@ const getAllSpelers = async (ctx: Context) => {
 };
 
 const createSpeler = async (ctx: Context) => {
-  const newSpeler: any = spelerService.addSpeler(ctx.request.body as any);
+  const newSpeler: any = await spelerService.addSpeler(ctx.request.body);
   ctx.status = 201; 
   ctx.body = {
     message: 'Speler succesvol toegevoegd',
@@ -19,12 +19,12 @@ const createSpeler = async (ctx: Context) => {
 };
 
 const getSpelerByID = async (ctx: Context) => {
-  ctx.body = spelerService.getSpelerById(Number(ctx.params.id));
+  ctx.body = await spelerService.getSpelerById(Number(ctx.params.id));
 };
 
 const updateSpeler = async (ctx: any) => {
   const spelerId = Number(ctx.params.id); 
-  const updatedSpeler = spelerService.updateUser(spelerId, ctx.request.body); 
+  const updatedSpeler = await spelerService.updateUser(spelerId, ctx.request.body); 
   
   ctx.body = updatedSpeler; 
 };

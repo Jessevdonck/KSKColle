@@ -1,5 +1,28 @@
-import { SPELERS } from "./data/mock_data";
 import { prisma } from "./data/";
+
+const SPELER_SELECT = {
+  user_id: true,
+  voornaam: true,
+  achternaam: true,
+  geboortedatum: true,
+  schaakrating_elo: true,
+  schaakrating_difference: true,
+  schaakrating_max: true,
+  is_admin: true,
+  fide_id: true,
+  nationaal_id: true,
+  lid_sinds: true,
+  
+};
+
+export const getUserWithAllGames = async (userId: number) => {
+  const user = await prisma.user.findUnique({
+    where: { user_id: userId },
+    select: SPELER_SELECT,
+  });
+
+  return user;
+};
 
 export const getAllSpelers = () => {
   return prisma.user.findMany();
@@ -10,6 +33,7 @@ export const getSpelerById = async (user_id: number) => {
     where: {
       user_id,
     },
+    select: SPELER_SELECT,
   });
 
   if (!user) {
@@ -29,53 +53,32 @@ export const addSpeler = async ({
   is_admin, fide_id, 
   nationaal_id, 
   lid_sinds}: any) => {
-  return prisma.user.create({
+
+  console.log(geboortedatum);
+
+  return await prisma.user.create({
     data: {
       voornaam,
       achternaam,
-      geboortedatum,
+      geboortedatum: new Date(geboortedatum),
       schaakrating_elo,
       schaakrating_difference,
       schaakrating_max,
-      is_admin,
-      fide_id,
-      nationaal_id,
-      lid_sinds,
+      is_admin: is_admin !== undefined ? is_admin : false, 
+      fide_id: fide_id !== undefined ? fide_id : 0, 
+      nationaal_id: nationaal_id !== undefined ? nationaal_id : 0, 
+      lid_sinds: new Date(lid_sinds),
     },
   });
 };
   
-export const updateUser = async (
-  userId: number,
-  voornaam?: string,
-  achternaam?: string,
-  geboortedatum?: Date,
-  schaakrating_elo?: number,
-  schaakrating_difference?: number,
-  schaakrating_max?: number,
-  is_admin?: boolean,
-  fide_id?: number,
-  nationaal_id?: number,
-  lid_sinds?: Date,
-) => {
-  const updateData: any = {};
-
-  if (voornaam !== undefined) updateData.voornaam = voornaam;
-  if (achternaam !== undefined) updateData.achternaam = achternaam;
-  if (geboortedatum !== undefined) updateData.geboortedatum = geboortedatum;
-  if (schaakrating_elo !== undefined) updateData.schaakrating_elo = schaakrating_elo;
-  if (schaakrating_difference !== undefined) updateData.schaakrating_difference = schaakrating_difference;
-  if (schaakrating_max !== undefined) updateData.schaakrating_max = schaakrating_max;
-  if (is_admin !== undefined) updateData.is_admin = is_admin;
-  if (fide_id !== undefined) updateData.fide_id = fide_id;
-  if (nationaal_id !== undefined) updateData.nationaal_id = nationaal_id;
-  if (lid_sinds !== undefined) updateData.lid_sinds = lid_sinds;
+export const updateUser = async (user_id: number, changes:any) => {
 
   return prisma.user.update({
     where: {
-      user_id: userId, 
+      user_id, 
     },
-    data: updateData,
+    data: changes,
   });
 };
   
