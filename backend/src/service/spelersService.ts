@@ -54,8 +54,6 @@ export const addSpeler = async ({
   nationaal_id, 
   lid_sinds}: any) => {
 
-  console.log(geboortedatum);
-
   return await prisma.user.create({
     data: {
       voornaam,

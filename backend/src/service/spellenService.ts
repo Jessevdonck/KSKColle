@@ -1,32 +1,67 @@
-import type { Spellen } from "../types/types";
-import { SPELLEN } from "./data/mock_data";
+import { prisma } from "./data/";
 
-// Haal alle spellen op
 export const getAllSpellen = () => {
-  return SPELLEN;
+  return prisma.game.findMany();
 };
   
-// Haal spellen op van een bepaalde paring
-export const getSpellenByPairingId = (pairingId: string) => {
-  return SPELLEN.filter((spel) => spel.pairing_id === pairingId);
-};
-  
-// Haal spellen op van een toernooi
-export const getSpellenByTournamentId = (tournamentId: string) => {
-  return SPELLEN.filter((spel) => spel.tournament_id === tournamentId);
-};
-  
-// Voeg een nieuw spel toe
-export const addSpel = (newSpel: Spellen) => {
-  SPELLEN.push(newSpel);
-};
-  
-// Update een spel
-export const updateSpel = (updatedSpel: Spellen) => {
-  const index = SPELLEN.findIndex((spel) => spel.game_id === updatedSpel.game_id);
-  if (index !== -1) {
-    SPELLEN[index] = updatedSpel; 
-    return updatedSpel; 
+export const getSpelById = async (game_id: string) => {
+  const game = await prisma.game.findUnique({
+    where: {
+      game_id,
+    },
+  });
+
+  if (!game) {
+    throw new Error('No game with this id exists');
   }
-  return null; 
+
+  return game;
+};
+  
+export const getSpellenByTournamentId = (tournament_id: string) => {
+  return prisma.game.findMany({
+    where: {
+      round: {
+        tournament_id,
+      },
+    },
+  });
+};
+  
+export const addSpel = async ({ 
+  round_id,
+  speler1_id,
+  speler2_id,
+  winnaar_id,
+  result,
+  uitgestelde_datum}: any) => {
+
+  return await prisma.game.create({
+    data: {
+      round_id,
+      speler1_id,
+      speler2_id,
+      winnaar_id,
+      result,
+      uitgestelde_datum,
+    },
+  });
+};
+  
+export const updateSpel = async (game_id: string, changes:any) => {
+
+  return prisma.game.update({
+    where: {
+      game_id, 
+    },
+    data: changes,
+  });
+};
+
+export const removeSpel = async (game_id: string) => {
+  await prisma.game.delete({
+    where: {
+      game_id,
+    },
+  });
 };

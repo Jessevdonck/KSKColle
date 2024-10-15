@@ -15,9 +15,9 @@ model User {
   schaakrating_elo   Int
   schaakrating_difference Int?
   schaakrating_max   Int?
-  is_admin           Boolean
-  fide_id            Int            @unique
-  nationaal_id       Int            @unique
+  is_admin           Boolean?
+  fide_id            Int?            @unique
+  nationaal_id       Int?            @unique
   lid_sinds          DateTime
   
   participations     Participation[]    
@@ -43,6 +43,8 @@ model Round {
   
   tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id])
   games              Game[]            @relation("RoundGames") 
+
+   @@unique([ronde_nummer, tournament_id]) 
 }
 
 model Game {

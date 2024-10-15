@@ -1,22 +1,53 @@
-import type { Ronde } from "../types/types";
-import { RONDES } from "./data/mock_data";
+import { prisma } from "./data/";
 
 export const getAllRondes = () => {
-  return RONDES;
+  return prisma.round.findMany();
 };
   
-export const getAllRondesByTournament = (tournamentId: string) => {
-  return RONDES.filter((ronde) => ronde.tournament_id === tournamentId); 
+export const getAllRondesByTournamentId = async (tournamentId: string) => {
+  return await prisma.round.findMany({
+    where: {
+      tournament_id: tournamentId, 
+    },
+  });
 };
   
-export const getRondeByTournament = (tournamentId: string) => {
-  return RONDES.filter((ronde) => ronde.tournament_id === tournamentId);
+export const getRondeByTournamentId = async (tournamentId: string, roundId: number) => {
+  return await prisma.round.findFirst({
+    where: {
+      tournament_id: tournamentId,
+      round_id: roundId, 
+    },
+  });
 };
-  
-export const getAllRondeIdByTournament = (tournamentId: string) => {
-  getAllRondesByTournament(tournamentId).map((ronde) => ronde.round_id);
+    
+export const createRonde = async ({ tournament_id, ronde_nummer, ronde_datum }: any) => {
+
+  return await prisma.round.create({
+    data: {
+      tournament_id,
+      ronde_nummer,
+      ronde_datum,
+    },
+  });
 };
-  
-export const addRonde = (newRonde: Ronde) => {
-  RONDES.push(newRonde);
+
+export const updateRonde = async (tournament_id: string, round_id: number, changes: any) => {
+  return await prisma.round.update({
+    where: {
+      tournament_id,
+      round_id, 
+    },
+    data: 
+      changes,
+  });
+};
+
+export const removeRound = async (tournament_id: string, round_id: number) => {
+  await prisma.round.delete({
+    where: {
+      tournament_id,
+      round_id,
+    },
+  });
 };

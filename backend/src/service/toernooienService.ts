@@ -1,18 +1,48 @@
-import type { Toernooi } from "../types/types";
-import { TOERNOOIEN } from "./data/mock_data";
+import { prisma } from "./data/";
 
 export const getAllTournament = () => {
-  return TOERNOOIEN;
+  return prisma.tournament.findMany();
 };
-  
-export const addTournament = (newTournament: Toernooi) => {
-  TOERNOOIEN.push(newTournament);
+
+export const getTournamentById = async (tournament_id: string) => {
+  const tournament = await prisma.tournament.findUnique({
+    where: {
+      tournament_id,
+    },
+  });
+
+  if (!tournament) {
+    throw new Error('No tournament with this id exists');
+  }
+
+  return tournament;
 };
-  
-export const removeTournament = (tournamentId: string) => {
-  const index = TOERNOOIEN.findIndex((toernooi) => toernooi.tournament_id === tournamentId);
-  if (index !== -1) {
-    TOERNOOIEN.splice(index, 1); 
-  } 
+
+export const addTournament = async ({ naam, rondes }: any) => {
+
+  return await prisma.tournament.create({
+    data: {
+      naam,
+      rondes,
+    },
+  });
+};
+
+export const removeTournament = async (tournament_id: string) => {
+  await prisma.tournament.delete({
+    where: {
+      tournament_id,
+    },
+  });
+};
+
+export const updateTournament = async (tournament_id: string, changes:any) => {
+
+  return prisma.tournament.update({
+    where: {
+      tournament_id, 
+    },
+    data: changes,
+  });
 };
   

@@ -24,6 +24,35 @@ async function main() {
     ],
   });
 
+  await prisma.game.createMany({
+    data: [
+      {
+        round_id: 1,          
+        speler1_id: 1,       
+        speler2_id: 2,       
+        winnaar_id: 1,      
+        result: '1-0',       
+        uitgestelde_datum: null, 
+      },
+      {
+        round_id: 1,          
+        speler1_id: 3,       
+        speler2_id: 1,       
+        winnaar_id: 3,      
+        result: '0-1',      
+        uitgestelde_datum: null,
+      },
+      {
+        round_id: 2,        
+        speler1_id: 2,      
+        speler2_id: 3,      
+        winnaar_id: null,   
+        result: null,        
+        uitgestelde_datum: null, 
+      },
+    ],
+  });
+
   await prisma.round.createMany({
     data: [
       {
