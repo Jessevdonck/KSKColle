@@ -5,6 +5,7 @@ export type Player = {
     elio_07_24: number;
     difference: number;
     max: number;
+    photoUrl?: string;
   };
 
   export const playersData: Player[] = [
@@ -102,14 +103,6 @@ export type Player = {
       description: 'test',
     },
   ];
-
-  
-  export interface Game {
-    id: string;
-    whitePlayer: Player;
-    blackPlayer: Player;
-    result?: '1-0' | '0-1' | '½-½';
-  }
   
   export interface Round {
     id: string;
@@ -125,9 +118,27 @@ export type Player = {
     rounds: Round[];
   }
 
-  const getPlayerById = (id: number): Player | undefined => {
-    return playersData.find(player => player.id === id);
+  export const getPlayerById = (id: number): Player => {
+    const player = playersData.find(player => player.id === id);
+    if (!player) {
+      throw new Error(`Player with ID ${id} not found`);
+    }
+    return player;
   };
+
+  export interface Game {
+    id: string;
+    whitePlayer: Player;
+    blackPlayer: Player;
+    result?: '1-0' | '0-1' | '½-½';
+  }
+
+  export const games: Game[] = [
+    { id: '1', whitePlayer: getPlayerById(1), blackPlayer: getPlayerById(4), result: '1-0' },
+    { id: '2', whitePlayer: getPlayerById(2), blackPlayer: getPlayerById(3), result: '0-1' },
+    { id: '3', whitePlayer: getPlayerById(3), blackPlayer: getPlayerById(2), result: '½-½' },
+    { id: '4', whitePlayer: getPlayerById(4), blackPlayer: getPlayerById(1), result: '1-0' },
+  ];
   
   export const tournaments: Tournament[] = [
     {
