@@ -1,10 +1,11 @@
 import { prisma } from "./data/";
+import type { Spel, SpelCreateInput, SpelUpdateInput } from "../types/spel";
 
-export const getAllSpellen = () => {
+export const getAllSpellen = (): Promise<Spel[]> => {
   return prisma.game.findMany();
 };
   
-export const getSpelById = async (game_id: string) => {
+export const getSpelById = async (game_id: string): Promise<Spel> => {
   const game = await prisma.game.findUnique({
     where: {
       game_id,
@@ -17,8 +18,8 @@ export const getSpelById = async (game_id: string) => {
 
   return game;
 };
-  
-export const getSpellenByTournamentId = (tournament_id: string) => {
+
+export const getSpellenByTournamentId = (tournament_id: string): Promise<Spel[]> => {
   return prisma.game.findMany({
     where: {
       round: {
@@ -28,27 +29,14 @@ export const getSpellenByTournamentId = (tournament_id: string) => {
   });
 };
   
-export const addSpel = async ({ 
-  round_id,
-  speler1_id,
-  speler2_id,
-  winnaar_id,
-  result,
-  uitgestelde_datum}: any) => {
+export const createSpel = async (spel: SpelCreateInput) => {
 
   return await prisma.game.create({
-    data: {
-      round_id,
-      speler1_id,
-      speler2_id,
-      winnaar_id,
-      result,
-      uitgestelde_datum,
-    },
+    data: spel,
   });
 };
   
-export const updateSpel = async (game_id: string, changes:any) => {
+export const updateSpel = async (game_id: string, changes:SpelUpdateInput) => {
 
   return prisma.game.update({
     where: {
@@ -58,7 +46,7 @@ export const updateSpel = async (game_id: string, changes:any) => {
   });
 };
 
-export const removeSpel = async (game_id: string) => {
+export const removeSpel = async (game_id: string): Promise<void> => {
   await prisma.game.delete({
     where: {
       game_id,

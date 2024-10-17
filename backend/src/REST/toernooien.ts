@@ -1,35 +1,34 @@
 import Router from '@koa/router';
 import * as toernooienService from '../service/toernooienService';
-import type { Context } from 'koa';
+import type { CreateToernooiRequest, CreateToernooiResponse, GetAllToernooienResponse, GetToernooiByIdResponse, UpdateToernooiRequest, UpdateToernooiResponse } from '../types/toernooi';
+import type { KoaContext } from '../types/koa';
+import type { IdParams } from '../types/common';
 
-const getAllTournament = async (ctx: Context) => {
+const getAllTournament = async (ctx: KoaContext<GetAllToernooienResponse>) => {
   const spelers =  await toernooienService.getAllTournament();
   ctx.body = {
     items: spelers,
   };
 };
 
-const createTournament = async (ctx: Context) => {
+const createTournament = async (ctx: KoaContext<CreateToernooiResponse, void, CreateToernooiRequest>) => {
   const newSpeler: any = await toernooienService.addTournament(ctx.request.body);
   ctx.status = 201; 
-  ctx.body = {
-    message: 'Speler succesvol toegevoegd',
-    speler: newSpeler,
-  };
+  ctx.body = newSpeler;
 };
 
-const getTournamentById = async (ctx: Context) => {
+const getTournamentById = async (ctx: KoaContext<GetToernooiByIdResponse, IdParams>) => {
   ctx.body = await toernooienService.getTournamentById(String(ctx.params.id));
 };
 
-const updateTournament = async (ctx: any) => {
+const updateTournament = async (ctx: KoaContext<UpdateToernooiResponse, IdParams, UpdateToernooiRequest>) => {
   const tournamentId = String(ctx.params.id); 
   const updatedSpeler = await toernooienService.updateTournament(tournamentId, ctx.request.body); 
   
   ctx.body = updatedSpeler; 
 };
 
-const removeTournament = async (ctx: Context) => {
+const removeTournament = async (ctx: KoaContext<void, IdParams>) => {
   const tournament_id = String(ctx.params.id);
   toernooienService.removeTournament(tournament_id);
   ctx.status = 204; 

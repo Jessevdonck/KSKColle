@@ -1,14 +1,13 @@
-import type Application from 'koa';
-
 import Router from '@koa/router';
 import installSpelerRouter from './spelers';
 import installHealthRouter from './health';
 import installTournamentRouter from './toernooien';
 import installRondeRouter from './rondes';
 import installSpelRouter from './spellen';
+import type { /*ChessAppContext, ChessAppState,*/ KoaApplication } from '../types/koa';
 
-export default (app: Application) => {
-  const router = new Router({
+export default (app: KoaApplication) => {
+  const router = new Router/*<ChessAppState, ChessAppContext>*/({
     prefix: '/api',
   });
 

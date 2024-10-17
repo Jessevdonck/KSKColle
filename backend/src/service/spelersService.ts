@@ -1,4 +1,5 @@
 import { prisma } from "./data/";
+import type { Speler, SpelerCreateInput, SpelerUpdateInput } from '../types/speler';
 
 const SPELER_SELECT = {
   user_id: true,
@@ -15,20 +16,11 @@ const SPELER_SELECT = {
   
 };
 
-export const getUserWithAllGames = async (userId: number) => {
-  const user = await prisma.user.findUnique({
-    where: { user_id: userId },
-    select: SPELER_SELECT,
-  });
-
-  return user;
-};
-
-export const getAllSpelers = () => {
+export const getAllSpelers = (): Promise<Speler[]> => {
   return prisma.user.findMany();
 };
   
-export const getSpelerById = async (user_id: number) => {
+export const getSpelerById = async (user_id: number): Promise<Speler> => {
   const user = await prisma.user.findUnique({
     where: {
       user_id,
@@ -43,34 +35,14 @@ export const getSpelerById = async (user_id: number) => {
   return user;
 };
   
-export const addSpeler = async ({ 
-  voornaam,
-  achternaam,
-  geboortedatum, 
-  schaakrating_elo, 
-  schaakrating_difference, 
-  schaakrating_max, 
-  is_admin, fide_id, 
-  nationaal_id, 
-  lid_sinds}: any) => {
+export const createSpeler = async (speler: SpelerCreateInput) => {
 
   return await prisma.user.create({
-    data: {
-      voornaam,
-      achternaam,
-      geboortedatum: new Date(geboortedatum),
-      schaakrating_elo,
-      schaakrating_difference,
-      schaakrating_max,
-      is_admin: is_admin !== undefined ? is_admin : false, 
-      fide_id: fide_id !== undefined ? fide_id : 0, 
-      nationaal_id: nationaal_id !== undefined ? nationaal_id : 0, 
-      lid_sinds: new Date(lid_sinds),
-    },
+    data: speler,
   });
 };
   
-export const updateUser = async (user_id: number, changes:any) => {
+export const updateUser = async (user_id: number, changes:SpelerUpdateInput) => {
 
   return prisma.user.update({
     where: {
@@ -80,7 +52,7 @@ export const updateUser = async (user_id: number, changes:any) => {
   });
 };
   
-export const removeSpeler = async (user_id: number) => {
+export const removeSpeler = async (user_id: number): Promise<void> => {
   await prisma.user.delete({
     where: {
       user_id,

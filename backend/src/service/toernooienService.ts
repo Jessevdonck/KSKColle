@@ -1,10 +1,11 @@
 import { prisma } from "./data/";
+import type { Toernooi, ToernooiCreateInput, ToernooiUpdateInput } from "../types/toernooi";
 
-export const getAllTournament = () => {
+export const getAllTournament = (): Promise<Toernooi[]> => {
   return prisma.tournament.findMany();
 };
 
-export const getTournamentById = async (tournament_id: string) => {
+export const getTournamentById = async (tournament_id: string): Promise<Toernooi> => {
   const tournament = await prisma.tournament.findUnique({
     where: {
       tournament_id,
@@ -18,17 +19,14 @@ export const getTournamentById = async (tournament_id: string) => {
   return tournament;
 };
 
-export const addTournament = async ({ naam, rondes }: any) => {
+export const addTournament = async (toernooi: ToernooiCreateInput) => {
 
   return await prisma.tournament.create({
-    data: {
-      naam,
-      rondes,
-    },
+    data: toernooi,
   });
 };
 
-export const removeTournament = async (tournament_id: string) => {
+export const removeTournament = async (tournament_id: string): Promise<void> => {
   await prisma.tournament.delete({
     where: {
       tournament_id,
@@ -36,7 +34,7 @@ export const removeTournament = async (tournament_id: string) => {
   });
 };
 
-export const updateTournament = async (tournament_id: string, changes:any) => {
+export const updateTournament = async (tournament_id: string, changes:ToernooiUpdateInput) => {
 
   return prisma.tournament.update({
     where: {
