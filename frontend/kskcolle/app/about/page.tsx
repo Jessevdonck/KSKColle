@@ -6,7 +6,7 @@ import PresidentsTimeline from "./components/PresidentsTimeline"
 
 export default function AboutUs() {
   return (  
-    <div className="bg-[#FAF7F0] min-h-screen">
+    <div className="bg-neutral-50 min-h-screen">
       <Header />
       <main className="container mx-auto px-4 py-12">
         <History />

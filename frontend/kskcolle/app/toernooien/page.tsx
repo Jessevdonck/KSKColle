@@ -1,9 +1,5 @@
-import React from 'react'
+import TournamentList from './components/TournamentList'
 
-const toernooien = () => {
-  return (
-    <div>toernooien</div>
-  )
+export default function TournamentsPage() {
+  return <TournamentList />
 }
-
-export default toernooien

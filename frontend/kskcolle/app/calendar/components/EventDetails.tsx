@@ -45,7 +45,7 @@ export default function EventDetails({ date, events }: EventDetailsProps) {
 function getEventTypeColor(type: CalendarEvent['type']) {
   switch (type) {
     case 'tournament':
-      return 'text-[#B17457]'
+      return 'text-emerald-800'
     case 'training':
       return 'text-green-600'
     case 'meeting':

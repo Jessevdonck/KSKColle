@@ -24,7 +24,7 @@ const Team = () => {
               className="rounded-sm mb-4"
             />
             <h3 className="text-xl font-semibold text-[#4A4947] text-center">{member.name}</h3>
-            <p className="text-[#B17457] text-center">{member.role}</p>
+            <p className="text-emerald-800 text-center">{member.role}</p>
           </div>
         ))}
       </div>

@@ -3,7 +3,7 @@ import { calendarEvents } from '../../data/mock_data'
 
 export default function CalendarPage() {
   return (
-    <div className="bg-[#FAF7F0] min-h-screen">
+    <div className="bg-neutral-50 min-h-screen">
       <Calendar events={calendarEvents} />
     </div>
   )

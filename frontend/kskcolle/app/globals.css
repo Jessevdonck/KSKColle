@@ -72,6 +72,11 @@ html{
 
 ::selection {
   color: #FAF7F0;
-  background-color: #B17457;
+  background-color: #047857;
+}
+
+.text-stroke {
+  -webkit-text-stroke: 2px #065f46;
+  text-stroke: 2px #065f46;
 }
 

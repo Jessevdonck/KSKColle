@@ -21,22 +21,22 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navItems = [
-    { href: "/", icon: <Home size={20} />, text: "Home" },
-    { href: "/about", icon: <Users size={20} />, text: "Over Ons" },
+    { href: "/", icon: <Home size={20}  />, text: "Home" },
+    { href: "/about", icon: <Users size={20}  />, text: "Over Ons" },
     { href: "/calendar", icon: <CalendarDays size={20} />, text: "Kalender" },
-    { href: "/toernooien", icon: <Trophy size={20} />, text: "Toernooien" },
-    { href: "/spelers", icon: <ChartColumnBig size={20} />, text: "Spelers" },
+    { href: "/toernooien", icon: <Trophy size={20}   />, text: "Toernooien" },
+    { href: "/spelers", icon: <ChartColumnBig size={20}  />, text: "Spelers" },
   ]
 
   return (
-    <nav className="bg-[#FAF7F0] text-[#4A4947] p-4 shadow-md sticky top-0 z-50">
+    <nav className="bg-neutral-50 text-[#4A4947] p-4 shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Crown size={32} className="text-[#B17457]" />
+          <Crown size={32} className="text-emerald-800" />
           <span className="text-xl font-bold text-[#4A4947] md:hidden lg:block">KSK Colle</span>
         </Link>
         
-        <div className="hidden md:flex space-x-6">
+        <div className="hidden md:flex space-x-8">
           {navItems.map((item) => (
             <NavItem key={item.href} {...item} />
           ))}
@@ -45,13 +45,13 @@ export default function Navbar() {
         <div className="flex items-center space-x-4">
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="hidden md:inline-flex bg-[#B17457] text-[#FAF7F0] hover:bg-[#D8D2C2] hover:text-[#4A4947]">
+              <Button variant="outline" className="hidden md:inline-flex bg-emerald-800 text-[#FAF7F0] hover:bg-emerald-900 hover:text-white font-semibold">
                 Aanmelden
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-[#FAF7F0]">
+            <DialogContent className="sm:max-w-[425px] bg-neutral-50">
               <DialogHeader>
-                <DialogTitle className="text-[#4A4947]">Aanmelden</DialogTitle>
+                <DialogTitle className="text-emerald-800">Aanmelden</DialogTitle>
                 <DialogDescription className="text-[#4A4947]/70">
                   Vul je gegevens in om aan te melden.
                 </DialogDescription>
@@ -61,17 +61,17 @@ export default function Navbar() {
                   <Label htmlFor="email" className="w-1/4 text-right text-[#4A4947]">
                     Email
                   </Label>
-                  <Input id="email" type="email" className="flex-1 bg-white border-[#B17457] text-[#4A4947]" />
+                  <Input id="email" type="email" className="flex-1 bg-white border-emerald-800 text-[#4A4947]" />
                 </div>
                 <div className="flex items-center space-x-4">
                   <Label htmlFor="password" className="w-1/4 text-right text-[#4A4947]">
                     Wachtwoord
                   </Label>
-                  <Input id="password" type="password" className="flex-1 bg-white border-[#B17457] text-[#4A4947]" />
+                  <Input id="password" type="password" className="flex-1 bg-white border-emerald-800 text-[#4A4947]" />
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button type="submit" className="bg-[#B17457] text-[#FAF7F0] hover:bg-[#D8D2C2] hover:text-[#4A4947]">
+                <Button type="submit" className="bg-emerald-800 text-[#FAF7F0] hover:bg-emerald-900 hover:text-white font-semibold">
                   Aanmelden
                 </Button>
               </div>
@@ -84,13 +84,13 @@ export default function Navbar() {
                 <Menu size={24} />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-[#FAF7F0]">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-neutral-50">
               <div className="flex flex-col space-y-4 mt-8">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center space-x-2 text-[#4A4947] hover:text-[#B17457] transition-colors"
+                    className="flex items-center space-x-2 text-[#4A4947] hover:text-emerald-800 transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.icon}
@@ -99,7 +99,7 @@ export default function Navbar() {
                 ))}
                 <Button
                   variant="outline"
-                  className="bg-[#B17457] text-[#FAF7F0] hover:bg-[#D8D2C2] hover:text-[#4A4947]"
+                  className="bg-emerald-800 text-[#FAF7F0] hover:bg-emerald-900 hover:text-white"
                   onClick={() => {
                     setIsMobileMenuOpen(false)
                     setIsOpen(true)
@@ -124,7 +124,7 @@ interface NavItemProps {
 
 function NavItem({ href, icon, text }: NavItemProps) {
   return (
-    <Link href={href} className="flex items-center space-x-1 hover:text-[#B17457] transition-colors">
+    <Link href={href} className="flex items-center space-x-2 font-semibold hover:text-emerald-800 transition-colors">
       {icon}
       <span>{text}</span>
     </Link>
