@@ -36,13 +36,13 @@ export default function MonthView({ year, month, events, onSelectDate, selectedD
               className={`
                 text-center p-2 rounded-full transition-colors relative
                 ${!isSameMonth(day, monthStart) ? 'text-gray-300' : 'text-[#4A4947]'}
-                ${isSelected ? 'ring-2 ring-emerald-800' : ''}
+                ${isSelected ? 'ring-2 ring-mainAccent' : ''}
                 hover:bg-gray-100
               `}
             >
               <span className="inline-block mb-3">{format(day, 'd')}</span>
               {dayEvents.length > 0 && (
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-emerald-800 rounded-full"></div>
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-mainAccent rounded-full"></div>
               )}
             </button>
           )

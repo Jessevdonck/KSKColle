@@ -32,7 +32,7 @@ export default function Navbar() {
     <nav className="bg-neutral-50 text-[#4A4947] p-4 shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Crown size={32} className="text-emerald-800" />
+          <Crown size={32} className="text-mainAccent" />
           <span className="text-xl font-bold text-[#4A4947] md:hidden lg:block">KSK Colle</span>
         </Link>
         
@@ -45,13 +45,13 @@ export default function Navbar() {
         <div className="flex items-center space-x-4">
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="hidden md:inline-flex bg-emerald-800 text-[#FAF7F0] hover:bg-emerald-900 hover:text-white font-semibold">
+              <Button variant="outline" className="hidden md:inline-flex bg-mainAccent text-[#FAF7F0] hover:bg-mainAccentDark hover:text-white font-semibold">
                 Aanmelden
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] bg-neutral-50">
               <DialogHeader>
-                <DialogTitle className="text-emerald-800">Aanmelden</DialogTitle>
+                <DialogTitle className="text-mainAccent">Aanmelden</DialogTitle>
                 <DialogDescription className="text-[#4A4947]/70">
                   Vul je gegevens in om aan te melden.
                 </DialogDescription>
@@ -61,17 +61,17 @@ export default function Navbar() {
                   <Label htmlFor="email" className="w-1/4 text-right text-[#4A4947]">
                     Email
                   </Label>
-                  <Input id="email" type="email" className="flex-1 bg-white border-emerald-800 text-[#4A4947]" />
+                  <Input id="email" type="email" className="flex-1 bg-white border-mainAccent text-[#4A4947]" />
                 </div>
                 <div className="flex items-center space-x-4">
                   <Label htmlFor="password" className="w-1/4 text-right text-[#4A4947]">
                     Wachtwoord
                   </Label>
-                  <Input id="password" type="password" className="flex-1 bg-white border-emerald-800 text-[#4A4947]" />
+                  <Input id="password" type="password" className="flex-1 bg-white border-mainAccent text-[#4A4947]" />
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button type="submit" className="bg-emerald-800 text-[#FAF7F0] hover:bg-emerald-900 hover:text-white font-semibold">
+                <Button type="submit" className="bg-mainAccent text-[#FAF7F0] hover:bg-mainAccentDark hover:text-white font-semibold">
                   Aanmelden
                 </Button>
               </div>
@@ -90,7 +90,7 @@ export default function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center space-x-2 text-[#4A4947] hover:text-emerald-800 transition-colors"
+                    className="flex items-center space-x-2 text-[#4A4947] hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.icon}
@@ -99,7 +99,7 @@ export default function Navbar() {
                 ))}
                 <Button
                   variant="outline"
-                  className="bg-emerald-800 text-[#FAF7F0] hover:bg-emerald-900 hover:text-white"
+                  className="bg-mainAccent text-[#FAF7F0] hover:bg-mainAccentDark hover:text-white"
                   onClick={() => {
                     setIsMobileMenuOpen(false)
                     setIsOpen(true)
@@ -124,7 +124,7 @@ interface NavItemProps {
 
 function NavItem({ href, icon, text }: NavItemProps) {
   return (
-    <Link href={href} className="flex items-center space-x-2 font-semibold hover:text-emerald-800 transition-colors">
+    <Link href={href} className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
       {icon}
       <span>{text}</span>
     </Link>

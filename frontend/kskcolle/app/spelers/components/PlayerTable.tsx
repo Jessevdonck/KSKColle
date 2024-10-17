@@ -23,14 +23,14 @@ export default function players({ players, sortKey, sortOrder, onSort }: PlayerP
       <h2 className="text-3xl font-bold text-[#4A4947] mb-6">Spelers Ranglijst</h2>
       <div className="overflow-x-auto rounded-sm shadow-lg shadow-emerald-950/10">
         <table className="w-full bg-white shadow-md rounded-lg">
-          <thead className="bg-emerald-800 text-white">
+          <thead className="bg-mainAccent text-white">
             <tr>
               {['Speler', 'ELIO 07/\'24', '+/-', 'MAX'].map((header, index) => {
                 const key = ['name', 'elio_07_24', 'difference', 'max'][index] as SortKey
                 return (
                   <th 
                     key={key}
-                    className="px-4 py-2 text-left cursor-pointer hover:bg-emerald-900 transition-colors"
+                    className="px-4 py-2 text-left cursor-pointer hover:bg-mainAccentDark transition-colors"
                     onClick={() => onSort(key)}
                   >
                     <span className="flex items-center">

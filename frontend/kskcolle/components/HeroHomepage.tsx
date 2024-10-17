@@ -20,9 +20,8 @@ const HeroHomepage = () => {
           <div className="max-w-xl">
             <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl tracking-tight">
               Welkom bij <br/> 
-              <span className="text-white relative" style={{
-                textShadow: '-2px -2px 0 #065f46, 2px -2px 0 #065f46, -2px 2px 0 #065f46, 2px 2px 0 #065f46'
-              }}>
+              <span className="text-white relative" 
+              >
                 KSK Colle
               </span>
             </h1>
@@ -31,7 +30,7 @@ const HeroHomepage = () => {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Link href={"#contact"}>
-                <Button className="bg-emerald-800 text-neutral-50 hover:bg-emerald-900 hover:text-white font-semibold">
+                <Button className="bg-mainAccent text-neutral-50 hover:bg-mainAccentDark hover:text-white font-semibold">
                   Contact
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -40,7 +39,7 @@ const HeroHomepage = () => {
               <Link href={"/about"}>
                 <Button
                   variant="outline"
-                  className="border-emerald-800 text-emerald-800 hover:bg-emerald-800 hover:text-white font-semibold"
+                  className="border-mainAccent text-mainAccent hover:bg-mainAccent hover:text-white font-semibold"
                 >
                   Over ons
                 </Button>

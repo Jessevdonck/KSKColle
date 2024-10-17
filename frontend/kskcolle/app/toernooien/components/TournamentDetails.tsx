@@ -36,5 +36,3 @@ export default function TournamentDetails() {
     </div>
   )
 }
-
-{/*bg-[#FAF7F0]*/ }

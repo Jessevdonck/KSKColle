@@ -2,9 +2,9 @@ import React from 'react'
 import { Trophy, Users, SunIcon} from 'lucide-react'
 
 const activities = [
-    { icon: <Trophy className="w-12 h-12 mb-2 text-emerald-800" />, title: "Competities", description: "We organiseren het hele jaar door competities tussen clubleden!" },
-    { icon: <Users className="w-12 h-12 mb-2 text-emerald-800" />, title: "Jeugdwerking", description: "Elke donderdag van 18:30 tot 19:45 worden er schaaklessen gegeven!" },
-    { icon: <SunIcon className="w-12 h-12 mb-2 text-emerald-800" />, title: "Zomerkampen", description: "In de zomer organiseert Schaakclub KSK Colle een zomerkamp schaken." },
+    { icon: <Trophy className="w-12 h-12 mb-2 text-mainAccent" />, title: "Competities", description: "We organiseren het hele jaar door competities tussen clubleden!" },
+    { icon: <Users className="w-12 h-12 mb-2 text-mainAccent" />, title: "Jeugdwerking", description: "Elke donderdag van 18:30 tot 19:45 worden er schaaklessen gegeven!" },
+    { icon: <SunIcon className="w-12 h-12 mb-2 text-mainAccent" />, title: "Zomerkampen", description: "In de zomer organiseert Schaakclub KSK Colle een zomerkamp schaken." },
   ]
 
 const Activities = () => {

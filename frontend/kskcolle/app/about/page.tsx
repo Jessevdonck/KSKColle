@@ -11,8 +11,8 @@ export default function AboutUs() {
       <main className="container mx-auto px-4 py-12">
         <History />
         <Activities />
-        <Team />
         <PresidentsTimeline />
+        <Team />
       </main>
     </div>
   )

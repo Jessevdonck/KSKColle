@@ -30,7 +30,7 @@ export default function Standings({ tournament }: StandingsProps) {
   return (
     <table className="w-full">
       <thead>
-        <tr className="bg-emerald-800 text-white">
+        <tr className="bg-mainAccent text-white">
           <th className="p-2 text-left">Positie</th>
           <th className="p-2 text-left">Speler</th>
           <th className="p-2 text-left">Score</th>

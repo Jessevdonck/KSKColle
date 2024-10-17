@@ -142,8 +142,8 @@ export type Player = {
           games: [
             {
               id: '1',
-              whitePlayer: getPlayerById(1)!, // Full player data for white player
-              blackPlayer: getPlayerById(2)!, // Full player data for black player
+              whitePlayer: getPlayerById(1)!, 
+              blackPlayer: getPlayerById(2)!, 
               result: '1-0'
             },
             {
