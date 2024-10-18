@@ -34,5 +34,6 @@ export interface UpdateSpelerRequest extends SpelerUpdateInput {}
 
 export interface GetAllSpelersResponse extends ListResponse<Speler> {}
 export interface GetSpelerByIdResponse extends Speler {}
+export interface GetSpelerByNaamResponse extends Speler {}
 export interface CreateSpelerResponse extends GetSpelerByIdResponse {}
 export interface UpdateSpelerResponse extends GetSpelerByIdResponse {}

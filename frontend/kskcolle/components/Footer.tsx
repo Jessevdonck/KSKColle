@@ -2,10 +2,9 @@ import React from 'react'
 import Link from "next/link"
 import { SiFacebook } from "react-icons/si"
 
-
 const Footer = () => {
   return (
-    <footer className="bg-neutral-50 text-[#4A4947]">
+    <footer className="bg-neutral-50 text-textColor w-full mt-auto">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div className='flex flex-col items-center'>
@@ -33,7 +32,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4 flex justify-center items-center">Volg Ons</h3>
             <div className="flex space-x-4 justify-center">
-              <a href="https://www.facebook.com/groups/KSKColleSintNiklaas" target="_blank" rel="noopener noreferrer" className="text-[#4A4947] hover:text-mainAccent transition-colors">
+              <a href="https://www.facebook.com/groups/KSKColleSintNiklaas" target="_blank" rel="noopener noreferrer" className="text-textColor hover:text-mainAccent transition-colors">
                 <SiFacebook size={24} />
                 <span className="sr-only">Facebook</span>
               </a>
@@ -45,7 +44,6 @@ const Footer = () => {
           <p className="text-lg">&copy; {new Date().getFullYear()} KSK Colle. Alle rechten voorbehouden.</p>
         </div>
       </div>
-
     </footer>
   )
 }

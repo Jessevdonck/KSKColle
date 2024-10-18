@@ -19,6 +19,17 @@ export const getSpelById = async (game_id: string): Promise<Spel> => {
   return game;
 };
 
+export const getSpellenByPlayerId = async (playerId: number): Promise<Spel[]> => {
+  return await prisma.game.findMany({
+    where: {
+      OR: [
+        { speler1_id: playerId },  
+        { speler2_id: playerId },  
+      ],
+    },
+  });
+};
+
 export const getSpellenByTournamentId = (tournament_id: string): Promise<Spel[]> => {
   return prisma.game.findMany({
     where: {

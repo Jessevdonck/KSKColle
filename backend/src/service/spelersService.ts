@@ -34,6 +34,21 @@ export const getSpelerById = async (user_id: number): Promise<Speler> => {
 
   return user;
 };
+
+export const getSpelerByNaam = async (voornaam: string, achternaam: string): Promise<Speler | null> => {
+  const user = await prisma.user.findFirst({ 
+    where: { 
+      voornaam: voornaam,
+      achternaam: achternaam,
+    },
+    select: SPELER_SELECT, 
+  });
+
+  if (!user) {
+    return null; 
+  }
+  return user;
+};
   
 export const createSpeler = async (speler: SpelerCreateInput) => {
 

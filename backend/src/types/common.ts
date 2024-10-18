@@ -10,3 +10,7 @@ export interface ListResponse<T> {
 export interface IdParams {
   id: number;
 }
+
+export interface NameParams {
+  id: string;
+}

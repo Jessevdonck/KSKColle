@@ -34,6 +34,20 @@ const removeSpel = async (ctx: KoaContext<void, IdParams>) => {
   ctx.status = 204; 
 };
 
+const getSpellenByPlayerId = async (ctx: KoaContext<GetAllSpellenResponse, IdParams>) => {
+  const playerId = Number(ctx.params.id);
+  const spellen = await spellenService.getSpellenByPlayerId(playerId);
+
+  if (!spellen || spellen.length === 0) {
+    ctx.status = 404;
+    return;
+  }
+
+  ctx.body = {
+    items: spellen,
+  };
+};
+
 export default (parent: Router) => {
   const router = new Router({
     prefix: '/spel',
@@ -42,6 +56,7 @@ export default (parent: Router) => {
   router.get('/', getAllSpellen);
   router.post('/', createSpel);
   router.get('/:id', getSpelById);
+  router.get('/speler/:id', getSpellenByPlayerId);
   router.put('/:id', updateSpel);
   router.delete('/:id', removeSpel);
 

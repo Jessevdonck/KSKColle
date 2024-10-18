@@ -1,5 +1,6 @@
 import React from 'react'
 import { Tournament, Player } from '../../../data/mock_data'
+import Link from 'next/link'
 
 interface StandingsProps {
   tournament: Tournament
@@ -39,11 +40,11 @@ export default function Standings({ tournament }: StandingsProps) {
       </thead>
       <tbody>
         {playerScores.map((player, index) => (
-          <tr key={player.id} className="border-b">
+          <tr key={player.id} className={`border-b ${index % 2 === 0 ? 'bg-neutral-50' : 'bg-neutral-100'}`}>
             <td className="p-2">
                 <span className={getPositionStyle(index + 1)}>{index + 1}</span>
             </td>
-            <td className="p-2">{player.name}</td>
+            <td className="p-2"><Link href={`/profile/${player.id}`}>{player.name}</Link></td>
             <td className="p-2">{player.score}</td>
             <td className="p-2">{player.gamesPlayed}</td>
           </tr>

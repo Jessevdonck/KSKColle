@@ -20,7 +20,12 @@ const HeroHomepage = () => {
           <div className="max-w-xl">
             <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-6xl tracking-tight">
               Welkom bij <br/> 
-              <span className="text-white relative" 
+              <span 
+                className="text-mainAccent relative inline-block mt-2 px-4 py-2  rounded-lg text-[1.1em] "
+                style={{
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                  
+                }}
               >
                 KSK Colle
               </span>

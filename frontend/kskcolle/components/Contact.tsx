@@ -8,67 +8,67 @@ const ContactForm = () => {
   return (
     <section id="contact" className="bg-neutral-50 py-16 scroll-m-11">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-[#4A4947] mb-8 text-center">Neem Contact Op</h2>
+        <h2 className="text-3xl font-bold text-textColor mb-8 text-center">Neem Contact Op</h2>
         <form className="max-w-2xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <Label htmlFor="firstName" className="text-[#4A4947]">Voornaam<span className='text-mainAccent'>*</span></Label>
+              <Label htmlFor="firstName" className="text-textColor">Voornaam<span className='text-mainAccent'>*</span></Label>
               <Input
                 id="firstName"
                 name="firstName"
                 type="text"
                 required
-                className="mt-1 w-full border-mainAccent text-[#4A4947]"
+                className="mt-1 w-full border-mainAccent text-textColor"
               />
             </div>
             <div className="flex-1">
-              <Label htmlFor="lastName" className="text-[#4A4947]">Achternaam<span className='text-mainAccent'>*</span></Label>
+              <Label htmlFor="lastName" className="text-textColor">Achternaam<span className='text-mainAccent'>*</span></Label>
               <Input
                 id="lastName"
                 name="lastName"
                 type="text"
                 required
-                className="mt-1 w-full border-mainAccent text-[#4A4947]"
+                className="mt-1 w-full border-mainAccent text-textColor"
               />
             </div>
           </div>
           <div>
-            <Label htmlFor="phoneNumber" className="text-[#4A4947]">E-mail<span className='text-mainAccent'>*</span></Label>
+            <Label htmlFor="phoneNumber" className="text-textColor">E-mail<span className='text-mainAccent'>*</span></Label>
             <Input
               id="email"
               name="email"
               type="mail"
               required
-              className="mt-1 w-full border-mainAccent text-[#4A4947]"
+              className="mt-1 w-full border-mainAccent text-textColor"
             />
           </div>
           <div>
-            <Label htmlFor="phoneNumber" className="text-[#4A4947]">Telefoonnummer<span className='text-mainAccent'>*</span></Label>
+            <Label htmlFor="phoneNumber" className="text-textColor">Telefoonnummer<span className='text-mainAccent'>*</span></Label>
             <Input
               id="phoneNumber"
               name="phoneNumber"
               type="tel"
               required
-              className="mt-1 w-full border-mainAccent text-[#4A4947]"
+              className="mt-1 w-full border-mainAccent text-textColor"
             />
           </div>
           <div>
-            <Label htmlFor="address" className="text-[#4A4947]">Adres<span className='text-mainAccent'>*</span></Label>
+            <Label htmlFor="address" className="text-textColor">Adres<span className='text-mainAccent'>*</span></Label>
             <Input
               id="address"
               name="address"
               type="text"
               required
-              className="mt-1 w-full border-mainAccent text-[#4A4947]"
+              className="mt-1 w-full border-mainAccent text-textColor"
             />
           </div>
           <div>
-            <Label htmlFor="description" className="text-[#4A4947]">Omschrijving<span className='text-mainAccent'>*</span></Label>
+            <Label htmlFor="description" className="text-textColor">Omschrijving<span className='text-mainAccent'>*</span></Label>
             <Textarea
               id="description"
               name="description"
               required
-              className="mt-1 w-full border-mainAccent text-[#4A4947]"
+              className="mt-1 w-full border-mainAccent text-textColor"
               rows={4}
             />
           </div>

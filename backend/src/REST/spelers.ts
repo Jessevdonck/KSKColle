@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import * as spelerService from '../service/spelersService';
-import type { Speler, CreateSpelerResponse, CreateSpelerRequest, GetSpelerByIdResponse, UpdateSpelerResponse, UpdateSpelerRequest, GetAllSpelersResponse } from '../types/speler';
+import type { Speler, CreateSpelerResponse, CreateSpelerRequest, GetSpelerByIdResponse, UpdateSpelerResponse, UpdateSpelerRequest, GetAllSpelersResponse, GetSpelerByNaamResponse } from '../types/speler';
 import type { KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 
@@ -30,6 +30,28 @@ const updateSpeler = async (ctx: KoaContext<UpdateSpelerResponse, IdParams, Upda
   ctx.body = updatedSpeler; 
 };
 
+const getSpelerByNaam = async (ctx: KoaContext<GetSpelerByNaamResponse>) => {
+  const voornaam = decodeURIComponent(ctx.query.voornaam as string);
+  const achternaam = decodeURIComponent(ctx.query.achternaam as string);
+
+  if (!voornaam || !achternaam) {
+    ctx.status = 400;
+    return;
+  }
+
+  try {
+    const speler = await spelerService.getSpelerByNaam(voornaam, achternaam);
+    if (speler) {
+      ctx.body = speler;
+    } else {
+      ctx.status = 404;
+    }
+  } catch (error) {
+    console.error('Error in getSpelerByNaam:', error);
+    ctx.status = 500;
+  }
+};
+
 const removeSpeler = async (ctx: KoaContext<void, IdParams>) => {
   const spelerId = Number(ctx.params.id);
   spelerService.removeSpeler(spelerId);
@@ -43,6 +65,7 @@ export default (parent: Router) => {
 
   router.get('/', getAllSpelers);
   router.post('/', createSpeler);
+  router.get('/by-name', getSpelerByNaam);
   router.get('/:id', getSpelerByID);
   router.put('/:id', updateSpeler);
   router.delete('/:id', removeSpeler);

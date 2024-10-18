@@ -15,12 +15,12 @@ export default function TournamentDetails() {
   }
 
   return (
-    <div className="flex justify-center items-center flex-col w-screen  px-4 py-8 bg-neutral-50">
-      <h1 className="text-3xl font-bold text-[#4A4947] mb-6">{tournament.name}</h1>
+    <div className="flex justify-start items-start flex-col w-full px-4 py-8 bg-neutral-50 min-h-screen">
+      <h1 className="text-3xl font-bold text-textColor mb-6 w-full text-center">{tournament.name}</h1>
       
-      <div className="flex flex-col lg:flex-row gap-8 w-11/12">
-        <div className="flex-1 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold text-[#4A4947] mb-4">Rondes</h2>
+      <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl mx-auto">
+        <div className="lg:flex-1 w-full bg-white rounded-lg shadow-md p-6 self-start">
+          <h2 className="text-2xl font-bold text-textColor mb-4">Rondes</h2>
           <div className="space-y-6">
             {tournament.rounds.map(round => (
               <RoundPairings key={round.id} round={round} />
@@ -28,8 +28,8 @@ export default function TournamentDetails() {
           </div>
         </div>
         
-        <div className="flex-1 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold text-[#4A4947] mb-4">Stand</h2>
+        <div className="lg:flex-1 w-full bg-white rounded-lg shadow-md p-6 self-start">
+          <h2 className="text-2xl font-bold text-textColor mb-4">Stand</h2>
           <Standings tournament={tournament} />
         </div>
       </div>
