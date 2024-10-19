@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsc",
-    "start:dev": "concurrently \"tsx watch --env-file .env --inspect=0.0.0.0:9001 src/index.ts\" \"fide-ratings-scraper api\"",
+    "start:dev": "concurrently \"fide-ratings-scraper api\" \"tsx watch --env-file .env --inspect=0.0.0.0:9001 src/index.ts\" ",
     "lint": "eslint .",
     "migrate:dev": "prisma migrate dev",
     "migrate:test": "env-cmd -f .env.test prisma migrate dev --skip-seed",

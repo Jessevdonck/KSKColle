@@ -22,8 +22,8 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">Snelle Links</h3>
             <ul className="space-y-2 text-balance">
               <li><Link href="/" className="text-lg hover:text-mainAccent transition-colors">Home</Link></li>
-              <li><Link href="/over-ons" className="text-lg hover:text-mainAccent transition-colors">Over Ons</Link></li>
-              <li><Link href="/kalender" className="text-lg hover:text-mainAccent transition-colors">Kalender</Link></li>
+              <li><Link href="/about" className="text-lg hover:text-mainAccent transition-colors">Over Ons</Link></li>
+              <li><Link href="/calendar" className="text-lg hover:text-mainAccent transition-colors">Kalender</Link></li>
               <li><Link href="/toernooien" className="text-lg hover:text-mainAccent transition-colors">Toernooien</Link></li>
               <li><Link href="/spelers" className="text-lg hover:text-mainAccent transition-colors">Spelers</Link></li>
             </ul>
