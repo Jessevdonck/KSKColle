@@ -1,9 +1,8 @@
-"use client"
-
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronUp, ChevronDown } from 'lucide-react'
-import { User } from '../../../data/types'
+import { User } from '@/data/types'
+import { getAll } from '../../api/index'
 
 type SortKey = keyof User
 type SortOrder = 'asc' | 'desc'
@@ -12,13 +11,23 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, '_')
 }
 
-interface PlayersProps {
-  players: User[]
-}
-
-export default function Players({ players }: PlayersProps) {
+export default function Players() {
   const [sortKey, setSortKey] = useState<SortKey>('schaakrating_elo')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [players, setPlayers] = useState<User[]>([])
+
+  const fetchPlayers = async () => {
+    try {
+      const fetchedPlayers = await getAll('spelers')
+      setPlayers(fetchedPlayers)
+    } catch (error) {
+      console.error('Failed to fetch players:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchPlayers()
+  }, [])
 
   const sortPlayers = useCallback((a: User, b: User) => {
     if (a[sortKey] == null || b[sortKey] == null) {

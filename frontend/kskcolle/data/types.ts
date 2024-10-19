@@ -1,17 +1,3 @@
-export interface Player {
-  user_id: number
-  voornaam: string
-  achternaam: string
-  geboortedatum: Date
-  schaakrating_elo: number
-  schaakrating_difference?: number | null
-  schaakrating_max?: number | null
-  is_admin?: boolean
-  fide_id?: number | null
-  nationaal_id?: number | null
-  lid_sinds: Date
-}
-
 export interface User {
   user_id: number; 
   voornaam: string; 

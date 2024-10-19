@@ -1,25 +1,22 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { User } from '../../../data/types'
-import * as usersApi from '../../api/users'
+import { getAll } from '../../api/index'
 import PlayerTable from './PlayerTable'
+import useSWR from 'swr';
+import AsyncData from '../../../components/AsyncData';
 
 export default function PlayerRanking() {
-  const [players, setPlayers] = useState<User[]>([])
 
-  useEffect(() => {
-    const fetchPlayers = async () => {
-      try {
-        const fetchedPlayers = await usersApi.getAll()
-        setPlayers(fetchedPlayers)
-      } catch (err) {
-        console.error('Error fetching players:', err)
-      } 
-    }
+  const {
+    data: users = [],
+    isLoading,
+    error,
+  } = useSWR('spelers', getAll);
 
-    fetchPlayers()
-  }, [])
-
-  return <PlayerTable players={players} />
+  return (
+    <AsyncData loading={isLoading} error={error}>
+      <PlayerTable players={users} />
+    </AsyncData>
+    
+  )
 }
