@@ -6,10 +6,10 @@ import PlayerRatings from './PlayerRatings'
 import RecentGames from './RecentGames'
 import * as usersApi from '../../api/users'
 import * as gamesApi from '../../api/games'
-import { Player, Game } from '../../../data/types'
+import { User, Game } from '../../../data/types'
 
 export default function PlayerProfile({ name }: { name: string }) {
-  const [player, setPlayer] = useState<Player | null>(null)
+  const [player, setPlayer] = useState<User | null>(null)
   const [recentGames, setRecentGames] = useState<Game[]>([])
 
   useEffect(() => {
