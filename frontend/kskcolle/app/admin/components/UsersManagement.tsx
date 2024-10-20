@@ -89,7 +89,7 @@ export default function UsersManagement() {
             id="voornaam"
             placeholder="Voornaam"
             value={newUser.voornaam}
-            onChange={(e) => setNewUser({ ...newUser, voornaam: e.target.value })}
+            onChange={(e) => setNewUser({ ...newUser, voornaam: e.target.value.trim() })}
           />
         </div>
 
@@ -102,7 +102,7 @@ export default function UsersManagement() {
             id="achternaam"
             placeholder="Achternaam"
             value={newUser.achternaam}
-            onChange={(e) => setNewUser({ ...newUser, achternaam: e.target.value })}
+            onChange={(e) => setNewUser({ ...newUser, achternaam: e.target.value.trim() })}
           />
         </div>
 
@@ -173,7 +173,39 @@ export default function UsersManagement() {
             onChange={(e) => setNewUser({ ...newUser, nationaal_id: e.target.value ? parseInt(e.target.value) : undefined })}
           />
         </div>
+        
+        {/*Max rating*/ }
+        <div>
+          <label htmlFor="max_rating" className="block text-sm font-semibold text-textColor">
+            Max Rating
+          </label>
+          <Input
+            id="max_rating"
+            type="number"
+            placeholder="Max Rating"
+            value={newUser.schaakrating_max || ''}
+            onChange={(e) => setNewUser({ ...newUser, schaakrating_max: e.target.value ? parseInt(e.target.value) : undefined })}
+          />
+        </div>
+
+        {/*Lid Sinds*/ }
+        <div>
+          <label htmlFor="lid_sinds" className="block text-sm font-semibold text-textColor">
+            Lid Sinds
+          </label>
+          <Input
+            id="lid_sinds"
+            type="date"
+            placeholder="Lid Sinds"
+            value={
+              newUser.lid_sinds ? newUser.lid_sinds.toISOString().split('T')[0] : ''
+            }
+            onChange={(e) => setNewUser({ ...newUser, lid_sinds: new Date(e.target.value) })}
+          />
+        </div>
       </div>
+
+      
       <Button onClick={handleAddUser} className="bg-mainAccent text-white hover:bg-mainAccentDark">Add User</Button>
 
       <h2 className="text-2xl font-semibold mt-8 mb-4">Users List</h2>
@@ -213,37 +245,37 @@ export default function UsersManagement() {
     <div className="grid grid-cols-2 gap-4 mb-4">
       {/* Voornaam */}
       <div>
-        <label htmlFor="voornaam" className="block text-sm font-semibold text-textColor">
+        <label htmlFor="voornaamEdit" className="block text-sm font-semibold text-textColor">
           Voornaam
         </label>
         <Input
-          id="voornaam"
+          id="voornaamEdit"
           placeholder="Voornaam"
           value={selectedUser.voornaam}
-          onChange={(e) => setSelectedUser({ ...selectedUser, voornaam: e.target.value })}
+          onChange={(e) => setSelectedUser({ ...selectedUser, voornaam: e.target.value.trim() })}
         />
       </div>
 
       {/* Achternaam */}
       <div>
-        <label htmlFor="achternaam" className="block text-sm font-semibold text-textColor">
+        <label htmlFor="achternaamEdit" className="block text-sm font-semibold text-textColor">
           Achternaam
         </label>
         <Input
-          id="achternaam"
+          id="achternaamEdit"
           placeholder="Achternaam"
           value={selectedUser.achternaam}
-          onChange={(e) => setSelectedUser({ ...selectedUser, achternaam: e.target.value })}
+          onChange={(e) => setSelectedUser({ ...selectedUser, achternaam: e.target.value.trim() })}
         />
       </div>
 
       {/* Geboortedatum */}
       <div>
-        <label htmlFor="geboortedatum" className="block text-sm font-semibold text-textColor">
+        <label htmlFor="geboortedatumEdit" className="block text-sm font-semibold text-textColor">
           Geboortedatum
         </label>
         <Input
-          id="geboortedatum"
+          id="geboortedatumEdit"
           type="date"
           placeholder="Geboortedatum"
           value={
@@ -257,11 +289,11 @@ export default function UsersManagement() {
 
       {/* Clubrating */}
       <div>
-              <label htmlFor="clubrating" className="block text-sm font-semibold text-textColor">
+              <label htmlFor="clubratingEdit" className="block text-sm font-semibold text-textColor">
                 Clubrating
               </label>
               <Input
-                id="clubrating"
+                id="clubratingEdit"
                 type="number"
                 placeholder="Clubrating"
                 value={selectedUser.schaakrating_elo}
@@ -281,11 +313,11 @@ export default function UsersManagement() {
 
       {/* FIDE ID */}
       <div>
-        <label htmlFor="fide_id" className="block text-sm font-semibold text-textColor">
+        <label htmlFor="fide_idEdit" className="block text-sm font-semibold text-textColor">
           FIDE ID
         </label>
         <Input
-          id="fide_id"
+          id="fide_idEdit"
           type="number"
           placeholder="FIDE ID"
           value={selectedUser.fide_id || ''}
@@ -295,11 +327,11 @@ export default function UsersManagement() {
 
       {/* Max rating */}
       <div>
-        <label htmlFor="max_rating" className="block text-sm font-semibold text-textColor">
+        <label htmlFor="max_ratingEdit" className="block text-sm font-semibold text-textColor">
           Max Rating
         </label>
         <Input
-          id="max_rating"
+          id="max_ratingEdit"
           type="number"
           placeholder="Max rating"
           value={selectedUser.schaakrating_max || ''}
@@ -309,15 +341,33 @@ export default function UsersManagement() {
 
       {/* Nationaal ID */}
       <div>
-        <label htmlFor="nationaal_id" className="block text-sm font-semibold text-textColor">
+        <label htmlFor="nationaal_idEdit" className="block text-sm font-semibold text-textColor">
           Nationaal ID
         </label>
         <Input
-          id="nationaal_id"
+          id="nationaal_idEdit"
           type="number"
           placeholder="Nationaal ID"
           value={selectedUser.nationaal_id || ''}
           onChange={(e) => setSelectedUser({ ...selectedUser, nationaal_id: e.target.value ? parseInt(e.target.value) : undefined })}
+        />
+      </div>
+
+      {/* Lid Sinds */}
+      <div>
+        <label htmlFor="lidSindsEdit" className="block text-sm font-semibold text-textColor">
+          Lid Sinds
+        </label>
+        <Input
+          id="lidSindsEdit"
+          type="date"
+          placeholder="Lid Sinds"
+          value={
+            selectedUser.lid_sinds
+              ? new Date(selectedUser.lid_sinds).toISOString().split('T')[0]
+              : ''
+          }
+          onChange={(e) => setSelectedUser({ ...selectedUser, lid_sinds: new Date(e.target.value) })}
         />
       </div>
     </div>
