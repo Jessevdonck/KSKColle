@@ -11,7 +11,7 @@ export const getAllRondes = async (): Promise<Ronde[]> => {
   }
 };
   
-export const getAllRondesByTournamentId = async (tournamentId: string): Promise<Ronde[]> => {
+export const getAllRondesByTournamentId = async (tournamentId: number): Promise<Ronde[]> => {
   try {
     return await prisma.round.findMany({
       where: {
@@ -23,7 +23,7 @@ export const getAllRondesByTournamentId = async (tournamentId: string): Promise<
   }
 };
   
-export const getRondeByTournamentId = async (tournamentId: string, roundId: number): Promise<Ronde> => {
+export const getRondeByTournamentId = async (tournamentId: number, roundId: number): Promise<Ronde> => {
   try {
     const ronde = await prisma.round.findFirst({
       where: {
@@ -52,7 +52,7 @@ export const createRonde = async (ronde: RondeCreateInput): Promise<Ronde> => {
   }
 };
 
-export const updateRonde = async (tournament_id: string, round_id: number, changes: RondeUpdateInput): Promise<Ronde> => {
+export const updateRonde = async (tournament_id: number, round_id: number, changes: RondeUpdateInput): Promise<Ronde> => {
   try {
     // Controleer of de ronde bestaat voordat je gaat updaten
     const rondeExists = await prisma.round.findFirst({
@@ -78,7 +78,7 @@ export const updateRonde = async (tournament_id: string, round_id: number, chang
   }
 };
 
-export const removeRound = async (tournament_id: string, round_id: number): Promise<void> => {
+export const removeRound = async (tournament_id: number, round_id: number): Promise<void> => {
   try {
     // Controleer of de ronde bestaat voordat je deze verwijdert
     const rondeExists = await prisma.round.findFirst({

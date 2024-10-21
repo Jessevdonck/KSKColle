@@ -2,13 +2,13 @@ import type { ListResponse } from "./common";
 
 export type Ronde = {
   round_id: number;
-  tournament_id: string;
+  tournament_id: number;
   ronde_nummer: number;
   ronde_datum: Date;
 };
 
 export type RondeCreateInput = {
-  tournament_id: string;
+  tournament_id: number;
   ronde_nummer: number;
   ronde_datum: Date;
 };

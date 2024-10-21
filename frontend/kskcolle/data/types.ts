@@ -17,10 +17,12 @@ export interface Game {
   round_id: number;
   speler1_id: number;
   speler2_id: number;
-  winnaar_id?: number;
+  winnaar_id: number | null;
   result?: string;
   uitgestelde_datum?: Date;
   round: Round;
+  speler1: User;
+  speler2: User;
 }
 
 export interface Round {
@@ -42,7 +44,9 @@ export interface GameWithRoundAndTournament {
   round_id: number;
   speler1_id: number;
   speler2_id: number;
-  winnaar_id?: number;
+  speler1_naam: string;
+  speler2_naam: string;
+  winnaar_id: number | null;
   result?: string;
   uitgestelde_datum?: string;
   round: {

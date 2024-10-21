@@ -1,7 +1,7 @@
 import type { ListResponse } from "./common";
 
 export type Spel = {
-  game_id: string;
+  game_id: number;
   round_id: number;
   speler1_id: number;
   speler2_id: number;
@@ -17,6 +17,29 @@ export type SpelCreateInput = {
   winnaar_id?: number | null;
   resultaat?: string | null;
   uitgestelde_datum?: Date | null;
+};
+
+export type GameWithRoundAndTournament = {
+  game_id: number;
+  round_id: number;
+  speler1_id: number;
+  speler2_id: number;
+  speler1_naam: string;
+  speler2_naam: string;
+  winnaar_id?: number | null;
+  result?: string | null;
+  uitgestelde_datum?: string | null | undefined;
+  round: {
+    round_id: number;
+    tournament_id: number;
+    ronde_nummer: number;
+    ronde_datum: string;
+    tournament: {
+      tournament_id: number;
+      naam: string;
+      rondes: number;
+    }
+  }
 };
 
 export interface SpelUpdateInput extends SpelCreateInput {}

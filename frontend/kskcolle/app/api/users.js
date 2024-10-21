@@ -19,6 +19,11 @@ export const getByName = async (voornaam, achternaam) => {
   return data
 }
 
+export async function getPlayerById(id) {
+  const response = await axios.get(`${baseUrl}/${id}`)
+  return response.data
+}
+
 export const addUser = async (userData) => {
   const response = await axios.post(baseUrl, userData)
   return response.data
