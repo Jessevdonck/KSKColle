@@ -12,7 +12,7 @@ const config: Config = {
   		colors: {
 			mainAccent: '#B17457',
 			mainAccentDark: '#8f5d46',
-			textColor: '#2c2e2c',
+			textColor: '#2e2c2c',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
