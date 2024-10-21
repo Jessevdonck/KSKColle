@@ -27,7 +27,7 @@ model User {
 }
 
 model Tournament {
-  tournament_id      String            @id @default(cuid())
+  tournament_id      Int            @id @default(autoincrement())
   naam               String
   rondes             Int
   
@@ -37,7 +37,7 @@ model Tournament {
 
 model Round {
   round_id           Int              @id @default(autoincrement())
-  tournament_id      String
+  tournament_id      Int
   ronde_nummer       Int            
   ronde_datum        DateTime
   
@@ -48,7 +48,7 @@ model Round {
 }
 
 model Game {
-  game_id            String            @id @default(cuid())
+  game_id            Int            @id @default(autoincrement())
   round_id           Int
   speler1_id        Int               
   speler2_id        Int               
@@ -64,7 +64,7 @@ model Game {
 
 model Participation {
   user_id            Int
-  tournament_id      String
+  tournament_id      Int
 
   user               User              @relation(fields: [user_id], references: [user_id])
   tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id])
