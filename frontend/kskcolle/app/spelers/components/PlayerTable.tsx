@@ -1,8 +1,7 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { User } from '@/data/types'
-import { getAll } from '../../api/index'
 
 type SortKey = keyof User
 type SortOrder = 'asc' | 'desc'
@@ -11,27 +10,17 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, '_')
 }
 
-export default function Players() {
+interface PlayerTableProps {
+  users: User[]
+}
+
+export default function PlayerTable({ users }: PlayerTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>('schaakrating_elo')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
-  const [players, setPlayers] = useState<User[]>([])
-
-  const fetchPlayers = async () => {
-    try {
-      const fetchedPlayers = await getAll('spelers')
-      setPlayers(fetchedPlayers)
-    } catch (error) {
-      console.error('Failed to fetch players:', error)
-    }
-  }
-
-  useEffect(() => {
-    fetchPlayers()
-  }, [])
 
   const sortPlayers = useCallback((a: User, b: User) => {
     if (a[sortKey] == null || b[sortKey] == null) {
-      return 0; 
+      return 0
     }
     if (a[sortKey] < b[sortKey]) return sortOrder === 'asc' ? -1 : 1
     if (a[sortKey] > b[sortKey]) return sortOrder === 'asc' ? 1 : -1
@@ -50,7 +39,7 @@ export default function Players() {
     return sortOrder === 'asc' ? <ChevronUp className="inline w-4 h-4" /> : <ChevronDown className="inline w-4 h-4" />
   }
 
-  const sortedPlayers = [...players].sort(sortPlayers)
+  const sortedPlayers = [...users].sort(sortPlayers)
 
   return (
     <div className="container mx-auto px-4 py-8 w-3/4 min-h-screen">

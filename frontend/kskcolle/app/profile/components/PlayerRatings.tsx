@@ -1,9 +1,9 @@
-import { Player } from '../../../data/types'
+import { User } from '../../../data/types'
 import { useEffect } from 'react'
 import * as usersApi from '../../api/users'
 import { useState } from 'react'
 
-export default function PlayerRatings({ player }: { player: Player }) {
+export default function PlayerRatings({ player }: { player: User }) {
  
 
   const [fideRating, setFideRating] = useState<number | null>(null)
