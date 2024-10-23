@@ -2,6 +2,9 @@ import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { CheckCircle2 } from "lucide-react"
 
 const EMPTY_USER = {
   voornaam: "",
@@ -40,12 +43,14 @@ const toDateInputString = (date: Date | undefined) => {
   return date ? date.toISOString().split('T')[0] : '';
 };
 
-export default function UserForm({ saveUser }: { saveUser: (data: FormData) => Promise<void> }) {
-  const user = EMPTY_USER;
+export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = false }) {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm<FormData>({
     mode: 'onBlur',
     defaultValues: {
+      voornaam: user.voornaam,
+      achternaam: user.achternaam,
       geboortedatum: toDateInputString(user.geboortedatum),
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
@@ -68,12 +73,28 @@ export default function UserForm({ saveUser }: { saveUser: (data: FormData) => P
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
     };
 
-    await saveUser(formattedValues);
-    reset();
+    await saveUser(formattedValues,
+      {
+        throwOnError: false,
+        onSuccess: () => {
+          reset();
+          window.scrollTo(0, 0);
+          setSuccessMessage(isEditing ? "Speler correct gewijzigd" : "Speler correct toegevoegd");
+          setTimeout(() => setSuccessMessage(null), 5000); 
+        },
+      }
+    );
   };
 
   return (
     <form className="w-full max-w-lg" onSubmit={handleSubmit(onSubmit)}>
+      {successMessage && (
+        <Alert className="mb-4">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle className='text-green-500'>Succes</AlertTitle>
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
+      )}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <Label htmlFor="voornaam" className="block text-sm font-semibold text-textColor">
@@ -182,7 +203,7 @@ export default function UserForm({ saveUser }: { saveUser: (data: FormData) => P
       </div>
       
       <Button type="submit" className="bg-mainAccent text-white hover:bg-mainAccentDark">
-        Voeg toe
+        {isEditing ? "Wijzig" : "Voeg toe"}
       </Button>
     </form>
   );

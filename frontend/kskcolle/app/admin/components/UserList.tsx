@@ -32,7 +32,15 @@ export default function UserList({ users, onEdit, onDelete }: UserListProps) {
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.user_id}>
-              <TableCell>{`${user.voornaam} ${user.achternaam}`}</TableCell>
+              <TableCell>
+                <Button
+                  variant="link"
+                  onClick={() => onEdit(user)}
+                  className="p-0 h-auto font-normal"
+                >
+                  {`${user.voornaam} ${user.achternaam}`}
+                </Button>
+              </TableCell>
               <TableCell>{new Date(user.geboortedatum).toLocaleDateString('nl-NL')}</TableCell>
               <TableCell>{user.schaakrating_elo}</TableCell>
               <TableCell>{user.fide_id || 'N/A'}</TableCell>

@@ -8,9 +8,9 @@ import Sidebar from './Sidebar'
 
 const AdminPage = () => {
   return (
-    <div className="flex h-screen bg-[#f7f7f7] text-[#292625]">
+    <div className="flex min-h-screen bg-[#f7f7f7] text-[#292625]">
       <Sidebar />
-      <div className="flex-1 p-10 overflow-auto">
+      <div className="flex-1 p-10">
         <h1 className="text-4xl font-extrabold mb-8 text-mainAccent">Admin Dashboard</h1>
         <Tabs defaultValue="users" className="w-full">
           <TabsList className="mb-4">
