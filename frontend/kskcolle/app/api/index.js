@@ -9,10 +9,14 @@ export async function getAll(url) {
 }
 
 export const deleteById = async (url, { arg: id }) => {
-  try{
+  try
+  {
     await axios.delete(`${baseUrl}/${url}/${id}`); 
   } catch(error){
     return {success: false, message: error.message}
   }
-  
+};
+
+export const save = async (url, { arg: body }) => {
+  await axios.post(`${baseUrl}/${url}`, body);
 };

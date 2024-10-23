@@ -14,9 +14,16 @@ const getAllSpelers = async (ctx: KoaContext<GetAllSpelersResponse>): Promise<Sp
 };
 
 const createSpeler = async (ctx: KoaContext<CreateSpelerResponse, void, CreateSpelerRequest>) => {
-  const newSpeler: any = await spelerService.createSpeler(ctx.request.body);
-  ctx.status = 201; 
-  ctx.body = newSpeler;
+  const newSpeler: CreateSpelerRequest = ctx.request.body;
+
+  try {
+    const createdSpeler = await spelerService.createSpeler(newSpeler);
+    ctx.status = 201; 
+    ctx.body = createdSpeler;
+  } catch (error) {
+    console.error("Error creating speler:", error);
+    ctx.status = 500;
+  }
 };
 
 const getSpelerByID = async (ctx: KoaContext<GetSpelerByIdResponse, IdParams>) => {

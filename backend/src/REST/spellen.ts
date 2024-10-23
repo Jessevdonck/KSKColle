@@ -18,18 +18,18 @@ const createSpel = async (ctx: KoaContext<CreateSpelResponse, void, CreateSpelRe
 };
 
 const getSpelById = async (ctx: KoaContext<GetSpelByIdResponse, IdParams>) => {
-  ctx.body = await spellenService.getSpelById(String(ctx.params.id));
+  ctx.body = await spellenService.getSpelById(Number(ctx.params.id));
 };
 
 const updateSpel = async (ctx: KoaContext<UpdateSpelResponse, IdParams, UpdateSpelRequest>) => {
-  const spelId = String(ctx.params.id); 
+  const spelId = Number(ctx.params.id); 
   const updatedSpeler = await spellenService.updateSpel(spelId, ctx.request.body); 
   
   ctx.body = updatedSpeler; 
 };
 
 const removeSpel = async (ctx: KoaContext<void, IdParams>) => {
-  const spelId = String(ctx.params.id);
+  const spelId = Number(ctx.params.id);
   spellenService.removeSpel(spelId);
   ctx.status = 204; 
 };
