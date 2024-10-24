@@ -11,6 +11,8 @@ interface RecentGamesProps {
 export default function RecentGames({ games, playerId }: RecentGamesProps) {
   const gamesArray = Array.isArray(games) ? games : games.items || []
 
+  const sortedGamesArray = gamesArray.sort((a,b) => new Date(b.round.ronde_datum).getTime() - new Date(a.round.ronde_datum).getTime())
+
   if (!games || gamesArray.length === 0) {
     return (
       <Card className="w-full">
@@ -31,7 +33,7 @@ export default function RecentGames({ games, playerId }: RecentGamesProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {gamesArray.slice(0, 5).map((game) => (
+          {sortedGamesArray.slice(0, 5).map((game) => (
             <GameCard key={game.game_id} game={game} playerId={playerId} />
           ))}
         </div>

@@ -24,7 +24,7 @@ const validationRules = {
   schaakrating_elo: {
     required: 'Clubrating is verplicht!',
     min: { value: 100, message: 'Minimale rating is 100' },
-    max: { value: 3000, message: 'Maximale rating is 3000' }
+    max: { value: 5000, message: 'Maximale rating is 5000' }
   }
 };
 

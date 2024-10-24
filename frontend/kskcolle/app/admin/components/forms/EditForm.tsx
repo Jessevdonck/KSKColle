@@ -1,18 +1,15 @@
+'use client'
+
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-const EMPTY_USER = {
-  voornaam: "",
-  achternaam: "",
-  geboortedatum: new Date(),
-  schaakrating_elo: 0,
-  fide_id: 0,
-  nationaal_id: 0,
-  schaakrating_max: 0,
-  lid_sinds: new Date(),
-};
+import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { CheckCircle2 } from "lucide-react"
+import { User } from '@/data/types'
+import useSWRMutation from 'swr/mutation'
+import { save } from '../../../api/index'
 
 const validationRules = {
   naam: {
@@ -21,7 +18,7 @@ const validationRules = {
   schaakrating_elo: {
     required: 'Clubrating is verplicht!',
     min: { value: 100, message: 'Minimale rating is 100' },
-    max: { value: 3000, message: 'Maximale rating is 3000' }
+    max: { value: 5000, message: 'Maximale rating is 5000' }
   }
 };
 
@@ -36,16 +33,23 @@ interface FormData {
   lid_sinds?: string;
 }
 
-const toDateInputString = (date: Date | undefined) => {
-  return date ? date.toISOString().split('T')[0] : '';
+const toDateInputString = (date: Date) => {
+  if (date instanceof Date) {
+    return date.toISOString().split('T')[0];
+  }
+  return date ? new Date(date).toISOString().split('T')[0] : '';
 };
 
-export default function EditForm({ saveUser }) {
-  const user = EMPTY_USER;
+export default function EditForm({ user, onClose }: { user: User; onClose: () => void }) {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const { trigger: saveUser } = useSWRMutation('spelers', save)
 
   const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm<FormData>({
     mode: 'onBlur',
     defaultValues: {
+      voornaam: user.voornaam,
+      achternaam: user.achternaam,
       geboortedatum: toDateInputString(user.geboortedatum),
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
@@ -60,6 +64,7 @@ export default function EditForm({ saveUser }) {
 
     const formattedValues = {
       ...values,
+      id: user.user_id, 
       geboortedatum: values.geboortedatum ? new Date(values.geboortedatum).toISOString() : null,
       lid_sinds: values.lid_sinds ? new Date(values.lid_sinds).toISOString() : null,
       schaakrating_elo: Number(values.schaakrating_elo),
@@ -68,12 +73,34 @@ export default function EditForm({ saveUser }) {
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
     };
 
-    await saveUser(formattedValues);
-    reset();
+    try {
+      await saveUser(formattedValues, {
+        onSuccess: () => {
+          reset();
+          setSuccessMessage("Speler correct gewijzigd");
+          setTimeout(() => {
+            setSuccessMessage(null);
+            onClose();
+          }, 2000);
+        },
+      });
+    } catch (error) {
+      console.error('Error saving user:', error);
+      setSuccessMessage("Er is een fout opgetreden bij het opslaan van de speler");
+    }
   };
 
   return (
     <form className="w-full max-w-lg" onSubmit={handleSubmit(onSubmit)}>
+      {successMessage && (
+        <Alert className="mb-4">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle className={successMessage.includes("fout") ? 'text-red-500' : 'text-green-500'}>
+            {successMessage.includes("fout") ? 'Fout' : 'Succes'}
+          </AlertTitle>
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
+      )}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <Label htmlFor="voornaam" className="block text-sm font-semibold text-textColor">
@@ -182,7 +209,7 @@ export default function EditForm({ saveUser }) {
       </div>
       
       <Button type="submit" className="bg-mainAccent text-white hover:bg-mainAccentDark">
-        Voeg toe
+        Wijzig
       </Button>
     </form>
   );

@@ -1,15 +1,20 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { User } from '@/data/types'
+import EditForm from '../components/forms/EditForm'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface UserListProps {
   users: User[]
-  onEdit: (user: User) => void
   onDelete: (userId: number) => void
 }
 
-export default function UserList({ users, onEdit, onDelete }: UserListProps) {
+export default function UserList({ users, onDelete }: UserListProps) {
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+
   if (!users || users.length === 0) {
     return <div>No users found.</div>
   }
@@ -35,7 +40,7 @@ export default function UserList({ users, onEdit, onDelete }: UserListProps) {
               <TableCell>
                 <Button
                   variant="link"
-                  onClick={() => onEdit(user)}
+                  onClick={() => setEditingUser(user)}
                   className="p-0 h-auto font-normal"
                 >
                   {`${user.voornaam} ${user.achternaam}`}
@@ -47,13 +52,24 @@ export default function UserList({ users, onEdit, onDelete }: UserListProps) {
               <TableCell>{user.nationaal_id || 'N/A'}</TableCell>
               <TableCell>{user.is_admin ? 'Yes' : 'No'}</TableCell>
               <TableCell>
-                <Button onClick={() => onEdit(user)} className="mr-2 bg-mainAccent text-white hover:bg-mainAccentDark">Edit</Button>
+                <Button onClick={() => setEditingUser(user)} className="mr-2 bg-mainAccent text-white hover:bg-mainAccentDark">Edit</Button>
                 <Button onClick={() => onDelete(user.user_id)} variant="destructive">Delete</Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Wijzig Gebruiker</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <EditForm user={editingUser} onClose={() => setEditingUser(null)} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
