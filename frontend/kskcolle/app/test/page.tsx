@@ -1,5 +1,5 @@
 import React from 'react'
-import AddOrEditTransaction from '../admin/components/AddOrEditUser'
+import AddOrEditTransaction from '../admin/Users/components/AddOrEditUser'
 
 const testPage = () => {
   return (

@@ -2,13 +2,13 @@
 
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import UsersManagement from './UsersManagement'
-import TournamentsManagement from './TournamentsManagement'
+import UsersManagement from '../Users/UsersManagement'
+import TournamentsManagement from '../Tournaments/TournamentsManagement'
 import Sidebar from './Sidebar'
 
 const AdminPage = () => {
   return (
-    <div className="flex min-h-screen bg-[#f7f7f7] text-[#292625]">
+    <div className="flex min-h-screen bg-[#f7f7f7] text-textColor">
       <Sidebar />
       <div className="flex-1 p-10">
         <h1 className="text-4xl font-extrabold mb-8 text-mainAccent">Admin Dashboard</h1>

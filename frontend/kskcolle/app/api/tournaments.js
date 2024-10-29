@@ -17,7 +17,7 @@ export const updateTournament = async (tournamentId, tournamentData) => {
   return response.data
 }
 
-export const createPairings = async (tournamentId, roundNumber) => {
+export const createPairings = async ( tournamentId, roundNumber ) => {
   const response = await axios.post(`${baseUrl}/${tournamentId}/rounds/${roundNumber}/pairings`)
   return response.data
 }

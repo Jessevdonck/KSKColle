@@ -1,3 +1,5 @@
+'use client'
+
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -5,24 +7,16 @@ import { Label } from "@/components/ui/label"
 import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle2 } from "lucide-react"
-
-const EMPTY_USER = {
-  voornaam: "",
-  achternaam: "",
-  geboortedatum: new Date(),
-  schaakrating_elo: 0,
-  fide_id: 0,
-  nationaal_id: 0,
-  schaakrating_max: 0,
-  lid_sinds: new Date(),
-};
+import { User } from '@/data/types'
+import useSWRMutation from 'swr/mutation'
+import { save } from '../../../../api/index'
 
 const validationRules = {
   naam: {
-    required: 'Voornaam is verplicht!',
+    required: 'Voornaam is vereist!',
   },
   schaakrating_elo: {
-    required: 'Clubrating is verplicht!',
+    required: 'Clubrating is vereist!',
     min: { value: 100, message: 'Minimale rating is 100' },
     max: { value: 5000, message: 'Maximale rating is 5000' }
   }
@@ -39,12 +33,17 @@ interface FormData {
   lid_sinds?: string;
 }
 
-const toDateInputString = (date: Date | undefined) => {
-  return date ? date.toISOString().split('T')[0] : '';
+const toDateInputString = (date: Date) => {
+  if (date instanceof Date) {
+    return date.toISOString().split('T')[0];
+  }
+  return date ? new Date(date).toISOString().split('T')[0] : '';
 };
 
-export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = false }) {
+export default function EditForm({ user, onClose }: { user: User; onClose: () => void }) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const { trigger: saveUser } = useSWRMutation('spelers', save)
 
   const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm<FormData>({
     mode: 'onBlur',
@@ -65,6 +64,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
 
     const formattedValues = {
       ...values,
+      id: user.user_id, 
       geboortedatum: values.geboortedatum ? new Date(values.geboortedatum).toISOString() : null,
       lid_sinds: values.lid_sinds ? new Date(values.lid_sinds).toISOString() : null,
       schaakrating_elo: Number(values.schaakrating_elo),
@@ -73,17 +73,21 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
     };
 
-    await saveUser(formattedValues,
-      {
-        throwOnError: false,
+    try {
+      await saveUser(formattedValues, {
         onSuccess: () => {
           reset();
-          window.scrollTo(0, 0);
-          setSuccessMessage(isEditing ? "Speler correct gewijzigd" : "Speler correct toegevoegd");
-          setTimeout(() => setSuccessMessage(null), 5000); 
+          setSuccessMessage("Speler correct gewijzigd");
+          setTimeout(() => {
+            setSuccessMessage(null);
+            onClose();
+          }, 2000);
         },
-      }
-    );
+      });
+    } catch (error) {
+      console.error('Error saving user:', error);
+      setSuccessMessage("Er is een fout opgetreden bij het opslaan van de speler");
+    }
   };
 
   return (
@@ -91,7 +95,9 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       {successMessage && (
         <Alert className="mb-4">
           <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle className='text-green-500'>Succes</AlertTitle>
+          <AlertTitle className={successMessage.includes("fout") ? 'text-red-500' : 'text-green-500'}>
+            {successMessage.includes("fout") ? 'Fout' : 'Succes'}
+          </AlertTitle>
           <AlertDescription>{successMessage}</AlertDescription>
         </Alert>
       )}
@@ -203,7 +209,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       </div>
       
       <Button type="submit" className="bg-mainAccent text-white hover:bg-mainAccentDark">
-        {isEditing ? "Wijzig" : "Voeg toe"}
+        Wijzig
       </Button>
     </form>
   );

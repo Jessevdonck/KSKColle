@@ -1,14 +1,15 @@
 import type { ListResponse } from "./common";
 
 export type Toernooi = {
-  tournament_id: string;
+  tournament_id: number;
   naam: string;
   rondes: number;
 };
 
 export type ToernooiCreateInput = {
   naam: string;      
-  rondes: number;     
+  rondes: number;  
+  participations: number[];    
 };
 
 export interface ToernooiUpdateInput extends ToernooiCreateInput {}

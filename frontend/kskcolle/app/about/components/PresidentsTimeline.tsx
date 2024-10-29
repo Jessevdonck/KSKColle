@@ -61,7 +61,8 @@ export default function Presidents() {
             overflowX: 'auto',
             scrollBehavior: 'smooth',
             WebkitOverflowScrolling: 'touch',
-            scrollSnapType: 'x mandatory'
+            scrollSnapType: 'x mandatory',
+            userSelect: 'none',
           }}
           onMouseDown={onMouseDown}
           onMouseUp={onMouseUp}

@@ -5,9 +5,9 @@ import useSWRMutation from 'swr/mutation'
 import { getAll, deleteById } from '../../api/index'
 import * as usersApi from '../../api/users'
 import { User } from '@/data/types'
-import AddOrEditUser from './AddOrEditUser'
+import AddOrEditUser from './components/AddOrEditUser'
 import UserList from './UserList'
-import EditForm from '../components/forms/EditForm'
+import EditForm from './components/forms/EditForm'
 
 export default function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -44,6 +44,7 @@ export default function UsersManagement() {
 
   return (
     <div>
+      <h1 className="text-3xl font-bold">Spelers Beheren</h1>
       <AddOrEditUser />
       <UserList 
         users={users} 
