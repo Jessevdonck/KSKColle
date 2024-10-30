@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import TournamentForm from './components/forms/TournamentForm'
-import TournamentList from './components/TournamentList'
+import TournamentList from './TournamentList'
 import RoundManagement from './components/RoundManagement'
 import { Toernooi } from '@/data/types'
 

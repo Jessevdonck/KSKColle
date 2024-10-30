@@ -24,14 +24,14 @@ export default function UserList({ users, onDelete }: UserListProps) {
       <h2 className="text-2xl font-semibold mt-8 mb-4">Users List</h2>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow >
             <TableHead>Name</TableHead>
             <TableHead>Geboortedatum</TableHead>
             <TableHead>ELO Rating</TableHead>
             <TableHead>FIDE ID</TableHead>
             <TableHead>Nationaal ID</TableHead>
             <TableHead>Admin</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className=''>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -51,7 +51,7 @@ export default function UserList({ users, onDelete }: UserListProps) {
               <TableCell>{user.fide_id || 'N/A'}</TableCell>
               <TableCell>{user.nationaal_id || 'N/A'}</TableCell>
               <TableCell>{user.is_admin ? 'Yes' : 'No'}</TableCell>
-              <TableCell>
+              <TableCell className=''>
                 <Button onClick={() => setEditingUser(user)} className="mr-2 bg-mainAccent text-white hover:bg-mainAccentDark">Edit</Button>
                 <Button onClick={() => onDelete(user.user_id)} variant="destructive">Delete</Button>
               </TableCell>

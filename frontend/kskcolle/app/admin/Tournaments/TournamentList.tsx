@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
-import { getAll, deleteById } from '../../../api/index'
+import { getAll, deleteById } from '../../api/index'
 import { Toernooi } from '@/data/types'
 
 interface TournamentListProps {

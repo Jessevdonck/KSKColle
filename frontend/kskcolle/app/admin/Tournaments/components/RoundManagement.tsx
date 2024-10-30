@@ -29,10 +29,10 @@ export default function RoundManagement({ tournament }: RoundManagementProps) {
     try {
       await generatePairings({ roundNumber })
       mutate()
-      toast({ title: "Success", description: `Pairings for round ${roundNumber} generated successfully` })
+      toast({ title: "Success", description: `Paringen voor ronde ${roundNumber} Succesvol gegenereerd.` })
     } catch (error) {
-      console.error('Error generating pairings:', error)
-      toast({ title: "Error", description: "Failed to generate pairings", variant: "destructive" })
+      console.error('Fout met paringen genereren:', error)
+      toast({ title: "Error", description: "Kon geen paringen aanmaken", variant: "destructive" })
     }
   }
 
@@ -44,13 +44,13 @@ export default function RoundManagement({ tournament }: RoundManagementProps) {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Rounds</h2>
+      <h2 className="text-2xl font-bold mb-4">Rondes</h2>
       {Array.from({ length: tournament.rondes }, (_, i) => i + 1).map((roundNumber) => (
         <div key={roundNumber} className="mb-6">
-          <h3 className="text-xl font-semibold mb-2">Round {roundNumber}</h3>
+          <h3 className="text-xl font-semibold mb-2">Ronde {roundNumber}</h3>
           {canGeneratePairings(roundNumber) && (
-            <Button onClick={() => handleGeneratePairings(roundNumber)} className="mb-2">
-              Generate Pairings
+            <Button onClick={() => handleGeneratePairings(roundNumber)} className="mb-2 bg-mainAccent hover:bg-mainAccentDark">
+              Genereer paringen
             </Button>
           )}
           <RoundGames round={updatedTournament.rounds.find(r => r.ronde_nummer === roundNumber)} />
@@ -66,7 +66,7 @@ interface RoundGamesProps {
 
 function RoundGames({ round }: RoundGamesProps) {
   if (!round || round.games.length === 0) {
-    return <p>No games for this round yet.</p>
+    return <p>Geen paringen voor deze ronde gevonden.</p>
   }
 
   return (
@@ -83,7 +83,7 @@ function RoundGames({ round }: RoundGamesProps) {
           <TableRow key={game.game_id}>
             <TableCell>{game.speler1.voornaam} {game.speler1.achternaam}</TableCell>
             <TableCell>{game.speler2.voornaam} {game.speler2.achternaam}</TableCell>
-            <TableCell>{game.result || 'Not played'}</TableCell>
+            <TableCell>{game.result || 'Niet gespeeld'}</TableCell>
           </TableRow>
         
         ))}
