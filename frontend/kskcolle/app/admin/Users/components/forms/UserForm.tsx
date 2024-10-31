@@ -10,6 +10,8 @@ const EMPTY_USER = {
   voornaam: "",
   achternaam: "",
   geboortedatum: new Date(),
+  email:"",
+  tel_nummer:"",
   schaakrating_elo: 0,
   fide_id: 0,
   nationaal_id: 0,
@@ -32,6 +34,8 @@ interface FormData {
   voornaam: string;
   achternaam: string;
   geboortedatum?: string;
+  email: string;
+  tel_nummer: string;
   schaakrating_elo: number;
   fide_id?: number;
   nationaal_id?: number;
@@ -52,6 +56,8 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       voornaam: user.voornaam,
       achternaam: user.achternaam,
       geboortedatum: toDateInputString(user.geboortedatum),
+      email: user.email,
+      tel_nummer: user.tel_nummer,
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,
@@ -131,6 +137,30 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             placeholder="Geboortedatum"
           />
           {errors.geboortedatum && <p className="text-red-500 text-xs italic">{errors.geboortedatum.message}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="email" className="block text-sm font-semibold text-textColor">
+            Email
+          </Label>
+          <Input
+            {...register('email')}
+            id="email"
+            placeholder="Email"
+          />
+          {errors.email && <p className="text-red-500 text-xs italic">{errors.email.message}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="telefoon" className="block text-sm font-semibold text-textColor">
+            Telefoon Nummer
+          </Label>
+          <Input
+            {...register('tel_nummer')}
+            id="telefoon"
+            placeholder="Telefoon"
+          />
+          {errors.tel_nummer && <p className="text-red-500 text-xs italic">{errors.tel_nummer.message}</p>}
         </div>
 
         <div>

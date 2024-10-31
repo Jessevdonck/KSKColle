@@ -73,9 +73,9 @@ function RoundGames({ round }: RoundGamesProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>White</TableHead>
-          <TableHead>Black</TableHead>
-          <TableHead>Result</TableHead>
+          <TableHead>Wit</TableHead>
+          <TableHead>Zwart</TableHead>
+          <TableHead>Resultaat</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

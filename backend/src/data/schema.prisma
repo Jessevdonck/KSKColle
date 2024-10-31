@@ -11,13 +11,14 @@ model User {
   user_id            Int            @id @default(autoincrement())
   voornaam           String
   achternaam         String
+  email              String
+  tel_nummer         String
   geboortedatum      DateTime
-  schaakrating_elo   Int
+  schaakrating_elo   Int  
   schaakrating_difference Int?
   schaakrating_max   Int?
   is_admin           Boolean?
   fide_id            Int?            @unique
-  nationaal_id       Int?            @unique
   lid_sinds          DateTime
   
   participations     Participation[]    
