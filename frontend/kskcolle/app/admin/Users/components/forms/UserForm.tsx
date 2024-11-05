@@ -14,7 +14,6 @@ const EMPTY_USER = {
   tel_nummer:"",
   schaakrating_elo: 0,
   fide_id: 0,
-  nationaal_id: 0,
   schaakrating_max: 0,
   lid_sinds: new Date(),
 };
@@ -27,6 +26,12 @@ const validationRules = {
     required: 'Clubrating is vereist!',
     min: { value: 100, message: 'Minimale rating is 100' },
     max: { value: 5000, message: 'Maximale rating is 5000' }
+  },
+  email: {
+    required:'Email is required!'
+  },
+  tel_nummer: {
+    required:'Telefoonnummer is required!'
   }
 };
 
@@ -38,7 +43,6 @@ interface FormData {
   tel_nummer: string;
   schaakrating_elo: number;
   fide_id?: number;
-  nationaal_id?: number;
   schaakrating_max?: number;
   lid_sinds?: string;
 }
@@ -61,7 +65,6 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,
-      nationaal_id: user.nationaal_id,
       schaakrating_max: user.schaakrating_max,
     }
   });
@@ -75,7 +78,6 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       lid_sinds: values.lid_sinds ? new Date(values.lid_sinds).toISOString() : null,
       schaakrating_elo: Number(values.schaakrating_elo),
       fide_id: values.fide_id ? Number(values.fide_id) : null,
-      nationaal_id: values.nationaal_id ? Number(values.nationaal_id) : null,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
     };
 
@@ -144,7 +146,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             Email
           </Label>
           <Input
-            {...register('email')}
+            {...register('email', validationRules.email)}
             id="email"
             placeholder="Email"
           />
@@ -156,7 +158,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             Telefoon Nummer
           </Label>
           <Input
-            {...register('tel_nummer')}
+            {...register('tel_nummer', validationRules.tel_nummer)}
             id="telefoon"
             placeholder="Telefoon"
           />
@@ -190,19 +192,6 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             placeholder="FIDE ID"
           />
           {errors.fide_id && <p className="text-red-500 text-xs italic">{errors.fide_id.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="nationaal_id" className="block text-sm font-semibold text-textColor">
-            Nationaal ID
-          </Label>
-          <Input
-            {...register('nationaal_id', { valueAsNumber: true })}
-            id="nationaal_id"
-            type="number"
-            placeholder="Nationaal ID"
-          />
-          {errors.nationaal_id && <p className="text-red-500 text-xs italic">{errors.nationaal_id.message}</p>}
         </div>
         
         <div>

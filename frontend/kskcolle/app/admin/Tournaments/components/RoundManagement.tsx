@@ -15,10 +15,12 @@ interface RoundManagementProps {
 
 export default function RoundManagement({ tournament }: RoundManagementProps) {
   const { toast } = useToast()
-  const { data: updatedTournament, mutate } = useSWR<Toernooi>(`toernooien/${tournament.tournament_id}`, () => tournamentsApi.getTournamentById(tournament.tournament_id))
+  const { data: updatedTournament, mutate } = useSWR<Toernooi>(
+    `toernooien/${tournament.tournament_id}`,
+    () => tournamentsApi.getTournamentById(tournament.tournament_id)
+  )
   const { trigger: generatePairings } = useSWRMutation(
     [`toernooien/${tournament.tournament_id}/pairings`, tournament.tournament_id],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ([_, tournamentId], { arg }: { arg: { roundNumber: number } }) =>
       tournamentsApi.createPairings(tournamentId, arg.roundNumber)
   )
@@ -28,8 +30,8 @@ export default function RoundManagement({ tournament }: RoundManagementProps) {
   const handleGeneratePairings = async (roundNumber: number) => {
     try {
       await generatePairings({ roundNumber })
-      mutate()
-      toast({ title: "Success", description: `Paringen voor ronde ${roundNumber} Succesvol gegenereerd.` })
+      await mutate()
+      toast({ title: "Success", description: `Paringen voor ronde ${roundNumber} succesvol gegenereerd.` })
     } catch (error) {
       console.error('Fout met paringen genereren:', error)
       toast({ title: "Error", description: "Kon geen paringen aanmaken", variant: "destructive" })
@@ -45,7 +47,7 @@ export default function RoundManagement({ tournament }: RoundManagementProps) {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Rondes</h2>
-      {Array.from({ length: tournament.rondes }, (_, i) => i + 1).map((roundNumber) => (
+      {Array.from({ length: updatedTournament.rondes }, (_, i) => i + 1).map((roundNumber) => (
         <div key={roundNumber} className="mb-6">
           <h3 className="text-xl font-semibold mb-2">Ronde {roundNumber}</h3>
           {canGeneratePairings(roundNumber) && (
@@ -66,7 +68,7 @@ interface RoundGamesProps {
 
 function RoundGames({ round }: RoundGamesProps) {
   if (!round || round.games.length === 0) {
-    return <p>Geen paringen voor deze ronde gevonden.</p>
+    return <p>Geen paringen voor deze ronde gevonden.</p>;
   }
 
   return (
@@ -82,12 +84,15 @@ function RoundGames({ round }: RoundGamesProps) {
         {round.games.map((game: Game) => (
           <TableRow key={game.game_id}>
             <TableCell>{game.speler1.voornaam} {game.speler1.achternaam}</TableCell>
-            <TableCell>{game.speler2.voornaam} {game.speler2.achternaam}</TableCell>
+            <TableCell>
+              {game.speler2 ? 
+                `${game.speler2.voornaam} ${game.speler2.achternaam}` : 
+                'BYE'}
+            </TableCell>
             <TableCell>{game.result || 'Niet gespeeld'}</TableCell>
           </TableRow>
-        
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }

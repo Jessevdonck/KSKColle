@@ -57,16 +57,27 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
     },
   });
 
-  return games.map((game) => ({
-    ...game,
+  return games.map((game): GameWithRoundAndTournament => ({
+    game_id: game.game_id,
+    round_id: game.round_id,
+    speler1_id: game.speler1_id,
+    speler2_id: game.speler2_id,
+    winnaar_id: game.winnaar_id,
+    result: game.result,
+    uitgestelde_datum: game.uitgestelde_datum,
     speler1_naam: `${game.speler1.voornaam} ${game.speler1.achternaam}`,
-    speler2_naam: `${game.speler2.voornaam} ${game.speler2.achternaam}`,
-    uitgestelde_datum: game.uitgestelde_datum?.toISOString(),
+    speler2_naam: game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : null,
     round: {
-      ...game.round,
-      ronde_datum: game.round.ronde_datum.toISOString(),
+      round_id: game.round.round_id,
+      tournament_id: game.round.tournament_id,
+      ronde_nummer: game.round.ronde_nummer,
+      ronde_datum: game.round.ronde_datum,
+      tournament: {
+        tournament_id: game.round.tournament.tournament_id,
+        naam: game.round.tournament.naam,
+        rondes: game.round.tournament.rondes,
+      },
     },
-    winnaar_id: game.winnaar_id ?? null,
   }));
 };
 

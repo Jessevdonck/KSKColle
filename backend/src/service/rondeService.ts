@@ -80,7 +80,6 @@ export const updateRonde = async (tournament_id: number, round_id: number, chang
 
 export const removeRound = async (tournament_id: number, round_id: number): Promise<void> => {
   try {
-    // Controleer of de ronde bestaat voordat je deze verwijdert
     const rondeExists = await prisma.round.findFirst({
       where: {
         tournament_id,

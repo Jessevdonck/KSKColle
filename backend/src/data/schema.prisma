@@ -52,14 +52,14 @@ model Game {
   game_id            Int            @id @default(autoincrement())
   round_id           Int
   speler1_id        Int               
-  speler2_id        Int               
+  speler2_id        Int?               
   winnaar_id        Int?               
   result             String?
   uitgestelde_datum   DateTime?
 
   round              Round             @relation("RoundGames", fields: [round_id], references: [round_id]) 
   speler1           User              @relation("Speler1", fields: [speler1_id], references: [user_id])
-  speler2           User              @relation("Speler2", fields: [speler2_id], references: [user_id])
+  speler2           User?              @relation("Speler2", fields: [speler2_id], references: [user_id])
   winnaar           User?             @relation("Winnaar", fields: [winnaar_id], references: [user_id]) 
 }
 

@@ -11,7 +11,6 @@ const SPELER_SELECT = {
   schaakrating_max: true,
   is_admin: true,
   fide_id: true,
-  nationaal_id: true,
   lid_sinds: true,
   
 };

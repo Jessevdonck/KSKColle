@@ -9,8 +9,7 @@ export type Speler = {
   max_rating?: number | null;           
   rating_difference?: number | null;    
   is_admin?: boolean | null;            
-  fide_id?: number | null;              
-  nationaal_id?: number | null;         
+  fide_id?: number | null;                    
   lid_sinds: Date;
 };
 
@@ -18,12 +17,13 @@ export type SpelerCreateInput = {
   voornaam: string;
   achternaam: string;
   geboortedatum: Date;
+  email: string;
+  tel_nummer: string;
   schaakrating_elo: number;
   max_rating?: number | null;
   rating_difference?: number | null;
   is_admin?: boolean | null;
   fide_id?: number | null;
-  nationaal_id?: number | null;
   lid_sinds: Date;
 };
 

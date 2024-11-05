@@ -3,6 +3,7 @@ import * as toernooienService from '../service/toernooienService';
 import type { CreateToernooiRequest, CreateToernooiResponse, GetAllToernooienResponse, GetToernooiByIdResponse, UpdateToernooiRequest, UpdateToernooiResponse } from '../types/toernooi';
 import type { KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
+import { createAndSaveSwissPairings } from '../service/swiss-pairings';
 
 const getAllTournament = async (ctx: KoaContext<GetAllToernooienResponse>) => {
   const spelers =  await toernooienService.getAllTournaments();
@@ -34,6 +35,18 @@ const removeTournament = async (ctx: KoaContext<void, IdParams>) => {
   ctx.status = 204; 
 };
 
+const generatePairings = async (ctx: KoaContext<void, IdParams & { rondeNummer: number }>) => {
+  const tournamentId = Number(ctx.params.id);
+  const rondeNummer = Number(ctx.params.rondeNummer);
+  
+  try {
+    await createAndSaveSwissPairings(tournamentId, rondeNummer);
+    ctx.status = 201;
+  } catch (error) {
+    ctx.status = 400;
+  }
+};
+
 export default (parent: Router) => {
   const router = new Router({
     prefix: '/toernooien',
@@ -44,6 +57,7 @@ export default (parent: Router) => {
   router.get('/:id', getTournamentById);
   router.put('/:id', updateTournament);
   router.delete('/:id', removeTournament);
+  router.post('/:id/pairings/:rondeNummer', generatePairings);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

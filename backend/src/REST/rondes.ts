@@ -17,13 +17,13 @@ const createRonde = async (ctx: KoaContext<CreateRoundResponse, void, CreateRoun
 };
 
 const getRondeById = async (ctx: KoaContext<GetRoundByIdResponse, IdRondeParams>) => {
-  const tournamentId = String(ctx.params.tournament_id); 
+  const tournamentId = Number(ctx.params.tournament_id); 
   const roundId = Number(ctx.params.ronde_id);
   ctx.body = await rondeService.getRondeByTournamentId(tournamentId, roundId);
 };
 
 const updateRonde = async (ctx: KoaContext<UpdateRoundResponse, IdRondeParams, UpdateRoundRequest>) => {
-  const tournamentId = String(ctx.params.tournament_id); 
+  const tournamentId = Number(ctx.params.tournament_id); 
   const roundId = Number(ctx.params.ronde_id);
   const updatedSpeler = await rondeService.updateRonde(tournamentId, roundId, ctx.request.body); 
   
@@ -31,7 +31,7 @@ const updateRonde = async (ctx: KoaContext<UpdateRoundResponse, IdRondeParams, U
 };
 
 const removeRonde = async (ctx: KoaContext<void, IdRondeParams>) => {
-  const tournament_id = String(ctx.params.tournament_id);
+  const tournament_id = Number(ctx.params.tournament_id);
   const roundId = Number(ctx.params.ronde_id);
   rondeService.removeRound(tournament_id, roundId);
   ctx.status = 204; 

@@ -19,6 +19,12 @@ const validationRules = {
     required: 'Clubrating is vereist!',
     min: { value: 100, message: 'Minimale rating is 100' },
     max: { value: 5000, message: 'Maximale rating is 5000' }
+  },
+  email: {
+    required:'Email is required!'
+  },
+  tel_nummer: {
+    required:'Telefoonnummer is required!'
   }
 };
 
@@ -28,9 +34,10 @@ interface FormData {
   geboortedatum?: string;
   schaakrating_elo: number;
   fide_id?: number;
-  nationaal_id?: number;
   schaakrating_max?: number;
   lid_sinds?: string;
+  email: string;
+  tel_nummer: string;
 }
 
 const toDateInputString = (date: Date) => {
@@ -54,7 +61,6 @@ export default function EditForm({ user, onClose }: { user: User; onClose: () =>
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,
-      nationaal_id: user.nationaal_id,
       schaakrating_max: user.schaakrating_max,
     }
   });
@@ -69,7 +75,6 @@ export default function EditForm({ user, onClose }: { user: User; onClose: () =>
       lid_sinds: values.lid_sinds ? new Date(values.lid_sinds).toISOString() : null,
       schaakrating_elo: Number(values.schaakrating_elo),
       fide_id: values.fide_id ? Number(values.fide_id) : null,
-      nationaal_id: values.nationaal_id ? Number(values.nationaal_id) : null,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
     };
 
@@ -140,6 +145,30 @@ export default function EditForm({ user, onClose }: { user: User; onClose: () =>
         </div>
 
         <div>
+          <Label htmlFor="email" className="block text-sm font-semibold text-textColor">
+            Email
+          </Label>
+          <Input
+            {...register('email', validationRules.email)}
+            id="email"
+            placeholder="Email"
+          />
+          {errors.email && <p className="text-red-500 text-xs italic">{errors.email.message}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="tel_nummer" className="block text-sm font-semibold text-textColor">
+            Telefoonnummer
+          </Label>
+          <Input
+            {...register('tel_nummer', validationRules.tel_nummer)}
+            id="tel_nummer"
+            placeholder="Telefoonnummer"
+          />
+          {errors.tel_nummer && <p className="text-red-500 text-xs italic">{errors.tel_nummer.message}</p>}
+        </div>
+
+        <div>
           <Label htmlFor="schaakrating_elo" className="block text-sm font-semibold text-textColor">
             Clubrating
           </Label>
@@ -166,19 +195,6 @@ export default function EditForm({ user, onClose }: { user: User; onClose: () =>
             placeholder="FIDE ID"
           />
           {errors.fide_id && <p className="text-red-500 text-xs italic">{errors.fide_id.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="nationaal_id" className="block text-sm font-semibold text-textColor">
-            Nationaal ID
-          </Label>
-          <Input
-            {...register('nationaal_id', { valueAsNumber: true })}
-            id="nationaal_id"
-            type="number"
-            placeholder="Nationaal ID"
-          />
-          {errors.nationaal_id && <p className="text-red-500 text-xs italic">{errors.nationaal_id.message}</p>}
         </div>
         
         <div>
