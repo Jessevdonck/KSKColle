@@ -10,3 +10,8 @@ export const getRecentGames = async (userId) => {
     console.log(error)
   }
 }
+
+export const updateGame = async (gameId, gameData) => {
+  const response = await axios.put(`${baseUrl}/${gameId}`, gameData)
+  return response.data
+}

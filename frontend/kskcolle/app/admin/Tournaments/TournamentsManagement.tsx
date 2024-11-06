@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import TournamentForm from './components/forms/TournamentForm'
 import TournamentList from './TournamentList'
-import RoundManagement from './components/RoundManagement'
+import RoundManagement from './rounds/RoundManagement'
 import { Toernooi } from '@/data/types'
 
 export default function TournamentManagement() {
