@@ -17,6 +17,14 @@ export const getAllRondesByTournamentId = async (tournamentId: number): Promise<
       where: {
         tournament_id: tournamentId, 
       },
+      include: {
+        games: {
+          include: {
+            speler1: true,
+            speler2: true,
+          }
+        }
+      }
     });
   } catch (error) {
     throw handleDBError(error);

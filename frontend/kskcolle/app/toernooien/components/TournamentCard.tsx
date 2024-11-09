@@ -1,22 +1,26 @@
 import React from 'react'
-import { Tournament } from '../../../data/mock_data'
-import { format } from 'date-fns'
-import { nl } from 'date-fns/locale'
 import Link from 'next/link'
 
 interface TournamentCardProps {
-  tournament: Tournament
+  tournament: {
+    tournament_id: number
+    naam: string
+    rondes: number
+    participations: Array<{
+      user_id: number
+      voornaam: string
+      achternaam: string
+    }>
+  }
 }
 
 export default function TournamentCard({ tournament }: TournamentCardProps) {
   return (
-    <Link href={`/toernooien/${tournament.id}`} className="block">
+    <Link href={`/toernooien/${tournament.tournament_id}`} className="block">
       <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow ">
-        <h2 className="text-xl font-semibold text-textColor mb-2">{tournament.name}</h2>
-        <p className="text-mainAccent mb-2">
-          {format(tournament.startDate, 'd MMMM yyyy', { locale: nl })} - {format(tournament.endDate, 'd MMMM yyyy', { locale: nl })}
-        </p>
-        <p className="text-gray-600 "> <span className='font-semibold'>Ronde</span>: {tournament.rounds.length}</p>
+        <h2 className="text-xl font-semibold text-textColor mb-2">{tournament.naam}</h2>
+        <p className="text-gray-600 "> <span className='font-semibold'>Rondes</span>: {tournament.rondes}</p>
+        <p className="text-gray-600 "> <span className='font-semibold'>Deelnemers</span>: {tournament.participations.length}</p>
       </div>
     </Link>
   )

@@ -37,12 +37,21 @@ const removeRonde = async (ctx: KoaContext<void, IdRondeParams>) => {
   ctx.status = 204; 
 };
 
+const getAllRondesByTournamentId = async (ctx: any) => {
+  const tournamentId = Number(ctx.params.tournament_id);
+  const rondes = await rondeService.getAllRondesByTournamentId(tournamentId);
+  ctx.body = {
+    items: rondes,
+  };
+};
+
 export default (parent: Router) => {
   const router = new Router({
     prefix: '/rondes',
   });
 
   router.get('/', getAllRondes);
+  router.get('/:tournament_id/rondes', getAllRondesByTournamentId);
   router.post('/', createRonde);
   router.get('/:tournament_id/rondes/:ronde_id', getRondeById); 
   router.put('/:tournament_id/rondes/:ronde_id', updateRonde); 
