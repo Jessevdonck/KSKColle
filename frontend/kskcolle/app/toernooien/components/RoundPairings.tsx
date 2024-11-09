@@ -24,6 +24,10 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
     )
   }
 
+  const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
+    return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, '_')
+  }
+
   return (
     <div className="mb-6">
       <h3 className="text-xl font-semibold text-[#4A4947] mb-2">Ronde {round.ronde_nummer}</h3>
@@ -40,12 +44,12 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
             <tr key={game.game_id} className={`border-b ${index % 2 === 0 ? 'bg-neutral-50' : 'bg-neutral-100'}`}>
               <td className="p-2 pl-4">
                 <Link href={`/profile/${game.speler1.user_id}`}>
-                  {`${game.speler1.voornaam} ${game.speler1.achternaam}`}
+                  {`${game.speler1.voornaam} ${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
                 </Link>
               </td>
               <td className="p-2">
                 {game.speler2 ? (
-                  <Link href={`/profile/${game.speler2.user_id}`}>
+                  <Link href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}>
                     {`${game.speler2.voornaam} ${game.speler2.achternaam}`}
                   </Link>
                 ) : (

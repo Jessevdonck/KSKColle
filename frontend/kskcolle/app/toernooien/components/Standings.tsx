@@ -34,6 +34,10 @@ interface PlayerScore {
   gamesPlayed: number
 }
 
+const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
+  return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, '_')
+}
+
 export default function Standings({ tournament, rounds }: StandingsProps) {
   const playerScores: PlayerScore[] = calculateStandings(tournament, rounds)
 
@@ -68,7 +72,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 <span className={getPositionStyle(index + 1)}>{index + 1}</span>
             </td>
             <td className="p-2">
-              <Link href={`/profile/${player.user_id}`}>
+              <Link href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}>
                 {player.voornaam} {player.achternaam}
               </Link>
             </td>
@@ -119,4 +123,4 @@ function calculateStandings(tournament: StandingsProps['tournament'], rounds: St
   })
 
   return Object.values(playerScores).sort((a, b) => b.score - a.score)
-}
+} 
