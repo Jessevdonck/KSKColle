@@ -43,8 +43,8 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
           {round.games.map((game, index) => (
             <tr key={game.game_id} className={`border-b ${index % 2 === 0 ? 'bg-neutral-50' : 'bg-neutral-100'}`}>
               <td className="p-2 pl-4">
-                <Link href={`/profile/${game.speler1.user_id}`}>
-                  {`${game.speler1.voornaam} ${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
+                <Link href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}>
+                  {`${game.speler1.voornaam} ${game.speler1.achternaam}`}
                 </Link>
               </td>
               <td className="p-2">

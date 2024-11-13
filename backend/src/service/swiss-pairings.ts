@@ -1,54 +1,39 @@
+import { prisma } from "./data/";
+import type { Participation } from "../types/participation";
 import type { Speler } from "../types/speler";
 import type { Spel } from "../types/spel";
-import { prisma } from "./data/";
 
 type SwissPlayer = Speler & {
-  score: number;
-  opponents: number[];
-  color_history: ('W' | 'B' | 'N')[];
-  float_history: ('up' | 'down' | 'none')[];
-  bye_round: number | null;
+  participation: Participation;
 };
 
-function calculateBuchholz(player: SwissPlayer, allPlayers: SwissPlayer[]): number {
-  return player.opponents.reduce((sum, opponentId) => {
-    const opponent = allPlayers.find((p) => p.user_id === opponentId);
-    return sum + (opponent ? opponent.score : 0);
-  }, 0);
-}
-
-function calculateSonnebornBerger(player: SwissPlayer, games: Spel[], allPlayers: SwissPlayer[]): number {
-  return games
-    .filter((game) => game.speler1_id === player.user_id || game.speler2_id === player.user_id)
-    .reduce((sum, game) => {
-      const isPlayer1 = game.speler1_id === player.user_id;
-      const opponentScore = allPlayers.find((p) => p.user_id === (isPlayer1 ? game.speler2_id : game.speler1_id))?.score || 0;
-      if (game.winnaar_id === player.user_id) {
-        return sum + opponentScore;
-      } else if (game.result === '1/2-1/2') {
-        return sum + opponentScore / 2;
-      }
-      return sum;
-    }, 0);
-}
+type Pairing = {
+  speler1_id: number;
+  speler2_id: number | null;
+  color1: 'W' | 'B';
+  color2: 'W' | 'B' | 'N';
+};
 
 function determineColor(player1: SwissPlayer, player2: SwissPlayer): ['W' | 'B', 'W' | 'B'] {
-  const p1ColorDiff = player1.color_history.filter(c => c === 'W').length - player1.color_history.filter(c => c === 'B').length;
-  const p2ColorDiff = player2.color_history.filter(c => c === 'W').length - player2.color_history.filter(c => c === 'B').length;
+  const p1ColorHistory = JSON.parse(player1.participation.color_history) as ('W' | 'B' | 'N')[];
+  const p2ColorHistory = JSON.parse(player2.participation.color_history) as ('W' | 'B' | 'N')[];
+
+  const p1ColorDiff = p1ColorHistory.filter(c => c === 'W').length - p1ColorHistory.filter(c => c === 'B').length;
+  const p2ColorDiff = p2ColorHistory.filter(c => c === 'W').length - p2ColorHistory.filter(c => c === 'B').length;
 
   if (p1ColorDiff !== p2ColorDiff) {
     return p1ColorDiff < p2ColorDiff ? ['W', 'B'] : ['B', 'W'];
   }
 
-  const p1LastColor = player1.color_history[player1.color_history.length - 1];
-  const p2LastColor = player2.color_history[player2.color_history.length - 1];
+  const p1LastColor = p1ColorHistory[p1ColorHistory.length - 1];
+  const p2LastColor = p2ColorHistory[p2ColorHistory.length - 1];
 
   if (p1LastColor !== p2LastColor) {
     return p1LastColor === 'B' ? ['W', 'B'] : ['B', 'W'];
   }
 
-  const p1Whites = player1.color_history.filter(c => c === 'W').length;
-  const p2Whites = player2.color_history.filter(c => c === 'W').length;
+  const p1Whites = p1ColorHistory.filter(c => c === 'W').length;
+  const p2Whites = p2ColorHistory.filter(c => c === 'W').length;
   
   if (p1Whites !== p2Whites) {
     return p1Whites < p2Whites ? ['W', 'B'] : ['B', 'W'];
@@ -57,19 +42,13 @@ function determineColor(player1: SwissPlayer, player2: SwissPlayer): ['W' | 'B',
   return Math.random() < 0.5 ? ['W', 'B'] : ['B', 'W'];
 }
 
-function pairFirstRound(players: SwissPlayer[]): [Spel[], SwissPlayer | undefined] {
+function pairFirstRound(players: SwissPlayer[]): [Pairing[], SwissPlayer | undefined] {
   const sortedPlayers = [...players].sort((a, b) => b.schaakrating_elo - a.schaakrating_elo);
-  const pairings: Spel[] = [];
+  const pairings: Pairing[] = [];
   let byePlayer: SwissPlayer | undefined;
 
   if (sortedPlayers.length % 2 !== 0) {
     byePlayer = sortedPlayers.pop();
-    if (byePlayer) {
-      byePlayer.score += 1;
-      byePlayer.color_history.push('N');
-      byePlayer.float_history.push('down');
-      byePlayer.bye_round = 1;
-    }
   }
 
   const middleIndex = Math.floor(sortedPlayers.length / 2);
@@ -80,61 +59,38 @@ function pairFirstRound(players: SwissPlayer[]): [Spel[], SwissPlayer | undefine
     const player1 = topHalf[i];
     const player2 = bottomHalf[i];
     if (player1 && player2) {
-      const [color1, color2] = i % 2 === 0 ? ['W', 'B'] : ['B', 'W'];
+      const [color1, color2] = i % 2 === 0 ? (['W', 'B'] as const) : (['B', 'W'] as const);
       pairings.push({
-        game_id: 0,
-        round_id: 0,
         speler1_id: color1 === 'W' ? player1.user_id : player2.user_id,
         speler2_id: color1 === 'W' ? player2.user_id : player1.user_id,
-        winnaar_id: null,
-        result: null,
-        uitgestelde_datum: null,
+        color1,
+        color2,
       });
-      player1.color_history.push(color1 as 'W' | 'B' | 'N');
-      player2.color_history.push(color2 as 'W' | 'B' | 'N');
-      player1.opponents.push(player2.user_id);
-      player2.opponents.push(player1.user_id);
     }
   }
 
   return [pairings, byePlayer];
 }
 
-function pairSubsequentRounds(players: SwissPlayer[], round_number: number): [Spel[], SwissPlayer | undefined] {
-  const sortedPlayers = [...players].sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
+function pairSubsequentRounds(players: SwissPlayer[], round_number: number): [Pairing[], SwissPlayer | undefined] {
+  const sortedPlayers = players.length > 0 ? [...players].sort((a, b) => {
+    if (a.participation.score !== b.participation.score) return b.participation.score - a.participation.score;
+    if (a.participation.buchholz !== b.participation.buchholz) return b.participation.buchholz - a.participation.buchholz;
+    if (a.participation.sonnebornBerger !== b.participation.sonnebornBerger) return b.participation.sonnebornBerger - a.participation.sonnebornBerger;
     return b.schaakrating_elo - a.schaakrating_elo;
-  });
+  }) : [];
 
-  const pairings: Spel[] = [];
+  const pairings: Pairing[] = [];
   let byePlayer: SwissPlayer | undefined;
 
+  if (sortedPlayers.length === 0) {
+    return [pairings, byePlayer];
+  }
+
   if (sortedPlayers.length % 2 !== 0) {
-    const byeCandidates = [...sortedPlayers].sort((a, b) => {
-      if (a.score !== b.score) return a.score - b.score;
-      return b.schaakrating_elo - a.schaakrating_elo;
-    });
-
-    for (let i = 0; i < byeCandidates.length; i++) {
-      const candidate = byeCandidates[i];
-      if (candidate && candidate.bye_round === null) {
-        const playerIndex = sortedPlayers.findIndex(p => p.user_id === candidate.user_id);
-        if (playerIndex !== -1) {
-          byePlayer = sortedPlayers.splice(playerIndex, 1)[0];
-          break;
-        }
-      }
-    }
-
-    if (!byePlayer) {
-      byePlayer = sortedPlayers.pop();
-    }
-
+    byePlayer = sortedPlayers.find(player => player.participation.bye_round === null) || sortedPlayers[sortedPlayers.length - 1];
     if (byePlayer) {
-      byePlayer.score += 1;
-      byePlayer.color_history.push('N');
-      byePlayer.float_history.push('down');
-      byePlayer.bye_round = round_number;
+      sortedPlayers.splice(sortedPlayers.indexOf(byePlayer), 1);
     }
   }
 
@@ -142,27 +98,46 @@ function pairSubsequentRounds(players: SwissPlayer[], round_number: number): [Sp
     const player1 = sortedPlayers.shift();
     if (!player1) break;
 
-    let opponentIndex = sortedPlayers.findIndex(p => p && !player1.opponents.includes(p.user_id));
-    if (opponentIndex === -1) {
-      opponentIndex = 0;
+    const opponents = JSON.parse(player1.participation.opponents) as number[];
+    let opponentIndex = -1;
+    let searchScoreDiff = 0;
+    const maxScoreDiff = Math.max(...players.map(p => p.participation.score)) - Math.min(...players.map(p => p.participation.score));
+
+    while (opponentIndex === -1 && searchScoreDiff <= maxScoreDiff) {
+      opponentIndex = sortedPlayers.findIndex(p => 
+        !opponents.includes(p.user_id) && 
+        Math.abs(p.participation.score - player1.participation.score) === searchScoreDiff
+      );
+      
+      if (opponentIndex === -1) {
+        searchScoreDiff += 0.5;
+      }
     }
+
+    if (opponentIndex === -1) {
+      const allOtherPlayersPlayed = sortedPlayers.every(p => opponents.includes(p.user_id) || p.user_id === player1.user_id);
+      
+      if (allOtherPlayersPlayed) {
+        opponentIndex = sortedPlayers.findIndex(p => p.user_id !== player1.user_id);
+      } else {
+        throw new Error(`Kan geen geschikte tegenstander vinden voor speler ${player1.user_id}`);
+      }
+    }
+
+    if (opponentIndex === -1) {
+      throw new Error(`Kan geen tegenstander vinden voor speler ${player1.user_id}`);
+    }
+
     const player2 = sortedPlayers.splice(opponentIndex, 1)[0];
 
     if (player2) {
       const [color1, color2] = determineColor(player1, player2);
       pairings.push({
-        game_id: 0,
-        round_id: 0,
         speler1_id: color1 === 'W' ? player1.user_id : player2.user_id,
         speler2_id: color1 === 'W' ? player2.user_id : player1.user_id,
-        winnaar_id: null,
-        result: null,
-        uitgestelde_datum: null,
+        color1,
+        color2,
       });
-      player1.color_history.push(color1 as 'W' | 'B' | 'N');
-      player2.color_history.push(color2 as 'W' | 'B' | 'N');
-      player1.opponents.push(player2.user_id);
-      player2.opponents.push(player1.user_id);
     }
   }
 
@@ -175,53 +150,12 @@ export async function createSwissPairings(tournament_id: number, round_number: n
     include: { user: true },
   });
 
-  const games = await prisma.game.findMany({
-    where: {
-      round: {
-        tournament_id,
-      },
-    },
-    include: {
-      round: true,
-    },
-  });
-
   const players: SwissPlayer[] = participations.map((p) => ({
     ...p.user,
-    score: 0,
-    opponents: [],
-    color_history: [],
-    float_history: [],
-    bye_round: null,
+    participation: p,
   }));
 
-  games.forEach((game) => {
-    const player1 = players.find((p) => p.user_id === game.speler1_id);
-    const player2 = players.find((p) => p.user_id === game.speler2_id);
-
-    if (player1 && player2) {
-      player1.opponents.push(player2.user_id);
-      player2.opponents.push(player1.user_id);
-
-      if (game.winnaar_id === player1.user_id) {
-        player1.score += 1;
-      } else if (game.winnaar_id === player2.user_id) {
-        player2.score += 1;
-      } else if (game.result === '1/2-1/2') {
-        player1.score += 0.5;
-        player2.score += 0.5;
-      }
-
-      player1.color_history.push(game.speler1_id === player1.user_id ? 'W' : 'B');
-      player2.color_history.push(game.speler1_id === player2.user_id ? 'W' : 'B');
-    } else if (player1 && !player2) {
-      player1.score += 1;
-      player1.color_history.push('N');
-      player1.bye_round = game.round.ronde_nummer;
-    }
-  });
-
-  let pairings: Spel[];
+  let pairings: Pairing[];
   let byePlayer: SwissPlayer | undefined;
 
   if (round_number === 1) {
@@ -230,8 +164,18 @@ export async function createSwissPairings(tournament_id: number, round_number: n
     [pairings, byePlayer] = pairSubsequentRounds(players, round_number);
   }
 
+  const games: Spel[] = pairings.map(pairing => ({
+    game_id: 0,
+    round_id: 0,
+    speler1_id: pairing.speler1_id,
+    speler2_id: pairing.speler2_id,
+    winnaar_id: null,
+    result: null,
+    uitgestelde_datum: null,
+  }));
+
   if (byePlayer) {
-    pairings.push({
+    games.push({
       game_id: 0,
       round_id: 0,
       speler1_id: byePlayer.user_id,
@@ -242,10 +186,10 @@ export async function createSwissPairings(tournament_id: number, round_number: n
     });
   }
 
-  return pairings;
+  return games;
 }
 
-export async function savePairings(tournament_id: number, round_number: number, pairings: Spel[]) {
+export async function savePairings(tournament_id: number, round_number: number, pairings: Spel[]): Promise<void> {
   const round = await prisma.round.create({
     data: {
       tournament_id,
@@ -260,9 +204,87 @@ export async function savePairings(tournament_id: number, round_number: number, 
       round_id: round.round_id,
     })),
   });
+
+  for (const pairing of pairings) {
+    const updatePlayer = async (playerId: number, color: 'W' | 'B' | 'N', opponentId: number | null) => {
+      const participation = await prisma.participation.findUnique({
+        where: { user_id_tournament_id: { user_id: playerId, tournament_id } },
+      });
+
+      if (participation) {
+        const opponents = JSON.parse(participation.opponents);
+        const colorHistory = JSON.parse(participation.color_history);
+
+        await prisma.participation.update({
+          where: { user_id_tournament_id: { user_id: playerId, tournament_id } },
+          data: {
+            opponents: JSON.stringify([...opponents, opponentId]),
+            color_history: JSON.stringify([...colorHistory, color]),
+            bye_round: color === 'N' ? round_number : participation.bye_round,
+          },
+        });
+      }
+    };
+
+    await updatePlayer(pairing.speler1_id, pairing.speler2_id != null ? 'W' : 'N', pairing.speler2_id ?? null);
+    if (pairing.speler2_id != null) {
+      await updatePlayer(pairing.speler2_id, 'B', pairing.speler1_id);
+    }
+  }
+}
+
+export async function updateTournamentScores(tournament_id: number): Promise<void> {
+  const participations = await prisma.participation.findMany({
+    where: { tournament_id },
+    include: { user: true },
+  });
+
+  const games = await prisma.game.findMany({
+    where: {
+      round: {
+        tournament_id,
+      },
+    },
+  });
+
+  for (const participation of participations) {
+    let score = 0;
+    let buchholz = 0;
+    let sonnebornBerger = 0;
+
+    for (const game of games) {
+      if (game.speler1_id === participation.user_id || game.speler2_id === participation.user_id) {
+        if (game.winnaar_id === participation.user_id) {
+          score += 1;
+          sonnebornBerger += (game.speler1_id === participation.user_id ? game.speler2_id : game.speler1_id) || 0;
+        } else if (game.result === '1/2-1/2') {
+          score += 0.5;
+          sonnebornBerger += ((game.speler1_id === participation.user_id ? game.speler2_id : game.speler1_id) || 0) / 2;
+        }
+      }
+    }
+
+    const opponents = JSON.parse(participation.opponents) as number[];
+    for (const opponentId of opponents) {
+      const opponentParticipation = participations.find(p => p.user_id === opponentId);
+      if (opponentParticipation) {
+        buchholz += opponentParticipation.score;
+      }
+    }
+
+    await prisma.participation.update({
+      where: { user_id_tournament_id: { user_id: participation.user_id, tournament_id } },
+      data: {
+        score,
+        buchholz,
+        sonnebornBerger,
+      },
+    });
+  }
 }
 
 export async function createAndSaveSwissPairings(tournament_id: number, round_number: number): Promise<void> {
+  await updateTournamentScores(tournament_id);
   const pairings = await createSwissPairings(tournament_id, round_number);
   await savePairings(tournament_id, round_number, pairings);
 }
