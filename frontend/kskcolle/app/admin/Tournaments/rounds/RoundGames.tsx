@@ -33,7 +33,7 @@ export default function RoundGames({ round, onUpdateGame }: RoundGamesProps) {
   }
 
   return (
-    <Table className='max-w-[60%]'>
+    <Table className=''>
       <TableHeader>
         <TableRow>
           <TableHead className="w-[40%]">Wit</TableHead>

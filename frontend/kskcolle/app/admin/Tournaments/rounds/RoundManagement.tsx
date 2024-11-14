@@ -56,8 +56,8 @@ export default function RoundManagement({ tournament }: RoundManagementProps) {
   const nextRoundForPairings = getNextRoundForPairings()
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Rondes</h2>
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4 text-mainAccent">Rondes</h2>
       <RoundList
         rounds={updatedTournament.rounds}
         totalRounds={updatedTournament.rondes}

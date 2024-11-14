@@ -10,8 +10,8 @@ export default function TournamentManagement() {
   const [selectedTournament, setSelectedTournament] = useState<Toernooi | null>(null)
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Toernooien Beheren</h1>
+    <div className="space-y-8 flex flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold my-10">Toernooien Beheren</h1>
       
       <TournamentForm />
       

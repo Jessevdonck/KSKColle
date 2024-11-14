@@ -43,8 +43,8 @@ export default function UsersManagement() {
   if (!users) return <div>Loading...</div>
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold">Spelers Beheren</h1>
+    <div className='flex flex-col justift-center items-center'>
+      <h1 className="text-3xl font-bold text-textColor my-10">Spelers Beheren</h1>
       <AddOrEditUser />
       <UserList 
         users={users} 

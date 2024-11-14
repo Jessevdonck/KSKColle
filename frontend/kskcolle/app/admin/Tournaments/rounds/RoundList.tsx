@@ -2,6 +2,7 @@ import React from 'react'
 import { Button } from "@/components/ui/button"
 import { Round } from '@/data/types'
 import RoundGames from './RoundGames'
+import { Separator } from '@/components/ui/separator'
 
 interface RoundListProps {
   rounds: Round[]
@@ -25,7 +26,7 @@ export default function RoundList({
   return (
     <>
       {Array.from({ length: totalRounds }, (_, i) => i + 1).map((roundNumber) => (
-        <div key={roundNumber} className="mb-6">
+        <div key={roundNumber} className="flex flex-col items-start w-full max-w-2xl mx-auto mb-6">
           <h3 className="text-xl font-semibold mb-2">Ronde {roundNumber}</h3>
           {nextRoundForPairings === roundNumber && canGeneratePairings(roundNumber) && (
             <Button 
