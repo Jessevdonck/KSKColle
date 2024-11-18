@@ -12,10 +12,22 @@ interface MonthViewProps {
 }
 
 export default function MonthView({ year, month, events, onSelectDate, selectedDate }: MonthViewProps) {
-
   const monthStart = startOfMonth(new Date(year, month))
   const monthEnd = endOfMonth(monthStart)
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
+
+  function getEventTypeColor(type: CalendarEvent['type']) {
+    switch (type) {
+      case 'tournament':
+        return 'text-mainAccent'
+      case 'training':
+        return 'text-green-600'
+      case 'meeting':
+        return 'text-yellow-600'
+      default:
+        return 'text-blue-600'
+    }
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-4">
@@ -34,15 +46,24 @@ export default function MonthView({ year, month, events, onSelectDate, selectedD
               key={day.toString()}
               onClick={() => onSelectDate(day)}
               className={`
-                text-center p-2 rounded-full transition-colors relative
+                text-center p-2 rounded-lg transition-colors relative
                 ${!isSameMonth(day, monthStart) ? 'text-gray-300' : 'text-[#4A4947]'}
                 ${isSelected ? 'ring-2 ring-mainAccent' : ''}
-                hover:bg-gray-100
+                hover:bg-gray-100 flex flex-col items-start h-24 overflow-hidden
               `}
             >
-              <span className="inline-block mb-3">{format(day, 'd')}</span>
+              <span className="inline-block mb-1">{format(day, 'd')}</span>
               {dayEvents.length > 0 && (
-                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-mainAccent rounded-full"></div>
+                <ul className="text-xs text-left w-full">
+                  {dayEvents.slice(0, 2).map((event, index) => (
+                    <li key={index} className={`truncate ${getEventTypeColor(event.type)}`}>
+                      {event.title}
+                    </li>
+                  ))}
+                  {dayEvents.length > 2 && (
+                    <li className="text-gray-500">+{dayEvents.length - 2} more</li>
+                  )}
+                </ul>
               )}
             </button>
           )
