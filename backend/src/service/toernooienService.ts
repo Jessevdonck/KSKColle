@@ -160,6 +160,12 @@ export const addParticipation = async (tournament_id: number, user_id: number): 
     data: {
       tournament: { connect: { tournament_id } },
       user: { connect: { user_id } },
+      score: 0, 
+      buchholz: 0, 
+      sonnebornBerger: 0, 
+      opponents: '', 
+      color_history: '',
+      bye_round: null,
     },
   });
 };

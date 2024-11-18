@@ -66,11 +66,11 @@ model Game {
 model Participation {
   user_id            Int
   tournament_id      Int
-  score              Float           @default(0)
-  buchholz           Float           @default(0)
-  sonnebornBerger    Float           @default(0)
-  opponents          String          @default("[]") 
-  color_history      String          @default("[]") 
+  score              Float?           @default(0)
+  buchholz           Float?           @default(0)
+  sonnebornBerger    Float?          @default(0)
+  opponents          String?          @default("[]") 
+  color_history      String?          @default("[]") 
   bye_round          Int?
   
   user               User              @relation(fields: [user_id], references: [user_id])
