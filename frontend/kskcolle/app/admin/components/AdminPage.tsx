@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import UsersManagement from '../Users/UsersManagement'
 import TournamentsManagement from '../Tournaments/TournamentsManagement'
+import { Users, Trophy } from 'lucide-react'
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -24,41 +26,61 @@ const AdminPage = () => {
     }
   }, [])
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    window.location.hash = tab
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f7f7] text-textColor">
       <header className="flex items-center justify-center bg-mainAccent text-white py-6 px-8 shadow-md">
         <h1 className="text-3xl font-bold">KSK Colle Admin Dashboard</h1>
       </header>
       <main className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col items-center">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full flex flex-col items-center">
           <TabsList className="mb-8 justify-start">
             <TabsTrigger 
               value="dashboard" 
-              onClick={() => window.location.hash = 'dashboard'}
               className="text-lg px-6 py-3"
             >
               Dashboard
             </TabsTrigger>
             <TabsTrigger 
               value="users" 
-              onClick={() => window.location.hash = 'users'}
               className="text-lg px-6 py-3"
             >
               Users
             </TabsTrigger>
             <TabsTrigger 
               value="tournaments" 
-              onClick={() => window.location.hash = 'tournaments'}
               className="text-lg px-6 py-3"
             >
               Tournaments
             </TabsTrigger>
           </TabsList>
-          <div className="w-full max-w-4xl"> {/* Container for consistent width */}
+          <div className="w-full max-w-4xl"> 
             <TabsContent value="dashboard">
               <div className="bg-white rounded-lg shadow-md p-6 min-h-[300px] flex flex-col justify-center items-center">
                 <h2 className="text-2xl font-semibold mb-4 text-mainAccent">Welkom op het KSK Colle dashboard</h2>
-                <p className="text-gray-600">Selecteer een tablad om te beginnen.</p>
+                <p className="text-gray-600 mb-8">Selecteer een tablad om te beginnen.</p>
+                <div className="flex flex-wrap justify-center gap-4 w-full max-w-2xl">
+                  <Button 
+                    onClick={() => handleTabChange('users')} 
+                    className="flex items-center justify-center gap-2 h-24 flex-1 min-w-[200px]"
+                    variant="outline"
+                  >
+                    <Users className="h-6 w-6" />
+                    <span>Gebruikers</span>
+                  </Button>
+                  <Button 
+                    onClick={() => handleTabChange('tournaments')} 
+                    className="flex items-center justify-center gap-2 h-24 flex-1 min-w-[200px]"
+                    variant="outline"
+                  >
+                    <Trophy className="h-6 w-6" />
+                    <span>Toernooien</span>
+                  </Button>
+                </div>
               </div>
             </TabsContent>
             <TabsContent value="users">
