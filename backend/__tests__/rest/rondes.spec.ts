@@ -15,99 +15,62 @@ const data = {
       schaakrating_max: 2500,
       is_admin: false,
       fide_id: null,
-      nationaal_id: null,
       lid_sinds: new Date(2015, 5, 10),
+      email: 'jesse@example.com',
+      tel_nummer: '1234567890',
     },
     {
       user_id: 2, 
       voornaam: 'Anna',
       achternaam: 'Meijer',
-      geboortedatum: new Date(1990, 7, 25),
-      schaakrating_elo: 2350,
-      schaakrating_difference: null,
-      schaakrating_max: 2450,
-      is_admin: false,
-      fide_id: 123456,
-      nationaal_id: null,
-      lid_sinds: new Date(2016, 3, 20),
-    },
-    {
-      user_id: 3,
-      voornaam: 'Pieter',
-      achternaam: 'Janssen',
-      geboortedatum: new Date(1985, 11, 30),
+      geboortedatum: new Date(1990, 3, 22),
       schaakrating_elo: 2300,
       schaakrating_difference: null,
       schaakrating_max: 2400,
-      is_admin: true,
+      is_admin: false,
       fide_id: null,
-      nationaal_id: 789101,
-      lid_sinds: new Date(2010, 1, 15),
+      lid_sinds: new Date(2010, 7, 15),
+      email: 'anna@example.com',
+      tel_nummer: '0987654321',
     },
   ],
   tournaments: [
     {
-      tournament_id: '1',
-      naam: 'Wereldkampioenschap Schaken',
-      rondes: 5,
+      tournament_id: 1,
+      naam: 'Toernooi 1',
+      rondes: 0,
     },
     {
-      tournament_id: '2', 
-      naam: 'Nationaal Toernooi',
-      rondes: 4,
+      tournament_id: 2,
+      naam: 'Toernooi 2',
+      rondes: 0,
     },
   ],
   rounds: [
     {
       round_id: 1,
-      tournament_id: '1',
+      tournament_id: 1,
       ronde_nummer: 1,
-      ronde_datum: new Date(2024, 9, 1),
+      ronde_datum: new Date(2024, 9, 1).toJSON(),
     },
     {
       round_id: 2,
-      tournament_id: '1',
+      tournament_id: 1,
       ronde_nummer: 2,
-      ronde_datum: new Date(2024, 9, 15),
+      ronde_datum: new Date(2024, 9, 15).toJSON(), 
     },
     {
       round_id: 3,
-      tournament_id: '2',
+      tournament_id: 2,
       ronde_nummer: 1,
-      ronde_datum: new Date(2024, 8, 20),
-    },
-  ],
-  games: [
-    {
-      round_id: 1, 
-      speler1_id: 1, 
-      speler2_id: 2,
-      winnaar_id: 1, 
-      result: 'win',
-      uitgestelde_datum: null,
-    },
-    {
-      round_id: 2,
-      speler1_id: 3, 
-      speler2_id: 1, 
-      winnaar_id: 3, 
-      result: 'loss',
-      uitgestelde_datum: null,
-    },
-    {
-      round_id: 3,
-      speler1_id: 2, 
-      speler2_id: 3, 
-      winnaar_id: null,
-      result: 'draw',
-      uitgestelde_datum: null,
+      ronde_datum: new Date(2024, 8, 20).toJSON(), 
     },
   ],
 };
 
 const dataToDelete = {
   users: [1, 2, 3], 
-  tournaments: ['1', '2'], 
+  tournaments: [1, 2], 
   rounds: [1, 2, 3], 
   games: ['game-1', 'game-2', 'game-3'], 
 };
@@ -138,7 +101,6 @@ describe('Users', () => {
       await prisma.user.createMany({ data: data.users });
       await prisma.tournament.createMany({ data: data.tournaments });
       await prisma.round.createMany({ data: data.rounds });
-      await prisma.game.createMany({ data: data.games });
     });
 
     afterAll(async () => {
@@ -174,19 +136,19 @@ describe('Users', () => {
         expect.arrayContaining([
           {
             round_id: 1,
-            tournament_id: '1',
+            tournament_id: 1,
             ronde_nummer: 1,
             ronde_datum: new Date(2024, 9, 1).toJSON(), 
           },
           {
             round_id: 2,
-            tournament_id: '1',
+            tournament_id: 1,
             ronde_nummer: 2,
             ronde_datum: new Date(2024, 9, 15).toJSON(), 
           },
           {
             round_id: 3,
-            tournament_id: '2',
+            tournament_id: 2,
             ronde_nummer: 1,
             ronde_datum: new Date(2024, 8, 20).toJSON(), 
           },
@@ -224,7 +186,7 @@ describe('Users', () => {
   
       expect(response.body).toEqual({
         round_id: 1,
-        tournament_id: '1',
+        tournament_id: 1,
         ronde_nummer: 1,
         ronde_datum: new Date(2024, 9, 1).toJSON(),
       });

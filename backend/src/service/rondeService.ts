@@ -41,7 +41,7 @@ export const getRondeByTournamentId = async (tournamentId: number, roundId: numb
     });
 
     if (!ronde) {
-      throw ServiceError.notFound(`Ronde met ID ${roundId} voor toernooi ${tournamentId} niet gevonden.`);
+      throw ServiceError.notFound(`No round with this id exists for the tournament`);
     }
 
     return ronde;
@@ -62,7 +62,6 @@ export const createRonde = async (ronde: RondeCreateInput): Promise<Ronde> => {
 
 export const updateRonde = async (tournament_id: number, round_id: number, changes: RondeUpdateInput): Promise<Ronde> => {
   try {
-    // Controleer of de ronde bestaat voordat je gaat updaten
     const rondeExists = await prisma.round.findFirst({
       where: {
         tournament_id,

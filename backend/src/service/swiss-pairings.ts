@@ -15,8 +15,8 @@ type Pairing = {
 };
 
 function determineColor(player1: SwissPlayer, player2: SwissPlayer): ['W' | 'B', 'W' | 'B'] {
-  const p1ColorHistory = JSON.parse(player1.participation.color_history) as ('W' | 'B' | 'N')[];
-  const p2ColorHistory = JSON.parse(player2.participation.color_history) as ('W' | 'B' | 'N')[];
+  const p1ColorHistory = JSON.parse(player1.participation.color_history ?? '[]') as ('W' | 'B' | 'N')[];
+  const p2ColorHistory = JSON.parse(player2.participation.color_history ?? '[]') as ('W' | 'B' | 'N')[];
 
   const p1ColorDiff = p1ColorHistory.filter(c => c === 'W').length - p1ColorHistory.filter(c => c === 'B').length;
   const p2ColorDiff = p2ColorHistory.filter(c => c === 'W').length - p2ColorHistory.filter(c => c === 'B').length;
@@ -72,11 +72,11 @@ function pairFirstRound(players: SwissPlayer[]): [Pairing[], SwissPlayer | undef
   return [pairings, byePlayer];
 }
 
-function pairSubsequentRounds(players: SwissPlayer[], round_number: number): [Pairing[], SwissPlayer | undefined] {
+function pairSubsequentRounds(players: SwissPlayer[]): [Pairing[], SwissPlayer | undefined] {
   const sortedPlayers = players.length > 0 ? [...players].sort((a, b) => {
-    if (a.participation.score !== b.participation.score) return b.participation.score - a.participation.score;
-    if (a.participation.buchholz !== b.participation.buchholz) return b.participation.buchholz - a.participation.buchholz;
-    if (a.participation.sonnebornBerger !== b.participation.sonnebornBerger) return b.participation.sonnebornBerger - a.participation.sonnebornBerger;
+    if (a.participation.score !== b.participation.score) return (b.participation.score ?? 0) - (a.participation.score ?? 0);
+    if ((a.participation.buchholz ?? 0) !== (b.participation.buchholz ?? 0)) return (b.participation.buchholz ?? 0) - (a.participation.buchholz ?? 0);
+    if ((a.participation.sonnebornBerger ?? 0) !== (b.participation.sonnebornBerger ?? 0)) return (b.participation.sonnebornBerger ?? 0) - (a.participation.sonnebornBerger ?? 0);
     return b.schaakrating_elo - a.schaakrating_elo;
   }) : [];
 
@@ -98,15 +98,15 @@ function pairSubsequentRounds(players: SwissPlayer[], round_number: number): [Pa
     const player1 = sortedPlayers.shift();
     if (!player1) break;
 
-    const opponents = JSON.parse(player1.participation.opponents) as number[];
+    const opponents = JSON.parse(player1.participation.opponents ?? '[]') as number[];
     let opponentIndex = -1;
     let searchScoreDiff = 0;
-    const maxScoreDiff = Math.max(...players.map(p => p.participation.score)) - Math.min(...players.map(p => p.participation.score));
+    const maxScoreDiff = Math.max(...players.map(p => p.participation.score ?? 0)) - Math.min(...players.map(p => p.participation.score ?? 0));
 
     while (opponentIndex === -1 && searchScoreDiff <= maxScoreDiff) {
       opponentIndex = sortedPlayers.findIndex(p => 
         !opponents.includes(p.user_id) && 
-        Math.abs(p.participation.score - player1.participation.score) === searchScoreDiff
+        Math.abs((p.participation.score ?? 0) - (player1.participation.score ?? 0)) === searchScoreDiff
       );
       
       if (opponentIndex === -1) {
@@ -161,7 +161,7 @@ export async function createSwissPairings(tournament_id: number, round_number: n
   if (round_number === 1) {
     [pairings, byePlayer] = pairFirstRound(players);
   } else {
-    [pairings, byePlayer] = pairSubsequentRounds(players, round_number);
+    [pairings, byePlayer] = pairSubsequentRounds(players);
   }
 
   const games: Spel[] = pairings.map(pairing => ({
@@ -212,8 +212,8 @@ export async function savePairings(tournament_id: number, round_number: number, 
       });
 
       if (participation) {
-        const opponents = JSON.parse(participation.opponents);
-        const colorHistory = JSON.parse(participation.color_history);
+        const opponents = JSON.parse(participation.opponents ?? '[]');
+        const colorHistory = JSON.parse(participation.color_history ?? '[]');
 
         await prisma.participation.update({
           where: { user_id_tournament_id: { user_id: playerId, tournament_id } },
@@ -264,11 +264,11 @@ export async function updateTournamentScores(tournament_id: number): Promise<voi
       }
     }
 
-    const opponents = JSON.parse(participation.opponents) as number[];
+    const opponents = JSON.parse(participation.opponents ?? '[]') as number[];
     for (const opponentId of opponents) {
       const opponentParticipation = participations.find(p => p.user_id === opponentId);
       if (opponentParticipation) {
-        buchholz += opponentParticipation.score;
+        buchholz += opponentParticipation.score ?? 0;
       }
     }
 
