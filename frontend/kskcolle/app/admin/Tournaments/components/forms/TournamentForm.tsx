@@ -53,25 +53,25 @@ export default function TournamentForm() {
       const tournamentData = {
         naam: data.naam,
         rondes: Number(data.rondes), 
-        participations: selectedParticipants
-      }
-      console.log('Submitting tournament data:', tournamentData)
-      const result = await addTournament(tournamentData)
-      console.log('Tournament creation result:', result)
-      mutateTournaments()
-      reset()
-      setSelectedParticipants([])
-      toast({ title: "Success", description: "Tournament created successfully" })
+        participations: selectedParticipants,
+      };
+
+      const result = await addTournament(tournamentData);
+
+      mutateTournaments();
+      reset();
+      setSelectedParticipants([]);
+      toast({ title: "Success", description: "Tournament created successfully" });
     } catch (error) {
-      console.error('Error creating tournament:', error)
       if (error.response) {
-        console.error('Response data:', error.response.data)
-        console.error('Response status:', error.response.status)
-        console.error('Response headers:', error.response.headers)
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
       }
-      toast({ title: "Error", description: "Failed to create tournament. Check console for details.", variant: "destructive" })
+      toast({ title: "Error", description: "Failed to create tournament.", variant: "destructive" });
     }
-  }
+};
+
 
   const handleParticipantToggle = (userId: number) => {
     setSelectedParticipants(prev => 

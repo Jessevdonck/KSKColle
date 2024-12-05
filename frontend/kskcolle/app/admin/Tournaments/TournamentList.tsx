@@ -44,10 +44,10 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Rounds</TableHead>
-          <TableHead>Participants</TableHead>
-          <TableHead className='flex justify-end items-center pr-32'>Actions</TableHead>
+          <TableHead>Naam</TableHead>
+          <TableHead>Rondes</TableHead>
+          <TableHead>Deelnemers</TableHead>
+          <TableHead className='flex justify-end items-center pr-32'>Acties</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

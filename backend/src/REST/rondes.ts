@@ -106,4 +106,4 @@ export default (parent: Router) => {
   router.delete('/:tournament_id/rondes/:round_id', removeRonde); 
 
   parent.use(router.routes()).use(router.allowedMethods());
-};
+};removeRonde

@@ -22,15 +22,23 @@ export default function RoundGames({ round, onUpdateGame }: RoundGamesProps) {
 
   const handleResultChange = async (gameId: number, result: string) => {
     try {
-      const apiResult = result === "not_played" ? "" : result
-      await spelApi.updateGame(gameId, { result: apiResult })
-      onUpdateGame()
-      toast({ title: "Success", description: "Resultaat succesvol bijgewerkt." })
+      const apiResult = result === "not_played" ? "not_played" : result;
+      
+      // Log de payload
+      console.log("Payload naar API:", { gameId, result: apiResult });
+  
+      await spelApi.updateGame(gameId, { result: apiResult });
+      onUpdateGame();
+      toast({ title: "Success", description: "Resultaat succesvol bijgewerkt." });
     } catch (error) {
-      console.error('Fout bij het bijwerken van het resultaat:', error)
-      toast({ title: "Error", description: "Kon het resultaat niet bijwerken", variant: "destructive" })
+      console.error("Fout bij het bijwerken van het resultaat:", error);
+      toast({
+        title: "Error",
+        description: "Kon het resultaat niet bijwerken",
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   return (
     <Table className=''>

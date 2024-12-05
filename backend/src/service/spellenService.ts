@@ -115,22 +115,29 @@ export const createSpel = async (spel: SpelCreateInput) => {
   });
 };
   
-export const updateSpel = async (game_id: number, changes: SpelUpdateInput) => {
-  return prisma.game.update({
-    where: {
-      game_id, 
-    },
-    data: changes,
-    include: {
-      round: {
-        include: {
-          tournament: true,
-        },
+export const updateSpel = async (game_id: number, data: SpelUpdateInput): Promise<Spel> => {
+  try {
+    const updatedGame = await prisma.game.update({
+      where: {
+        game_id,
       },
-      speler1: true,
-      speler2: true,
-    },
-  });
+      data,
+      include: {
+        round: {
+          include: {
+            tournament: true,
+          },
+        },
+        speler1: true,
+        speler2: true,
+      },
+    });
+    console.log('Updated game:', updatedGame);
+    return updatedGame;
+  } catch (error) {
+    console.error('Error updating game:', error);
+    throw error;
+  }
 };
 
 export const removeSpel = async (game_id: number): Promise<void> => {
