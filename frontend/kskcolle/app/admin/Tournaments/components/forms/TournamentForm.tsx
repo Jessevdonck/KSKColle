@@ -56,7 +56,7 @@ export default function TournamentForm() {
         participations: selectedParticipants,
       };
 
-      const result = await addTournament(tournamentData);
+      await addTournament(tournamentData);
 
       mutateTournaments();
       reset();
