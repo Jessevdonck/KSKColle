@@ -41,7 +41,7 @@ export const getRondeByTournamentId = async (tournamentId: number, roundId: numb
     });
 
     if (!ronde) {
-      throw ServiceError.notFound(`No round with this id exists for the tournament`);
+      throw ServiceError.notFound("No round with this id exists for the tournament");
     }
 
     return ronde;

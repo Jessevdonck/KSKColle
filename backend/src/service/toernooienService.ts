@@ -1,79 +1,93 @@
 import { prisma } from "./data/";
 import type { Toernooi, ToernooiCreateInput, ToernooiUpdateInput } from "../types/toernooi";
 import type { Participation } from "../types/participation";
+import ServiceError from "../core/serviceError";
+import handleDBError from "./handleDBError";
 
 export const getAllTournaments = async (): Promise<Toernooi[]> => {
-  return prisma.tournament.findMany({
-    include: {
-      participations: {
-        include: {
-          user: true,
+  try {
+    return await prisma.tournament.findMany({
+      include: {
+        participations: {
+          include: {
+            user: true,
+          },
         },
-      },
-      rounds: {
-        include: {
-          games: {
-            include: {
-              speler1: true,
-              speler2: true,
-              winnaar: true,
+        rounds: {
+          include: {
+            games: {
+              include: {
+                speler1: true,
+                speler2: true,
+                winnaar: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const getTournamentById = async (tournament_id: number): Promise<Toernooi> => {
-  const tournament = await prisma.tournament.findUnique({
-    where: {
-      tournament_id,
-    },
-    include: {
-      participations: {
-        include: {
-          user: true,
-        },
+  try {
+    const tournament = await prisma.tournament.findUnique({
+      where: {
+        tournament_id,
       },
-      rounds: {
-        include: {
-          games: {
-            include: {
-              speler1: true,
-              speler2: true,
-              winnaar: true,
+      include: {
+        participations: {
+          include: {
+            user: true,
+          },
+        },
+        rounds: {
+          include: {
+            games: {
+              include: {
+                speler1: true,
+                speler2: true,
+                winnaar: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!tournament) {
-    throw new Error('No tournament with this id exists');
+    if (!tournament) {
+      throw ServiceError.notFound('No tournament with this id exists');
+    }
+
+    return tournament;
+  } catch (error) {
+    throw handleDBError(error);
   }
-
-  return tournament;
 };
 
 export const addTournament = async (toernooi: ToernooiCreateInput) => {
-  return await prisma.tournament.create({
-    data: {
-      naam: toernooi.naam,
-      rondes: toernooi.rondes,
-      participations: {
-        create: toernooi.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
-      },
-    },
-    include: {
-      participations: {
-        include: {
-          user: true,
+  try {
+    return await prisma.tournament.create({
+      data: {
+        naam: toernooi.naam,
+        rondes: toernooi.rondes,
+        participations: {
+          create: toernooi.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
         },
       },
-    },
-  });
+      include: {
+        participations: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const removeTournament = async (tournament_id: number): Promise<void> => {
@@ -103,80 +117,95 @@ export const removeTournament = async (tournament_id: number): Promise<void> => 
       });
     });
   } catch (error) {
-    console.error('Error deleting tournament:', error);
-    throw error;
+    throw handleDBError(error);
   }
 };
 
 export const updateTournament = async (tournament_id: number, changes: ToernooiUpdateInput) => {
-  const { participations, ...restOfChanges } = changes;
+  try {
+    const { participations, ...restOfChanges } = changes;
 
-  const updateData: any = {
-    ...restOfChanges,
-  };
-
-  if (participations) {
-    updateData.participations = {
-      deleteMany: {},
-      create: participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
+    const updateData: any = {
+      ...restOfChanges,
     };
-  }
 
-  return prisma.tournament.update({
-    where: {
-      tournament_id,
-    },
-    data: updateData,
-    include: {
-      participations: {
-        include: {
-          user: true,
+    if (participations) {
+      updateData.participations = {
+        deleteMany: {},
+        create: participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
+      };
+    }
+
+    return await prisma.tournament.update({
+      where: {
+        tournament_id,
+      },
+      data: updateData,
+      include: {
+        participations: {
+          include: {
+            user: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const savePairings = async (tournament_id: number, round_number: number, pairings: any[]) => {
-  const round = await prisma.round.create({
-    data: {
-      tournament_id,
-      ronde_nummer: round_number,
-      ronde_datum: new Date(),
-    },
-  });
+  try {
+    const round = await prisma.round.create({
+      data: {
+        tournament_id,
+        ronde_nummer: round_number,
+        ronde_datum: new Date(),
+      },
+    });
 
-  await prisma.game.createMany({
-    data: pairings.map((pairing) => ({
-      round_id: round.round_id,
-      speler1_id: pairing.white.user_id,
-      speler2_id: pairing.black.user_id,
-    })),
-  });
+    await prisma.game.createMany({
+      data: pairings.map((pairing) => ({
+        round_id: round.round_id,
+        speler1_id: pairing.white.user_id,
+        speler2_id: pairing.black.user_id,
+      })),
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const addParticipation = async (tournament_id: number, user_id: number): Promise<Participation> => {
-  return prisma.participation.create({
-    data: {
-      tournament: { connect: { tournament_id } },
-      user: { connect: { user_id } },
-      score: 0, 
-      buchholz: 0, 
-      sonnebornBerger: 0, 
-      opponents: '', 
-      color_history: '',
-      bye_round: null,
-    },
-  });
+  try {
+    return await prisma.participation.create({
+      data: {
+        tournament: { connect: { tournament_id } },
+        user: { connect: { user_id } },
+        score: 0, 
+        buchholz: 0, 
+        sonnebornBerger: 0, 
+        opponents: '', 
+        color_history: '',
+        bye_round: null,
+      },
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };
 
 export const removeParticipation = async (tournament_id: number, user_id: number): Promise<void> => {
-  await prisma.participation.delete({
-    where: {
-      user_id_tournament_id: {
-        user_id,
-        tournament_id,
+  try {
+    await prisma.participation.delete({
+      where: {
+        user_id_tournament_id: {
+          user_id,
+          tournament_id,
+        },
       },
-    },
-  });
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
 };

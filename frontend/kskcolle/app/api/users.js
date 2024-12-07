@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = 'http://localhost:9000/api/spelers'
+const baseUrl = 'http://localhost:9000/api/users'
 
 export const getFideById = async (fideId) => {
   const response = await axios.get(`http://localhost:3000/player/${fideId}/info`)

@@ -1,9 +1,10 @@
 import { prisma } from "./data/";
 import type { Participation } from "../types/participation";
-import type { Speler } from "../types/speler";
+import type { User } from "../types/user";
 import type { Spel } from "../types/spel";
+import handleDBError from "./handleDBError";
 
-type SwissPlayer = Speler & {
+type SwissPlayer = User & {
   participation: Participation;
 };
 
@@ -145,146 +146,162 @@ function pairSubsequentRounds(players: SwissPlayer[]): [Pairing[], SwissPlayer |
 }
 
 export async function createSwissPairings(tournament_id: number, round_number: number): Promise<Spel[]> {
-  const participations = await prisma.participation.findMany({
-    where: { tournament_id },
-    include: { user: true },
-  });
+  try {
+    const participations = await prisma.participation.findMany({
+      where: { tournament_id },
+      include: { user: true },
+    });
 
-  const players: SwissPlayer[] = participations.map((p) => ({
-    ...p.user,
-    participation: p,
-  }));
+    const players: SwissPlayer[] = participations.map((p) => ({
+      ...p.user,
+      participation: p,
+    }));
 
-  let pairings: Pairing[];
-  let byePlayer: SwissPlayer | undefined;
+    let pairings: Pairing[];
+    let byePlayer: SwissPlayer | undefined;
 
-  if (round_number === 1) {
-    [pairings, byePlayer] = pairFirstRound(players);
-  } else {
-    [pairings, byePlayer] = pairSubsequentRounds(players);
-  }
+    if (round_number === 1) {
+      [pairings, byePlayer] = pairFirstRound(players);
+    } else {
+      [pairings, byePlayer] = pairSubsequentRounds(players);
+    }
 
-  const games: Spel[] = pairings.map(pairing => ({
-    game_id: 0,
-    round_id: 0,
-    speler1_id: pairing.speler1_id,
-    speler2_id: pairing.speler2_id,
-    winnaar_id: null,
-    result: null,
-    uitgestelde_datum: null,
-  }));
-
-  if (byePlayer) {
-    games.push({
+    const games: Spel[] = pairings.map(pairing => ({
       game_id: 0,
       round_id: 0,
-      speler1_id: byePlayer.user_id,
-      speler2_id: null,
-      winnaar_id: byePlayer.user_id,
-      result: '1-0',
+      speler1_id: pairing.speler1_id,
+      speler2_id: pairing.speler2_id,
+      winnaar_id: null,
+      result: null,
       uitgestelde_datum: null,
-    });
-  }
+    }));
 
-  return games;
+    if (byePlayer) {
+      games.push({
+        game_id: 0,
+        round_id: 0,
+        speler1_id: byePlayer.user_id,
+        speler2_id: null,
+        winnaar_id: byePlayer.user_id,
+        result: '1-0',
+        uitgestelde_datum: null,
+      });
+    }
+
+    return games;
+  } catch (error) {
+    throw handleDBError(error);
+  }
 }
 
 export async function savePairings(tournament_id: number, round_number: number, pairings: Spel[]): Promise<void> {
-  const round = await prisma.round.create({
-    data: {
-      tournament_id,
-      ronde_nummer: round_number,
-      ronde_datum: new Date(),
-    },
-  });
+  try {
+    const round = await prisma.round.create({
+      data: {
+        tournament_id,
+        ronde_nummer: round_number,
+        ronde_datum: new Date(),
+      },
+    });
 
-  await prisma.game.createMany({
-    data: pairings.map((pairing) => ({
-      ...pairing,
-      round_id: round.round_id,
-    })),
-  });
+    await prisma.game.createMany({
+      data: pairings.map((pairing) => ({
+        ...pairing,
+        round_id: round.round_id,
+      })),
+    });
 
-  for (const pairing of pairings) {
-    const updatePlayer = async (playerId: number, color: 'W' | 'B' | 'N', opponentId: number | null) => {
-      const participation = await prisma.participation.findUnique({
-        where: { user_id_tournament_id: { user_id: playerId, tournament_id } },
-      });
-
-      if (participation) {
-        const opponents = JSON.parse(participation.opponents ?? '[]');
-        const colorHistory = JSON.parse(participation.color_history ?? '[]');
-
-        await prisma.participation.update({
+    for (const pairing of pairings) {
+      const updatePlayer = async (playerId: number, color: 'W' | 'B' | 'N', opponentId: number | null) => {
+        const participation = await prisma.participation.findUnique({
           where: { user_id_tournament_id: { user_id: playerId, tournament_id } },
-          data: {
-            opponents: JSON.stringify([...opponents, opponentId]),
-            color_history: JSON.stringify([...colorHistory, color]),
-            bye_round: color === 'N' ? round_number : participation.bye_round,
-          },
         });
-      }
-    };
 
-    await updatePlayer(pairing.speler1_id, pairing.speler2_id != null ? 'W' : 'N', pairing.speler2_id ?? null);
-    if (pairing.speler2_id != null) {
-      await updatePlayer(pairing.speler2_id, 'B', pairing.speler1_id);
+        if (participation) {
+          const opponents = JSON.parse(participation.opponents ?? '[]');
+          const colorHistory = JSON.parse(participation.color_history ?? '[]');
+
+          await prisma.participation.update({
+            where: { user_id_tournament_id: { user_id: playerId, tournament_id } },
+            data: {
+              opponents: JSON.stringify([...opponents, opponentId]),
+              color_history: JSON.stringify([...colorHistory, color]),
+              bye_round: color === 'N' ? round_number : participation.bye_round,
+            },
+          });
+        }
+      };
+
+      await updatePlayer(pairing.speler1_id, pairing.speler2_id != null ? 'W' : 'N', pairing.speler2_id ?? null);
+      if (pairing.speler2_id != null) {
+        await updatePlayer(pairing.speler2_id, 'B', pairing.speler1_id);
+      }
     }
+  } catch (error) {
+    throw handleDBError(error);
   }
 }
 
 export async function updateTournamentScores(tournament_id: number): Promise<void> {
-  const participations = await prisma.participation.findMany({
-    where: { tournament_id },
-    include: { user: true },
-  });
+  try {
+    const participations = await prisma.participation.findMany({
+      where: { tournament_id },
+      include: { user: true },
+    });
 
-  const games = await prisma.game.findMany({
-    where: {
-      round: {
-        tournament_id,
-      },
-    },
-  });
-
-  for (const participation of participations) {
-    let score = 0;
-    let buchholz = 0;
-    let sonnebornBerger = 0;
-
-    for (const game of games) {
-      if (game.speler1_id === participation.user_id || game.speler2_id === participation.user_id) {
-        if (game.winnaar_id === participation.user_id) {
-          score += 1;
-          sonnebornBerger += (game.speler1_id === participation.user_id ? game.speler2_id : game.speler1_id) || 0;
-        } else if (game.result === '1/2-1/2') {
-          score += 0.5;
-          sonnebornBerger += ((game.speler1_id === participation.user_id ? game.speler2_id : game.speler1_id) || 0) / 2;
-        }
-      }
-    }
-
-    const opponents = JSON.parse(participation.opponents ?? '[]') as number[];
-    for (const opponentId of opponents) {
-      const opponentParticipation = participations.find(p => p.user_id === opponentId);
-      if (opponentParticipation) {
-        buchholz += opponentParticipation.score ?? 0;
-      }
-    }
-
-    await prisma.participation.update({
-      where: { user_id_tournament_id: { user_id: participation.user_id, tournament_id } },
-      data: {
-        score,
-        buchholz,
-        sonnebornBerger,
+    const games = await prisma.game.findMany({
+      where: {
+        round: {
+          tournament_id,
+        },
       },
     });
+
+    for (const participation of participations) {
+      let score = 0;
+      let buchholz = 0;
+      let sonnebornBerger = 0;
+
+      for (const game of games) {
+        if (game.speler1_id === participation.user_id || game.speler2_id === participation.user_id) {
+          if (game.winnaar_id === participation.user_id) {
+            score += 1;
+            sonnebornBerger += (game.speler1_id === participation.user_id ? game.speler2_id : game.speler1_id) || 0;
+          } else if (game.result === '1/2-1/2') {
+            score += 0.5;
+            sonnebornBerger += ((game.speler1_id === participation.user_id ? game.speler2_id : game.speler1_id) || 0) / 2;
+          }
+        }
+      }
+
+      const opponents = JSON.parse(participation.opponents ?? '[]') as number[];
+      for (const opponentId of opponents) {
+        const opponentParticipation = participations.find(p => p.user_id === opponentId);
+        if (opponentParticipation) {
+          buchholz += opponentParticipation.score ?? 0;
+        }
+      }
+
+      await prisma.participation.update({
+        where: { user_id_tournament_id: { user_id: participation.user_id, tournament_id } },
+        data: {
+          score,
+          buchholz,
+          sonnebornBerger,
+        },
+      });
+    }
+  } catch (error) {
+    throw handleDBError(error);
   }
 }
 
 export async function createAndSaveSwissPairings(tournament_id: number, round_number: number): Promise<void> {
-  await updateTournamentScores(tournament_id);
-  const pairings = await createSwissPairings(tournament_id, round_number);
-  await savePairings(tournament_id, round_number, pairings);
+  try {
+    await updateTournamentScores(tournament_id);
+    const pairings = await createSwissPairings(tournament_id, round_number);
+    await savePairings(tournament_id, round_number, pairings);
+  } catch (error) {
+    throw handleDBError(error);
+  }
 }

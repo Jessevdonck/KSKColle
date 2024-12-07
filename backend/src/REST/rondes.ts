@@ -5,6 +5,8 @@ import type { CreateRoundRequest, CreateRoundResponse, GetAllRoundsResponse, IdR
 import Koa from 'koa';
 import { getRondeByTournamentId } from '../service/rondeService';
 import ServiceError from '../core/serviceError';
+import Joi from 'joi';
+import validate from '../core/validation';
 
 const getAllRondes = async (ctx: KoaContext<GetAllRoundsResponse>) => {
   const spelers =  await rondeService.getAllRondes();
@@ -12,11 +14,19 @@ const getAllRondes = async (ctx: KoaContext<GetAllRoundsResponse>) => {
     items: spelers,
   };
 };
+getAllRondes.validationScheme = null;
 
 const createRonde = async (ctx: KoaContext<CreateRoundResponse, void, CreateRoundRequest>) => {
   const newRound: any = await rondeService.createRonde(ctx.request.body);
   ctx.status = 201; 
   ctx.body = newRound;
+};
+createRonde.validationScheme = {
+  body: {
+    tournament_id: Joi.number().integer().positive().required(),
+    ronde_nummer: Joi.number().integer().positive().required(),
+    ronde_datum: Joi.date().required(),
+  },
 };
 
 const getRondeById = async (ctx: Koa.Context) => {
@@ -69,6 +79,12 @@ const getRondeById = async (ctx: Koa.Context) => {
     }
   }
 };
+getRondeById.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+    round_id: Joi.number().integer().positive(),
+  },
+};
 
 const updateRonde = async (ctx: KoaContext<UpdateRoundResponse, IdRondeParams, UpdateRoundRequest>) => {
   const tournamentId = Number(ctx.params.tournament_id); 
@@ -77,12 +93,28 @@ const updateRonde = async (ctx: KoaContext<UpdateRoundResponse, IdRondeParams, U
   
   ctx.body = updatedSpeler; 
 };
+updateRonde.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+    round_id: Joi.number().integer().positive(),
+  },
+  body: {
+    ronde_nummer: Joi.number().integer().positive(),
+    ronde_datum: Joi.date(),
+  },
+};
 
 const removeRonde = async (ctx: KoaContext<void, IdRondeParams>) => {
   const tournament_id = Number(ctx.params.tournament_id);
   const roundId = Number(ctx.params.ronde_id);
   rondeService.removeRound(tournament_id, roundId);
   ctx.status = 204; 
+};
+removeRonde.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+    round_id: Joi.number().integer().positive(),
+  },
 };
 
 const getAllRondesByTournamentId = async (ctx: any) => {
@@ -92,18 +124,23 @@ const getAllRondesByTournamentId = async (ctx: any) => {
     items: rondes,
   };
 };
+getAllRondesByTournamentId.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+  },
+};
 
 export default (parent: Router) => {
   const router = new Router({
     prefix: '/rondes',
   });
 
-  router.get('/', getAllRondes);
-  router.get('/:tournament_id/rondes', getAllRondesByTournamentId);
-  router.post('/', createRonde);
-  router.get('/:tournament_id/rondes/:round_id', getRondeById); 
-  router.put('/:tournament_id/rondes/:round_id', updateRonde); 
-  router.delete('/:tournament_id/rondes/:round_id', removeRonde); 
+  router.get('/', validate(getAllRondes.validationScheme), getAllRondes);
+  router.get('/:tournament_id/rondes',validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
+  router.post('/',validate(createRonde.validationScheme), createRonde);
+  router.get('/:tournament_id/rondes/:round_id',validate(getRondeById.validationScheme), getRondeById); 
+  router.put('/:tournament_id/rondes/:round_id',validate(updateRonde.validationScheme), updateRonde); 
+  router.delete('/:tournament_id/rondes/:round_id',validate(removeRonde.validationScheme), removeRonde); 
 
   parent.use(router.routes()).use(router.allowedMethods());
 };removeRonde

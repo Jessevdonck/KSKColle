@@ -1,9 +1,10 @@
 import type { ListResponse } from "./common";
 
-export type Speler = {
+export type User = {
   user_id: number;
   voornaam: string;
   achternaam: string;
+  email: string;
   geboortedatum: Date;
   schaakrating_elo: number;
   max_rating?: number | null;           
@@ -13,7 +14,7 @@ export type Speler = {
   lid_sinds: Date;
 };
 
-export type SpelerCreateInput = {
+export type UserCreateInput = {
   voornaam: string;
   achternaam: string;
   geboortedatum: Date;
@@ -27,13 +28,13 @@ export type SpelerCreateInput = {
   lid_sinds: Date;
 };
 
-export interface SpelerUpdateInput extends SpelerCreateInput {}
+export interface UserUpdateInput extends UserCreateInput {}
 
-export interface CreateSpelerRequest extends SpelerCreateInput {}
-export interface UpdateSpelerRequest extends SpelerUpdateInput {}
+export interface CreateUserRequest extends UserCreateInput {}
+export interface UpdateUserRequest extends UserUpdateInput {}
 
-export interface GetAllSpelersResponse extends ListResponse<Speler> {}
-export interface GetSpelerByIdResponse extends Speler {}
-export interface GetSpelerByNaamResponse extends Speler {}
-export interface CreateSpelerResponse extends GetSpelerByIdResponse {}
-export interface UpdateSpelerResponse extends GetSpelerByIdResponse {}
+export interface GetAllUserResponse extends ListResponse<User> {}
+export interface GetUserByIdResponse extends User {}
+export interface GetUserByNaamResponse extends User {}
+export interface CreateUserResponse extends GetUserByIdResponse {}
+export interface UpdateUserResponse extends GetUserByIdResponse {}

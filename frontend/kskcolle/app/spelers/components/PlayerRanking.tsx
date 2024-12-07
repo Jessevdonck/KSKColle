@@ -11,7 +11,7 @@ export default function PlayerRanking() {
     data: users = [],
     isLoading,
     error,
-  } = useSWR<User[]>('spelers', getAll)
+  } = useSWR<User[]>('users', getAll)
 
   return (
     <AsyncData loading={isLoading} error={error}>
