@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = 'http://localhost:9000/api/toernooien'
+const baseUrl = 'http://localhost:9000/api/tournament'
 
 export const getTournamentById = async (id) => {
   const response = await axios.get(`${baseUrl}/${id}`)

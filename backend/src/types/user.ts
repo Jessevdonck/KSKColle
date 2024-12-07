@@ -1,4 +1,5 @@
 import type { ListResponse } from "./common";
+import type { Prisma } from "@prisma/client";
 
 export type User = {
   user_id: number;
@@ -12,6 +13,8 @@ export type User = {
   is_admin?: boolean | null;            
   fide_id?: number | null;                    
   lid_sinds: Date;
+  password_hash: string;
+  roles: Prisma.JsonValue;
 };
 
 export type UserCreateInput = {

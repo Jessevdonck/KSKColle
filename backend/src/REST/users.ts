@@ -1,5 +1,5 @@
 import Router from '@koa/router';
-import * as spelerService from '../service/spelersService';
+import * as userService from '../service/userService';
 import type { User, CreateUserResponse, CreateUserRequest, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetAllUserResponse, GetUserByNaamResponse } from '../types/user';
 import type { KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
@@ -7,7 +7,7 @@ import Joi from 'joi';
 import validate from '../core/validation';
 
 const getAllUsers = async (ctx: KoaContext<GetAllUserResponse>): Promise<User[]> => {
-  const users =  await spelerService.getAllUsers();
+  const users =  await userService.getAllUsers();
   ctx.body = {
     items: users,
   };
@@ -20,7 +20,7 @@ const createUser = async (ctx: KoaContext<CreateUserResponse, void, CreateUserRe
   const newUser: CreateUserRequest = ctx.request.body;
 
   try {
-    const createdUser = await spelerService.createUser(newUser);
+    const createdUser = await userService.createUser(newUser);
     ctx.status = 201; 
     ctx.body = createdUser;
   } catch (error) {
@@ -43,7 +43,7 @@ createUser.validationScheme = {
 };
 
 const getUserById = async (ctx: KoaContext<GetUserByIdResponse, IdParams>) => {
-  ctx.body = await spelerService.getUserById(Number(ctx.params.id));
+  ctx.body = await userService.getUserById(Number(ctx.params.id));
 };
 getUserById.validationScheme = {
   params: {
@@ -53,7 +53,7 @@ getUserById.validationScheme = {
 
 const updateUser = async (ctx: KoaContext<UpdateUserResponse, IdParams, UpdateUserRequest>) => {
   const userId = Number(ctx.params.id); 
-  const updatedUser = await spelerService.updateUser(userId, ctx.request.body); 
+  const updatedUser = await userService.updateUser(userId, ctx.request.body); 
   
   ctx.body = updatedUser; 
 };
@@ -84,7 +84,7 @@ const getUserByNaam = async (ctx: KoaContext<GetUserByNaamResponse>) => {
   }
 
   try {
-    const user = await spelerService.getUserByNaam(voornaam, achternaam);
+    const user = await userService.getUserByNaam(voornaam, achternaam);
     if (user) {
       ctx.body = user;
     } else {
@@ -104,7 +104,7 @@ getUserByNaam.validationScheme = {
 
 const removeUser = async (ctx: KoaContext<void, IdParams>) => {
   const userId = Number(ctx.params.id);
-  spelerService.removeUser(userId);
+  userService.removeUser(userId);
   ctx.status = 204; 
 };
 removeUser.validationScheme = {

@@ -1,22 +1,22 @@
 import Router from '@koa/router';
-import * as toernooienService from '../service/toernooienService';
-import type { CreateToernooiRequest, CreateToernooiResponse, GetAllToernooienResponse, GetToernooiByIdResponse, UpdateToernooiRequest, UpdateToernooiResponse } from '../types/toernooi';
+import * as tournamentService from '../service/tournamentService';
+import type { CreateTournamentRequest, CreateTournamentResponse, GetAllTournamentenResponse, GetTournamentByIdResponse, UpdateTournamentRequest, UpdateTournamentResponse } from '../types/tournament';
 import type { KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 import { createAndSaveSwissPairings } from '../service/swiss-pairings';
 import Joi from 'joi';
 import validate from '../core/validation';
 
-const getAllTournament = async (ctx: KoaContext<GetAllToernooienResponse>) => {
-  const spelers =  await toernooienService.getAllTournaments();
+const getAllTournament = async (ctx: KoaContext<GetAllTournamentenResponse>) => {
+  const spelers =  await tournamentService.getAllTournaments();
   ctx.body = {
     items: spelers,
   };
 };
 getAllTournament.validationScheme = null;
 
-const createTournament = async (ctx: KoaContext<CreateToernooiResponse, void, CreateToernooiRequest>) => {
-  const newSpeler: any = await toernooienService.addTournament(ctx.request.body);
+const createTournament = async (ctx: KoaContext<CreateTournamentResponse, void, CreateTournamentRequest>) => {
+  const newSpeler: any = await tournamentService.addTournament(ctx.request.body);
   ctx.status = 201; 
   ctx.body = newSpeler;
 };
@@ -28,8 +28,8 @@ createTournament.validationScheme = {
   },
 };
 
-const getTournamentById = async (ctx: KoaContext<GetToernooiByIdResponse, IdParams>) => {
-  ctx.body = await toernooienService.getTournamentById(Number(ctx.params.id));
+const getTournamentById = async (ctx: KoaContext<GetTournamentByIdResponse, IdParams>) => {
+  ctx.body = await tournamentService.getTournamentById(Number(ctx.params.id));
 };
 getTournamentById.validationScheme = {
   params: {
@@ -37,9 +37,9 @@ getTournamentById.validationScheme = {
   },
 };
 
-const updateTournament = async (ctx: KoaContext<UpdateToernooiResponse, IdParams, UpdateToernooiRequest>) => {
+const updateTournament = async (ctx: KoaContext<UpdateTournamentResponse, IdParams, UpdateTournamentRequest>) => {
   const tournamentId = Number(ctx.params.id); 
-  const updatedSpeler = await toernooienService.updateTournament(tournamentId, ctx.request.body); 
+  const updatedSpeler = await tournamentService.updateTournament(tournamentId, ctx.request.body); 
   
   ctx.body = updatedSpeler; 
 };
@@ -48,14 +48,14 @@ updateTournament.validationScheme = {
     id: Joi.number().integer().positive(),
   },
   body: {
-    toernooi_naam: Joi.string(),
-    toernooi_datum: Joi.date(),
+    naam: Joi.string(),
+    startdatum: Joi.date(),
   },
 };
 
 const removeTournament = async (ctx: KoaContext<void, IdParams>) => {
   const tournament_id = Number(ctx.params.id);
-  toernooienService.removeTournament(tournament_id);
+  tournamentService.removeTournament(tournament_id);
   ctx.status = 204; 
 };
 removeTournament.validationScheme = {
@@ -84,7 +84,7 @@ generatePairings.validationScheme = {
 
 export default (parent: Router) => {
   const router = new Router({
-    prefix: '/toernooien',
+    prefix: '/tournament',
   });
 
   router.get('/', validate(getAllTournament.validationScheme), getAllTournament);

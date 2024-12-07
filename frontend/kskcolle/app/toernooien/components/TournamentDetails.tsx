@@ -11,7 +11,7 @@ import { getRoundsByTournamentId } from '../../api/rondes'
 export default function TournamentDetails() {
   const { id } = useParams()
   const tournamentId = Number(id)
-  const { data: tournament, error: tournamentError } = useSWR(`toernooien/${tournamentId}`, () => getTournamentById(tournamentId))
+  const { data: tournament, error: tournamentError } = useSWR(`tournament/${tournamentId}`, () => getTournamentById(tournamentId))
   const { data: rounds, error: roundsError } = useSWR(`rondes/${tournamentId}/rondes`, () => getRoundsByTournamentId(tournamentId))
 
   if (tournamentError || roundsError) {

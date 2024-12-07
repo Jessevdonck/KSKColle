@@ -1,7 +1,7 @@
 import Router from '@koa/router';
-import installSpelerRouter from './spelers';
+import installSpelerRouter from './users';
 import installHealthRouter from './health';
-import installTournamentRouter from './toernooien';
+import installTournamentRouter from './tournament';
 import installRondeRouter from './rondes';
 import installSpelRouter from './spellen';
 import type { /*ChessAppContext, ChessAppState,*/ KoaApplication } from '../types/koa';

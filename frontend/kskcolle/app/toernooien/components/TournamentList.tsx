@@ -7,7 +7,7 @@ import { getAll } from '../../api/index'
 import { Trophy } from 'lucide-react'
 
 export default function TournamentList() {
-  const { data: tournaments, error } = useSWR('toernooien', getAll)
+  const { data: tournaments, error } = useSWR('tournament', getAll)
 
   if (error) return (
     <div className="flex items-center justify-center h-screen">

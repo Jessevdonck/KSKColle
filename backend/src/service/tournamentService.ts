@@ -1,10 +1,10 @@
-import { prisma } from "./data/";
-import type { Toernooi, ToernooiCreateInput, ToernooiUpdateInput } from "../types/toernooi";
+import { prisma } from "./data";
+import type { Tournament, TournamentCreateInput, TournamentUpdateInput } from "../types/tournament";
 import type { Participation } from "../types/participation";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 
-export const getAllTournaments = async (): Promise<Toernooi[]> => {
+export const getAllTournaments = async (): Promise<Tournament[]> => {
   try {
     return await prisma.tournament.findMany({
       include: {
@@ -31,7 +31,7 @@ export const getAllTournaments = async (): Promise<Toernooi[]> => {
   }
 };
 
-export const getTournamentById = async (tournament_id: number): Promise<Toernooi> => {
+export const getTournamentById = async (tournament_id: number): Promise<Tournament> => {
   try {
     const tournament = await prisma.tournament.findUnique({
       where: {
@@ -67,14 +67,14 @@ export const getTournamentById = async (tournament_id: number): Promise<Toernooi
   }
 };
 
-export const addTournament = async (toernooi: ToernooiCreateInput) => {
+export const addTournament = async (tournament: TournamentCreateInput) => {
   try {
     return await prisma.tournament.create({
       data: {
-        naam: toernooi.naam,
-        rondes: toernooi.rondes,
+        naam: tournament.naam,
+        rondes: tournament.rondes,
         participations: {
-          create: toernooi.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
+          create: tournament.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
         },
       },
       include: {
@@ -121,7 +121,7 @@ export const removeTournament = async (tournament_id: number): Promise<void> => 
   }
 };
 
-export const updateTournament = async (tournament_id: number, changes: ToernooiUpdateInput) => {
+export const updateTournament = async (tournament_id: number, changes: TournamentUpdateInput) => {
   try {
     const { participations, ...restOfChanges } = changes;
 
