@@ -1,8 +1,11 @@
 import { PrismaClient } from '@prisma/client'; 
+import { hashPassword } from '../core/password';
 
 const prisma = new PrismaClient(); 
 
 async function main() {
+
+  const passwordHash = await hashPassword('12345678');
 
   await prisma.user.createMany({
     data: [
@@ -18,6 +21,8 @@ async function main() {
         is_admin: false,
         fide_id: 202479,
         lid_sinds: new Date("1973-05-01"),
+        password_hash: passwordHash,
+        roles: ['user'],
       },
       { 
         voornaam: "Bart",
@@ -31,6 +36,8 @@ async function main() {
         is_admin: false,
         fide_id: 201413,
         lid_sinds: new Date("2010-05-24"),
+        password_hash: passwordHash,
+        roles: ['user'],
       },
       { 
         voornaam: "Niels",
@@ -44,6 +51,8 @@ async function main() {
         is_admin: true,
         fide_id: 219436,
         lid_sinds: new Date("2021-09-01"),
+        password_hash: passwordHash,
+        roles: ['user', 'admin'],
       },
       { 
         voornaam: "Jesse",
@@ -57,6 +66,8 @@ async function main() {
         is_admin: false,
         fide_id: 285412,
         lid_sinds: new Date("2021-09-01"),
+        password_hash: passwordHash,
+        roles: ['user'],
       },
       { 
         voornaam: "Giovanni",
@@ -70,6 +81,8 @@ async function main() {
         is_admin: false,
         fide_id: 256927,
         lid_sinds: new Date("2021-09-01"),
+        password_hash: passwordHash,
+        roles: ['user'],
       },
       { 
         voornaam: "Eduardo",
@@ -83,6 +96,8 @@ async function main() {
         is_admin: false,
         fide_id: 3501930,
         lid_sinds: new Date("2021-09-01"),
+        password_hash: passwordHash,
+        roles: ['user'],
       },
       { 
         voornaam: "Ronny",
@@ -96,6 +111,8 @@ async function main() {
         is_admin: false,
         fide_id: 208728,
         lid_sinds: new Date("2021-09-01"),
+        password_hash: passwordHash,
+        roles: ['user'],
       },
     ],
   });
@@ -116,52 +133,6 @@ async function main() {
       },
     ],
   });
-
-  await prisma.game.createMany({
-    data: [
-      {
-        round_id: 7,          
-        speler1_id: 36,       
-        speler2_id: 34,       
-        winnaar_id: 34,      
-        result: '1-0',       
-        uitgestelde_datum: null, 
-      },
-      {
-        round_id: 7,          
-        speler1_id: 37,       
-        speler2_id: 38,       
-        winnaar_id: 37,      
-        result: '0-1',      
-        uitgestelde_datum: null,
-      },
-      {
-        round_id: 8,        
-        speler1_id: 38,      
-        speler2_id: 39,      
-        winnaar_id: null,   
-        result: null,        
-        uitgestelde_datum: null, 
-      },
-      {
-        round_id: 8,        
-        speler1_id: 37,      
-        speler2_id: 36,      
-        winnaar_id: 37,   
-        result: '1-0',        
-        uitgestelde_datum: null, 
-      },
-      {
-        round_id: 9,        
-        speler1_id: 34,      
-        speler2_id: 35,      
-        winnaar_id: 35,   
-        result: '0-1',        
-        uitgestelde_datum: null, 
-      },
-    ],
-  });
-
 }
 
 main()

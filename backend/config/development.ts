@@ -16,5 +16,10 @@ export default {
       secret:
         'eenveeltemoeilijksecretdatniemandooitzalradenandersisdesitegehacked',
     },
+    argon: {
+      hashLength: 32,
+      timeCost: 6,
+      memoryCost: 2 ** 17,
+    },
   },
 };

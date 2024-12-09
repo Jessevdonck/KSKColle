@@ -20,7 +20,9 @@ model User {
   is_admin           Boolean?
   fide_id            Int?            @unique
   lid_sinds          DateTime
-  
+  password_hash      String          @db.VarChar(255)
+  roles              Json
+
   participations     Participation[]    
   speler1Games       Game[]          @relation("Speler1")
   speler2Games       Game[]          @relation("Speler2")
