@@ -10,6 +10,7 @@ export default {
     maxAge: 3 * 60 * 60, // 👈 3
   },
   auth: {
+    maxDelay: 5,
     jwt: {
       audience: 'kskcolle.be',
       issuer: 'kskcolle.be',
