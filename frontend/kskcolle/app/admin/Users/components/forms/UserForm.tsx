@@ -32,7 +32,10 @@ const validationRules = {
   },
   tel_nummer: {
     required:'Telefoonnummer is required!'
-  }
+  },
+  password: {
+    required:'wachtwoord is required!'
+  },
 };
 
 interface FormData {
@@ -45,6 +48,7 @@ interface FormData {
   fide_id?: number;
   schaakrating_max?: number;
   lid_sinds?: string;
+  password: string;
 }
 
 const toDateInputString = (date: Date | undefined) => {
@@ -71,6 +75,8 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
 
   const onSubmit = async (values: FormData) => {
     if (!isValid) return;
+
+    console.log(values);
 
     const formattedValues = {
       ...values,
@@ -126,6 +132,19 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             placeholder="Achternaam"
           />
           {errors.achternaam && <p className="text-red-500 text-xs italic">{errors.achternaam.message}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="password" className="block text-sm font-semibold text-textColor">
+            Wachtwoord
+          </Label>
+          <Input
+            {...register('password', validationRules.password)}
+            id="password"
+            type="password"
+            placeholder="Wachtwoord"
+          />
+          {errors.password && <p className="text-red-500 text-xs italic">{errors.password.message}</p>}
         </div>
 
         <div>

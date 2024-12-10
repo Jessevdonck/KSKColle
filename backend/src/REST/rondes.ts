@@ -1,12 +1,14 @@
 import Router from '@koa/router';
 import * as rondeService from '../service/rondeService';
-import type { KoaContext } from '../types/koa';
+import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { CreateRoundRequest, CreateRoundResponse, GetAllRoundsResponse, IdRondeParams, UpdateRoundRequest, UpdateRoundResponse } from '../types/ronde';
 import Koa from 'koa';
 import { getRondeByTournamentId } from '../service/rondeService';
 import ServiceError from '../core/serviceError';
 import Joi from 'joi';
 import validate from '../core/validation';
+import { requireAuthentication, makeRequireRole } from '../core/auth';
+import Role from '../core/roles';
 
 const getAllRondes = async (ctx: KoaContext<GetAllRoundsResponse>) => {
   const spelers =  await rondeService.getAllRondes();
@@ -130,17 +132,19 @@ getAllRondesByTournamentId.validationScheme = {
   },
 };
 
-export default (parent: Router) => {
+export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/rondes',
   });
 
-  router.get('/', validate(getAllRondes.validationScheme), getAllRondes);
-  router.get('/:tournament_id/rondes',validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
-  router.post('/',validate(createRonde.validationScheme), createRonde);
-  router.get('/:tournament_id/rondes/:round_id',validate(getRondeById.validationScheme), getRondeById); 
-  router.put('/:tournament_id/rondes/:round_id',validate(updateRonde.validationScheme), updateRonde); 
-  router.delete('/:tournament_id/rondes/:round_id',validate(removeRonde.validationScheme), removeRonde); 
+  const requireAdmin = makeRequireRole(Role.ADMIN);
+
+  router.get('/', requireAuthentication, validate(getAllRondes.validationScheme), getAllRondes);
+  router.get('/:tournament_id/rondes', requireAuthentication,validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
+  router.post('/', requireAdmin, requireAuthentication, validate(createRonde.validationScheme), createRonde);
+  router.get('/:tournament_id/rondes/:round_id', requireAuthentication, validate(getRondeById.validationScheme), getRondeById); 
+  router.put('/:tournament_id/rondes/:round_id', requireAdmin, requireAuthentication, validate(updateRonde.validationScheme), updateRonde); 
+  router.delete('/:tournament_id/rondes/:round_id', requireAdmin, requireAuthentication, validate(removeRonde.validationScheme), removeRonde); 
 
   parent.use(router.routes()).use(router.allowedMethods());
-};removeRonde
+};

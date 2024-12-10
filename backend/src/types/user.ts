@@ -11,11 +11,16 @@ export type User = {
   max_rating?: number | null;           
   rating_difference?: number | null;    
   is_admin?: boolean | null;            
-  fide_id?: number | null;                    
+  fide_id?: number | null | undefined;                    
   lid_sinds: Date;
   password_hash: string;
   roles: Prisma.JsonValue;
 };
+
+export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "is_admin" | "fide_id" | "lid_sinds"> {}
+
+
+export interface UserUpdateInput extends Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds"> {}
 
 export type UserCreateInput = {
   voornaam: string;
@@ -26,10 +31,38 @@ export type UserCreateInput = {
   schaakrating_elo: number;
   max_rating?: number | null;
   rating_difference?: number | null;
-  is_admin?: boolean | null;
   fide_id?: number | null;
   lid_sinds: Date;
+  password: string;
 };
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+}
+
+export interface GetUserRequest {
+  id: number | 'me'; 
+}
+
+export interface RegisterUserRequest {
+  voornaam: string;
+  achternaam: string;
+  geboortedatum: Date;
+  email: string;
+  tel_nummer: string;
+  schaakrating_elo: number;
+  max_rating?: number | null;
+  rating_difference?: number | null;
+  fide_id?: number | null;
+  lid_sinds: Date;
+  password: string;
+}
+export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email'> {}
 
 export interface UserUpdateInput extends UserCreateInput {}
 
@@ -37,7 +70,6 @@ export interface CreateUserRequest extends UserCreateInput {}
 export interface UpdateUserRequest extends UserUpdateInput {}
 
 export interface GetAllUserResponse extends ListResponse<User> {}
-export interface GetUserByIdResponse extends User {}
-export interface GetUserByNaamResponse extends User {}
-export interface CreateUserResponse extends GetUserByIdResponse {}
+export interface GetUserByIdResponse extends PublicUser {}
+export interface GetUserByNaamResponse extends PublicUser {}
 export interface UpdateUserResponse extends GetUserByIdResponse {}

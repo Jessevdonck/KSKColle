@@ -5,11 +5,11 @@ export default {
     disabled: false,
   },
   cors: {
-    // 👈 1
-    origins: ['http://localhost:5173'], // 👈 2
+    origins: ['http://localhost:5173'], 
     maxAge: 3 * 60 * 60, // 👈 3
   },
   auth: {
+    maxDelay: 0, // ms (0 seconds)
     jwt: {
       audience: 'kskcolle.be',
       issuer: 'kskcolle.be',
@@ -23,4 +23,7 @@ export default {
       memoryCost: 2 ** 17,
     },
   },
+
+  
+  
 };

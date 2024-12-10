@@ -1,11 +1,13 @@
 import Router from '@koa/router';
 import * as tournamentService from '../service/tournamentService';
 import type { CreateTournamentRequest, CreateTournamentResponse, GetAllTournamentenResponse, GetTournamentByIdResponse, UpdateTournamentRequest, UpdateTournamentResponse } from '../types/tournament';
-import type { KoaContext } from '../types/koa';
+import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 import { createAndSaveSwissPairings } from '../service/swiss-pairings';
 import Joi from 'joi';
 import validate from '../core/validation';
+import { requireAuthentication, makeRequireRole } from '../core/auth';
+import Role from '../core/roles';
 
 const getAllTournament = async (ctx: KoaContext<GetAllTournamentenResponse>) => {
   const spelers =  await tournamentService.getAllTournaments();
@@ -82,17 +84,19 @@ generatePairings.validationScheme = {
   },
 };
 
-export default (parent: Router) => {
+export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/tournament',
   });
 
-  router.get('/', validate(getAllTournament.validationScheme), getAllTournament);
-  router.post('/', validate(createTournament.validationScheme), createTournament);
-  router.get('/:id', validate(getTournamentById.validationScheme), getTournamentById);
-  router.put('/:id',validate(updateTournament.validationScheme),updateTournament);
-  router.delete('/:id', validate(removeTournament.validationScheme), removeTournament);
-  router.post('/:id/pairings/:rondeNummer', validate(generatePairings.validationScheme), generatePairings);
+  const requireAdmin = makeRequireRole(Role.ADMIN);
+
+  router.get('/', requireAuthentication, validate(getAllTournament.validationScheme), getAllTournament);
+  router.post('/',requireAdmin, requireAuthentication, validate(createTournament.validationScheme), createTournament);
+  router.get('/:id', requireAuthentication, validate(getTournamentById.validationScheme), getTournamentById);
+  router.put('/:id', requireAdmin, requireAuthentication, validate(updateTournament.validationScheme),updateTournament);
+  router.delete('/:id',requireAdmin, requireAuthentication, validate(removeTournament.validationScheme), removeTournament);
+  router.post('/:id/pairings/:rondeNummer',requireAdmin, requireAuthentication, validate(generatePairings.validationScheme), generatePairings);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'; 
 import { hashPassword } from '../core/password';
+import Role from '../core/roles';
 
 const prisma = new PrismaClient(); 
 
@@ -13,7 +14,7 @@ async function main() {
         voornaam: "Björn",
         achternaam: "Dyckmans",
         geboortedatum: new Date("1990-01-15"),
-        email: "test6@test.com",
+        email: "test7@test.com",
         tel_nummer: "0477186935",
         schaakrating_elo: 2174,
         schaakrating_difference: 0,
@@ -22,7 +23,7 @@ async function main() {
         fide_id: 202479,
         lid_sinds: new Date("1973-05-01"),
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
       { 
         voornaam: "Bart",
@@ -37,7 +38,7 @@ async function main() {
         fide_id: 201413,
         lid_sinds: new Date("2010-05-24"),
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
       { 
         voornaam: "Niels",
@@ -52,7 +53,7 @@ async function main() {
         fide_id: 219436,
         lid_sinds: new Date("2021-09-01"),
         password_hash: passwordHash,
-        roles: ['user', 'admin'],
+        roles: JSON.stringify([Role.USER], [Role.ADMIN]),
       },
       { 
         voornaam: "Jesse",
@@ -67,7 +68,7 @@ async function main() {
         fide_id: 285412,
         lid_sinds: new Date("2021-09-01"),
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
       { 
         voornaam: "Giovanni",
@@ -82,7 +83,7 @@ async function main() {
         fide_id: 256927,
         lid_sinds: new Date("2021-09-01"),
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
       { 
         voornaam: "Eduardo",
@@ -97,7 +98,7 @@ async function main() {
         fide_id: 3501930,
         lid_sinds: new Date("2021-09-01"),
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
       { 
         voornaam: "Ronny",
@@ -112,7 +113,7 @@ async function main() {
         fide_id: 208728,
         lid_sinds: new Date("2021-09-01"),
         password_hash: passwordHash,
-        roles: ['user'],
+        roles: JSON.stringify([Role.USER]),
       },
     ],
   });

@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label"
 import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CheckCircle2 } from "lucide-react"
-import { User } from '@/data/types'
 import useSWRMutation from 'swr/mutation'
 import { save } from '../../../../api/index'
 
@@ -47,10 +46,15 @@ const toDateInputString = (date: Date) => {
   return date ? new Date(date).toISOString().split('T')[0] : '';
 };
 
-export default function EditForm({ user, onClose }: { user: User; onClose: () => void }) {
+interface EditFormProps {
+  user;
+  onClose: () => void;
+}
+
+export default function EditForm({ user, onClose }: EditFormProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { trigger: saveUser } = useSWRMutation('spelers', save)
+  const { trigger: saveUser } = useSWRMutation('users', save)
 
   const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm<FormData>({
     mode: 'onBlur',
@@ -58,6 +62,8 @@ export default function EditForm({ user, onClose }: { user: User; onClose: () =>
       voornaam: user.voornaam,
       achternaam: user.achternaam,
       geboortedatum: toDateInputString(user.geboortedatum),
+      email: user.email,
+      tel_nummer: user.tel_nummer,
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,

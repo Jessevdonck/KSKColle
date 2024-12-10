@@ -1,10 +1,14 @@
 import Router from '@koa/router';
 import * as userService from '../service/userService';
-import type { User, CreateUserResponse, CreateUserRequest, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetAllUserResponse, GetUserByNaamResponse } from '../types/user';
-import type { KoaContext } from '../types/koa';
+import type { User, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetUserRequest, GetAllUserResponse, GetUserByNaamResponse, LoginResponse, RegisterUserRequest } from '../types/user';
+import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 import Joi from 'joi';
 import validate from '../core/validation';
+import { requireAuthentication, makeRequireRole, authDelay } from '../core/auth';
+import Role from '../core/roles';
+import type { Next } from 'koa';
+
 
 const getAllUsers = async (ctx: KoaContext<GetAllUserResponse>): Promise<User[]> => {
   const users =  await userService.getAllUsers();
@@ -16,19 +20,15 @@ const getAllUsers = async (ctx: KoaContext<GetAllUserResponse>): Promise<User[]>
 };
 getAllUsers.validationScheme = null;
 
-const createUser = async (ctx: KoaContext<CreateUserResponse, void, CreateUserRequest>) => {
-  const newUser: CreateUserRequest = ctx.request.body;
+const registerUser = async (
+  ctx: KoaContext<LoginResponse, void, RegisterUserRequest>,
+) => {
+  const token = await userService.register(ctx.request.body); 
 
-  try {
-    const createdUser = await userService.createUser(newUser);
-    ctx.status = 201; 
-    ctx.body = createdUser;
-  } catch (error) {
-    console.error("Error creating speler:", error);
-    ctx.status = 500;
-  }
+  ctx.status = 200;
+  ctx.body = { token };
 };
-createUser.validationScheme = {
+registerUser.validationScheme = {
   body: {
     voornaam: Joi.string(),
     achternaam: Joi.string(),
@@ -39,15 +39,25 @@ createUser.validationScheme = {
     schaakrating_elo: Joi.number().integer().positive(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
+    password: Joi.string()
   },
 };
 
-const getUserById = async (ctx: KoaContext<GetUserByIdResponse, IdParams>) => {
-  ctx.body = await userService.getUserById(Number(ctx.params.id));
+const getUserById = async (
+  ctx: KoaContext<GetUserByIdResponse, GetUserRequest>, 
+) => {
+  const user = await userService.getUserById(
+    ctx.params.id === 'me' ? ctx.state.session.userId : ctx.params.id,
+  );
+  ctx.status = 200;
+  ctx.body = user;
 };
 getUserById.validationScheme = {
   params: {
-    id: Joi.number().integer().positive(),
+    id: Joi.alternatives().try(
+      Joi.number().integer().positive(),
+      Joi.string().valid('me'),
+    )
   },
 };
 
@@ -113,17 +123,33 @@ removeUser.validationScheme = {
   },
 };
 
-export default (parent: Router) => {
+const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
+  const { userId, roles } = ctx.state.session;
+  const { id } = ctx.params;
+
+  if (id !== 'me' && id !== userId && !roles.includes(Role.ADMIN)) {
+    return ctx.throw(
+      403,
+      "You are not allowed to view this user's information",
+      { code: 'FORBIDDEN' },
+    );
+  }
+  return next();
+};
+
+export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/users',
   });
 
-  router.get('/', validate(getAllUsers.validationScheme), getAllUsers);
-  router.post('/', validate(createUser.validationScheme), createUser);
-  router.get('/by-name',validate(getUserByNaam.validationScheme), getUserByNaam);
-  router.get('/:id', validate(getUserById.validationScheme), getUserById);
-  router.put('/:id', validate(updateUser.validationScheme),updateUser);
-  router.delete('/:id', validate(removeUser.validationScheme), removeUser);
+  const requireAdmin = makeRequireRole(Role.ADMIN);
+
+  router.get('/', requireAuthentication, validate(getAllUsers.validationScheme), checkUserId, getAllUsers);
+  router.post('/', requireAdmin, authDelay, validate(registerUser.validationScheme), registerUser);
+  router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), checkUserId, getUserByNaam);
+  router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);
+  router.put('/:id', requireAdmin, requireAuthentication, validate(updateUser.validationScheme), checkUserId, updateUser);
+  router.delete('/:id', requireAdmin , requireAuthentication, validate(removeUser.validationScheme), checkUserId, removeUser);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

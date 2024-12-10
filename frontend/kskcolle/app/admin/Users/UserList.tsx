@@ -7,9 +7,10 @@ import { User } from '@/data/types'
 import EditForm from './components/forms/EditForm'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-interface UserListProps {
+type UserListProps = {
   users: User[]
-  onDelete: (userId: number) => void
+  onEdit: (user: User) => void
+  onDelete: (userId: number) => Promise<void>
 }
 
 export default function UserList({ users, onDelete }: UserListProps) {

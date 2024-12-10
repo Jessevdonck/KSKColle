@@ -1,10 +1,10 @@
-// src/types/koa.ts
 import type { ParameterizedContext } from 'koa';
 import type Application from 'koa';
 import type Router from '@koa/router';
+import type { SessionInfo } from './auth';
 
-// 👇 1
 export interface ChessAppState {
+  session: SessionInfo;
 }
 
 export interface ChessAppContext<
@@ -24,11 +24,12 @@ export type KoaContext<
   Params = unknown,
   RequestBody = unknown,
   Query = unknown,
-> = ParameterizedContext<
-  ChessAppState,
-  ChessAppContext<Params, RequestBody, Query>,
-  ResponseBody
->;
+> =
+  ParameterizedContext<
+    ChessAppState,
+    ChessAppContext<Params, RequestBody, Query>,
+    ResponseBody
+  >;
 
 export interface KoaApplication extends Application<ChessAppState, ChessAppContext> {}
 

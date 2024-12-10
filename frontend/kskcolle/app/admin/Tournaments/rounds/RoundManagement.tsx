@@ -15,11 +15,11 @@ interface RoundManagementProps {
 export default function RoundManagement({ tournament }: RoundManagementProps) {
   const { toast } = useToast()
   const { data: updatedTournament, mutate } = useSWR<Toernooi>(
-    `toernooien/${tournament.tournament_id}`,
+    `tournament/${tournament.tournament_id}`,
     () => tournamentsApi.getTournamentById(tournament.tournament_id)
   )
   const { trigger: generatePairings } = useSWRMutation(
-    [`toernooien/${tournament.tournament_id}/pairings`, tournament.tournament_id],
+    [`tournament/${tournament.tournament_id}/pairings`, tournament.tournament_id],
     ([_, tournamentId], { arg }: { arg: { roundNumber: number } }) =>
       tournamentsApi.createPairings(tournamentId, arg.roundNumber)
   )

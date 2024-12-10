@@ -1,10 +1,12 @@
 import Router from '@koa/router';
 import * as spellenService from '../service/spellenService';
-import type { KoaContext } from '../types/koa';
+import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { CreateSpelRequest, CreateSpelResponse, GetAllSpellenResponse, GetSpelByIdResponse, UpdateSpelRequest, UpdateSpelResponse } from '../types/spel';
 import type { IdParams } from '../types/common';
 import Joi from 'joi';
 import validate from '../core/validation';
+import { requireAuthentication, makeRequireRole } from '../core/auth';
+import Role from '../core/roles';
 
 const getAllSpellen = async (ctx: KoaContext<GetAllSpellenResponse>) => {
   const spellen =  await spellenService.getAllSpellen();
@@ -88,17 +90,19 @@ getSpellenByPlayerId.validationScheme = {
   },
 };
 
-export default (parent: Router) => {
+export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/spel',
   });
 
-  router.get('/', validate(getAllSpellen.validationScheme), getAllSpellen);
-  router.post('/', validate(createSpel.validationScheme), createSpel);
-  router.get('/:id', validate(getSpelById.validationScheme), getSpelById);
-  router.get('/speler/:id', validate(getSpellenByPlayerId.validationScheme),getSpellenByPlayerId);
-  router.put('/:id', validate(updateSpel.validationScheme), updateSpel);
-  router.delete('/:id', validate(removeSpel.validationScheme), removeSpel);
+  const requireAdmin = makeRequireRole(Role.ADMIN);
+
+  router.get('/', requireAuthentication, validate(getAllSpellen.validationScheme), getAllSpellen);
+  router.post('/', requireAdmin, requireAuthentication,validate(createSpel.validationScheme), createSpel);
+  router.get('/:id', requireAuthentication, validate(getSpelById.validationScheme), getSpelById);
+  router.get('/speler/:id', requireAuthentication, validate(getSpellenByPlayerId.validationScheme),getSpellenByPlayerId);
+  router.put('/:id', requireAdmin, requireAuthentication, validate(updateSpel.validationScheme), updateSpel);
+  router.delete('/:id', requireAdmin, requireAuthentication, validate(removeSpel.validationScheme), removeSpel);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

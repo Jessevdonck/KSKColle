@@ -3,7 +3,6 @@ import { useToast } from "@/hooks/use-toast"
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 import { getAll, deleteById } from '../../api/index'
-import * as usersApi from '../../api/users'
 import { User } from '@/data/types'
 import AddOrEditUser from './components/AddOrEditUser'
 import UserList from './UserList'
@@ -13,20 +12,8 @@ export default function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const { toast } = useToast()
 
-  const { data: users, error, mutate } = useSWR<User[]>('spelers', getAll)
-  const { trigger: deleteUser } = useSWRMutation('spelers', deleteById)
-
-  const handleUpdateUser = async (updatedUser: User) => {
-    try {
-      await usersApi.updateUser(updatedUser.user_id, updatedUser)
-      mutate()
-      setSelectedUser(null)
-      toast({ title: "Success", description: "User updated successfully" })
-    } catch (error) {
-      console.error('Error updating user:', error)
-      toast({ title: "Error", description: "Failed to update user", variant: "destructive" })
-    }
-  }
+  const { data: users, error, mutate } = useSWR<User[]>('users', getAll)
+  const { trigger: deleteUser } = useSWRMutation('users', deleteById)
 
   const handleDeleteUser = async (userId: number) => {
     try {
@@ -54,7 +41,7 @@ export default function UsersManagement() {
       {selectedUser && (
         <EditForm 
           user={selectedUser} 
-          onSubmit={handleUpdateUser} 
+          onClose={() => setSelectedUser(null)}
         />
       )}
     </div>

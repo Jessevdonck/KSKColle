@@ -12,7 +12,7 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 export default function AddOrEditUser() {
 
   const { trigger: saveUser, error: saveError } = useSWRMutation(
-    'spelers',
+    'users',
     save,
   );
   
@@ -20,7 +20,7 @@ export default function AddOrEditUser() {
     //data: users = [],
     isLoading,
     error,
-  } = useSWR<User[]>('spelers', getAll)
+  } = useSWR<User[]>('users', getAll)
  
   return (
     <div className='flex items-center justify-center'>
