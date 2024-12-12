@@ -159,7 +159,6 @@ export const checkAndParseSession = async (
   try {
     const { roles, sub } = await verifyJWT(authToken); 
 
-    // 👇 7
     return {
       userId: Number(sub),
       roles,
@@ -180,9 +179,8 @@ export const checkAndParseSession = async (
 };
 
 export const checkRole = (role: string, roles: string[]): void => {
-  const hasPermission = roles.includes(role); // 👈 1
+  const hasPermission = roles.includes(role); 
 
-  // 👇 2
   if (!hasPermission) {
     throw ServiceError.forbidden(
       'You are not allowed to view this part of the application',
