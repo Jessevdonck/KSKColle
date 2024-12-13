@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
+import { Button } from "@/app/components/ui/button"
 import UsersManagement from '../Users/UsersManagement'
 import TournamentsManagement from '../Tournaments/TournamentsManagement'
 import { Users, Trophy } from 'lucide-react'

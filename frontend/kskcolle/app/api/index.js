@@ -1,6 +1,21 @@
-import axios from 'axios';
+import axiosRoot from 'axios';
+import { JWT_TOKEN_KEY } from '../contexts/Auth.context';
 
 const baseUrl = 'http://localhost:9000/api'; 
+
+export const axios = axiosRoot.create({
+  baseURL: baseUrl,
+});
+
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem(JWT_TOKEN_KEY);
+
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return config;
+});
 
 export async function getAll(url) {
   const { data } = await axios.get(`${baseUrl}/${url}`); 
@@ -29,3 +44,9 @@ export async function save(url, { arg: { id, ...data } }) {
     data,
   });
 }
+
+export const post = async (url, {arg}) => {
+  const { data } = await axios.post(`${baseUrl}/${url}`, arg);
+  
+  return data;
+};

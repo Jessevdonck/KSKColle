@@ -5,7 +5,7 @@ import { CalendarEvent } from '../../../data/mock_data'
 import { format, isFuture } from 'date-fns'
 import { nl } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/app/components/ui/button'
 
 interface CarouselProps {
   events: CalendarEvent[]

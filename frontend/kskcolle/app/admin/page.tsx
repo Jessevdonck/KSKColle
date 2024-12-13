@@ -1,9 +1,12 @@
 import React from 'react'
 import AdminPage from './components/AdminPage'
+import PrivateRoute from '../components/PrivateRoute'
 
 const page = () => {
   return (
-    <AdminPage />
+    <PrivateRoute>
+      <AdminPage />
+    </PrivateRoute>
   )
 }
 

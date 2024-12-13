@@ -1,8 +1,8 @@
 import React from 'react'
-import { Button } from "@/components/ui/button"
+import { Button } from "@/app/components/ui/button"
 import { Round } from '@/data/types'
 import RoundGames from './RoundGames'
-import { Separator } from '@/components/ui/separator'
+import { Separator } from '@/app/components/ui/separator'
 
 interface RoundListProps {
   rounds: Round[]

@@ -1,5 +1,5 @@
 import { GameWithRoundAndTournament } from "@/data/types"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/app/components/ui/card"
 import { CalendarIcon, UserIcon } from "lucide-react"
 
 interface GameCardProps {

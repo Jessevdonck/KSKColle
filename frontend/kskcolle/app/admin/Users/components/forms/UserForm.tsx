@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/app/components/ui/button"
+import { Input } from "@/app/components/ui/input"
+import { Label } from "@/app/components/ui/label"
 import { useState } from 'react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert"
 import { CheckCircle2 } from "lucide-react"
 
 const EMPTY_USER = {

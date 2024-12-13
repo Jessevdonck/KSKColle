@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from "@/components/ui/button"
+import { Button } from "@/app/components/ui/button"
 import { ChevronRight } from "lucide-react"
 import Link from 'next/link'
 
@@ -44,7 +44,7 @@ const HeroHomepage = () => {
               <Link href={"/about"}>
                 <Button
                   variant="outline"
-                  className="border-mainAccent text-mainAccent hover:bg-mainAccent hover:text-white font-semibold"
+                  className="bg-black/20 border-mainAccent hover:border-transparent text-neutral-50 hover:bg-mainAccent hover:text-white font-semibold"
                 >
                   Over ons
                 </Button>

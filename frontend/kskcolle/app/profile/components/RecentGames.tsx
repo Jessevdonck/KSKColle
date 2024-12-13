@@ -1,6 +1,6 @@
 import React from 'react'
 import { GameWithRoundAndTournament } from "@/data/types"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { GameCard } from './GameCard'
 
 interface RecentGamesProps {
