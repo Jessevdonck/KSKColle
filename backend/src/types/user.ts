@@ -61,6 +61,7 @@ export interface RegisterUserRequest {
   fide_id?: number | null;
   lid_sinds: Date;
   password: string;
+  roles: string[];
 }
 export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email'> {}
 

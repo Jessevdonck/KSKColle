@@ -5,8 +5,7 @@ import PlayerHeader from './PlayerHeader'
 import PlayerRatings from './PlayerRatings'
 import RecentGames from './RecentGames'
 import AsyncData from '../../components/AsyncData'
-import * as usersApi from '../../api/users'
-import * as gamesApi from '../../api/games'
+import { getById } from '../../api/index'
 import { User, GameWithRoundAndTournament } from '../../../data/types'
 
 export default function PlayerProfile({ name }: { name: string }) {
@@ -17,16 +16,16 @@ export default function PlayerProfile({ name }: { name: string }) {
 
   const { data: player, error: playerError } = useSWR<User>(
     ['player', voornaam, achternaam],
-    () => usersApi.getByName(voornaam, achternaam)
+    () => getById(`users/by-name?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`)
   )
 
-  const { data: recentGames = [], error: gamesError } = useSWR<GameWithRoundAndTournament[]>(
+  const { data: recentGames = [], } = useSWR<GameWithRoundAndTournament[]>(
     player ? ['recentGames', player.user_id] : null,
-    () => gamesApi.getRecentGames(player!.user_id)
+    () => getById(`spel/speler/${player!.user_id}`)
   )
 
   const isLoading = !player && !playerError
-  const error = playerError || gamesError
+  const error = playerError 
 
   return (
     <AsyncData loading={isLoading} error={error}>
@@ -42,3 +41,4 @@ export default function PlayerProfile({ name }: { name: string }) {
     </AsyncData>
   )
 }
+

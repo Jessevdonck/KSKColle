@@ -101,6 +101,9 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
     const { password, ...userDataWithoutPassword } = user;
     
     const passwordHash = await hashPassword(password);
+    console.log('User Data Without Password:', userDataWithoutPassword);
+    console.log('Roles:', [Role.USER]);
+
     const createdUser = await prisma.user.create({
       data: {
         ...userDataWithoutPassword,

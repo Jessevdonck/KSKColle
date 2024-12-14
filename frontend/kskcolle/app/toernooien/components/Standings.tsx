@@ -86,41 +86,47 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 }
 
 function calculateStandings(tournament: StandingsProps['tournament'], rounds: StandingsProps['rounds']): PlayerScore[] {
-  const playerScores: { [key: number]: PlayerScore } = {}
+  const playerScores: { [key: number]: PlayerScore } = {};
 
   tournament.participations.forEach(participation => {
-    const player = participation.user
+    const player = participation.user;
     playerScores[player.user_id] = {
       user_id: player.user_id,
       voornaam: player.voornaam,
       achternaam: player.achternaam,
       score: 0,
-      gamesPlayed: 0
-    }
-  })
+      gamesPlayed: 0,
+    };
+  });
 
   rounds.forEach(round => {
     round.games.forEach(game => {
-      const { speler1, speler2, result } = game
+      const { speler1, speler2, result } = game;
 
       if (result) {
-        playerScores[speler1.user_id].gamesPlayed++
-        
-        if (speler2) {
-          playerScores[speler2.user_id].gamesPlayed++
+        if (playerScores[speler1.user_id]) {
+          playerScores[speler1.user_id].gamesPlayed++;
         }
 
-        if (result === '1-0') {
-          playerScores[speler1.user_id].score += 1
-        } else if (result === '0-1' && speler2) {
-          playerScores[speler2.user_id].score += 1
-        } else if (result === '½-½' && speler2) {
-          playerScores[speler1.user_id].score += 0.5
-          playerScores[speler2.user_id].score += 0.5
+        if (speler2 && playerScores[speler2.user_id]) {
+          playerScores[speler2.user_id].gamesPlayed++;
+        }
+
+        if (result === '1-0' && playerScores[speler1.user_id]) {
+          playerScores[speler1.user_id].score += 1;
+        } else if (result === '0-1' && speler2 && playerScores[speler2.user_id]) {
+          playerScores[speler2.user_id].score += 1;
+        } else if (result === '½-½') {
+          if (playerScores[speler1.user_id]) {
+            playerScores[speler1.user_id].score += 0.5;
+          }
+          if (speler2 && playerScores[speler2.user_id]) {
+            playerScores[speler2.user_id].score += 0.5;
+          }
         }
       }
-    })
-  })
+    });
+  });
 
-  return Object.values(playerScores).sort((a, b) => b.score - a.score)
-} 
+  return Object.values(playerScores).sort((a, b) => b.score - a.score);
+}
