@@ -39,7 +39,8 @@ registerUser.validationScheme = {
     schaakrating_elo: Joi.number().integer().positive(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
-    password: Joi.string()
+    password: Joi.string(),
+    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).min(1).required()
   },
 };
 
@@ -145,11 +146,11 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const requireAdmin = makeRequireRole(Role.ADMIN);
 
   router.get('/', validate(getAllUsers.validationScheme), getAllUsers);
-  router.post('/', authDelay, validate(registerUser.validationScheme), registerUser);
+  router.post('/',requireAuthentication, requireAdmin, authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), checkUserId, getUserByNaam);
   router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);
   router.put('/:id', requireAdmin, requireAuthentication, validate(updateUser.validationScheme), checkUserId, updateUser);
-  router.delete('/:id', requireAdmin , requireAuthentication, validate(removeUser.validationScheme), checkUserId, removeUser);
+  router.delete('/:id', requireAuthentication, requireAdmin, validate(removeUser.validationScheme), checkUserId, removeUser);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

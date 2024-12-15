@@ -1,11 +1,12 @@
 "use client"
 
 import React from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import * as spelApi from '../../../api/games'
+import { save } from '../../../api/index'
 import { Round, Game } from '@/data/types'
+import useSWRMutation from 'swr/mutation'
 
 interface RoundGamesProps {
   round?: Round
@@ -15,6 +16,7 @@ interface RoundGamesProps {
 
 export default function RoundGames({ round, onUpdateGame }: RoundGamesProps) {
   const { toast } = useToast()
+  const { trigger: updateGame } = useSWRMutation('spel', save)
 
   if (!round || round.games.length === 0) {
     return <p>Geen paringen voor deze ronde gevonden.</p>
@@ -24,10 +26,9 @@ export default function RoundGames({ round, onUpdateGame }: RoundGamesProps) {
     try {
       const apiResult = result === "not_played" ? "not_played" : result;
       
-      // Log de payload
       console.log("Payload naar API:", { gameId, result: apiResult });
   
-      await spelApi.updateGame(gameId, { result: apiResult });
+      await updateGame({ id: gameId, result: apiResult });
       onUpdateGame();
       toast({ title: "Success", description: "Resultaat succesvol bijgewerkt." });
     } catch (error) {
@@ -88,3 +89,4 @@ export default function RoundGames({ round, onUpdateGame }: RoundGamesProps) {
     </Table>
   )
 }
+

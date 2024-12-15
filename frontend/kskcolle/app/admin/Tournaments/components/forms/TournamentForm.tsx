@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { Label } from "@/app/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
-import { getAll } from '../../../../api/index'
-import { addTournament as addTournamentAPI } from '../../../../api/tournaments'
+import { getAll, post } from '../../../../api/index'
 import { User, Toernooi } from '@/data/types'
 import { Search } from 'lucide-react'
 
@@ -28,9 +27,9 @@ export default function TournamentForm() {
   const [currentPage, setCurrentPage] = useState(1)
   const { toast } = useToast()
 
-  const { data: users, error: usersError } = useSWR<User[]>('spelers', getAll)
-  const { data: tournaments, error: tournamentsError, mutate: mutateTournaments } = useSWR<Toernooi[]>('toernooien', getAll)
-  const { trigger: addTournament } = useSWRMutation('toernooien', (_, { arg }: { arg: TournamentFormData }) => addTournamentAPI(arg))
+  const { data: users, error: usersError } = useSWR<User[]>('users', getAll)
+  const { data: tournaments, error: tournamentsError, mutate: mutateTournaments } = useSWR<Toernooi[]>('tournament', getAll)
+  const { trigger: createTournament } = useSWRMutation('tournament', post)
 
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const usersPerPage = 10
@@ -56,22 +55,21 @@ export default function TournamentForm() {
         participations: selectedParticipants,
       };
 
-      await addTournament(tournamentData);
+      await createTournament(tournamentData);
 
       mutateTournaments();
       reset();
       setSelectedParticipants([]);
       toast({ title: "Success", description: "Tournament created successfully" });
     } catch (error) {
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      }
-      toast({ title: "Error", description: "Failed to create tournament.", variant: "destructive" });
+      console.error('Error creating tournament:', error);
+      toast({ 
+        title: "Error", 
+        description: error.response?.data?.message || "Failed to create tournament.", 
+        variant: "destructive" 
+      });
     }
-};
-
+  };
 
   const handleParticipantToggle = (userId: number) => {
     setSelectedParticipants(prev => 
@@ -180,3 +178,4 @@ export default function TournamentForm() {
     </Card>
   )
 }
+

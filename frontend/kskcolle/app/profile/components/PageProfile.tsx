@@ -2,7 +2,6 @@
 
 import useSWR from 'swr'
 import PlayerHeader from './PlayerHeader'
-import PlayerRatings from './PlayerRatings'
 import RecentGames from './RecentGames'
 import AsyncData from '../../components/AsyncData'
 import { getById } from '../../api/index'
@@ -33,7 +32,6 @@ export default function PlayerProfile({ name }: { name: string }) {
         <div className="container mx-auto px-4 py-8 min-h-screen">
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <PlayerHeader player={player} />
-            <PlayerRatings player={player} />
             <RecentGames games={recentGames} playerId={player.user_id} />
           </div>
         </div>

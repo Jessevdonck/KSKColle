@@ -98,17 +98,17 @@ export const login = async (
 
 export const register = async (user: RegisterUserRequest): Promise<string> => {
   try {
-    const { password, ...userDataWithoutPassword } = user;
+    const { password, roles, ...userDataWithoutPassword } = user;
     
     const passwordHash = await hashPassword(password);
-    console.log('User Data Without Password:', userDataWithoutPassword);
-    console.log('Roles:', [Role.USER]);
+    
+    const roleList = roles.includes('admin') ? [Role.USER, Role.ADMIN] : [Role.USER];
 
     const createdUser = await prisma.user.create({
       data: {
         ...userDataWithoutPassword,
         password_hash: passwordHash,
-        roles: [Role.USER],
+        roles: JSON.stringify(roleList),
       },
     });
     
@@ -120,6 +120,7 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
     throw handleDBError(error);
   }
 };
+
 
 export const updateUser = async (user_id: number, changes: UserUpdateInput): Promise<PublicUser> => {
   try {

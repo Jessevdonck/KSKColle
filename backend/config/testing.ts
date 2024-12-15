@@ -13,7 +13,7 @@ export default {
     jwt: {
       audience: 'kskcolle.be',
       issuer: 'kskcolle.be',
-      expirationInterval: 60 * 60, 
+      expirationInterval: 10, 
       secret:
         'eenveeltemoeilijksecretdatniemandooitzalradenandersisdesitegehacked',
     },

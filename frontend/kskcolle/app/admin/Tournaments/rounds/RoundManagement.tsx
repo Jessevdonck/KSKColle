@@ -4,7 +4,7 @@ import React from 'react'
 import { useToast } from "@/hooks/use-toast"
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
-import * as tournamentsApi from '../../../api/tournaments'
+import { getById, generatePairings } from '../../../api/index'
 import { Toernooi } from '@/data/types'
 import RoundList from './RoundList'
 
@@ -16,19 +16,18 @@ export default function RoundManagement({ tournament }: RoundManagementProps) {
   const { toast } = useToast()
   const { data: updatedTournament, mutate } = useSWR<Toernooi>(
     `tournament/${tournament.tournament_id}`,
-    () => tournamentsApi.getTournamentById(tournament.tournament_id)
+    () => getById(`tournament/${tournament.tournament_id}`)
   )
-  const { trigger: generatePairings } = useSWRMutation(
-    [`tournament/${tournament.tournament_id}/pairings`, tournament.tournament_id],
-    ([_, tournamentId], { arg }: { arg: { roundNumber: number } }) =>
-      tournamentsApi.createPairings(tournamentId, arg.roundNumber)
+  const { trigger: generatePairingsTrigger } = useSWRMutation(
+    'tournament',
+    generatePairings
   )
 
   if (!updatedTournament) return <div>Loading...</div>
 
   const handleGeneratePairings = async (roundNumber: number) => {
     try {
-      await generatePairings({ roundNumber })
+      await generatePairingsTrigger({ tournamentId: tournament.tournament_id, roundNumber })
       await mutate()
       toast({ title: "Success", description: `Paringen voor ronde ${roundNumber} succesvol gegenereerd.` })
     } catch (error) {
@@ -70,3 +69,4 @@ export default function RoundManagement({ tournament }: RoundManagementProps) {
     </div>
   )
 }
+

@@ -98,11 +98,11 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const requireAdmin = makeRequireRole(Role.ADMIN);
 
   router.get('/', requireAuthentication, validate(getAllSpellen.validationScheme), getAllSpellen);
-  router.post('/', requireAdmin, requireAuthentication,validate(createSpel.validationScheme), createSpel);
+  router.post('/', requireAuthentication, requireAdmin, validate(createSpel.validationScheme), createSpel);
   router.get('/:id', requireAuthentication, validate(getSpelById.validationScheme), getSpelById);
   router.get('/speler/:id', requireAuthentication, validate(getSpellenByPlayerId.validationScheme),getSpellenByPlayerId);
-  router.put('/:id', requireAdmin, requireAuthentication, validate(updateSpel.validationScheme), updateSpel);
-  router.delete('/:id', requireAdmin, requireAuthentication, validate(removeSpel.validationScheme), removeSpel);
+  router.put('/:id', requireAuthentication, requireAdmin, validate(updateSpel.validationScheme), updateSpel);
+  router.delete('/:id', requireAuthentication, requireAdmin, validate(removeSpel.validationScheme), removeSpel);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };
