@@ -82,6 +82,7 @@ updateUser.validationScheme = {
     schaakrating_elo: Joi.number().integer().positive(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
+    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).min(1).required()
   },
 };
 

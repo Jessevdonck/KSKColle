@@ -17,7 +17,8 @@ const makeExposedUser = ({
   schaakrating_elo, 
   fide_id,  
   email,
-  lid_sinds
+  lid_sinds,
+  roles
   }: User): PublicUser => ({
     user_id, 
     voornaam, 
@@ -27,6 +28,7 @@ const makeExposedUser = ({
     fide_id,  
     email,
     lid_sinds,
+    roles
   } as PublicUser)
 
 export const getAllUsers = async (): Promise<User[]> => {
