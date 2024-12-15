@@ -20,7 +20,7 @@ export type User = {
 export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "is_admin" | "fide_id" | "lid_sinds"> {}
 
 
-export interface UserUpdateInput extends Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds"> {}
+export interface UserUpdateInput extends Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "password"> {}
 
 export type UserCreateInput = {
   voornaam: string;
@@ -34,6 +34,7 @@ export type UserCreateInput = {
   fide_id?: number | null;
   lid_sinds: Date;
   password: string;
+  roles: string[];
 };
 
 export interface LoginRequest {
@@ -63,6 +64,16 @@ export interface RegisterUserRequest {
   password: string;
   roles: string[];
 }
+
+export interface UpdatePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface UpdatePasswordResponse {
+  message: string;
+}
+
 export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email'> {}
 
 export interface UserUpdateInput extends UserCreateInput {}

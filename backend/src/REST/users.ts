@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import * as userService from '../service/userService';
-import type { User, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetUserRequest, GetAllUserResponse, GetUserByNaamResponse, LoginResponse, RegisterUserRequest } from '../types/user';
+import type { User, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetUserRequest, GetAllUserResponse, GetUserByNaamResponse, LoginResponse, RegisterUserRequest, UpdatePasswordRequest, UpdatePasswordResponse } from '../types/user';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 import Joi from 'joi';
@@ -40,7 +40,7 @@ registerUser.validationScheme = {
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
     password: Joi.string(),
-    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).min(1).required()
+    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).required()
   },
 };
 
@@ -73,16 +73,35 @@ updateUser.validationScheme = {
     id: Joi.number().integer().positive(),
   },
   body: {
-    voornaam: Joi.string(),
-    achternaam: Joi.string(),
-    geboortedatum: Joi.date(),
-    email: Joi.string().email(),
-    tel_nummer: Joi.string(),
-    lid_sinds: Joi.date(),
-    schaakrating_elo: Joi.number().integer().positive(),
+    voornaam: Joi.string().optional(),
+    achternaam: Joi.string().optional(),
+    geboortedatum: Joi.date().optional(),
+    email: Joi.string().email().optional(),
+    tel_nummer: Joi.string().optional(),
+    lid_sinds: Joi.date().optional(),
+    schaakrating_elo: Joi.number().integer().positive().optional(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
-    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).min(1).required()
+    password: Joi.string().optional(),
+    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).optional(),
+  },
+};
+
+const updatePassword = async (ctx: KoaContext<UpdatePasswordResponse, IdParams, UpdatePasswordRequest>) => {
+  const userId = Number(ctx.params.id);
+  const { currentPassword, newPassword } = ctx.request.body;
+
+  await userService.updatePassword(userId, currentPassword, newPassword);
+  
+  ctx.body = { message: 'Password updated successfully' };
+};
+updatePassword.validationScheme = {
+  params: {
+    id: Joi.number().integer().positive(),
+  },
+  body: {
+    currentPassword: Joi.string().required(),
+    newPassword: Joi.string().required(),
   },
 };
 
@@ -126,10 +145,9 @@ removeUser.validationScheme = {
 };
 
 const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
-  const { userId, roles } = ctx.state.session;
-  const { id } = ctx.params;
+  const { roles } = ctx.state.session;
 
-  if (id !== 'me' && id !== userId && !roles.includes(Role.ADMIN)) {
+  if ( !roles.includes(Role.USER || Role.ADMIN)) {
     return ctx.throw(
       403,
       "You are not allowed to view this user's information",
@@ -150,7 +168,8 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.post('/',requireAuthentication, requireAdmin, authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), checkUserId, getUserByNaam);
   router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);
-  router.put('/:id', requireAdmin, requireAuthentication, validate(updateUser.validationScheme), checkUserId, updateUser);
+  router.put('/:id', requireAuthentication, requireAdmin, validate(updateUser.validationScheme), checkUserId, updateUser);
+  router.put('/:id/password', requireAuthentication, validate(updatePassword.validationScheme), checkUserId, updatePassword);
   router.delete('/:id', requireAuthentication, requireAdmin, validate(removeUser.validationScheme), checkUserId, removeUser);
 
   parent.use(router.routes()).use(router.allowedMethods());

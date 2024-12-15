@@ -6,13 +6,17 @@ import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
 import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert"
-import { CheckCircle2 } from "lucide-react"
+import { CheckCircle2 } from 'lucide-react'
 import useSWRMutation from 'swr/mutation'
 import { save } from '../../../../api/index'
+import { Checkbox } from "@/components/ui/checkbox"
 
 const validationRules = {
-  naam: {
+  voornaam: {
     required: 'Voornaam is vereist!',
+  },
+  achternaam: {
+    required: 'Achternaam is vereist!',
   },
   schaakrating_elo: {
     required: 'Clubrating is vereist!',
@@ -20,11 +24,11 @@ const validationRules = {
     max: { value: 5000, message: 'Maximale rating is 5000' }
   },
   email: {
-    required:'Email is required!'
+    required: 'Email is required!',
   },
   tel_nummer: {
-    required:'Telefoonnummer is required!'
-  }
+    required: 'Telefoonnummer is required!',
+  },
 };
 
 interface FormData {
@@ -37,6 +41,7 @@ interface FormData {
   lid_sinds?: string;
   email: string;
   tel_nummer: string;
+  roles: string[];
 }
 
 const toDateInputString = (date: Date) => {
@@ -56,7 +61,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
 
   const { trigger: saveUser } = useSWRMutation('users', save)
 
-  const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors, isValid }, reset, watch, getValues, setValue } = useForm<FormData>({
     mode: 'onBlur',
     defaultValues: {
       voornaam: user.voornaam,
@@ -68,22 +73,24 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,
       schaakrating_max: user.schaakrating_max,
+      roles: user.roles || []
     }
   });
 
   const onSubmit = async (values: FormData) => {
     if (!isValid) return;
-
+  
     const formattedValues = {
       ...values,
-      id: user.user_id, 
+      id: user.user_id,
       geboortedatum: values.geboortedatum ? new Date(values.geboortedatum).toISOString() : null,
       lid_sinds: values.lid_sinds ? new Date(values.lid_sinds).toISOString() : null,
       schaakrating_elo: Number(values.schaakrating_elo),
       fide_id: values.fide_id ? Number(values.fide_id) : null,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
+      roles: Array.isArray(values.roles) ? values.roles : JSON.parse(values.roles as string),
     };
-
+  
     try {
       await saveUser(formattedValues, {
         onSuccess: () => {
@@ -118,7 +125,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
             Voornaam
           </Label>
           <Input
-            {...register('voornaam', validationRules.naam)}
+            {...register('voornaam', validationRules.voornaam)}
             id="voornaam"
             placeholder="Voornaam"
           />
@@ -130,7 +137,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
             Achternaam
           </Label>
           <Input
-            {...register('achternaam', validationRules.naam)}
+            {...register('achternaam', validationRules.achternaam)}
             id="achternaam"
             placeholder="Achternaam"
           />
@@ -229,10 +236,28 @@ export default function EditForm({ user, onClose }: EditFormProps) {
           {errors.lid_sinds && <p className="text-red-500 text-xs italic">{errors.lid_sinds.message}</p>}
         </div>
       </div>
-      
+      <div className="flex items-center space-x-2 mb-4">
+        <Checkbox 
+          id="isAdmin" 
+          checked={watch('roles').includes('admin')}
+          onCheckedChange={(checked) => {
+            const currentRoles = getValues('roles');
+            const updatedRoles = Array.isArray(currentRoles) ? currentRoles : JSON.parse(currentRoles as string);
+            if (checked) {
+              setValue('roles', [...updatedRoles, 'admin']);
+            } else {
+              setValue('roles', updatedRoles.filter(role => role !== 'admin'));
+            }
+          }}
+        />
+        <Label htmlFor="isAdmin" className="text-sm font-semibold text-textColor">
+          Is Admin
+        </Label>
+      </div>
       <Button type="submit" className="bg-mainAccent text-white hover:bg-mainAccentDark">
         Wijzig
       </Button>
     </form>
   );
 }
+

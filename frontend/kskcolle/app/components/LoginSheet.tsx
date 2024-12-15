@@ -21,10 +21,13 @@ export default function LoginSheet() {
       <SheetTitle/>
       <SheetDescription/>
       <SheetTrigger asChild>
-        <Button className="bg-mainAccent text-neutral-50 font-semibold hover:bg-mainAccentDark hover:text-neutral-50" >Inloggen</Button>
+        <Button className="bg-mainAccent text-neutral-50 font-semibold hover:bg-mainAccentDark hover:text-neutral-50">Inloggen</Button>
       </SheetTrigger>
       <SheetContent>
-        <LoginForm onSuccess={handleLoginSuccess} />
+          <LoginForm 
+            onSuccess={handleLoginSuccess} 
+            onClose={() => setIsOpen(false)} 
+          />
       </SheetContent>
     </Sheet>
   );

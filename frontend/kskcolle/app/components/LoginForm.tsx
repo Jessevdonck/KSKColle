@@ -20,9 +20,10 @@ const validationRules = {
 
 interface LoginFormProps {
   onSuccess?: () => void;
+  onClose: () => void;
 }
 
-export default function LoginForm({ onSuccess }: LoginFormProps) {
+export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
   const { error, loading, login } = useAuth();
   const router = useRouter();
 
@@ -35,7 +36,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   const handleCancel = useCallback(() => {
     reset();
-  }, [reset]);
+    onClose();
+  }, [reset, onClose]);
 
   const handleLogin = useCallback(
     async ({ email, password }) => {
@@ -86,3 +88,4 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     </form>
   );
 }
+

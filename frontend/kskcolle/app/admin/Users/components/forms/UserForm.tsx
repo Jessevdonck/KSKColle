@@ -21,8 +21,11 @@ const EMPTY_USER = {
 };
 
 const validationRules = {
-  naam: {
+  voornaam: {
     required: 'Voornaam is vereist!',
+  },
+  achternaam: {
+    required: 'Achternaam is vereist!',
   },
   schaakrating_elo: {
     required: 'Clubrating is vereist!',
@@ -30,13 +33,13 @@ const validationRules = {
     max: { value: 5000, message: 'Maximale rating is 5000' }
   },
   email: {
-    required:'Email is required!'
+    required: 'Email is required!',
   },
   tel_nummer: {
-    required:'Telefoonnummer is required!'
+    required: 'Telefoonnummer is required!',
   },
   password: {
-    required:'wachtwoord is required!'
+    required: false, // Make password optional
   },
 };
 
@@ -120,7 +123,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             Voornaam
           </Label>
           <Input
-            {...register('voornaam', validationRules.naam)}
+            {...register('voornaam', validationRules.voornaam)}
             id="voornaam"
             placeholder="Voornaam"
           />
@@ -132,7 +135,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             Achternaam
           </Label>
           <Input
-            {...register('achternaam', validationRules.naam)}
+            {...register('achternaam', validationRules.achternaam)}
             id="achternaam"
             placeholder="Achternaam"
           />

@@ -56,4 +56,11 @@ export const generatePairings = async (url, { arg: { tournamentId, roundNumber }
   return data;
 };
 
+export const updatePassword = async (url, { arg: { userId, currentPassword, newPassword } }) => {
+  const { data } = await axios.put(`${baseUrl}/${url}/${userId}/password`, {
+    currentPassword,
+    newPassword,
+  });
+  return data;
+};
 
