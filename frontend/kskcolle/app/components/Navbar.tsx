@@ -2,13 +2,23 @@
 
 import Link from "next/link"
 import { Crown, Home, Users, Trophy, BarChartBigIcon as ChartColumnBig, CalendarDays } from 'lucide-react'
-import { ReactNode } from "react"
+import { ReactNode, useState, useEffect } from "react"
 import LoginSheet from "./LoginSheet"
 import { useAuth } from "../contexts/auth"
 import ProfileDropdown from "./ProfileDropdown"
 
 export default function Navbar() {
-  const { isAuthed }  = useAuth();
+  const { isAuthed } = useAuth();
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null; 
+  }
 
   const navItems = [
     { href: "/", icon: <Home size={20}  />, text: "Home" },
@@ -31,7 +41,7 @@ export default function Navbar() {
             <NavItem key={item.href} {...item} />
           ))}
         </div>
-        {isAuthed ? <ProfileDropdown /> : <LoginSheet />}
+        {isAuthed ? (<ProfileDropdown />) : (<LoginSheet />)}
       </div>
     </nav>
   )
@@ -51,4 +61,3 @@ function NavItem({ href, icon, text }: NavItemProps) {
     </Link>
   )
 }
-
