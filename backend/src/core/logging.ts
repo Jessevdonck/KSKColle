@@ -20,7 +20,7 @@ const loggerFormat = () => {
 
   // 👇 3
   const formatError = ({
-    error: { stack },
+    error: stack,
     ...rest
   }: winston.Logform.TransformableInfo) =>
     `${formatMessage(rest)}\n\n${stack}\n`;
