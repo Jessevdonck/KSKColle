@@ -1,5 +1,6 @@
 export default {
-  env: "development",
+  port: 9000,
+  env: "testing",
   log: {
     level: 'silly',
     disabled: false,

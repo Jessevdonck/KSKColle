@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsc",
-    "start:dev": "concurrently \"fide-ratings-scraper api\" \"tsx watch --env-file .env --inspect=0.0.0.0:9001 src/index.ts\" ",
+    "start:dev": "tsx watch --env-file .env --inspect=0.0.0.0:9001 src/index.ts",
     "lint": "eslint .",
     "migrate:dev": "prisma migrate dev",
     "migrate:test": "env-cmd -f .env.test prisma migrate dev --skip-seed",
@@ -61,5 +61,8 @@
     "schema": "src/data/schema.prisma",
     "seed": "tsx ./src/data/seed.ts"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "engines": {
+    "node": "20.6.0",
+    "npm": "8.19.2"
+}
 }

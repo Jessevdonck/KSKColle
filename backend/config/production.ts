@@ -1,4 +1,5 @@
 export default {
+  port: 9000,
   env: "production",
   log: {
     level: "info",
@@ -6,7 +7,7 @@ export default {
   },
   cors: {
     // 👈 1
-    origins: ['http://localhost:3001'], // 👈 2
+    origins: ['https://kskcolle-backend.onrender.com'], // 👈 2
     maxAge: 3 * 60 * 60, // 👈 3
   },
   auth: {
@@ -15,8 +16,6 @@ export default {
       audience: 'kskcolle.be',
       issuer: 'kskcolle.be',
       expirationInterval: 60 * 60, 
-      secret:
-        'eenveeltemoeilijksecretdatniemandooitzalradenandersisdesitegehacked',
     },
     argon: {
       hashLength: 32,

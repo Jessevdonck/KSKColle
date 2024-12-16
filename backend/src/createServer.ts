@@ -10,6 +10,7 @@ import type {
   ChessAppContext,
   ChessAppState,
 } from './types/koa'; // 👈 1
+import config from 'config';
 
 // 👇 1
 export interface Server {
@@ -17,6 +18,8 @@ export interface Server {
   start(): Promise<void>;
   stop(): Promise<void>;
 }
+
+const PORT = config.get<number>('port');
 
 // 👇 2
 export default async function createServer(): Promise<Server> {
@@ -33,8 +36,8 @@ export default async function createServer(): Promise<Server> {
 
     start() {
       return new Promise<void>((resolve) => {
-        app.listen(9000, () => {
-          getLogger().info('🚀 Server listening on http://localhost:9000');
+        app.listen(PORT, () => {
+          getLogger().info(`🚀 Server listening on http://localhost:${PORT}`);
           resolve();
         });
       });

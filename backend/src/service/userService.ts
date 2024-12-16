@@ -126,7 +126,9 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
 
 export const updateUser = async (user_id: number, changes: UserUpdateInput): Promise<PublicUser> => {
   try {
-    const { roles, ...userDataWithoutPassword } = changes;
+    const { password, roles, ...userDataWithoutPassword } = changes;
+    
+    const passwordHash = await hashPassword(password);
     
     const roleList = roles.includes('admin') ? [Role.USER, Role.ADMIN] : [Role.USER];
 
@@ -134,36 +136,12 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
       where: { user_id },
       data: {
         ...userDataWithoutPassword,
+        password_hash: passwordHash,
         roles: JSON.stringify(roleList),
       },
     });
 
     return makeExposedUser(user);
-  } catch (error) {
-    throw handleDBError(error);
-  }
-};
-
-export const updatePassword = async (userId: number, currentPassword: string, newPassword: string): Promise<void> => {
-  try {
-    const user = await prisma.user.findUnique({ where: { user_id: userId } });
-
-    if (!user) {
-      throw ServiceError.notFound('User not found');
-    }
-
-    const passwordValid = await verifyPassword(currentPassword, user.password_hash);
-
-    if (!passwordValid) {
-      throw ServiceError.unauthorized('Current password is incorrect');
-    }
-
-    const newPasswordHash = await hashPassword(newPassword);
-
-    await prisma.user.update({
-      where: { user_id: userId },
-      data: { password_hash: newPasswordHash },
-    });
   } catch (error) {
     throw handleDBError(error);
   }
