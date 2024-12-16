@@ -127,3 +127,6 @@ dist
 
 # build map
 build/
+
+# Ignore tests directory
+__tests__/
