@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from "@/app/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
 import Link from 'next/link'
 

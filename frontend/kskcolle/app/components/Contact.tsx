@@ -1,8 +1,8 @@
 import React from 'react'
-import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { Textarea } from "@/app/components/ui/textarea"
-import { Label } from "@/app/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 const ContactForm = () => {
   return (

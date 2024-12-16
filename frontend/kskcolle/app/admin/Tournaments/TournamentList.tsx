@@ -1,8 +1,8 @@
 "use client"
 
 import React from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table"
-import { Button } from "@/app/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'

@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/app/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
 

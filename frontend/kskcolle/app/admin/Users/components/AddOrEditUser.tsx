@@ -6,7 +6,7 @@ import { getAll, save } from '../../../api/index';
 import UserForm from './forms/UserForm'; 
 import AsyncData from '../../../components/AsyncData';
 import { User } from '@/data/types';
-import { Card, CardHeader, CardContent, CardTitle } from '@/app/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 
 
 export default function AddOrEditUser() {
