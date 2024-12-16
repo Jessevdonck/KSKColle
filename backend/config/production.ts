@@ -1,4 +1,4 @@
-export default {
+export default {  
   port: 9000,
   env: "production",
   log: {
@@ -16,6 +16,8 @@ export default {
       audience: 'kskcolle.be',
       issuer: 'kskcolle.be',
       expirationInterval: 60 * 60, 
+      secret:
+        'eenveeltemoeilijksecretdatniemandooitzalradenandersisdesitegehacked',
     },
     argon: {
       hashLength: 32,

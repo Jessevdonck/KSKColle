@@ -18,7 +18,6 @@ export default function EventCarousel({ events }: CarouselProps) {
   const eventsPerPage = 5
   
   useEffect(() => {
-    const now = new Date()
     const futureEvents = events
       .filter(event => isFuture(new Date(event.date)))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
