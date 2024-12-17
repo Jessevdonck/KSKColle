@@ -13,9 +13,9 @@ export default function AsyncData({
   }
 
   return (
-    <>
+    <div className='m-6'>
       <Error error={error} /> 
       {children} 
-    </>
+    </div>
   );
 }

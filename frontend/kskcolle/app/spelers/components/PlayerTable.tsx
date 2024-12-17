@@ -68,14 +68,14 @@ export default function PlayerTable({ users }: PlayerTableProps) {
           <tbody>
             {sortedPlayers.map((player) => (
               <tr key={player.user_id} className={sortedPlayers.indexOf(player) % 2 === 0 ? 'bg-neutral-50' : 'bg-neutral-100'}>
-                <td className="px-4 py-2 border-b">
+                <td className="px-4 py-2 border-b" data-cy="name">
                   <Link href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`} className="text-textColor hover:text-mainAccent">
                     {`${player.achternaam}, ${player.voornaam}`}
                   </Link>
                 </td>
-                <td className="px-4 py-2 border-b">{player.schaakrating_elo}</td>
-                <td className="px-4 py-2 border-b">{player.schaakrating_difference || '-'}</td>
-                <td className="px-4 py-2 border-b">{player.schaakrating_max || '-'}</td>
+                <td className="px-4 py-2 border-b" data-cy="rating">{player.schaakrating_elo}</td>
+                <td className="px-4 py-2 border-b" data-cy="rating_difference">{player.schaakrating_difference || '-'}</td>
+                <td className="px-4 py-2 border-b" data-cy="rating_max">{player.schaakrating_max || '-'}</td>
               </tr>
             ))}
           </tbody>

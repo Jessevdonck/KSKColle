@@ -1,6 +1,11 @@
+"use client"
+
 import React from 'react'
 import Link from 'next/link'
-import { Users, Calendar } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+const Users = dynamic(() => import('lucide-react').then((mod) => mod.Users), { ssr: false })
+const Calendar = dynamic(() => import('lucide-react').then((mod) => mod.Calendar), { ssr: false })
 
 interface TournamentCardProps {
   tournament: {
@@ -37,3 +42,4 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
     </Link>
   )
 }
+
