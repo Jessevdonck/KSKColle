@@ -116,7 +116,7 @@ function calculateStandings(tournament: StandingsProps['tournament'], rounds: St
           playerScores[speler1.user_id].score += 1;
         } else if (result === '0-1' && speler2 && playerScores[speler2.user_id]) {
           playerScores[speler2.user_id].score += 1;
-        } else if (result === '½-½') {
+        } else if (result === '½-½' || result === '1/2-1/2') {
           if (playerScores[speler1.user_id]) {
             playerScores[speler1.user_id].score += 0.5;
           }
@@ -130,3 +130,4 @@ function calculateStandings(tournament: StandingsProps['tournament'], rounds: St
 
   return Object.values(playerScores).sort((a, b) => b.score - a.score);
 }
+
