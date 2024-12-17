@@ -64,6 +64,7 @@ export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
           id="email"
           type="email"
           placeholder="your@email.com"
+          data-cy="email_input"
           {...register('email', validationRules.email)}
         />
         {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
@@ -73,15 +74,16 @@ export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
         <Input
           id="password"
           type="password"
+          data-cy="password_input"
           {...register('password', validationRules.password)}
         />
         {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
       </div>
       <div className="flex justify-end space-x-2">
-        <Button className='text-textColor bg-neutral-50 hover:bg-mainAccent hover:text-neutral-50' type="button" onClick={handleCancel}>
+        <Button className='text-textColor bg-neutral-50 hover:bg-mainAccent hover:text-neutral-50' type="button" onClick={handleCancel} data-cy="cancel-button">
           Annuleer
         </Button>
-        <Button className='bg-mainAccent hover:bg-mainAccentDark text-neutral-50' type="submit" disabled={loading}>
+        <Button className='bg-mainAccent hover:bg-mainAccentDark text-neutral-50' type="submit" disabled={loading} data-cy="submit_button">
           Log in
         </Button>
       </div>

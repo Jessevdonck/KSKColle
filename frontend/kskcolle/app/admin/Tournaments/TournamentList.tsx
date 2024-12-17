@@ -50,15 +50,15 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
           <TableHead className='flex justify-end items-center pr-32'>Acties</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody data-cy="tournament">
         {tournaments.map((tournament) => (
           <TableRow key={tournament.tournament_id} className='w-full'>
-            <TableCell className='flex-1'>{tournament.naam}</TableCell>
-            <TableCell className='flex-1'>{tournament.rondes}</TableCell>
-            <TableCell className='flex-1'>{tournament.participations.length}</TableCell>
+            <TableCell className='flex-1' ><span data-cy='tournament_name'>{tournament.naam}</span ></TableCell>
+            <TableCell className='flex-1' ><span data-cy='tournament_round'>{tournament.rondes}</span></TableCell>
+            <TableCell className='flex-1' ><span data-cy='tournament_participation'>{tournament.participations.length}</span></TableCell>
             <TableCell className='flex-1 flex justify-end pr-3'>
-              <Button onClick={() => onSelectTournament(tournament)} className="mr-2 bg-mainAccent hover:bg-mainAccentDark">Bekijk</Button>
-              <Button onClick={() => handleDelete(tournament.tournament_id)} className='bg-red-600 hover:bg-red-700'>Verwijder</Button>
+              <Button onClick={() => onSelectTournament(tournament)} className="mr-2 bg-mainAccent hover:bg-mainAccentDark" data-cy='tournament_manage_button'>Bekijk</Button>
+              <Button onClick={() => handleDelete(tournament.tournament_id)} className='bg-red-600 hover:bg-red-700' data-cy='tournament_delete_button'>Verwijder</Button>
             </TableCell>
           </TableRow>
         ))}

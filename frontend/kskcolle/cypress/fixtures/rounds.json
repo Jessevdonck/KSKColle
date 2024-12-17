@@ -1,0 +1,9 @@
+{
+    "items": [
+      { "round_id": 1, "tournament_id": 1, "ronde_nummer": 1, "ronde_datum": "2023-10-01" },
+      { "round_id": 2, "tournament_id": 1, "ronde_nummer": 2, "ronde_datum": "2023-10-08" },
+      { "round_id": 3, "tournament_id": 2, "ronde_nummer": 1, "ronde_datum": "2023-11-01" },
+      { "round_id": 4, "tournament_id": 2, "ronde_nummer": 2, "ronde_datum": "2023-11-08" }
+    ]
+  }
+  

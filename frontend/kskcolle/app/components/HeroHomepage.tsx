@@ -35,7 +35,7 @@ const HeroHomepage = () => {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Link href={"#contact"}>
-                <Button className="bg-mainAccent text-neutral-50 hover:bg-mainAccentDark hover:text-white font-semibold">
+                <Button className="bg-mainAccent text-neutral-50 hover:bg-mainAccentDark hover:text-white font-semibold" data-cy="contact">
                   Contact
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -44,7 +44,7 @@ const HeroHomepage = () => {
               <Link href={"/about"}>
                 <Button
                   variant="outline"
-                  className="bg-black/20 border-mainAccent hover:border-transparent text-neutral-50 hover:bg-mainAccent hover:text-white font-semibold"
+                  className="bg-black/20 border-mainAccent hover:border-transparent text-neutral-50 hover:bg-mainAccent hover:text-white font-semibold" data-cy="about"
                 >
                   Over ons
                 </Button>

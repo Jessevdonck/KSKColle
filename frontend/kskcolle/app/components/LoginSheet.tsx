@@ -21,7 +21,7 @@ export default function LoginSheet() {
       <SheetTitle/>
       <SheetDescription/>
       <SheetTrigger asChild>
-        <Button className="bg-mainAccent text-neutral-50 font-semibold hover:bg-mainAccentDark hover:text-neutral-50">Inloggen</Button>
+        <Button className="bg-mainAccent text-neutral-50 font-semibold hover:bg-mainAccentDark hover:text-neutral-50" data-cy="login_button">Inloggen</Button>
       </SheetTrigger>
       <SheetContent>
           <LoginForm 

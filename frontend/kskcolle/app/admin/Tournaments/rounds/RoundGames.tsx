@@ -72,7 +72,7 @@ export default function RoundGames({ round, onUpdateGame }: RoundGamesProps) {
                 onValueChange={(value) => handleResultChange(game.game_id, value)}
                 defaultValue={game.result || "not_played"}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" data-cy="score_input">
                   <SelectValue placeholder="Selecteer resultaat" />
                 </SelectTrigger>
                 <SelectContent>

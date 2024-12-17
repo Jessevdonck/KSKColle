@@ -1,0 +1,12 @@
+{
+    "items": [
+      { "user_id": 1, "voornaam": "Björn", "achternaam": "Dyckmans", "geboortedatum": "1990-01-15", "email": "test7@test.com", "tel_nummer": "0477186935", "schaakrating_elo": 2174, "schaakrating_difference": 0, "schaakrating_max": 2181, "is_admin": false, "fide_id": 202479, "lid_sinds": "1973-05-01", "password_hash": "hashed_password", "roles": ["USER"] },
+      { "user_id": 2, "voornaam": "Bart", "achternaam": "Schittekat", "geboortedatum": "1969-08-01", "email": "test5@test.com", "tel_nummer": "04777196895", "schaakrating_elo": 2172, "schaakrating_difference": 0, "schaakrating_max": 2184, "is_admin": false, "fide_id": 201413, "lid_sinds": "2010-05-24", "password_hash": "hashed_password", "roles": ["USER"] },
+      { "user_id": 3, "voornaam": "Niels", "achternaam": "Ongena", "geboortedatum": "2000-05-14", "email": "test4@test.com", "tel_nummer": "04777689193", "schaakrating_elo": 2000, "schaakrating_difference": 0, "schaakrating_max": 2100, "is_admin": true, "fide_id": 219436, "lid_sinds": "2021-09-01", "password_hash": "hashed_password", "roles": ["USER", "ADMIN"] },
+      { "user_id": 4, "voornaam": "Jesse", "achternaam": "Vaerendonck", "geboortedatum": "2003-05-14", "email": "test3@test.com", "tel_nummer": "0477106938", "schaakrating_elo": 1722, "schaakrating_difference": 0, "schaakrating_max": 1722, "is_admin": false, "fide_id": 285412, "lid_sinds": "2021-09-01", "password_hash": "hashed_password", "roles": ["USER"] },
+      { "user_id": 5, "voornaam": "Giovanni", "achternaam": "Berniers", "geboortedatum": "2003-05-14", "email": "test2@test.com", "tel_nummer": "0477782958", "schaakrating_elo": 1803, "schaakrating_difference": 0, "schaakrating_max": 1926, "is_admin": false, "fide_id": 256927, "lid_sinds": "2021-09-01", "password_hash": "hashed_password", "roles": ["USER"] },
+      { "user_id": 6, "voornaam": "Eduardo", "achternaam": "Semanat Planas", "geboortedatum": "2003-05-14", "email": "test@test.com", "tel_nummer": "0477719849", "schaakrating_elo": 2155, "schaakrating_difference": 0, "schaakrating_max": 2155, "is_admin": false, "fide_id": 3501930, "lid_sinds": "2021-09-01", "password_hash": "hashed_password", "roles": ["USER"] },
+      { "user_id": 7, "voornaam": "Ronny", "achternaam": "Hanssen", "geboortedatum": "2003-05-14", "email": "test6@test.com", "tel_nummer": "0477687395", "schaakrating_elo": 2027, "schaakrating_difference": 0, "schaakrating_max": 2028, "is_admin": false, "fide_id": 208728, "lid_sinds": "2021-09-01", "password_hash": "hashed_password", "roles": ["USER"] }
+    ]
+  }
+  

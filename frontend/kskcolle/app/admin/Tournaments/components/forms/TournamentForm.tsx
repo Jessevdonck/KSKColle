@@ -92,10 +92,10 @@ export default function TournamentForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
+          <div data-cy='name_input'>
             <Label htmlFor="naam">Toernooi Naam</Label>
             <Input id="naam" {...register("naam", { required: "Toernooi naam is vereist." })} />
-            {errors.naam && <p className="text-red-500">{errors.naam.message}</p>}
+            {errors.naam && <p className="text-red-500" data-cy="error_naam">{errors.naam.message}</p>}
           </div>
 
           <div>
@@ -105,8 +105,8 @@ export default function TournamentForm() {
               control={control}
               rules={{ required: "Aantal rondes is vereist", min: 1 }}
               render={({ field }) => (
-                <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString()}>
-                  <SelectTrigger>
+                <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString()} >
+                  <SelectTrigger data-cy="round_input">
                     <SelectValue placeholder="Selecteer aantal rondes" />
                   </SelectTrigger> 
                   <SelectContent>
@@ -115,12 +115,12 @@ export default function TournamentForm() {
                     ))}
                   </SelectContent>
                 </Select>
-              )}
+              )} 
             />
-            {errors.rondes && <p className="text-red-500">{errors.rondes.message}</p>}
+            {errors.rondes && <p className="text-red-500" data-cy="error_rondes">{errors.rondes.message}</p>}
           </div>
 
-          <div>
+          <div data-cy='participant_input'>
             <Label>Deelnemers</Label>
             <div className="relative mb-2">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -172,7 +172,7 @@ export default function TournamentForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full bg-mainAccent hover:bg-mainAccentDark">Maak Aan</Button>
+          <Button type="submit" className="w-full bg-mainAccent hover:bg-mainAccentDark" data-cy='submit_tournament'>Maak Aan</Button>
         </form>
       </CardContent>
     </Card>

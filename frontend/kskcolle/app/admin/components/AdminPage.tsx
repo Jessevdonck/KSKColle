@@ -9,8 +9,11 @@ import { Users, Trophy } from 'lucide-react'
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
+
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1)
       if (['dashboard', 'users', 'tournaments'].includes(hash)) {
@@ -18,17 +21,27 @@ const AdminPage = () => {
       }
     }
 
-    handleHashChange() 
+    if (window.location.hash) {
+      handleHashChange()
+    } else {
+      window.location.hash = activeTab
+    }
+
     window.addEventListener('hashchange', handleHashChange)
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab)
     window.location.hash = tab
+  }
+
+  if (!isClient) {
+    return null 
   }
 
   return (
@@ -101,3 +114,4 @@ const AdminPage = () => {
 }
 
 export default AdminPage
+

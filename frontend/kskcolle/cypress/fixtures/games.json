@@ -1,0 +1,9 @@
+{
+    "items": [
+      { "game_id": 1, "round_id": 1, "speler1_id": 1, "speler2_id": 2, "winnaar_id": 1, "result": "1-0", "uitgestelde_datum": null },
+      { "game_id": 2, "round_id": 2, "speler1_id": 2, "speler2_id": 1, "winnaar_id": 2, "result": "0-1", "uitgestelde_datum": null },
+      { "game_id": 3, "round_id": 3, "speler1_id": 4, "speler2_id": 3, "winnaar_id": 5, "result": "1-0", "uitgestelde_datum": null },
+      { "game_id": 4, "round_id": 4, "speler1_id": 3, "speler2_id": 4, "winnaar_id": 5, "result": "0-1", "uitgestelde_datum": null }
+    ]
+  }
+  

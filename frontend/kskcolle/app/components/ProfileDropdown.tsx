@@ -39,7 +39,7 @@ export default function ProfileDropdown() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>   
+      <DropdownMenuTrigger asChild data-cy="profile_button">   
           <User className="text-textColor cursor-pointer hover:text-mainAccent" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -58,7 +58,7 @@ export default function ProfileDropdown() {
         <Lock className="mr-2 h-4 w-4" />
         <span>Wachtwoord wijzigen</span>
       </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
+        <DropdownMenuItem className="cursor-pointer" onClick={handleLogout} data-cy="logout_button">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Uitloggen</span>
         </DropdownMenuItem>

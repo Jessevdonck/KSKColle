@@ -31,6 +31,7 @@ export default function RoundList({
             <Button 
               onClick={() => onGeneratePairings(roundNumber)} 
               className="mb-2 bg-mainAccent hover:bg-mainAccentDark"
+              data-cy='generate_pairings_button'
             >
               Genereer paringen
             </Button>

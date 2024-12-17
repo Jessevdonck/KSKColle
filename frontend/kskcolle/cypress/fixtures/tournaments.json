@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "tournament_id": 1,
+      "naam": "Herfstcompetitie",
+      "rondes": 8,
+      "participations": [1, 2, 3, 4, 5]
+    },
+    {
+      "tournament_id": 2,
+      "naam": "Lentecompetitie",
+      "rondes": 8,
+      "participations": [6, 7, 8, 9]
+    },
+    {
+      "tournament_id": 3,
+      "naam": "Zomertoernooi",
+      "rondes": 8,
+      "participations": [10, 11, 12, 13, 14, 15]
+    }
+  ]
+}
