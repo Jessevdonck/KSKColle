@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import * as userService from '../service/userService';
-import type { User, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetUserRequest, GetAllUserResponse, GetUserByNaamResponse, LoginResponse, RegisterUserRequest, UpdatePasswordRequest, UpdatePasswordResponse } from '../types/user';
+import type { User, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetUserRequest, GetAllUserResponse, PublicUser,GetAllPublicUserResponse, GetUserByNaamResponse, LoginResponse, RegisterUserRequest, UpdatePasswordRequest, UpdatePasswordResponse } from '../types/user';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 import Joi from 'joi';
@@ -19,6 +19,16 @@ const getAllUsers = async (ctx: KoaContext<GetAllUserResponse>): Promise<User[]>
   return users;
 };
 getAllUsers.validationScheme = null;
+
+const getAllPublicUsers = async (ctx: KoaContext<GetAllPublicUserResponse>): Promise<PublicUser[]> => {
+  const users =  await userService.getAllPublicUsers();
+  ctx.body = {
+    items: users,
+  };
+
+  return users;
+}
+getAllPublicUsers.validationScheme = null;
 
 const registerUser = async (
   ctx: KoaContext<LoginResponse, void, RegisterUserRequest>,
@@ -164,7 +174,8 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   const requireAdmin = makeRequireRole(Role.ADMIN);
 
-  router.get('/', validate(getAllUsers.validationScheme), getAllUsers);
+  router.get('/', requireAuthentication, requireAdmin, validate(getAllUsers.validationScheme), getAllUsers);
+  router.get('/publicUsers', validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
   router.post('/',requireAuthentication, requireAdmin, authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), checkUserId, getUserByNaam);
   router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);

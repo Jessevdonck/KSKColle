@@ -37,7 +37,7 @@
     "@stylistic/eslint-plugin": "^2.9.0",
     "@types/config": "^3.3.5",
     "@types/helmet": "^4.0.0",
-    "@types/jest": "^29.5.13",
+    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/koa": "^2.15.0",
     "@types/koa__cors": "^5.0.0",
@@ -65,7 +65,7 @@
     "seed": "tsx ./src/data/seed.ts"
   },
   "engines": {
-    "node": "21.5.0",
+    "node": "22.12.0",
     "npm": "10.2.4"
   }
 }

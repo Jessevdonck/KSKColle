@@ -13,27 +13,33 @@ const makeExposedUser = ({
   user_id, 
   voornaam, 
   achternaam, 
-  geboortedatum, 
   schaakrating_elo, 
   fide_id,  
   email,
-  lid_sinds,
-  roles
+  roles,
   }: User): PublicUser => ({
     user_id, 
     voornaam, 
     achternaam, 
-    geboortedatum, 
     schaakrating_elo, 
     fide_id,  
     email,
-    lid_sinds,
     roles
   } as PublicUser)
 
 export const getAllUsers = async (): Promise<User[]> => {
   try {
     return await prisma.user.findMany();
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+export const getAllPublicUsers = async (): Promise<PublicUser[]> => {
+  try {
+    const users = await prisma.user.findMany();
+
+    return users.map(makeExposedUser);
   } catch (error) {
     throw handleDBError(error);
   }

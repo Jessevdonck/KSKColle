@@ -30,7 +30,6 @@ export default function UserList({ users, onDelete }: UserListProps) {
             <TableHead>Geboortedatum</TableHead>
             <TableHead>ELO Rating</TableHead>
             <TableHead>FIDE ID</TableHead>
-            <TableHead>Nationaal ID</TableHead>
             <TableHead>Admin</TableHead>
             <TableHead className=''>Actions</TableHead>
           </TableRow>
@@ -43,18 +42,18 @@ export default function UserList({ users, onDelete }: UserListProps) {
                   variant="link"
                   onClick={() => setEditingUser(user)}
                   className="p-0 h-auto font-normal"
+                  
                 >
-                  {`${user.voornaam} ${user.achternaam}`}
+                  <span data-cy="name_output">{`${user.voornaam} ${user.achternaam}`}</span>
                 </Button>
               </TableCell>
-              <TableCell>{new Date(user.geboortedatum).toLocaleDateString('nl-NL')}</TableCell>
-              <TableCell>{user.schaakrating_elo}</TableCell>
-              <TableCell>{user.fide_id || 'N/A'}</TableCell>
-              <TableCell>{user.nationaal_id || 'N/A'}</TableCell>
-              <TableCell>{user.is_admin ? 'Yes' : 'No'}</TableCell>
+              <TableCell ><span data-cy="birthdate_output">{new Date(user.geboortedatum).toLocaleDateString('nl-NL')}</span></TableCell>
+              <TableCell ><span data-cy="rating_output">{user.schaakrating_elo}</span></TableCell>
+              <TableCell ><span data-cy="fide_output">{user.fide_id || 'N/A'}</span></TableCell>
+              <TableCell ><span data-cy="admin_output">{user.is_admin ? 'Yes' : 'No'}</span></TableCell>
               <TableCell className=''>
-                <Button onClick={() => setEditingUser(user)} className="mr-2 bg-mainAccent text-white hover:bg-mainAccentDark">Edit</Button>
-                <Button onClick={() => onDelete(user.user_id)} variant="destructive">Delete</Button>
+                <Button onClick={() => setEditingUser(user)} className="mr-2 bg-mainAccent text-white hover:bg-mainAccentDark" data-cy="edit_button">Edit</Button>
+                <Button onClick={() => onDelete(user.user_id)} variant="destructive" data-cy="delete_button">Delete</Button>
               </TableCell>
             </TableRow>
           ))}

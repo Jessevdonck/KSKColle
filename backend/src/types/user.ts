@@ -17,10 +17,10 @@ export type User = {
   roles: Prisma.JsonValue;
 };
 
-export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "is_admin" | "fide_id" | "lid_sinds"> {}
+export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles"> {}
 
 
-export interface UserUpdateInput extends Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "password"> {}
+export interface UserUpdateInput extends Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password"> {}
 
 export type UserCreateInput = {
   voornaam: string;
@@ -82,6 +82,7 @@ export interface CreateUserRequest extends UserCreateInput {}
 export interface UpdateUserRequest extends UserUpdateInput {}
 
 export interface GetAllUserResponse extends ListResponse<User> {}
+export interface GetAllPublicUserResponse extends ListResponse<PublicUser> {}
 export interface GetUserByIdResponse extends PublicUser {}
 export interface GetUserByNaamResponse extends PublicUser {}
 export interface UpdateUserResponse extends GetUserByIdResponse {}
