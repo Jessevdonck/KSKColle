@@ -11,7 +11,7 @@ export default function PlayerRanking() {
     data: users = [],
     isLoading,
     error,
-  } = useSWR<User[]>('users', getAll)
+  } = useSWR<User[]>('users/publicUsers', getAll)
 
   const noPlayersError = users.length === 0 && !isLoading && !error;
 
