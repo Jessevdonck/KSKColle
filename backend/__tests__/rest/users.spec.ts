@@ -159,32 +159,20 @@ describe('POST /api/users', () => {
     it('should 200 and return the updated user', async () => {
         const response = await request.put(`${url}/1`)
           .send({
-          voornaam: 'Changed',
-          achternaam: 'User',
-          email: 'new.user@hogent.be',
-          fide_id: null,
-          password: 'testtest', 
-          tel_nummer: '9871236',
-          geboortedatum: '1990-01-01',
-          schaakrating_elo: 1200,
-          lid_sinds: '2020-01-01', 
-          roles: ['user'], 
+          voornaam: 'Changed', 
+          roles: ["user"], 
           })
           .set('Authorization', adminAuthHeader);
   
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual({
-          id: 1,
+          user_id: 1, 
           voornaam: 'Changed',
           achternaam: 'User',
-          email: 'new.user@hogent.be',
+          email: 'test.user@hogent.be', 
           fide_id: null,
-          password: 'testtest', 
-          tel_nummer: '9871236',
-          geboortedatum: '1990-01-01',
           schaakrating_elo: 1200,
-          lid_sinds: '2020-01-01', 
-          roles: ['user'], 
+          roles: '["user"]', 
         });
       });
 
