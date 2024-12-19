@@ -99,6 +99,7 @@ updateUser.validationScheme = {
 
 const updatePassword = async (ctx: KoaContext<UpdatePasswordResponse, IdParams, UpdatePasswordRequest>) => {
   const userId = Number(ctx.params.id);
+
   const { currentPassword, newPassword } = ctx.request.body;
 
   await userService.updatePassword(userId, currentPassword, newPassword);
@@ -145,8 +146,8 @@ getUserByNaam.validationScheme = {
 
 const removeUser = async (ctx: KoaContext<void, IdParams>) => {
   const userId = Number(ctx.params.id);
-  userService.removeUser(userId);
-  ctx.status = 204; 
+  await userService.removeUser(userId);
+  ctx.status = 204;
 };
 removeUser.validationScheme = {
   params: {
@@ -155,15 +156,16 @@ removeUser.validationScheme = {
 };
 
 const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
-  const { roles } = ctx.state.session;
+  const { userId, roles } = ctx.state.session;
+  const { id } = ctx.params;
 
-  if ( !roles.includes(Role.USER || Role.ADMIN)) {
-    return ctx.throw(
-      403,
-      "You are not allowed to view this user's information",
-      { code: 'FORBIDDEN' },
-    );
-  }
+  if (id !== 'me' && id !== userId && !roles.includes(Role.ADMIN)) {
+  return ctx.throw(
+    403,
+    "You are not allowed to view this user's information",
+    { code: 'FORBIDDEN' },
+  );
+}
   return next();
 };
 

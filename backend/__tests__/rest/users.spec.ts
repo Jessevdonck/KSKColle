@@ -20,8 +20,8 @@ describe('Users', () => {
 
   describe('GET /api/users', () => {
 
-    it('should 200 return all users', async () => {
-        const response = await request.get(`${url}/publicUsers`).set('Authorization', adminAuthHeader);
+    it('should 200 return all public users', async () => {
+        const response = await request.get(`${url}/publicUsers`).set('Authorization', authHeader);
 
         expect(response.status).toBe(200);
         expect(response.body.items.length).toBe(2);
@@ -49,6 +49,72 @@ describe('Users', () => {
             roles: ['admin', 'user'],
         }]));
     });
+
+    it('should 200 return all users for admin', async () => {
+      const response = await request.get(`${url}`).set('Authorization', adminAuthHeader);
+    
+      expect(response.status).toBe(200);
+      expect(response.body.items.length).toBe(2);
+    
+      const users = response.body.items.map((user: any) => ({
+        ...user,
+        roles: JSON.parse(user.roles), 
+      }));
+    
+      expect(users).toEqual(expect.arrayContaining([{
+        user_id: 1,
+        voornaam: 'Test',
+        achternaam: 'User',
+        email: 'test.user@hogent.be',
+        fide_id: null,
+        schaakrating_elo: 1200,
+        roles: ['user'],
+        geboortedatum: expect.any(String), 
+        is_admin: null, 
+        lid_sinds: expect.any(String), 
+        password_hash: expect.any(String), 
+        schaakrating_difference: null,
+        schaakrating_max: null,
+        tel_nummer: expect.any(String),  
+      }, {
+        user_id: 2,
+        voornaam: 'Admin',
+        achternaam: 'User',
+        email: 'admin.user@hogent.be',
+        fide_id: null,
+        schaakrating_elo: 1500,
+        roles: ['admin', 'user'],
+        geboortedatum: expect.any(String), 
+        is_admin: null,
+        lid_sinds: expect.any(String), 
+        password_hash: expect.any(String), 
+        schaakrating_difference: null,
+        schaakrating_max: null,
+        tel_nummer: expect.any(String),
+      }]));
+    });
+
+    it('should 200 return player by name', async () => {
+      const response = await request.get(`${url}/by-name?voornaam=Test&achternaam=User`).set('Authorization', authHeader);
+  
+      expect(response.status).toBe(200);
+  
+      const user = {
+        ...response.body,
+        roles: JSON.parse(response.body.roles), 
+      };
+  
+      expect(user).toEqual({
+        user_id: 1,
+            voornaam: 'Test',
+            achternaam: 'User',
+            email: 'test.user@hogent.be',
+            fide_id: null,
+            schaakrating_elo: 1200,
+            roles: ['user'],
+      });
+  });
+          
 
     it('should 400 when given an argument', async () => {
         const response = await request.get(`${url}/publicUsers?invalid=true`).set('Authorization', adminAuthHeader);
@@ -194,6 +260,73 @@ describe('POST /api/users', () => {
     testAuthHeader(() => request.put(`${url}/1`));
   });
 
+  describe('PUT /api/users/:id/password', () => {
+    
+    it('should 200 and return nothing', async () => {
+      const response = await request.put(`${url}/2/password`)
+        .send({
+          currentPassword: '12345678',
+          newPassword: 'ditiseennieuwwachtwoord',
+        })
+        .set('Authorization', adminAuthHeader);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual({
+        message: 'Password updated successfully',
+      });
+    });
+
+    it('should 403 when not an admin and not own user id', async () => {
+      const response = await request.put(`${url}/2/password`)
+        .send({
+          currentPassword: '12345678',
+          newPassword: 'ditiseennieuwwachtwoord',
+        })
+        .set('Authorization', authHeader);
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({
+        code: 'FORBIDDEN',
+        message: "You are not allowed to view this user's information",
+      });
+    });
+
+    testAuthHeader(() => request.put(`${url}/1/password`));
+  });
+
+
+  describe('DELETE /api/users/:id', () => {
+
+    it('should 204 and return nothing', async () => {
+      const response = await request.delete(`${url}/1`).set('Authorization', adminAuthHeader);
+
+      expect(response.statusCode).toBe(204);
+      expect(response.body).toEqual({});
+    });
+
+    it('should 404 with not existing user', async () => {
+      const response = await request.delete(`${url}/123`).set('Authorization', adminAuthHeader);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toMatchObject({
+        code: 'NOT_FOUND',
+        message: 'No user with this id exists',
+      });
+      expect(response.body.stack).toBeTruthy();
+    });
+
+    it('should 403 when not an admin and not own user id', async () => {
+      const response = await request.delete(`${url}/1`).set('Authorization', authHeader);
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toMatchObject({
+        code: 'FORBIDDEN',
+        message: 'You are not allowed to view this part of the application',
+      });
+    });
+
+    testAuthHeader(() => request.delete(`${url}/1`));
+  });
 });
 
 

@@ -178,9 +178,7 @@ export const updatePassword = async (userId: number, currentPassword: string, ne
 export const removeUser = async (user_id: number): Promise<void> => {
   try {
     await prisma.user.delete({
-      where: {
-        user_id,
-      },
+      where: {user_id,},
     });
   } catch (error) {
     throw handleDBError(error);
