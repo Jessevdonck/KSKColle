@@ -1,7 +1,5 @@
 # Examenopdracht Front-end Web Development & Web Services
 
-> Schrap hierboven eventueel wat niet past
-
 - Student: Jesse Vaerendonck
 - Studentennummer: 202399060
 - E-mailadres: <mailto:jesse.vaerendonck@student.hogent.be>
@@ -13,8 +11,6 @@ Ik verwacht dat volgende software reeds geïnstalleerd is:
 - [NodeJS](https://nodejs.org)
 - [NPM](https://www.npmjs.com/)
 - [MySQL Community Server](https://dev.mysql.com/downloads/mysql/)
-
-> Vul eventueel aan
 
 ## Front-end
 
