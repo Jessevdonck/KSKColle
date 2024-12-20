@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
 
-  const passwordHash = await hashPassword('12345678');
+  const passwordHash = await hashPassword("VUL HIER WW IN");
 
   await prisma.user.createMany({
     data: [
