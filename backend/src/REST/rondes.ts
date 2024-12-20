@@ -1,10 +1,9 @@
 import Router from '@koa/router';
 import * as rondeService from '../service/rondeService';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
-import type { CreateRoundRequest, CreateRoundResponse, GetAllRoundsResponse, IdRondeParams, UpdateRoundRequest, UpdateRoundResponse } from '../types/ronde';
+import type { CreateRoundRequest, CreateRoundResponse, GetAllRoundsResponse, GetRoundByIdResponse, IdRondeParams, UpdateRoundRequest, UpdateRoundResponse } from '../types/ronde';
 import Koa from 'koa';
 import { getRondeByTournamentId } from '../service/rondeService';
-import ServiceError from '../core/serviceError';
 import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
@@ -31,57 +30,26 @@ createRonde.validationScheme = {
   },
 };
 
-const getRondeById = async (ctx: Koa.Context) => {
+const getRondeById = async (ctx: KoaContext<GetRoundByIdResponse, IdRondeParams>) => {
+  ctx.body = await rondeService.getById(
+    ctx.params.ronde_id, 
+  );
+};
+getRondeById.validationScheme = {
+  params: {
+    ronde_id: Joi.number().integer().positive(),
+  },
+};
+
+
+const getRondeByTournament = async (ctx: Koa.Context) => {
   const tournamentId = Number(ctx.params.tournament_id);
   const roundId = Number(ctx.params.round_id);
 
-  if (isNaN(tournamentId) || isNaN(roundId)) {
-    ctx.status = 400;
-    ctx.body = {
-      code: 'VALIDATION_FAILED',
-      message: 'Invalid tournament_id or round_id',
-      details: {
-        params: {
-          tournament_id: ctx.params.tournament_id,
-          round_id: ctx.params.round_id,
-        },
-      },
-    };
-    return;
-  }
-
-  try {
-    const ronde = await getRondeByTournamentId(tournamentId, roundId);
-    ctx.status = 200;
-    ctx.body = ronde;
-  } catch (error) {
-    if (error instanceof ServiceError) {
-      switch (error.code) {
-        case 'NOT_FOUND':
-          ctx.status = 404;
-          break;
-        case 'VALIDATION_FAILED':
-          ctx.status = 400;
-          break;
-        default:
-          ctx.status = 500;
-      }
-      ctx.body = {
-        code: error.code,
-        message: error.message,
-        stack: (error as Error).stack,
-      };
-    } else {
-      ctx.status = 500;
-      ctx.body = {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred',
-        stack: (error as Error).stack,
-      };
-    }
-  }
+  const ronde = await getRondeByTournamentId(tournamentId, roundId);
+  ctx.body = ronde;
 };
-getRondeById.validationScheme = {
+getRondeByTournament.validationScheme = {
   params: {
     tournament_id: Joi.number().integer().positive(),
     round_id: Joi.number().integer().positive(),
@@ -98,7 +66,7 @@ const updateRonde = async (ctx: KoaContext<UpdateRoundResponse, IdRondeParams, U
 updateRonde.validationScheme = {
   params: {
     tournament_id: Joi.number().integer().positive(),
-    round_id: Joi.number().integer().positive(),
+    ronde_id: Joi.number().integer().positive(),
   },
   body: {
     ronde_nummer: Joi.number().integer().positive(),
@@ -108,20 +76,29 @@ updateRonde.validationScheme = {
 
 const removeRonde = async (ctx: KoaContext<void, IdRondeParams>) => {
   const tournament_id = Number(ctx.params.tournament_id);
-  const roundId = Number(ctx.params.ronde_id);
-  rondeService.removeRound(tournament_id, roundId);
+  const ronde_id = Number(ctx.params.ronde_id);
+  rondeService.removeRound(tournament_id, ronde_id);
   ctx.status = 204; 
 };
 removeRonde.validationScheme = {
   params: {
     tournament_id: Joi.number().integer().positive(),
-    round_id: Joi.number().integer().positive(),
+    ronde_id: Joi.number().integer().positive(),
   },
 };
 
 const getAllRondesByTournamentId = async (ctx: any) => {
   const tournamentId = Number(ctx.params.tournament_id);
   const rondes = await rondeService.getAllRondesByTournamentId(tournamentId);
+
+  if (rondes.length === 0) {
+    ctx.status = 404; 
+    ctx.body = {
+      code: 'NOT_FOUND',
+      message: `No tournament with this id exists`,
+    };
+    return; 
+  }
   ctx.body = {
     items: rondes,
   };
@@ -140,11 +117,12 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const requireAdmin = makeRequireRole(Role.ADMIN);
 
   router.get('/', requireAuthentication, validate(getAllRondes.validationScheme), getAllRondes);
-  router.get('/:tournament_id/rondes', requireAuthentication,validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
+  router.get('/:tournament_id/rondes',validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
+  router.get('/:ronde_id', validate(getRondeById.validationScheme), getRondeById);
   router.post('/', requireAuthentication, requireAdmin, validate(createRonde.validationScheme), createRonde);
-  router.get('/:tournament_id/rondes/:round_id', requireAuthentication, validate(getRondeById.validationScheme), getRondeById); 
-  router.put('/:tournament_id/rondes/:round_id', requireAuthentication, requireAdmin, validate(updateRonde.validationScheme), updateRonde); 
-  router.delete('/:tournament_id/rondes/:round_id', requireAuthentication, requireAdmin, validate(removeRonde.validationScheme), removeRonde); 
+  router.get('/:tournament_id/rondes/:round_id', requireAuthentication, validate(getRondeByTournament.validationScheme), getRondeByTournament); 
+  router.put('/:tournament_id/rondes/:ronde_id', requireAuthentication, requireAdmin, validate(updateRonde.validationScheme), updateRonde); 
+  router.delete('/:tournament_id/rondes/:ronde_id', requireAuthentication, requireAdmin, validate(removeRonde.validationScheme), removeRonde); 
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

@@ -93,7 +93,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   router.get('/', validate(getAllTournament.validationScheme), getAllTournament);
   router.post('/', requireAuthentication, requireAdmin, validate(createTournament.validationScheme), createTournament);
-  router.get('/:id', requireAuthentication, validate(getTournamentById.validationScheme), getTournamentById);
+  router.get('/:id', validate(getTournamentById.validationScheme), getTournamentById);
   router.put('/:id', requireAuthentication, requireAdmin, validate(updateTournament.validationScheme),updateTournament);
   router.delete('/:id', requireAuthentication, requireAdmin, validate(removeTournament.validationScheme), removeTournament);
   router.post('/:id/pairings/:rondeNummer', requireAuthentication, requireAdmin, validate(generatePairings.validationScheme), generatePairings);

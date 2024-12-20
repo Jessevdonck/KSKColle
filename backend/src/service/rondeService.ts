@@ -30,6 +30,22 @@ export const getAllRondesByTournamentId = async (tournamentId: number): Promise<
     throw handleDBError(error);
   }
 };
+
+
+export const getById = async (roundId: number): Promise<Ronde> => {
+
+  const round = await prisma.round.findUnique({
+    where: {
+      round_id: roundId,
+    },
+  });
+
+  if (!round) {
+    throw ServiceError.notFound('No round with this id exists');
+  }
+
+  return round;
+};
   
 export const getRondeByTournamentId = async (tournamentId: number, roundId: number): Promise<Ronde> => {
   try {
@@ -70,7 +86,7 @@ export const updateRonde = async (tournament_id: number, round_id: number, chang
     });
 
     if (!rondeExists) {
-      throw ServiceError.notFound(`Ronde met ID ${round_id} voor toernooi ${tournament_id} niet gevonden.`);
+      throw ServiceError.notFound(`Ronde met dit id niet gevonden voor toernooi`);
     }
 
     return await prisma.round.update({
@@ -87,17 +103,6 @@ export const updateRonde = async (tournament_id: number, round_id: number, chang
 
 export const removeRound = async (tournament_id: number, round_id: number): Promise<void> => {
   try {
-    const rondeExists = await prisma.round.findFirst({
-      where: {
-        tournament_id,
-        round_id,
-      },
-    });
-
-    if (!rondeExists) {
-      throw ServiceError.notFound(`Ronde met ID ${round_id} voor toernooi ${tournament_id} niet gevonden.`);
-    }
-
     await prisma.round.delete({
       where: {
         tournament_id,
