@@ -9,6 +9,17 @@ import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
 
+/**
+ * @api {get} /tournament Get all tournaments
+ * @apiName GetAllTournaments
+ * @apiGroup Tournament
+ * 
+ * @apiSuccess {Object[]} items List of all tournaments.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const getAllTournament = async (ctx: KoaContext<GetAllTournamentenResponse>) => {
   const spelers =  await tournamentService.getAllTournaments();
   ctx.body = {
@@ -17,6 +28,21 @@ const getAllTournament = async (ctx: KoaContext<GetAllTournamentenResponse>) => 
 };
 getAllTournament.validationScheme = null;
 
+/**
+ * @api {post} /tournament Create a new tournament
+ * @apiName CreateTournament
+ * @apiGroup Tournament
+ * 
+ * @apiBody {String} naam The name of the tournament.
+ * @apiBody {Number} rondes The number of rounds in the tournament.
+ * @apiBody {Number[]} participations Array of participant IDs.
+ * 
+ * @apiSuccess {Object} tournament The created tournament object.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const createTournament = async (ctx: KoaContext<CreateTournamentResponse, void, CreateTournamentRequest>) => {
   const newSpeler: any = await tournamentService.addTournament(ctx.request.body);
   ctx.status = 201; 
@@ -30,6 +56,18 @@ createTournament.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /tournament/:id Get tournament by ID
+ * @apiName GetTournamentById
+ * @apiGroup Tournament
+ * @apiParam {Number} id The ID of the tournament.
+ * 
+ * @apiSuccess {Object} tournament The tournament object.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const getTournamentById = async (ctx: KoaContext<GetTournamentByIdResponse, IdParams>) => {
   ctx.body = await tournamentService.getTournamentById(Number(ctx.params.id));
 };
@@ -38,6 +76,21 @@ getTournamentById.validationScheme = {
     id: Joi.number().integer().positive(),
   },
 };
+
+/**
+ * @api {put} /tournament/:id Update tournament by ID
+ * @apiName UpdateTournament
+ * @apiGroup Tournament
+ * @apiParam {Number} id The ID of the tournament to update.
+ * @apiBody {String} naam The name of the tournament.
+ * @apiBody {Date} startdatum The start date of the tournament.
+ * 
+ * @apiSuccess {Object} tournament The updated tournament object.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 
 const updateTournament = async (ctx: KoaContext<UpdateTournamentResponse, IdParams, UpdateTournamentRequest>) => {
   const tournamentId = Number(ctx.params.id); 
@@ -55,6 +108,18 @@ updateTournament.validationScheme = {
   },
 };
 
+/**
+ * @api {delete} /tournament/:id Delete tournament by ID
+ * @apiName DeleteTournament
+ * @apiGroup Tournament
+ * @apiParam {Number} id The ID of the tournament to delete.
+ * 
+ * @apiSuccess (204) NoContent The tournament was successfully deleted.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const removeTournament = async (ctx: KoaContext<void, IdParams>) => {
   const tournament_id = Number(ctx.params.id);
   tournamentService.removeTournament(tournament_id);
@@ -66,6 +131,19 @@ removeTournament.validationScheme = {
   },
 };
 
+/**
+ * @api {post} /tournament/:id/pairings/:rondeNummer Generate pairings for a round
+ * @apiName GeneratePairings
+ * @apiGroup Tournament
+ * @apiParam {Number} id The ID of the tournament.
+ * @apiParam {Number} rondeNummer The round number for which to generate pairings.
+ * 
+ * @apiSuccess (201) Created The pairings were successfully generated.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const generatePairings = async (ctx: KoaContext<void, IdParams & { rondeNummer: number }>) => {
   const tournamentId = Number(ctx.params.id);
   const rondeNummer = Number(ctx.params.rondeNummer);

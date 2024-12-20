@@ -8,6 +8,17 @@ import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
 
+/**
+ * @api {get} /spel Get all spellen
+ * @apiName GetAllSpellen
+ * @apiGroup Spel
+ * 
+ * @apiSuccess {Object[]} items List of all spellen.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const getAllSpellen = async (ctx: KoaContext<GetAllSpellenResponse>) => {
   const spellen =  await spellenService.getAllSpellen();
   ctx.body = {
@@ -17,6 +28,22 @@ const getAllSpellen = async (ctx: KoaContext<GetAllSpellenResponse>) => {
 
 getAllSpellen.validationScheme = null;
 
+/**
+ * @api {post} /spel Create a new spel
+ * @apiName CreateSpel
+ * @apiGroup Spel
+ * 
+ * @apiBody {Number} speler1_id The ID of player 1.
+ * @apiBody {Number} speler2_id The ID of player 2.
+ * @apiBody {Number} winnaar_id The ID of the winner.
+ * @apiBody {Date} datum The date of the game.
+ * 
+ * @apiSuccess {Object} spel The created spel object.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const createSpel = async (ctx: KoaContext<CreateSpelResponse, void, CreateSpelRequest>) => {
   const newSpel: any = await spellenService.createSpel(ctx.request.body);
   ctx.status = 201; 
@@ -32,6 +59,18 @@ createSpel.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /spel/:id Get spel by ID
+ * @apiName GetSpelById
+ * @apiGroup Spel
+ * @apiParam {Number} id The ID of the spel.
+ * 
+ * @apiSuccess {Object} spel The spel object.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const getSpelById = async (ctx: KoaContext<GetSpelByIdResponse, IdParams>) => {
   ctx.body = await spellenService.getSpelById(Number(ctx.params.id));
 };
@@ -42,6 +81,19 @@ getSpelById.validationScheme = {
   },
 };
 
+/**
+ * @api {put} /spel/:id Update spel by ID
+ * @apiName UpdateSpel
+ * @apiGroup Spel
+ * @apiParam {Number} id The ID of the spel to update.
+ * @apiBody {String} result The updated result of the spel.
+ * 
+ * @apiSuccess {Object} spel The updated spel object.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const updateSpel = async (ctx: KoaContext<UpdateSpelResponse, IdParams, UpdateSpelRequest>) => {
   const spelId = Number(ctx.params.id); 
   const updatedSpeler = await spellenService.updateSpel(spelId, ctx.request.body); 
@@ -58,6 +110,18 @@ updateSpel.validationScheme = {
   },
 };
 
+/**
+ * @api {delete} /spel/:id Delete spel by ID
+ * @apiName DeleteSpel
+ * @apiGroup Spel
+ * @apiParam {Number} id The ID of the spel to delete.
+ * 
+ * @apiSuccess (204) NoContent The spel was successfully deleted.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound The requested resource could not be found.
+ */
 const removeSpel = async (ctx: KoaContext<void, IdParams>) => {
   const spelId = Number(ctx.params.id);
   spellenService.removeSpel(spelId);
@@ -70,6 +134,18 @@ removeSpel.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /spel/speler/:id Get all spellen by player ID
+ * @apiName GetSpellenByPlayerId
+ * @apiGroup Spel
+ * @apiParam {Number} id The ID of the player.
+ * 
+ * @apiSuccess {Object[]} items List of spellen for the given player.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ * @apiError (404) NotFound No spellen found for the given player.
+ */
 const getSpellenByPlayerId = async (ctx: KoaContext<GetAllSpellenResponse, IdParams>) => {
   const playerId = Number(ctx.params.id);
   const spellen = await spellenService.getSpellenByPlayerId(playerId);

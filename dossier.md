@@ -10,9 +10,9 @@
 - Demo: <DEMO_LINK_HIER>
 - GitHub-repository: <https://github.com/HOGENT-frontendweb/frontendweb-2425-Jessevdonck.git>
 - Front-end Web Development
-  - Online versie: <LINK_ONLINE_VERSIE_HIER>
+  - Online versie: <https://frontendweb-kskcolle.onrender.com>
 - Web Services:
-  - Online versie: <LINK_ONLINE_VERSIE_HIER>
+  - Online versie: <https://kskcolle-backend.onrender.com>
 
 ## Logingegevens
 

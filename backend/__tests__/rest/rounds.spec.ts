@@ -418,7 +418,7 @@ describe('Rounds', () => {
         testAuthHeader(() => request.put(`${url}/1/rondes/1`));
     });
 
-    describe('DELETE /api/transactions/:id', () => {
+    describe('DELETE /api/rondes/:id', () => {
 
         beforeAll(async () => {
           await prisma.tournament.createMany({ data: data.tournaments });

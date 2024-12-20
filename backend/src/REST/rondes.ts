@@ -9,6 +9,13 @@ import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
 
+/**
+ * @api {get} /rondes Get all rondes
+ * @apiName GetAllRondes
+ * @apiGroup Ronde
+ *
+ * @apiSuccess {Object[]} items List of all rondes.
+ */
 const getAllRondes = async (ctx: KoaContext<GetAllRoundsResponse>) => {
   const spelers =  await rondeService.getAllRondes();
   ctx.body = {
@@ -17,6 +24,25 @@ const getAllRondes = async (ctx: KoaContext<GetAllRoundsResponse>) => {
 };
 getAllRondes.validationScheme = null;
 
+/**
+ * @api {post} /rondes Create a new ronde
+ * @apiName CreateRonde
+ * @apiGroup Ronde
+ *
+ * @apiBody {Number} tournament_id ID of the tournament
+ * @apiBody {Number} ronde_nummer The number of the ronde
+ * @apiBody {Date} ronde_datum The date of the ronde
+ *
+ * @apiSuccess {Object} newRound The created ronde object.
+ * @apiSuccessExample {json} Success-Response:
+ *   HTTP/1.1 201 Created
+ *   {
+ *     "ronde_id": 1,
+ *     "tournament_id": 2,
+ *     "ronde_nummer": 1,
+ *     "ronde_datum": "2024-12-20T00:00:00.000Z"
+ *   }
+ */
 const createRonde = async (ctx: KoaContext<CreateRoundResponse, void, CreateRoundRequest>) => {
   const newRound: any = await rondeService.createRonde(ctx.request.body);
   ctx.status = 201; 
@@ -30,6 +56,16 @@ createRonde.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /rondes/:ronde_id Get ronde by ID
+ * @apiName GetRondeById
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} ronde_id The ID of the ronde.
+ *
+ * @apiSuccess {Object} ronde The ronde data.
+ * @apiError (404) RondeNotFound Ronde with the given ID does not exist.
+ */
 const getRondeById = async (ctx: KoaContext<GetRoundByIdResponse, IdRondeParams>) => {
   ctx.body = await rondeService.getById(
     ctx.params.ronde_id, 
@@ -41,7 +77,16 @@ getRondeById.validationScheme = {
   },
 };
 
-
+/**
+ * @api {get} /rondes/:tournament_id/rondes/:round_id Get ronde by tournament ID and round ID
+ * @apiName GetRondeByTournament
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The tournament ID.
+ * @apiParam {Number} round_id The round ID.
+ *
+ * @apiSuccess {Object} ronde The ronde data.
+ */
 const getRondeByTournament = async (ctx: Koa.Context) => {
   const tournamentId = Number(ctx.params.tournament_id);
   const roundId = Number(ctx.params.round_id);
@@ -56,6 +101,18 @@ getRondeByTournament.validationScheme = {
   },
 };
 
+/**
+ * @api {put} /rondes/:tournament_id/rondes/:ronde_id Update ronde
+ * @apiName UpdateRonde
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ * @apiParam {Number} ronde_id The ID of the ronde.
+ * @apiBody {Number} ronde_nummer The number of the ronde.
+ * @apiBody {Date} ronde_datum The new date of the ronde.
+ *
+ * @apiSuccess {Object} updatedSpeler The updated ronde data.
+ */
 const updateRonde = async (ctx: KoaContext<UpdateRoundResponse, IdRondeParams, UpdateRoundRequest>) => {
   const tournamentId = Number(ctx.params.tournament_id); 
   const roundId = Number(ctx.params.ronde_id);
@@ -74,6 +131,16 @@ updateRonde.validationScheme = {
   },
 };
 
+/**
+ * @api {delete} /rondes/:tournament_id/rondes/:ronde_id Remove ronde
+ * @apiName RemoveRonde
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ * @apiParam {Number} ronde_id The ID of the ronde.
+ *
+ * @apiSuccess (204) NoContent The ronde was successfully deleted.
+ */
 const removeRonde = async (ctx: KoaContext<void, IdRondeParams>) => {
   const tournament_id = Number(ctx.params.tournament_id);
   const ronde_id = Number(ctx.params.ronde_id);
@@ -87,6 +154,16 @@ removeRonde.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /rondes/:tournament_id/rondes Get all rondes by tournament ID
+ * @apiName GetAllRondesByTournamentId
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ *
+ * @apiSuccess {Object[]} items List of all rondes in the tournament.
+ * @apiError (404) TournamentNotFound No tournament with the given ID exists.
+ */
 const getAllRondesByTournamentId = async (ctx: any) => {
   const tournamentId = Number(ctx.params.tournament_id);
   const rondes = await rondeService.getAllRondesByTournamentId(tournamentId);

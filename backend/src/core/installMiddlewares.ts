@@ -5,6 +5,7 @@ import { getLogger } from './logging';
 import { KoaContext } from '../types/koa';
 import ServiceError from './serviceError';
 import koaHelmet from 'koa-helmet';
+import serve from 'koa-static';
 
 const NODE_ENV = config.get<string>('env');
 
@@ -100,6 +101,6 @@ export default function installMiddlewares(app: any) {
   });
 
   app.use(bodyParser());
-
+  app.use(serve('apidoc'));
   app.use(koaHelmet());
 }

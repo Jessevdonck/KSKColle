@@ -12,6 +12,21 @@ import type {
 import type { LoginResponse, LoginRequest } from '../types/user';
 import { authDelay } from '../core/auth';
 
+/**
+ * @api {post} /api/sessions Try to login
+ * @apiName LoginUser
+ * @apiGroup Sessions
+ * 
+ * @apiBody {String} email The email of the user. (Format: email)
+ * @apiBody {String} password The password of the user.
+ * 
+ * @apiSuccess {String} token A JWT token for the authenticated user.
+ * 
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized Authentication failed or invalid credentials.
+ */
+
+
 const login = async (ctx: KoaContext<LoginResponse, void, LoginRequest>) => {
   const { email, password } = ctx.request.body;
   const token = await userService.login(email, password); 
