@@ -114,10 +114,29 @@ describe('Users', () => {
             roles: ['user'],
       });
   });
+
+  it('should 404 when player is not found by name', async () => {
+    const response = await request.get(`${url}/by-name?voornaam=Pietje&achternaam=NogIets`).set('Authorization', authHeader);
+  
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({
+      code: 'NOT_FOUND',
+      message: 'Unknown resource: /api/users/by-name?voornaam=Pietje&achternaam=NogIets',
+    });
+  });
+  
+
+  it('should 400 when given an argument', async () => {
+    const response = await request.get(`${url}/publicUsers?invalid=true`).set('Authorization', adminAuthHeader);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.code).toBe('VALIDATION_FAILED');
+    expect(response.body.details.query).toHaveProperty('invalid');
+  });
           
 
-    it('should 400 when given an argument', async () => {
-        const response = await request.get(`${url}/publicUsers?invalid=true`).set('Authorization', adminAuthHeader);
+    it('should 400 when given an argument for publicUsers', async () => {
+        const response = await request.get(`${url}/?invalid=true`).set('Authorization', adminAuthHeader);
   
         expect(response.statusCode).toBe(400);
         expect(response.body.code).toBe('VALIDATION_FAILED');
@@ -273,6 +292,21 @@ describe('POST /api/users', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toEqual({
         message: 'Password updated successfully',
+      });
+    });
+
+    it('should 401 when incorrect currentPassword', async () => {
+      const response = await request.put(`${url}/1/password`)
+        .send({
+          currentPassword: 'ditisnietjuist',
+          newPassword: 'ditiseennieuwwachtwoord',
+        })
+        .set('Authorization', authHeader);
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body).toMatchObject({
+        code: 'UNAUTHORIZED',
+        message: "Current password is incorrect",
       });
     });
 

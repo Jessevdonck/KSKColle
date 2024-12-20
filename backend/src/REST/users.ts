@@ -169,6 +169,19 @@ const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
   return next();
 };
 
+const checkUserIdAdmin = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
+  const { roles } = ctx.state.session;
+
+  if (!roles.includes(Role.ADMIN)) {
+  return ctx.throw(
+    403,
+    "You are not allowed to view this user's information",
+    { code: 'FORBIDDEN' },
+  );
+}
+  return next();
+};
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/users',
@@ -179,11 +192,11 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/', requireAuthentication, requireAdmin, validate(getAllUsers.validationScheme), getAllUsers);
   router.get('/publicUsers', validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
   router.post('/',requireAuthentication, requireAdmin, authDelay, validate(registerUser.validationScheme), registerUser);
-  router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), checkUserId, getUserByNaam);
+  router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), getUserByNaam);
   router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);
-  router.put('/:id', requireAuthentication, requireAdmin, validate(updateUser.validationScheme), checkUserId, updateUser);
+  router.put('/:id', requireAuthentication, requireAdmin, validate(updateUser.validationScheme), checkUserIdAdmin, updateUser);
   router.put('/:id/password', requireAuthentication, validate(updatePassword.validationScheme), checkUserId, updatePassword);
-  router.delete('/:id', requireAuthentication, requireAdmin, validate(removeUser.validationScheme), checkUserId, removeUser);
+  router.delete('/:id', requireAuthentication, requireAdmin, validate(removeUser.validationScheme), checkUserIdAdmin, removeUser);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };
