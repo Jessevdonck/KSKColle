@@ -17,9 +17,12 @@
 ## Logingegevens
 
 ### Lokaal
-
-- Gebruikersnaam/e-mailadres:
-- Wachtwoord:
+**Standaard User**
+- Gebruikersnaam/e-mailadres: testuser@mail.com
+- Wachtwoord: 12345678
+**Admin User**
+- Gebruikersnaam/e-mailadres: adminuser@mail.com
+- Wachtwoord: 12345678
 
 ### Online
 
