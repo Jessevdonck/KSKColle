@@ -311,7 +311,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const requireAdmin = makeRequireRole(Role.ADMIN);
 
   router.get('/', requireAuthentication, requireAdmin, validate(getAllUsers.validationScheme), getAllUsers);
-  router.get('/publicUsers', validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
+  router.get('/publicUsers', requireAuthentication, validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
   router.post('/',requireAuthentication, requireAdmin, authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), getUserByNaam);
   router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);

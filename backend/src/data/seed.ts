@@ -8,9 +8,42 @@ async function main() {
 
   const passwordHash = await hashPassword('12345678');
 
-  // Users
   await prisma.user.createMany({
     data: [
+      {
+        user_id: 8, 
+        voornaam: "Test",
+        achternaam: "User",
+        geboortedatum: new Date("1990-01-01"),
+        email: "testuser@mail.com",
+        tel_nummer: "0477123456",
+        schaakrating_elo: 1500,
+        schaakrating_difference: 0,
+        schaakrating_max: 1500,
+        is_admin: false, 
+        fide_id: 123456,
+        lid_sinds: new Date("2020-01-01"),
+        password_hash: passwordHash,
+        roles: JSON.stringify([Role.USER]) 
+      },
+
+      {
+        user_id: 9, 
+        voornaam: "Admin",
+        achternaam: "User",
+        geboortedatum: new Date("1985-12-15"),
+        email: "adminuser@mail.com",
+        tel_nummer: "0477654321",
+        schaakrating_elo: 1800,
+        schaakrating_difference: 0,
+        schaakrating_max: 1800,
+        is_admin: true, 
+        fide_id: 654321,
+        lid_sinds: new Date("2018-01-01"),
+        password_hash: passwordHash, 
+        roles: JSON.stringify([Role.ADMIN, Role.USER]) 
+      },
+      
       { user_id: 1, voornaam: "Björn", achternaam: "Dyckmans", geboortedatum: new Date("1990-01-15"), email: "test7@test.com", tel_nummer: "0477186935", schaakrating_elo: 2174, schaakrating_difference: 0, schaakrating_max: 2181, is_admin: false, fide_id: 202479, lid_sinds: new Date("1973-05-01"), password_hash: passwordHash, roles: JSON.stringify([Role.USER]) },
       { user_id: 2, voornaam: "Bart", achternaam: "Schittekat", geboortedatum: new Date("1969-08-01"), email: "test5@test.com", tel_nummer: "04777196895", schaakrating_elo: 2172, schaakrating_difference: 0, schaakrating_max: 2184, is_admin: false, fide_id: 201413, lid_sinds: new Date("2010-05-24"), password_hash: passwordHash, roles: JSON.stringify([Role.USER]) },
       { user_id: 3, voornaam: "Niels", achternaam: "Ongena", geboortedatum: new Date("2000-05-14"), email: "test4@test.com", tel_nummer: "04777689193", schaakrating_elo: 2000, schaakrating_difference: 0, schaakrating_max: 2100, is_admin: true, fide_id: 219436, lid_sinds: new Date("2021-09-01"), password_hash: passwordHash, roles: JSON.stringify([Role.USER, Role.ADMIN]) },

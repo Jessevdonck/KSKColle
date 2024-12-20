@@ -196,8 +196,8 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/', requireAuthentication, validate(getAllRondes.validationScheme), getAllRondes);
   router.get('/:tournament_id/rondes',validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
   router.get('/:ronde_id', validate(getRondeById.validationScheme), getRondeById);
-  router.post('/', requireAuthentication, requireAdmin, validate(createRonde.validationScheme), createRonde);
   router.get('/:tournament_id/rondes/:round_id', requireAuthentication, validate(getRondeByTournament.validationScheme), getRondeByTournament); 
+  router.post('/', requireAuthentication, requireAdmin, validate(createRonde.validationScheme), createRonde);
   router.put('/:tournament_id/rondes/:ronde_id', requireAuthentication, requireAdmin, validate(updateRonde.validationScheme), updateRonde); 
   router.delete('/:tournament_id/rondes/:ronde_id', requireAuthentication, requireAdmin, validate(removeRonde.validationScheme), removeRonde); 
 

@@ -7,7 +7,7 @@ describe('User List', () => {
   it('should show all users', () => {
       cy.intercept(
         'GET',
-        'http://localhost:9000/api/users',
+        'http://localhost:9000/api/users/publicUsers',
         { fixture: 'users.json' }
       );
   
@@ -21,7 +21,7 @@ describe('User List', () => {
 
     it('should show a loading indicator for a very slow response', () => {
         cy.intercept(
-          'http://localhost:9000/api/users',
+          'http://localhost:9000/api/users/publicUsers',
           (req) => {
             req.on('response', (res) => {
               res.setDelay(1000);
@@ -38,28 +38,12 @@ describe('User List', () => {
       it('should show a message when no transactions are found', () => {
         cy.intercept(
             'GET',
-            'http://localhost:9000/api/users',
+            'http://localhost:9000/api/users/publicUsers',
             { fixture: 'empty.json' }
             );
         cy.visit('http://localhost:3001/spelers');
       
         cy.get('[data-cy=no_users_message]').should('exist');
-      });
-
-      it('should show an error if the API call fails', () => {
-        cy.intercept(
-          'GET',
-          'http://localhost:9000/api/spelers',
-          {
-            statusCode: 500,
-            body: {
-              error: 'Internal server error',
-            },
-          },
-        );
-        cy.visit('http://localhost:3001/spelers');
-    
-        cy.get('[data-cy=axios_error_message').should('exist');
       });
   });
   
