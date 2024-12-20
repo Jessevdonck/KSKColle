@@ -3,7 +3,7 @@
 - Student: Jesse Vaerendonck
 - Studentennummer: 202399060
 - E-mailadres: <mailto:jesse.vaerendonck@student.hogent.be>
-- Demo: <DEMO_LINK_HIER>
+- Demo: <https://hogent.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=fe808028-f68e-483b-92fe-b24c0167ae13>
 - GitHub-repository: <https://github.com/HOGENT-frontendweb/frontendweb-2425-Jessevdonck.git>
 - Front-end Web Development
   - Online versie: <https://frontendweb-kskcolle.onrender.com>
