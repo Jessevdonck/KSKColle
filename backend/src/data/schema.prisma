@@ -80,3 +80,11 @@ model Participation {
 
   @@id([user_id, tournament_id]) 
 }
+
+model CalendarEvent {
+  event_id       Int      @id @default(autoincrement())
+  title          String
+  date           DateTime
+  type           String   @default("Activiteit")
+  description    String?
+}
