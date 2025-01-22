@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Users, Trophy } from 'lucide-react'
+import { Home, Users, Trophy, Calendar } from 'lucide-react'
 
 const Sidebar = () => {
   const pathname = usePathname()
@@ -12,6 +12,7 @@ const Sidebar = () => {
     { href: '#dashboard', icon: Home, label: 'Dashboard' },
     { href: '#users', icon: Users, label: 'Users' },
     { href: '#tournaments', icon: Trophy, label: 'Tournaments' },
+    { href: '#calendar', icon: Calendar, label: 'Calendar' },
   ]
 
   return (

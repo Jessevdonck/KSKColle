@@ -11,6 +11,21 @@ export interface User {
   nationaal_id?: number;
   lid_sinds: Date;
 }
+export interface CalendarEvent {
+  event_id: number
+  title: string
+  description: string
+  date: string
+  type: string
+}
+
+export interface CalendarEventInput {
+  id?: number
+  title: string
+  description: string
+  date: Date
+  type: string
+}
 
 export type Game = {
   game_id: number;

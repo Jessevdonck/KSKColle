@@ -27,7 +27,7 @@ const createEvent = async (ctx: KoaContext<CreateEventResponse, void, CreateEven
 createEvent.validationScheme = {
   body: {
     title: Joi.string(),
-    description: Joi.string().allow(null),
+    description: Joi.string(),
     type: Joi.string(),
     date: Joi.date(),
   },
@@ -44,18 +44,21 @@ getEventById.validationScheme = {
 };
 
 const updateEvent = async (ctx: KoaContext<UpdateEventResponse, IdParams, UpdateEventRequest>) => {
-  const spelId = Number(ctx.params.id); 
-  const updatedSpeler = await eventService.updateEvent(spelId, ctx.request.body); 
+  const eventId = Number(ctx.params.id); 
+  const updatedEvent = await eventService.updateEvent(eventId, ctx.request.body); 
   
-  ctx.body = updatedSpeler; 
+  ctx.body = updatedEvent; 
 };
 
 updateEvent.validationScheme = {
   params: {
-    id: Joi.number().integer().positive().required(),
+    id: Joi.number().integer().positive(),
   },
   body: {
-    result: Joi.string().required(), 
+    title: Joi.string().optional(),
+    description: Joi.string().optional(),
+    type: Joi.string().optional(),
+    date: Joi.date().optional(),
   },
 };
 
