@@ -18,7 +18,7 @@ interface CalendarEvent {
 }
 
 export default function Calendar() {
-  const [currentDate, setCurrentDate] = useState(new Date(new Date().getFullYear(), 8, 1))
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
   const { data: events, error, isLoading } = useSWR<CalendarEvent[]>("calendar", getAll)
