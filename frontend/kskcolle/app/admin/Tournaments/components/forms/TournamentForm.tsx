@@ -11,12 +11,13 @@ import { useToast } from "@/hooks/use-toast"
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 import { getAll, post } from '../../../../api/index'
-import { User, Toernooi } from '@/data/types'
+import { User, Toernooi, TournamentType } from '@/data/types'
 import { Search } from 'lucide-react'
 
 interface TournamentFormData {
   naam: string;
   rondes: number;
+  type: TournamentType
   participations: number[];
 }
 
@@ -52,6 +53,7 @@ export default function TournamentForm() {
       const tournamentData = {
         naam: data.naam,
         rondes: Number(data.rondes), 
+        type: data.type, 
         participations: selectedParticipants,
       };
 
@@ -118,6 +120,28 @@ export default function TournamentForm() {
               )} 
             />
             {errors.rondes && <p className="text-red-500" data-cy="error_rondes">{errors.rondes.message}</p>}
+          </div>
+
+          {/* Type Toernooi */}
+          <div>
+            <Label htmlFor="type">Type Toernooi</Label>
+            <Controller
+              name="type"
+              control={control}
+              rules={{ required: "Type toernooi is vereist" }}
+              render={({ field }) => (
+                <Select onValueChange={val => field.onChange(val as TournamentType)} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Kies type toernooi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TournamentType.SWISS}>Swiss</SelectItem>
+                    <SelectItem value={TournamentType.ROUND_ROBIN}>Round Robin</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.type && <p className="text-red-500">{errors.type.message}</p>}
           </div>
 
           <div data-cy='participant_input'>

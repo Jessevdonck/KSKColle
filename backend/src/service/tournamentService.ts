@@ -73,6 +73,7 @@ export const addTournament = async (tournament: TournamentCreateInput) => {
       data: {
         naam: tournament.naam,
         rondes: tournament.rondes,
+        type: tournament.type,   
         participations: {
           create: tournament.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
         },

@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TournamentType {
+  SWISS
+  ROUND_ROBIN
+}
+
 model User {
   user_id            Int            @id @default(autoincrement())
   voornaam           String
@@ -33,6 +38,7 @@ model Tournament {
   tournament_id      Int            @id @default(autoincrement())
   naam               String
   rondes             Int
+  type               TournamentType  @default(SWISS)
   
   participations     Participation[]    
   rounds             Round[]        

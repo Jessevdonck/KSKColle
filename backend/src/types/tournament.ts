@@ -1,14 +1,17 @@
 import type { ListResponse } from "./common";
+import { TournamentType } from "@prisma/client";
 
 export type Tournament = {
   tournament_id: number;
   naam: string;
+  type: TournamentType;  
   rondes: number;
 };
 
 export type TournamentCreateInput = {
   naam: string;      
   rondes: number;  
+  type: TournamentType;
   participations: number[];    
 };
 

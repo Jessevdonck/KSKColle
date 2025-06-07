@@ -3,11 +3,11 @@ import * as tournamentService from '../service/tournamentService';
 import type { CreateTournamentRequest, CreateTournamentResponse, GetAllTournamentenResponse, GetTournamentByIdResponse, UpdateTournamentRequest, UpdateTournamentResponse } from '../types/tournament';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
-import { createAndSaveSwissPairings } from '../service/swiss-pairings';
 import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
+import { createAndSavePairings } from '../service/pairingService';
 
 /**
  * @api {get} /tournament Get all tournaments
@@ -44,7 +44,9 @@ getAllTournament.validationScheme = null;
  * @apiError (404) NotFound The requested resource could not be found.
  */
 const createTournament = async (ctx: KoaContext<CreateTournamentResponse, void, CreateTournamentRequest>) => {
+  
   const newSpeler: any = await tournamentService.addTournament(ctx.request.body);
+  console.log('BODY:', ctx.request.body)
   ctx.status = 201; 
   ctx.body = newSpeler;
 };
@@ -52,7 +54,8 @@ createTournament.validationScheme = {
   body: {
     naam: Joi.string(),
     rondes: Joi.number().integer().positive(),
-    participations: Joi.array().items(Joi.number().integer().positive()), 
+    type: Joi.string().valid('SWISS', 'ROUND_ROBIN'),
+    participations: Joi.array().items(Joi.number().integer().positive()),
   },
 };
 
@@ -104,7 +107,9 @@ updateTournament.validationScheme = {
   },
   body: {
     naam: Joi.string(),
-    startdatum: Joi.date(),
+    rondes: Joi.number().integer().positive(),
+    type: Joi.string().valid("SWISS","ROUND_ROBIN"),  
+    participations: Joi.array().items(Joi.number().integer().positive()),
   },
 };
 
@@ -133,26 +138,16 @@ removeTournament.validationScheme = {
 
 /**
  * @api {post} /tournament/:id/pairings/:rondeNummer Generate pairings for a round
- * @apiName GeneratePairings
- * @apiGroup Tournament
- * @apiParam {Number} id The ID of the tournament.
- * @apiParam {Number} rondeNummer The round number for which to generate pairings.
- * 
- * @apiSuccess (201) Created The pairings were successfully generated.
- * @apiError (400) BadRequest Invalid data provided.
- * @apiError (401) Unauthorized You need to be authenticated to access this resource.
- * @apiError (403) Forbidden You don't have access to this resource.
- * @apiError (404) NotFound The requested resource could not be found.
  */
 const generatePairings = async (ctx: KoaContext<void, IdParams & { rondeNummer: number }>) => {
-  const tournamentId = Number(ctx.params.id);
-  const rondeNummer = Number(ctx.params.rondeNummer);
-  
+  const tournamentId  = Number(ctx.params.id);
+  const rondeNummer   = Number(ctx.params.rondeNummer);
+
   try {
-    await createAndSaveSwissPairings(tournamentId, rondeNummer);
-    ctx.status = 201;
+    await createAndSavePairings(tournamentId, rondeNummer);
+    ctx.status = 201;      
   } catch (error) {
-    ctx.status = 400;
+    ctx.throw(400, error instanceof Error ? error.message : 'Pairing mislukt');
   }
 };
 generatePairings.validationScheme = {
