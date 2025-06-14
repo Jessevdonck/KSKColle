@@ -5,10 +5,10 @@ import Team from "./components/Team"
 import PresidentsTimeline from "./components/PresidentsTimeline"
 
 export default function AboutUs() {
-  return (  
-    <div className="bg-neutral-50 min-h-screen">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       <Header />
-      <main className="container mx-auto px-4 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
         <History />
         <Activities />
         <PresidentsTimeline />

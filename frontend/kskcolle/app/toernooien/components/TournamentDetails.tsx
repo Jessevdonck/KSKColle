@@ -174,7 +174,7 @@ export default function TournamentDetails() {
                     <div className="px-4 py-2 bg-white/20 rounded-lg text-white font-medium min-w-[120px] text-center">
                       {currentEntry?.kind === "round"
                         ? `Ronde ${currentEntry.round.ronde_nummer}`
-                        : `Inhaaldag ${currentEntry?.day.label}`}
+                        : `${currentEntry?.day.label}`}
                     </div>
 
                     <button
@@ -248,7 +248,7 @@ function MakeupPairings({ day, games }: { day: MakeupDay; games: Game[] }) {
           <div className="bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
             I
           </div>
-          Inhaaldag {day.label}
+          {day.label}
         </h3>
         <p className="text-gray-600 flex items-center gap-2">
           <Calendar className="h-4 w-4" />
