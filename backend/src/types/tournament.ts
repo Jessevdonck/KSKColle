@@ -6,12 +6,15 @@ export type Tournament = {
   naam: string;
   type: TournamentType;  
   rondes: number;
+  rating_enabled: boolean;   
+  finished: boolean;
 };
 
 export type TournamentCreateInput = {
   naam: string;      
   rondes: number;  
   type: TournamentType;
+  rating_enabled: boolean;
   participations: number[];    
 };
 

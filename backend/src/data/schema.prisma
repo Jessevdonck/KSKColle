@@ -39,6 +39,8 @@ model Tournament {
   naam               String
   rondes             Int
   type               TournamentType  @default(SWISS)
+  rating_enabled     Boolean         @default(true)   
+  finished           Boolean         @default(false) 
   
   participations     Participation[]    
   rounds             Round[]        

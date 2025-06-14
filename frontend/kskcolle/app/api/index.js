@@ -64,3 +64,22 @@ export const updatePassword = async (url, { arg: { userId, currentPassword, newP
   return data;
 };
 
+export const finalizeTournament = async (
+  url,
+  { arg: tournamentId }
+) => {
+  const { data } = await axios.post(
+    `${baseUrl}/${url}/${tournamentId}/finalize`
+  );
+  return data;
+};
+
+export const endTournament = async (
+  url,
+  { arg: tournamentId }
+) => {
+  const { data } = await axios.post(
+    `${baseUrl}/${url}/${tournamentId}/end`
+  );
+  return data;
+};

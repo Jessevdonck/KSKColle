@@ -58,6 +58,8 @@ export type Toernooi = {
   rondes: number;
   type: TournamentType;
   participations: Participation[];
+  finished: boolean;
+  rating_enabled: boolean;
   rounds: Round[];
 };
 

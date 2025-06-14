@@ -210,3 +210,123 @@ export const removeParticipation = async (tournament_id: number, user_id: number
     throw handleDBError(error);
   }
 };
+
+export const finalizeTournamentRatings = async (
+  tournament_id: number
+): Promise<void> => {
+  const K_FACTOR = 32;
+
+  try {
+    // 1) Haal alle deelnames met de bijbehorende user‐ratings
+    const parts = await prisma.participation.findMany({
+      where: { tournament_id },
+      include: {
+        user: {
+          select: {
+            user_id: true,
+            schaakrating_elo: true,
+            schaakrating_max: true,
+          },
+        },
+      },
+    });
+    if (parts.length === 0) {
+      throw ServiceError.validationFailed("Geen deelnemers voor dit toernooi");
+    }
+
+    // 2) Haal alle games van dit toernooi
+    const games = await prisma.game.findMany({
+      where: { round: { tournament_id } },
+    });
+
+    // 3) Init stats: oude rating, score=0, expected=0
+    type Stats = { oldRating: number; score: number; expected: number };
+    const stats: Record<number, Stats> = {};
+    for (const p of parts) {
+      stats[p.user_id] = {
+        oldRating: p.user.schaakrating_elo,
+        score: 0,
+        expected: 0,
+      };
+    }
+
+    // 4) Vul score & expected op basis van game.result
+    for (const g of games) {
+      const a = stats[g.speler1_id]!;
+      // bye‐game?
+      if (g.speler2_id == null) {
+        if (g.winnaar_id === g.speler1_id) {
+          a.score += 1;
+        }
+        continue;
+      }
+      const b = stats[g.speler2_id]!;
+
+      // 4a) score toekennen
+      switch (g.result) {
+        case "1-0":
+          a.score += 1;
+          break;
+        case "0-1":
+          b.score += 1;
+          break;
+        case "1/2-1/2":
+          a.score += 0.5;
+          b.score += 0.5;
+          break;
+        default:
+          break;
+      }
+
+      // 4b) expected-score volgens Elo-formule
+      const ea = 1 / (1 + 10 ** ((b.oldRating - a.oldRating) / 400));
+      const eb = 1 / (1 + 10 ** ((a.oldRating - b.oldRating) / 400));
+      a.expected += ea;
+      b.expected += eb;
+    }
+
+    // 5) Pas nieuwe ratings toe in één transaction
+    await prisma.$transaction(
+      parts.map((p) => {
+        const userId = p.user_id;
+        const s = stats[userId]!;              // non-null assert
+        const { oldRating, score, expected } = s;
+
+        const delta     = Math.round(K_FACTOR * (score - expected));
+        const newRating = oldRating + delta;
+        const newMax    = Math.max(p.user.schaakrating_max ?? oldRating, newRating);
+
+        return prisma.user.update({
+          where: { user_id: userId },
+          data: {
+            schaakrating_elo:        newRating,
+            schaakrating_difference: delta,
+            schaakrating_max:        newMax,
+          },
+        });
+      })
+    );
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+export const endTournament = async (tournament_id: number): Promise<void> => {
+  const tour = await prisma.tournament.findUnique({
+    where: { tournament_id },
+    select: { rating_enabled: true, finished: true }
+  });
+  if (!tour) throw ServiceError.notFound("Toernooi niet gevonden");
+  if (tour.finished) throw ServiceError.conflict("Toernooi al afgesloten");
+
+  // 1) als rating_enabled: pas Elo toe
+  if (tour.rating_enabled) {
+    await finalizeTournamentRatings(tournament_id);
+  }
+
+  // 2) markeer als afgewerkt
+  await prisma.tournament.update({
+    where: { tournament_id },
+    data: { finished: true },
+  });
+};

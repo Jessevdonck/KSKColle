@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../../components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card"
 import { useToast } from "@/hooks/use-toast"
@@ -17,7 +18,8 @@ import { Search } from 'lucide-react'
 interface TournamentFormData {
   naam: string;
   rondes: number;
-  type: TournamentType
+  type: TournamentType;
+  rating_enabled: boolean; 
   participations: number[];
 }
 
@@ -142,6 +144,24 @@ export default function TournamentForm() {
               )}
             />
             {errors.type && <p className="text-red-500">{errors.type.message}</p>}
+          </div>
+            <div>
+            <Label htmlFor="type">Gebruik ELO</Label>
+            <Controller
+              name="rating_enabled"
+              control={control}
+              defaultValue={true}
+              render={({ field }) => (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={val => field.onChange(val as boolean)}
+                    className='text-red-500'
+                  />
+                  <Label>Gebruik ELO</Label>
+                </div>
+              )}
+            />
           </div>
 
           <div data-cy='participant_input'>

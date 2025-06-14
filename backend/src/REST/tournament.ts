@@ -157,6 +157,27 @@ generatePairings.validationScheme = {
   },
 };
 
+const finalizeRatings = async (ctx: any) => {
+  const id = Number(ctx.params.id);
+  await tournamentService.finalizeTournamentRatings(id);
+  ctx.status = 204;
+};
+finalizeRatings.validationScheme = {
+  params: {
+    id: Joi.number().integer().positive().required(),
+  }
+};
+
+const endTournamentHandler = async (ctx: any) => {
+  const id = Number(ctx.params.id);
+  await tournamentService.endTournament(id);
+  ctx.status = 204;
+};
+endTournamentHandler.validationScheme = {
+  params: { id: Joi.number().integer().positive().required() },
+};
+
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/tournament',
@@ -168,8 +189,11 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/:id', validate(getTournamentById.validationScheme), getTournamentById);
   router.post('/', requireAuthentication, requireAdmin, validate(createTournament.validationScheme), createTournament);
   router.post('/:id/pairings/:rondeNummer', requireAuthentication, requireAdmin, validate(generatePairings.validationScheme), generatePairings);
+  router.post("/:id/finalize", requireAuthentication, requireAdmin, validate(finalizeRatings.validationScheme), finalizeRatings);
+  router.post("/:id/end",requireAuthentication,requireAdmin,validate(endTournamentHandler.validationScheme),endTournamentHandler);
   router.put('/:id', requireAuthentication, requireAdmin, validate(updateTournament.validationScheme),updateTournament);
   router.delete('/:id', requireAuthentication, requireAdmin, validate(removeTournament.validationScheme), removeTournament);
+
 
   parent.use(router.routes()).use(router.allowedMethods());
 };
