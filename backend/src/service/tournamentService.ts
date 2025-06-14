@@ -4,9 +4,10 @@ import type { Participation } from "../types/participation";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 
-export const getAllTournaments = async (): Promise<Tournament[]> => {
+export const getAllTournaments = async (activeOnly = false): Promise<Tournament[]> => {
   try {
     return await prisma.tournament.findMany({
+      where: activeOnly ? { finished: false} : {},
       include: {
         participations: {
           include: {

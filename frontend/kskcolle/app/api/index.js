@@ -83,3 +83,13 @@ export const endTournament = async (
   );
   return data;
 };
+
+export const postMakeupDay = async (url, { arg }) => {
+  const { data } = await axios.post(`${baseUrl}/${url}`, arg, {
+  });
+  return data;
+};
+
+export const deleteMakeupDay = async (url, { arg: id }) => {
+  await axios.delete(`${baseUrl}/${url}/${id}`)
+}

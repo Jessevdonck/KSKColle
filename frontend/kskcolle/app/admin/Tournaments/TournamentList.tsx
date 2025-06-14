@@ -15,7 +15,7 @@ interface TournamentListProps {
 
 export default function TournamentList({ onSelectTournament }: TournamentListProps) {
   const { toast } = useToast()
-  const { data: tournaments, error, mutate } = useSWR<Toernooi[]>('tournament', getAll)
+  const { data: tournaments, error, mutate } = useSWR<Toernooi[]>('tournament?active=true', getAll)
   const { trigger: deleteTournament } = useSWRMutation('tournament', deleteById)
 
   if (error) return <div>Failed to load tournaments</div>

@@ -106,7 +106,8 @@ updateSpel.validationScheme = {
     id: Joi.number().integer().positive().required(),
   },
   body: {
-    result: Joi.string().required(), 
+    result: Joi.string().optional(), 
+    uitgestelde_datum: Joi.date().iso().optional()
   },
 };
 

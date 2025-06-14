@@ -36,3 +36,11 @@ export interface IPairingStrategy {
     previousRounds: Pairing[][]
   ): { pairings: Pairing[]; byePlayer?: Player };
 }
+
+export interface MakeupDay {
+  id: number
+  tournament_id: number
+  round_after: number
+  date: Date      // ISO string
+  label?: string | null
+}
