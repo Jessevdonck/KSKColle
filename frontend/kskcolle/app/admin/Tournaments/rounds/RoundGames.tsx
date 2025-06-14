@@ -1,92 +1,125 @@
-"use client"
-
-import React from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../../components/ui/select"
-import { useToast } from "@/hooks/use-toast"
-import { save } from '../../../api/index'
-import { Round, Game } from '@/data/types'
+'use client'
+import React, { useState } from 'react'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 import useSWRMutation from 'swr/mutation'
+import { save } from '../../../api/index'
+import { format } from 'date-fns'
+import { Game, MakeupDay } from '@/data/types'
 
-interface RoundGamesProps {
-  round?: Round
+interface Props {
+  games: Game[]
   tournamentId: number
-  onUpdateGame: () => void
+  makeupDays: MakeupDay[]
+  onUpdateGame(): void
 }
 
-export default function RoundGames({ round, onUpdateGame }: RoundGamesProps) {
-  const { toast } = useToast()
-  const { trigger: updateGame } = useSWRMutation('spel', save)
-
-  if (!round || round.games.length === 0) {
-    return <p>Geen paringen voor deze ronde gevonden.</p>
-  }
+export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
+  const { trigger: saveGame } = useSWRMutation('spel', save)
+  const [postponing, setPostponing] = useState<number | null>(null)
+  const [selectedMD, setSelectedMD] = useState<number | ''>('')
 
   const handleResultChange = async (gameId: number, result: string) => {
-    try {
-      const apiResult = result === "not_played" ? "not_played" : result;
-      
-      console.log("Payload naar API:", { gameId, result: apiResult });
-  
-      await updateGame({ id: gameId, result: apiResult });
-      onUpdateGame();
-      toast({ title: "Success", description: "Resultaat succesvol bijgewerkt." });
-    } catch (error) {
-      console.error("Fout bij het bijwerken van het resultaat:", error);
-      toast({
-        title: "Error",
-        description: "Kon het resultaat niet bijwerken",
-        variant: "destructive",
-      });
+    await saveGame({ id: gameId, result })
+    onUpdateGame()
+  }
+
+  const handlePostpone = async () => {
+    if (postponing && selectedMD) {
+      const md = makeupDays.find(m => m.id === selectedMD)!
+      // zet uitgestelde datum in game
+      await saveGame({ id: postponing, uitgestelde_datum: md.date })
+      setPostponing(null)
+      setSelectedMD('')
+      onUpdateGame()
     }
-  };
+  }
 
   return (
-    <Table className=''>
+    <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[40%]">Wit</TableHead>
-          <TableHead className="w-[40%]">Zwart</TableHead>
-          <TableHead className="w-[20%]">Resultaat</TableHead>
+          <TableHead>Wit</TableHead>
+          <TableHead>Zwart</TableHead>
+          <TableHead>Resultaat / Uitstel</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {round.games.map((game: Game) => (
+        {games.map(game => (
           <TableRow key={game.game_id}>
+            <TableCell>{game.speler1.voornaam} {game.speler1.achternaam}</TableCell>
             <TableCell>
-              <div className="flex">
-                <span className="flex-grow">{game.speler1.voornaam} {game.speler1.achternaam}</span>
-              </div>
+              {game.speler2
+                ? `${game.speler2.voornaam} ${game.speler2.achternaam}`
+                : 'BYE'}
             </TableCell>
-            <TableCell>
-              <div className="flex">
-                <span className="flex-grow">
-                  {game.speler2 ? 
-                    `${game.speler2.voornaam} ${game.speler2.achternaam}` : 
-                    'BYE'}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell>
+            <TableCell className="flex items-center space-x-2">
+              {/* resultaat-dropdown */}
               <Select
-                onValueChange={(value) => handleResultChange(game.game_id, value)}
-                defaultValue={game.result || "not_played"}
+                onValueChange={val => handleResultChange(game.game_id, val)}
+                defaultValue={game.result || 'not_played'}
               >
-                <SelectTrigger className="w-full" data-cy="score_input">
-                  <SelectValue placeholder="Selecteer resultaat" />
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Selecteer" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1-0">1-0</SelectItem>
                   <SelectItem value="0-1">0-1</SelectItem>
-                  <SelectItem value="1/2-1/2">1/2-1/2</SelectItem>
+                  <SelectItem value="1/2-1/2">½-½</SelectItem>
                   <SelectItem value="not_played">Niet gespeeld</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* uitstel-knop (alleen als nog niet uitgesteld) */}
+              {!game.uitgestelde_datum && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPostponing(game.game_id)}
+                >⏰</Button>
+              )}
             </TableCell>
+            {/* inline selectie van inhaaldag */}
+            {postponing === game.game_id && (
+              <div className="mt-2 flex items-center space-x-2">
+                <Select
+                  onValueChange={val => setSelectedMD(Number(val))}
+                  value={selectedMD === '' ? undefined : selectedMD.toString()}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Kies inhaaldag" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {makeupDays.map(md => (
+                      <SelectItem
+                        key={md.id}
+                        value={md.id.toString()}
+                      >
+                        {md.label || format(new Date(md.date), 'dd-MM-yyyy')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  onClick={handlePostpone}
+                  disabled={selectedMD === ''}
+                >
+                  Bevestig
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPostponing(null)}
+                >
+                  ✕
+                </Button>
+              </div>
+            )}
           </TableRow>
         ))}
       </TableBody>
     </Table>
   )
 }
-

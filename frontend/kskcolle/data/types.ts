@@ -52,6 +52,14 @@ export type Round = {
   games: Game[];
 };
 
+export type MakeupDay = {
+  id: number
+  round_after: number
+  date: string
+  label?: string
+}
+
+
 export type Toernooi = {
   tournament_id: number;
   naam: string;

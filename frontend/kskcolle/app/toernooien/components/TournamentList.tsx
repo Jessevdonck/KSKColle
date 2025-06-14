@@ -8,7 +8,7 @@ import { Trophy } from 'lucide-react'
 
 export default function TournamentList() {
   const [isLoading, setIsLoading] = useState(true)
-  const { data: tournaments, error } = useSWR('tournament', getAll)
+  const { data: tournaments, error } = useSWR('tournament?active=true', getAll)
 
   useEffect(() => {
     if (tournaments || error) {

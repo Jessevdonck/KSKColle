@@ -5,6 +5,7 @@ import installTournamentRouter from './tournament';
 import installRondeRouter from './rondes';
 import installSpelRouter from './spellen';
 import installCalendarRouter from './calendar';
+import installMakeupDayRouter from './makeupDay'
 import type { ChessAppContext, ChessAppState, KoaApplication } from '../types/koa';
 import installSessionRouter from './session';
 
@@ -97,6 +98,7 @@ export default (app: KoaApplication) => {
   installRondeRouter(router);
   installSpelRouter(router);
   installCalendarRouter(router);
+  installMakeupDayRouter(router);
 
   app.use(router.routes()).use(router.allowedMethods());
 };

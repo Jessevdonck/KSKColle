@@ -145,7 +145,7 @@ export default function TournamentForm() {
             />
             {errors.type && <p className="text-red-500">{errors.type.message}</p>}
           </div>
-            <div>
+            <div className='flex flex-row space-x-2'>
             <Label htmlFor="type">Gebruik ELO</Label>
             <Controller
               name="rating_enabled"
@@ -158,7 +158,6 @@ export default function TournamentForm() {
                     onCheckedChange={val => field.onChange(val as boolean)}
                     className='text-red-500'
                   />
-                  <Label>Gebruik ELO</Label>
                 </div>
               )}
             />

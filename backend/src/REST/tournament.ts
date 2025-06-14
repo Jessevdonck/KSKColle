@@ -21,12 +21,20 @@ import { createAndSavePairings } from '../service/pairingService';
  * @apiError (404) NotFound The requested resource could not be found.
  */
 const getAllTournament = async (ctx: KoaContext<GetAllTournamentenResponse>) => {
-  const spelers =  await tournamentService.getAllTournaments();
+  const active = ctx.query.active === 'true';
+  const spelers =  await tournamentService.getAllTournaments(active);
   ctx.body = {
     items: spelers,
   };
 };
-getAllTournament.validationScheme = null;
+getAllTournament.validationScheme = {
+  query: {
+    active: Joi.string()
+      .valid('true', 'false')
+      .optional(),
+  },
+};
+
 
 /**
  * @api {post} /tournament Create a new tournament

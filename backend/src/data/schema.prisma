@@ -44,6 +44,7 @@ model Tournament {
   
   participations     Participation[]    
   rounds             Round[]        
+  makeupDays         MakeupDay[]
 }
 
 model Round {
@@ -95,4 +96,16 @@ model CalendarEvent {
   date           DateTime
   type           String   @default("Activiteit")
   description    String?
+}
+
+model MakeupDay {
+  id             Int       @id @default(autoincrement())
+  tournament_id  Int
+  round_after    Int       // na welke officiële ronde deze dag komt
+  date           DateTime
+  label          String?   // bv. “Inhaaldag 1”
+  
+  tournament     Tournament @relation(fields: [tournament_id], references: [tournament_id])
+  
+  @@index([tournament_id])
 }
