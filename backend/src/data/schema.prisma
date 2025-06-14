@@ -42,9 +42,9 @@ model Tournament {
   rating_enabled     Boolean         @default(true)   
   finished           Boolean         @default(false) 
   
-  participations     Participation[]    
-  rounds             Round[]        
-  makeupDays         MakeupDay[]
+  participations     Participation[]  
+  rounds             Round[]          
+  makeupDays         MakeupDay[]      
 }
 
 model Round {
@@ -53,7 +53,7 @@ model Round {
   ronde_nummer       Int            
   ronde_datum        DateTime
   
-  tournament    Tournament @relation(fields: [tournament_id], references: [tournament_id]) 
+  tournament    Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade) 
   games              Game[]            @relation("RoundGames") 
 
    @@unique([ronde_nummer, tournament_id]) 
@@ -68,7 +68,7 @@ model Game {
   result             String?
   uitgestelde_datum   DateTime?
 
-  round              Round             @relation("RoundGames", fields: [round_id], references: [round_id]) 
+  round              Round             @relation("RoundGames", fields: [round_id], references: [round_id], onDelete: Cascade) 
   speler1           User              @relation("Speler1", fields: [speler1_id], references: [user_id])
   speler2           User?              @relation("Speler2", fields: [speler2_id], references: [user_id])
   winnaar           User?             @relation("Winnaar", fields: [winnaar_id], references: [user_id]) 
@@ -85,7 +85,7 @@ model Participation {
   bye_round          Int?
   
   user               User              @relation(fields: [user_id], references: [user_id])
-  tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id])
+  tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
 
   @@id([user_id, tournament_id]) 
 }
@@ -105,7 +105,7 @@ model MakeupDay {
   date           DateTime
   label          String?   // bv. “Inhaaldag 1”
   
-  tournament     Tournament @relation(fields: [tournament_id], references: [tournament_id])
+  tournament     Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
   
   @@index([tournament_id])
 }
