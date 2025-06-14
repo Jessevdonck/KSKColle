@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import useSWR from "swr"
 import { getAll } from "../../api"
 import MonthView from "./MonthView"
@@ -8,6 +8,7 @@ import EventDetails from "./EventDetails"
 import MonthNavigation from "./MonthNavigation"
 import EventCarousel from "./EventCarousel"
 import { addMonths, isSameDay } from "date-fns"
+import { CalendarIcon, Clock } from "lucide-react"
 
 interface CalendarEvent {
   id: string
@@ -26,8 +27,28 @@ export default function Calendar() {
   const handlePrevMonth = () => setCurrentDate((prevDate) => addMonths(prevDate, -1))
   const handleNextMonth = () => setCurrentDate((prevDate) => addMonths(prevDate, 1))
 
-  if (error) return <div>Failed to load events</div>
-  if (isLoading) return <div>Loading...</div>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Fout bij laden van evenementen</h2>
+          <p className="text-gray-600">Er is een probleem opgetreden bij het ophalen van de kalendergegevens.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Kalender wordt geladen...</p>
+        </div>
+      </div>
+    )
+  }
 
   const filteredEvents =
     events?.filter(
@@ -39,25 +60,48 @@ export default function Calendar() {
   const selectedEvents = selectedDate ? events?.filter((event) => isSameDay(new Date(event.date), selectedDate)) : []
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-[#4A4947] mb-6">Kalender 2024 - 2025</h1>
-      <EventCarousel events={events || []} />
-      <MonthNavigation currentDate={currentDate} onPrevMonth={handlePrevMonth} onNextMonth={handleNextMonth} />
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="flex-grow">
-          <MonthView
-            year={currentDate.getFullYear()}
-            month={currentDate.getMonth()}
-            events={filteredEvents}
-            onSelectDate={setSelectedDate}
-            selectedDate={selectedDate}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-mainAccent/10 p-3 rounded-xl">
+              <CalendarIcon className="h-8 w-8 text-mainAccent" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-textColor">Kalender 2024 - 2025</h1>
+              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>{events?.length || 0} geplande evenementen</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="md:w-1/3">
-          <EventDetails date={selectedDate} events={selectedEvents || []} />
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          <EventCarousel events={events || []} />
+          <MonthNavigation currentDate={currentDate} onPrevMonth={handlePrevMonth} onNextMonth={handleNextMonth} />
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <div className="xl:col-span-2">
+              <MonthView
+                year={currentDate.getFullYear()}
+                month={currentDate.getMonth()}
+                events={filteredEvents}
+                onSelectDate={setSelectedDate}
+                selectedDate={selectedDate}
+              />
+            </div>
+            <div className="xl:col-span-1">
+              <EventDetails date={selectedDate} events={selectedEvents || []} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
   )
 }
-

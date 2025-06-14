@@ -7,6 +7,7 @@ export interface User {
   voornaam: string;
   achternaam: string;
   geboortedatum: Date;
+  email: string;
   schaakrating_elo: number;
   schaakrating_difference?: number;
   schaakrating_max?: number;

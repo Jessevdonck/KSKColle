@@ -37,11 +37,6 @@ const Team = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {index === 0 && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-mainAccent rounded-full flex items-center justify-center">
-                      <User className="h-3 w-3 text-white" />
-                    </div>
-                  )}
                 </div>
 
                 <h3 className="text-lg font-semibold text-textColor mb-2 group-hover:text-mainAccent transition-colors">

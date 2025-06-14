@@ -1,11 +1,10 @@
-'use client'
-import React from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import useSWRMutation from 'swr/mutation'
-import { save } from '../../../api/index'
-import { MakeupDay, Round, Game } from '@/data/types'
-import { format } from 'date-fns'
+"use client"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import useSWRMutation from "swr/mutation"
+import { save } from "../../../api/index"
+import type { MakeupDay, Round, Game } from "@/data/types"
+import { format } from "date-fns"
+import { Calendar, Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
 
 interface Props {
   makeup: MakeupDay
@@ -14,15 +13,14 @@ interface Props {
 }
 
 export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
-  const { trigger: saveGame } = useSWRMutation('spel', save)
+  const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
 
   // verzamel alle games met exact deze datum
   const games: Game[] = rounds
-    .flatMap(r => r.games)
-    .filter(g => {
+    .flatMap((r) => r.games)
+    .filter((g) => {
       if (!g.uitgestelde_datum) return false
-      return new Date(g.uitgestelde_datum).toDateString()
-        === new Date(makeup.date).toDateString()
+      return new Date(g.uitgestelde_datum).toDateString() === new Date(makeup.date).toDateString()
     })
 
   const handleResultChange = async (gameId: number, result: string) => {
@@ -31,38 +29,109 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
     onUpdate()
   }
 
-  return (
-    <div className="p-4 border rounded bg-yellow-50">
-      <h3 className="text-lg font-semibold mb-2">
-        Inhaaldag {makeup.label ?? format(new Date(makeup.date), 'dd-MM-yyyy')}
-      </h3>
+  const getResultIcon = (result: string | null) => {
+    switch (result) {
+      case "1-0":
+      case "0-1":
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case "1/2-1/2":
+        return <Minus className="h-4 w-4 text-yellow-500" />
+      case "not_played":
+      case null:
+        return <XCircle className="h-4 w-4 text-gray-400" />
+      default:
+        return <XCircle className="h-4 w-4 text-gray-400" />
+    }
+  }
 
-      {games.length === 0
-        ? <p>Geen uitgestelde partijen voor deze dag.</p>
-        : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Wit</TableHead>
-                <TableHead>Zwart</TableHead>
-                <TableHead>Resultaat</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {games.map(game => (
-                <TableRow key={game.game_id}>
-                  <TableCell>
-                    {game.speler1.voornaam} {game.speler1.achternaam}
-                  </TableCell>
-                  <TableCell>
-                    {game.speler2
-                      ? `${game.speler2.voornaam} ${game.speler2.achternaam}`
-                      : 'BYE'}
-                  </TableCell>
-                  <TableCell>
+  const getResultColor = (result: string | null) => {
+    switch (result) {
+      case "1-0":
+      case "0-1":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "1/2-1/2":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "not_played":
+      case null:
+        return "bg-gray-100 text-gray-600 border-gray-200"
+      default:
+        return "bg-gray-100 text-gray-600 border-gray-200"
+    }
+  }
+
+  return (
+    <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden">
+      <div className="bg-gradient-to-r from-amber-200 to-orange-200 px-6 py-4">
+        <h3 className="text-xl font-bold text-amber-800 flex items-center gap-2">
+          <div className="bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+            I
+          </div>
+          Inhaaldag {makeup.label ?? format(new Date(makeup.date), "dd-MM-yyyy")}
+        </h3>
+        <p className="text-amber-700 mt-1 flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          {format(new Date(makeup.date), "dd-MM-yyyy")}
+        </p>
+      </div>
+
+      <div className="p-6">
+        {games.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="bg-amber-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <Clock className="h-8 w-8 text-amber-500" />
+            </div>
+            <h4 className="text-lg font-semibold text-amber-700 mb-2">Geen uitgestelde partijen</h4>
+            <p className="text-amber-600">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {games.map((game) => (
+              <div
+                key={game.game_id}
+                className="bg-white rounded-lg p-4 border border-amber-200 hover:border-amber-300 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  {/* Players */}
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold">
+                        W
+                      </div>
+                      <span className="font-medium text-gray-800">
+                        {game.speler1.voornaam} {game.speler1.achternaam}
+                      </span>
+                    </div>
+
+                    <ChevronRight className="h-4 w-4 text-amber-400" />
+
+                    <div className="flex items-center gap-3">
+                      {game.speler2 ? (
+                        <>
+                          <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                            Z
+                          </div>
+                          <span className="font-medium text-gray-800">
+                            {game.speler2.voornaam} {game.speler2.achternaam}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-8 h-8 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
+                            -
+                          </div>
+                          <span className="text-amber-600 italic">Bye</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Result Selector */}
+                  <div className="flex items-center gap-2">
+                    {getResultIcon(game.result)}
                     <Select
-                      onValueChange={val => handleResultChange(game.game_id, val)}
-                      defaultValue={game.result || 'not_played'}
+                      onValueChange={(val) => handleResultChange(game.game_id, val)}
+                      defaultValue={game.result || "not_played"}
+                      disabled={isMutating}
                     >
                       <SelectTrigger className="w-32">
                         <SelectValue placeholder="Selecteer" />
@@ -74,13 +143,20 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
                         <SelectItem value="not_played">Niet gespeeld</SelectItem>
                       </SelectContent>
                     </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )
-      }
+                  </div>
+                </div>
+
+                {/* Result Status */}
+                <div className="mt-3 flex justify-end">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getResultColor(game.result)}`}>
+                    {game.result === "not_played" || !game.result ? "Nog te spelen" : game.result}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

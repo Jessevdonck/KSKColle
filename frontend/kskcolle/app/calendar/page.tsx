@@ -1,8 +1,8 @@
-import Calendar from './components/Calendar'
+import Calendar from "./components/Calendar"
 
 export default function CalendarPage() {
   return (
-    <div className="bg-neutral-50 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       <Calendar />
     </div>
   )

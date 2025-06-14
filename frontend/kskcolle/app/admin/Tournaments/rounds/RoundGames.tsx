@@ -1,12 +1,12 @@
-'use client'
-import React, { useState } from 'react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import useSWRMutation from 'swr/mutation'
-import { save } from '../../../api/index'
-import { format } from 'date-fns'
-import { Game, MakeupDay } from '@/data/types'
+"use client"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import useSWRMutation from "swr/mutation"
+import { save } from "../../../api/index"
+import { format } from "date-fns"
+import type { Game, MakeupDay } from "@/data/types"
+import { Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
 
 interface Props {
   games: Game[]
@@ -16,9 +16,9 @@ interface Props {
 }
 
 export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
-  const { trigger: saveGame } = useSWRMutation('spel', save)
+  const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
   const [postponing, setPostponing] = useState<number | null>(null)
-  const [selectedMD, setSelectedMD] = useState<number | ''>('')
+  const [selectedMD, setSelectedMD] = useState<number | "">("")
 
   const handleResultChange = async (gameId: number, result: string) => {
     await saveGame({ id: gameId, result })
@@ -27,99 +27,176 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
 
   const handlePostpone = async () => {
     if (postponing && selectedMD) {
-      const md = makeupDays.find(m => m.id === selectedMD)!
+      const md = makeupDays.find((m) => m.id === selectedMD)!
       // zet uitgestelde datum in game
       await saveGame({ id: postponing, uitgestelde_datum: md.date })
       setPostponing(null)
-      setSelectedMD('')
+      setSelectedMD("")
       onUpdateGame()
     }
   }
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Wit</TableHead>
-          <TableHead>Zwart</TableHead>
-          <TableHead>Resultaat / Uitstel</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {games.map(game => (
-          <TableRow key={game.game_id}>
-            <TableCell>{game.speler1.voornaam} {game.speler1.achternaam}</TableCell>
-            <TableCell>
-              {game.speler2
-                ? `${game.speler2.voornaam} ${game.speler2.achternaam}`
-                : 'BYE'}
-            </TableCell>
-            <TableCell className="flex items-center space-x-2">
-              {/* resultaat-dropdown */}
-              <Select
-                onValueChange={val => handleResultChange(game.game_id, val)}
-                defaultValue={game.result || 'not_played'}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Selecteer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1-0">1-0</SelectItem>
-                  <SelectItem value="0-1">0-1</SelectItem>
-                  <SelectItem value="1/2-1/2">½-½</SelectItem>
-                  <SelectItem value="not_played">Niet gespeeld</SelectItem>
-                </SelectContent>
-              </Select>
+  const getResultIcon = (result: string | null) => {
+    switch (result) {
+      case "1-0":
+      case "0-1":
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case "1/2-1/2":
+        return <Minus className="h-4 w-4 text-yellow-500" />
+      case "not_played":
+      case null:
+        return <XCircle className="h-4 w-4 text-gray-400" />
+      default:
+        return <XCircle className="h-4 w-4 text-gray-400" />
+    }
+  }
 
-              {/* uitstel-knop (alleen als nog niet uitgesteld) */}
+  const getResultColor = (result: string | null) => {
+    switch (result) {
+      case "1-0":
+      case "0-1":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "1/2-1/2":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "not_played":
+      case null:
+        return "bg-gray-100 text-gray-600 border-gray-200"
+      default:
+        return "bg-gray-100 text-gray-600 border-gray-200"
+    }
+  }
+
+  if (games.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Geen partijen beschikbaar voor deze ronde.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {games.map((game) => (
+        <div
+          key={game.game_id}
+          className="border border-neutral-200 rounded-lg p-4 hover:border-mainAccent/30 transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            {/* Players */}
+            <div className="flex items-center gap-4 flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold">
+                  W
+                </div>
+                <span className="font-medium text-textColor">
+                  {game.speler1.voornaam} {game.speler1.achternaam}
+                </span>
+              </div>
+
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+
+              <div className="flex items-center gap-3">
+                {game.speler2 ? (
+                  <>
+                    <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                      Z
+                    </div>
+                    <span className="font-medium text-textColor">
+                      {game.speler2.voornaam} {game.speler2.achternaam}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-8 h-8 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
+                      -
+                    </div>
+                    <span className="text-gray-500 italic">Bye</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Result and Actions */}
+            <div className="flex items-center gap-3">
+              {/* Result Selector */}
+              <div className="flex items-center gap-2">
+                {getResultIcon(game.result)}
+                <Select
+                  onValueChange={(val) => handleResultChange(game.game_id, val)}
+                  defaultValue={game.result || "not_played"}
+                  disabled={isMutating}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Selecteer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1-0">1-0</SelectItem>
+                    <SelectItem value="0-1">0-1</SelectItem>
+                    <SelectItem value="1/2-1/2">½-½</SelectItem>
+                    <SelectItem value="not_played">Niet gespeeld</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Postpone Button */}
               {!game.uitgestelde_datum && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setPostponing(game.game_id)}
-                >⏰</Button>
-              )}
-            </TableCell>
-            {/* inline selectie van inhaaldag */}
-            {postponing === game.game_id && (
-              <div className="mt-2 flex items-center space-x-2">
-                <Select
-                  onValueChange={val => setSelectedMD(Number(val))}
-                  value={selectedMD === '' ? undefined : selectedMD.toString()}
+                  className="border-amber-200 text-amber-600 hover:bg-amber-50"
                 >
-                  <SelectTrigger className="w-32">
+                  <Clock className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Result Status */}
+          <div className="mt-3 flex justify-end">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getResultColor(game.result)}`}>
+              {game.result === "not_played" || !game.result ? "Nog te spelen" : game.result}
+            </span>
+          </div>
+
+          {/* Postpone Selection */}
+          {postponing === game.game_id && (
+            <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <h4 className="font-medium text-amber-800 mb-3 flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Partij uitstellen
+              </h4>
+              <div className="flex items-center gap-3">
+                <Select
+                  onValueChange={(val) => setSelectedMD(Number(val))}
+                  value={selectedMD === "" ? undefined : selectedMD.toString()}
+                >
+                  <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Kies inhaaldag" />
                   </SelectTrigger>
                   <SelectContent>
-                    {makeupDays.map(md => (
-                      <SelectItem
-                        key={md.id}
-                        value={md.id.toString()}
-                      >
-                        {md.label || format(new Date(md.date), 'dd-MM-yyyy')}
+                    {makeupDays.map((md) => (
+                      <SelectItem key={md.id} value={md.id.toString()}>
+                        {md.label || format(new Date(md.date), "dd-MM-yyyy")}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <Button
-                  size="sm"
                   onClick={handlePostpone}
-                  disabled={selectedMD === ''}
+                  disabled={selectedMD === ""}
+                  className="bg-green-600 hover:bg-green-700"
                 >
                   Bevestig
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setPostponing(null)}
-                >
-                  ✕
+                <Button variant="outline" onClick={() => setPostponing(null)}>
+                  Annuleer
                 </Button>
               </div>
-            )}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
   )
 }

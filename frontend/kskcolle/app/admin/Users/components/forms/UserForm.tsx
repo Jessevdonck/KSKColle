@@ -1,71 +1,81 @@
-import { useForm } from 'react-hook-form';
+"use client"
+
+import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from 'react';
+import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, User, Mail, Phone, Trophy, Calendar, Shield, Key } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 
 const EMPTY_USER = {
   voornaam: "",
   achternaam: "",
   geboortedatum: new Date(),
-  email:"",
-  tel_nummer:"",
+  email: "",
+  tel_nummer: "",
   schaakrating_elo: 0,
   fide_id: 0,
   schaakrating_max: 0,
   lid_sinds: new Date(),
   roles: [],
-};
+}
 
 const validationRules = {
   voornaam: {
-    required: 'Voornaam is vereist!',
+    required: "Voornaam is vereist!",
   },
   achternaam: {
-    required: 'Achternaam is vereist!',
+    required: "Achternaam is vereist!",
   },
   schaakrating_elo: {
-    required: 'Clubrating is vereist!',
-    min: { value: 100, message: 'Minimale rating is 100' },
-    max: { value: 5000, message: 'Maximale rating is 5000' }
+    required: "Clubrating is vereist!",
+    min: { value: 100, message: "Minimale rating is 100" },
+    max: { value: 5000, message: "Maximale rating is 5000" },
   },
   email: {
-    required: 'Email is required!',
+    required: "Email is required!",
   },
   tel_nummer: {
-    required: 'Telefoonnummer is required!',
+    required: "Telefoonnummer is required!",
   },
   password: {
-    required: "'Wachtwoord' is vereist!", 
+    required: "'Wachtwoord' is vereist!",
   },
-};
+}
 
 interface FormData {
-  voornaam: string;
-  achternaam: string;
-  geboortedatum?: string;
-  email: string;
-  tel_nummer: string;
-  schaakrating_elo: number;
-  fide_id?: number;
-  schaakrating_max?: number;
-  lid_sinds?: string;
-  password: string;
-  roles: string[];
+  voornaam: string
+  achternaam: string
+  geboortedatum?: string
+  email: string
+  tel_nummer: string
+  schaakrating_elo: number
+  fide_id?: number
+  schaakrating_max?: number
+  lid_sinds?: string
+  password: string
+  roles: string[]
 }
 
 const toDateInputString = (date: Date | undefined) => {
-  return date ? date.toISOString().split('T')[0] : '';
-};
+  return date ? date.toISOString().split("T")[0] : ""
+}
 
-export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = false }) {
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = false, isMutating = false }) {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  const { register, handleSubmit, formState: { errors, isValid }, reset, setValue, getValues, watch } = useForm<FormData>({
-    mode: 'onBlur',
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    reset,
+    setValue,
+    getValues,
+    watch,
+  } = useForm<FormData>({
+    mode: "onBlur",
     defaultValues: {
       voornaam: user.voornaam,
       achternaam: user.achternaam,
@@ -77,13 +87,13 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       fide_id: user.fide_id,
       schaakrating_max: user.schaakrating_max,
       roles: user.roles || [],
-    }
-  });
+    },
+  })
 
   const onSubmit = async (values: FormData) => {
-    if (!isValid) return;
+    if (!isValid) return
 
-    console.log(values);
+    console.log(values)
 
     const formattedValues = {
       ...values,
@@ -93,192 +103,297 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       fide_id: values.fide_id ? Number(values.fide_id) : null,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
       roles: values.roles,
-    };
+    }
 
-    await saveUser(formattedValues,
-      {
-        throwOnError: false,
-        onSuccess: () => {
-          reset();
-          window.scrollTo(0, 0);
-          setSuccessMessage(isEditing ? "Speler correct gewijzigd" : "Speler correct toegevoegd");
-          setTimeout(() => setSuccessMessage(null), 5000); 
-        },
-      }
-    );
-  };
+    await saveUser(formattedValues, {
+      throwOnError: false,
+      onSuccess: () => {
+        reset()
+        window.scrollTo(0, 0)
+        setSuccessMessage(isEditing ? "Speler correct gewijzigd" : "Speler correct toegevoegd")
+        setTimeout(() => setSuccessMessage(null), 5000)
+      },
+    })
+  }
 
   return (
-    <form className="w-full max-w-lg flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+    <div className="w-full max-w-7xl mx-auto">
       {successMessage && (
-        <Alert className="mb-4">
-          <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle className='text-green-500'>Succes</AlertTitle>
-          <AlertDescription>{successMessage}</AlertDescription>
+        <Alert className="mb-6 border-green-200 bg-green-50">
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <AlertTitle className="text-green-700">Succes</AlertTitle>
+          <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
         </Alert>
       )}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <Label htmlFor="voornaam" className="block text-sm font-semibold text-textColor">
-            Voornaam
-          </Label>
-          <Input
-            {...register('voornaam', validationRules.voornaam)}
-            id="voornaam"
-            placeholder="Voornaam"
-            data-cy="voornaam"
-          />
-          {errors.voornaam && <p className="text-red-500 text-xs italic" data-cy="error_voornaam">{errors.voornaam.message}</p>}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Personal Information */}
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+          <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Persoonlijke Gegevens
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <Label htmlFor="voornaam" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Voornaam
+              </Label>
+              <Input
+                {...register("voornaam", validationRules.voornaam)}
+                id="voornaam"
+                placeholder="Voornaam"
+                data-cy="voornaam"
+                className="mt-1"
+              />
+              {errors.voornaam && (
+                <p className="text-red-500 text-sm mt-1" data-cy="error_voornaam">
+                  {errors.voornaam.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="achternaam" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Achternaam
+              </Label>
+              <Input
+                {...register("achternaam", validationRules.achternaam)}
+                id="achternaam"
+                placeholder="Achternaam"
+                data-cy="achternaam"
+                className="mt-1"
+              />
+              {errors.achternaam && (
+                <p className="text-red-500 text-sm mt-1" data-cy="error_achternaam">
+                  {errors.achternaam.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="geboortedatum" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Geboortedatum
+              </Label>
+              <Input
+                {...register("geboortedatum")}
+                id="geboortedatum"
+                type="date"
+                placeholder="Geboortedatum"
+                data-cy="birthdate"
+                className="mt-1"
+              />
+              {errors.geboortedatum && (
+                <p className="text-red-500 text-sm mt-1" data-cy="error_birthdate">
+                  {errors.geboortedatum.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="lid_sinds" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Lid Sinds
+              </Label>
+              <Input
+                {...register("lid_sinds")}
+                id="lid_sinds"
+                type="date"
+                placeholder="Lid Sinds"
+                data-cy="startdate"
+                className="mt-1"
+              />
+              {errors.lid_sinds && <p className="text-red-500 text-sm mt-1">{errors.lid_sinds.message}</p>}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="achternaam" className="block text-sm font-semibold text-textColor">
-            Achternaam
-          </Label>
-          <Input
-            {...register('achternaam', validationRules.achternaam)}
-            id="achternaam"
-            placeholder="Achternaam"
-            data-cy="achternaam"
-          />
-          {errors.achternaam && <p className="text-red-500 text-xs italic" data-cy="error_achternaam">{errors.achternaam.message}</p>}
+        {/* Contact Information */}
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
+          <h3 className="text-lg font-semibold text-green-800 mb-4 flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Contactgegevens
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Email
+              </Label>
+              <Input
+                {...register("email", validationRules.email)}
+                id="email"
+                placeholder="Email"
+                data-cy="email"
+                className="mt-1"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1" data-cy="error_email">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="telefoon" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Telefoon Nummer
+              </Label>
+              <Input
+                {...register("tel_nummer", validationRules.tel_nummer)}
+                id="telefoon"
+                placeholder="Telefoon"
+                data-cy="telnr"
+                className="mt-1"
+              />
+              {errors.tel_nummer && (
+                <p className="text-red-500 text-sm mt-1" data-cy="error_telnr">
+                  {errors.tel_nummer.message}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="password" className="block text-sm font-semibold text-textColor">
-            Wachtwoord
-          </Label>
-          <Input
-            {...register('password', validationRules.password)}
-            id="password"
-            type="password"
-            placeholder="Wachtwoord"
-            data-cy="password"
-          />
-          {errors.password && <p className="text-red-500 text-xs italic" data-cy="error_password">{errors.password.message}</p>}
+        {/* Chess Information */}
+        <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-6 border border-amber-200">
+          <h3 className="text-lg font-semibold text-amber-800 mb-4 flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Schaakgegevens
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="schaakrating_elo" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Clubrating
+              </Label>
+              <Input
+                {...register("schaakrating_elo", {
+                  ...validationRules.schaakrating_elo,
+                  valueAsNumber: true,
+                })}
+                id="schaakrating_elo"
+                type="number"
+                placeholder="Clubrating"
+                data-cy="rating"
+                className="mt-1"
+              />
+              {errors.schaakrating_elo && (
+                <p className="text-red-500 text-sm mt-1" data-cy="error_rating">
+                  {errors.schaakrating_elo.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="fide_id" className="text-sm font-medium text-gray-700">
+                FIDE ID
+              </Label>
+              <Input
+                {...register("fide_id", { valueAsNumber: true })}
+                id="fide_id"
+                type="number"
+                placeholder="FIDE ID"
+                data-cy="fide"
+                className="mt-1"
+              />
+              {errors.fide_id && <p className="text-red-500 text-sm mt-1">{errors.fide_id.message}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="schaakrating_max" className="text-sm font-medium text-gray-700">
+                Max Rating
+              </Label>
+              <Input
+                {...register("schaakrating_max", { valueAsNumber: true })}
+                id="schaakrating_max"
+                type="number"
+                placeholder="Max Rating"
+                data-cy="max_rating"
+                className="mt-1"
+              />
+              {errors.schaakrating_max && (
+                <p className="text-red-500 text-sm mt-1">{errors.schaakrating_max.message}</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="geboortedatum" className="block text-sm font-semibold text-textColor">
-            Geboortedatum
-          </Label>
-          <Input
-            {...register('geboortedatum')}
-            id="geboortedatum"
-            type="date"
-            placeholder="Geboortedatum"
-            data-cy="birthdate"
-          />
-          {errors.geboortedatum && <p className="text-red-500 text-xs italic" data-cy="error_birthdate">{errors.geboortedatum.message}</p>}
+        {/* Security */}
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+          <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Beveiliging & Rechten
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+            <div>
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                Wachtwoord
+              </Label>
+              <Input
+                {...register("password", validationRules.password)}
+                id="password"
+                type="password"
+                placeholder="Wachtwoord"
+                data-cy="password"
+                className="mt-1"
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1" data-cy="error_password">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-3 mt-6">
+              <Checkbox
+                id="isAdmin"
+                data-cy="admin"
+                checked={watch("roles").includes("admin")}
+                onCheckedChange={(checked) => {
+                  const currentRoles = getValues("roles")
+                  if (checked) {
+                    setValue("roles", [...currentRoles, "admin"])
+                  } else {
+                    setValue(
+                      "roles",
+                      currentRoles.filter((role) => role !== "admin"),
+                    )
+                  }
+                }}
+                className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+              />
+              <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Is Admin
+              </Label>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="email" className="block text-sm font-semibold text-textColor">
-            Email
-          </Label>
-          <Input
-            {...register('email', validationRules.email)}
-            id="email"
-            placeholder="Email"
-            data-cy="email"
-          />
-          {errors.email && <p className="text-red-500 text-xs italic" data-cy="error_email">{errors.email.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="telefoon" className="block text-sm font-semibold text-textColor">
-            Telefoon Nummer
-          </Label>
-          <Input
-            {...register('tel_nummer', validationRules.tel_nummer)}
-            id="telefoon"
-            placeholder="Telefoon"
-            data-cy="telnr"
-          />
-          {errors.tel_nummer && <p className="text-red-500 text-xs italic" data-cy="error_telnr">{errors.tel_nummer.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="schaakrating_elo" className="block text-sm font-semibold text-textColor">
-            Clubrating
-          </Label>
-          <Input
-            {...register('schaakrating_elo', {
-              ...validationRules.schaakrating_elo,
-              valueAsNumber: true,
-            })}
-            id="schaakrating_elo"
-            type="number"
-            placeholder="Clubrating"
-            data-cy="rating"
-          />
-          {errors.schaakrating_elo && <p className="text-red-500 text-xs italic" data-cy="error_rating">{errors.schaakrating_elo.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="fide_id" className="block text-sm font-semibold text-textColor">
-            FIDE ID
-          </Label>
-          <Input
-            {...register('fide_id', { valueAsNumber: true })}
-            id="fide_id"
-            type="number"
-            placeholder="FIDE ID"
-            data-cy="fide"
-          />
-          {errors.fide_id && <p className="text-red-500 text-xs italic">{errors.fide_id.message}</p>}
-        </div>
-        
-        <div>
-          <Label htmlFor="schaakrating_max" className="block text-sm font-semibold text-textColor">
-            Max Rating
-          </Label>
-          <Input
-            {...register('schaakrating_max', { valueAsNumber: true })}
-            id="schaakrating_max"
-            type="number"
-            placeholder="Max Rating"
-            data-cy="max_rating"
-          />
-          {errors.schaakrating_max && <p className="text-red-500 text-xs italic">{errors.schaakrating_max.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="lid_sinds" className="block text-sm font-semibold text-textColor">
-            Lid Sinds
-          </Label>
-          <Input
-            {...register('lid_sinds')}
-            id="lid_sinds"
-            type="date"
-            placeholder="Lid Sinds"
-            data-cy="startdate"
-          />
-          {errors.lid_sinds && <p className="text-red-500 text-xs italic" >{errors.lid_sinds.message}</p>}
-        </div>
-      </div>
-      <div className="flex items-center space-x-2 mb-4">
-        <Checkbox 
-          id="isAdmin" 
-          data-cy="admin"
-          checked={watch('roles').includes('admin')}
-          onCheckedChange={(checked) => {
-            const currentRoles = getValues('roles');
-            if (checked) {
-              setValue('roles', [...currentRoles, 'admin']);
-            } else {
-              setValue('roles', currentRoles.filter(role => role !== 'admin'));
-            }
-          }}
-        />
-        <Label htmlFor="isAdmin" className="text-sm font-semibold text-textColor">
-          Is Admin
-        </Label>
-      </div>
-      <Button type="submit" className="bg-mainAccent text-white hover:bg-mainAccentDark" data-cy="submit_user">
-        {isEditing ? "Wijzig" : "Voeg toe"}
-      </Button>
-    </form>
-  );
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isMutating}
+          className="w-full bg-mainAccent hover:bg-mainAccentDark py-3"
+          data-cy="submit_user"
+        >
+          {isMutating ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              {isEditing ? "Wijzigen..." : "Toevoegen..."}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              {isEditing ? "Wijzig" : "Voeg toe"}
+            </div>
+          )}
+        </Button>
+      </form>
+    </div>
+  )
 }
-
