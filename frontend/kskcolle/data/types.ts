@@ -1,3 +1,7 @@
+export enum TournamentType {
+  SWISS = "SWISS",
+  ROUND_ROBIN = "ROUND_ROBIN",
+}
 export interface User {
   user_id: number;
   voornaam: string;
@@ -52,7 +56,10 @@ export type Toernooi = {
   tournament_id: number;
   naam: string;
   rondes: number;
+  type: TournamentType;
   participations: Participation[];
+  finished: boolean;
+  rating_enabled: boolean;
   rounds: Round[];
 };
 
