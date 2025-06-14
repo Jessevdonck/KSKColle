@@ -79,8 +79,6 @@ export default function TournamentDetails() {
     }
   }, [tournament, makeupDays])
 
-  // Remove this useEffect, and handle error rendering in the return statement below.
-
   useEffect(() => {
     if (!tournament) {
       return
@@ -174,7 +172,7 @@ export default function TournamentDetails() {
                     <div className="px-4 py-2 bg-white/20 rounded-lg text-white font-medium min-w-[120px] text-center">
                       {currentEntry?.kind === "round"
                         ? `Ronde ${currentEntry.round.ronde_nummer}`
-                        : `${currentEntry?.day.label}`}
+                        : `Inhaaldag ${currentEntry?.day.label}`}
                     </div>
 
                     <button
@@ -248,7 +246,7 @@ function MakeupPairings({ day, games }: { day: MakeupDay; games: Game[] }) {
           <div className="bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
             I
           </div>
-          {day.label}
+          Inhaaldag {day.label}
         </h3>
         <p className="text-gray-600 flex items-center gap-2">
           <Calendar className="h-4 w-4" />
@@ -318,12 +316,12 @@ function MakeupPairings({ day, games }: { day: MakeupDay; games: Game[] }) {
                   <td className="p-4 text-center">
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        g.result
+                        g.result && g.result !== "not_played"
                           ? "bg-green-100 text-green-800 border border-green-200"
                           : "bg-gray-100 text-gray-600 border border-gray-200"
                       }`}
                     >
-                      {g.result || "Nog te spelen"}
+                      {g.result && g.result !== "not_played" ? g.result : "Nog te spelen"}
                     </span>
                   </td>
                 </tr>
