@@ -102,7 +102,6 @@ export async function createAndSavePairings(
         p.speler1_id,
         p.speler2_id,
         p.color1,
-        round_number
       );
       if (p.speler2_id !== null) {
         await updateParticipation(
@@ -110,7 +109,6 @@ export async function createAndSavePairings(
           p.speler2_id,
           p.speler1_id,
           p.color2,
-          round_number
         );
       }
     }
@@ -144,7 +142,6 @@ async function updateParticipation(
   user_id: number,
   opponentId: number | null,
   color: "W" | "B" | "N",
-  roundNumber: number
 ) {
   const part = await prisma.participation.findUnique({
     where: { user_id_tournament_id: { user_id, tournament_id } },
