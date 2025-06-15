@@ -74,10 +74,7 @@ export const finalizeTournament = async (
   return data;
 };
 
-export const endTournament = async (
-  url,
-  { arg: tournamentId }
-) => {
+export const endTournament = async (url, { arg: tournamentId }) => {
   const { data } = await axios.post(
     `${baseUrl}/${url}/${tournamentId}/end`
   );

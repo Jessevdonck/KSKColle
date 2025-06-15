@@ -245,7 +245,7 @@ export default function RoundManagement({ tournament }: Props) {
             </p>
             <Button
               onClick={() =>
-                endT({ arg: T.tournament_id })
+                endT(T.tournament_id)
                   .then(() => Promise.all([refetchT(), refetchMD()]))
                   .then(() => toast({ title: "Success", description: "Toernooi beëindigd." }))
                   .catch(() =>

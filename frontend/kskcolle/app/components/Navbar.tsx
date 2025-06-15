@@ -12,6 +12,7 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  Archive,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect } from "react"
 import LoginSheet from "./LoginSheet"
@@ -24,6 +25,7 @@ export default function Navbar() {
   const [isClient, setIsClient] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false)
+  const [isMobileTournamentOpen, setIsMobileTournamentOpen] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -35,7 +37,6 @@ export default function Navbar() {
 
   const navItems = [
     { href: "/calendar", icon: <CalendarDays size={20} />, text: "Kalender" },
-    { href: "/toernooien", icon: <Trophy size={20} />, text: "Toernooien" },
     { href: "/spelers", icon: <ChartColumnBig size={20} />, text: "Spelers" },
   ]
 
@@ -72,6 +73,29 @@ export default function Navbar() {
               <DropdownMenuItem asChild className="hover:cursor-pointer">
                 <Link href="/photos" className="flex items-center space-x-2">
                   <span>Foto&apos;s</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Tournaments Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+              <Trophy size={20} />
+              <span>Toernooien</span>
+              <ChevronDown size={16} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/toernooien" className="flex items-center space-x-2">
+                  <Trophy size={16} />
+                  <span>Huidige Toernooien</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/toernooien/archief" className="flex items-center space-x-2">
+                  <Archive size={16} />
+                  <span>Archief</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -138,6 +162,41 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Foto&apos;s
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Tournaments Dropdown */}
+            <div className="space-y-2">
+              <button
+                onClick={() => setIsMobileTournamentOpen(!isMobileTournamentOpen)}
+                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <Trophy size={20} />
+                  <span>Toernooien</span>
+                </div>
+                {isMobileTournamentOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+
+              {isMobileTournamentOpen && (
+                <div className="ml-6 space-y-2">
+                  <Link
+                    href="/toernooien"
+                    className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Trophy size={16} />
+                    <span>Huidige Toernooien</span>
+                  </Link>
+                  <Link
+                    href="/toernooien/archief"
+                    className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Archive size={16} />
+                    <span>Archief</span>
                   </Link>
                 </div>
               )}
