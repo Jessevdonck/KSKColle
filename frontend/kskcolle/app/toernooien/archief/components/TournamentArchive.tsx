@@ -116,7 +116,7 @@ export default function TournamentArchive() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredTournaments.map((tournament: any) => (
+              {filteredTournaments.map((tournament) => (
                 <div key={tournament.tournament_id} className="relative">
                   <TournamentCard tournament={tournament} />
                   <div className="absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
@@ -130,7 +130,7 @@ export default function TournamentArchive() {
           <div className="text-center text-[#2e2c2c] mt-12">
             <Search className="mx-auto h-16 w-16 text-gray-400 mb-4" />
             <p className="text-2xl font-semibold">Geen resultaten gevonden</p>
-            <p className="mt-2">Geen toernooien gevonden voor "{searchTerm}". Probeer een andere zoekterm.</p>
+            <p className="mt-2">Geen toernooien gevonden voor &quot;{searchTerm}&quot;. Probeer een andere zoekterm.</p>
             <Button
               onClick={clearSearch}
               variant="outline"
