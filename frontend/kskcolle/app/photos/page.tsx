@@ -1,9 +1,72 @@
 "use client"
 import useSWR from "swr"
 import Link from "next/link"
+import Image from "next/image"
+import { useState, useEffect } from "react"
 import { getAll } from "../api/index"
 import { Camera, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+
+const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
+  const [firstPhoto, setFirstPhoto] = useState(null)
+  const [isLoadingPhoto, setIsLoadingPhoto] = useState(true)
+  const [photoError, setPhotoError] = useState(false)
+
+  useEffect(() => {
+    const fetchFirstPhoto = async () => {
+      try {
+        setIsLoadingPhoto(true)
+        const photos = await getAll(`photos/albums/${album.id}`)
+        if (photos && photos.length > 0) {
+          setFirstPhoto(photos[0])
+        }
+      } catch (error) {
+        setPhotoError(true)
+      } finally {
+        setIsLoadingPhoto(false)
+      }
+    }
+
+    fetchFirstPhoto()
+  }, [album.id])
+
+  return (
+    <Link href={`/photos/${album.id}`}>
+      <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-0 shadow-md">
+        <CardContent className="p-0">
+          <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-t-lg overflow-hidden flex items-center justify-center relative">
+            {isLoadingPhoto ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="animate-spin text-gray-400" size={32} />
+              </div>
+            ) : firstPhoto && !photoError ? (
+              <Image
+                src={firstPhoto.downloadUrl || firstPhoto.thumbnail || "/placeholder.svg"}
+                alt={`${album.name} preview`}
+                fill
+                className="object-cover hover:scale-110 transition-transform duration-300"
+                quality={85}
+                style={{
+                  imageRendering: "auto",
+                }}
+              />
+            ) : (
+              <Camera className="text-gray-500" size={48} />
+            )}
+          </div>
+
+          <div className="p-6">
+            <div className="flex items-center space-x-2 mb-2">
+              <Camera size={20} className="text-mainAccent" />
+              <h2 className="text-xl font-semibold text-textColor">{album.name}</h2>
+            </div>
+            <p className="text-gray-600">Klik om foto&apos;s te bekijken</p>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  )
+}
 
 export default function PhotosPage() {
   const { data: albums = [], error, isLoading } = useSWR("photos/albums", () => getAll("photos/albums"))
@@ -51,24 +114,8 @@ export default function PhotosPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {albums.map((alb: { id: string; name: string }) => (
-                <Link key={alb.id} href={`/photos/${alb.id}`}>
-                  <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-0 shadow-md">
-                    <CardContent className="p-0">
-                      <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-t-lg overflow-hidden flex items-center justify-center">
-                        <Camera className="text-gray-500" size={48} />
-                      </div>
-
-                      <div className="p-6">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Camera size={20} className="text-mainAccent" />
-                          <h2 className="text-xl font-semibold text-textColor">{alb.name}</h2>
-                        </div>
-                        <p className="text-gray-600">Klik om foto&apos;s te bekijken</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+              {albums.map((album: { id: string; name: string }) => (
+                <AlbumCard key={album.id} album={album} />
               ))}
             </div>
           )}
