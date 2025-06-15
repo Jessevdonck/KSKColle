@@ -93,3 +93,13 @@ export const postMakeupDay = async (url, { arg }) => {
 export const deleteMakeupDay = async (url, { arg: id }) => {
   await axios.delete(`${baseUrl}/${url}/${id}`)
 }
+
+export async function getAlbums() {
+  const { data } = await axios.get('/photos/albums');
+  return data;
+}
+
+export async function getPhotos(albumId) {
+  const { data } = await axios.get(`/photos/albums/${albumId}`);
+  return data;
+}
