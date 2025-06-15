@@ -1,5 +1,4 @@
 // src/service/pairingService.ts
-
 import { prisma } from "../data";
 import { SwissStrategy } from "../strategies/SwissStrategy";
 import { RoundRobinStrategy } from "../strategies/RoundRobinStrategy";
@@ -17,47 +16,79 @@ export async function createAndSavePairings(
     const tour = await prisma.tournament.findUnique({
       where: { tournament_id },
       include: {
-        participations: { include: { user: true } },
+        participations: {
+          include: {
+            user: true,
+          },
+        },
         rounds: true,
       },
     });
     if (!tour) throw new Error("Toernooi niet gevonden");
 
-    // 2) Kies de juiste pairing-strategie
+    // 2) Kies juiste strategie
     const strategy: IPairingStrategy =
       tour.type === "SWISS"
         ? new SwissStrategy()
         : new RoundRobinStrategy();
 
-    // 3) Geef lijst van spelers en dummy-history van voorgaande rondes
-    const players = tour.participations.map((p) => p.user);
+    // 3) Bouw kleur-history map
+    const colorHistoryMap: Record<number, Array<"W" | "B" | "N">> = {};
+    for (const part of tour.participations) {
+      const hist = JSON.parse(part.color_history || "[]") as Array<"W" | "B" | "N">;
+      colorHistoryMap[part.user.user_id] = hist;
+    }
+
+    // 4) Dummy-history voor opponents (zonder kleurinfo)
     const previousRounds: Pairing[][] = (
       await Promise.all(
         tour.rounds
           .filter((r) => r.ronde_nummer < round_number)
           .sort((a, b) => a.ronde_nummer - b.ronde_nummer)
-          .map((r) => prisma.game.findMany({ where: { round_id: r.round_id } }))
+          .map((r) =>
+            prisma.game.findMany({
+              where: { round_id: r.round_id },
+            })
+          )
       )
     ).map((games) =>
       games.map< Pairing >((g) => ({
         speler1_id: g.speler1_id,
         speler2_id: g.speler2_id,
-        color1: "N", // dummy voor “alreadyPlayed” check
+        color1: "N",
         color2: "N",
       }))
     );
 
-    // 4) Genereer nieuwe pairings + byePlayer (als odd)
-    const { pairings, byePlayer } = strategy.generatePairings(
+    // 5) Maak spelers-array met actuele scores
+    const players = tour.participations.map((part) => ({
+      user_id: part.user.user_id,
+      score: part.score ?? 0,
+      voornaam: part.user.voornaam,
+      achternaam: part.user.achternaam,
+      email: part.user.email,
+      schaakrating_elo: part.user.schaakrating_elo,
+    }));
+
+    // 6) Vraag pairings aan de strategie op
+    let { pairings, byePlayer } = strategy.generatePairings(
       players,
       round_number,
       previousRounds
     );
-    console.log(
-      `📝 Ronde ${round_number}: pairings=${pairings.length}, byePlayer=${byePlayer?.user_id ?? "none"}`
-    );
 
-    // 5) Maak de nieuwe ronde aan
+    // 7) Kleur-balancing: draai om indien speler1 al vaak wit speelde
+    pairings = pairings.map((p) => {
+      const hist = colorHistoryMap[p.speler1_id] || [];
+      const whites = hist.filter((c) => c === "W").length;
+      const blacks = hist.filter((c) => c === "B").length;
+      if (whites > blacks) {
+        return { ...p, color1: "B", color2: "W" };
+      }
+      return { ...p, color1: "W", color2: "B" };
+    });
+
+    // 8) Maak de nieuwe ronde aan
     const round = await prisma.round.create({
       data: {
         tournament_id,
@@ -66,7 +97,7 @@ export async function createAndSavePairings(
       },
     });
 
-    // 6) Bouw één array met élke game (gewone + bye)
+    // 9) Zet alle games klaar (inclusief bye)
     type GameData = {
       round_id: number;
       speler1_id: number;
@@ -74,15 +105,12 @@ export async function createAndSavePairings(
       winnaar_id?: number;
       result?: string;
     };
-
     const gamesData: GameData[] = pairings.map((p) => ({
       round_id: round.round_id,
       speler1_id: p.speler1_id,
       speler2_id: p.speler2_id,
     }));
-
     if (byePlayer) {
-      console.log("⚠️ Bye-game toegevoegd voor user_id=", byePlayer.user_id);
       gamesData.push({
         round_id: round.round_id,
         speler1_id: byePlayer.user_id,
@@ -92,28 +120,28 @@ export async function createAndSavePairings(
       });
     }
 
-    // 7) Sla alle games in één keer op
+    // 10) Sla ze in batch op
     await prisma.game.createMany({ data: gamesData });
 
-    // 8) Update opponents/color_history voor alle match-games
+    // 11) Update opponents én kleur-history
     for (const p of pairings) {
       await updateParticipation(
         tournament_id,
         p.speler1_id,
         p.speler2_id,
-        p.color1,
+        p.color1
       );
       if (p.speler2_id !== null) {
         await updateParticipation(
           tournament_id,
           p.speler2_id,
           p.speler1_id,
-          p.color2,
+          p.color2
         );
       }
     }
 
-    // 9) Bij byePlayer: ken 1 punt toe en sla bye_round op
+    // 12) Geef de bye speler zijn punt
     if (byePlayer) {
       await prisma.participation.update({
         where: {
@@ -134,14 +162,11 @@ export async function createAndSavePairings(
   }
 }
 
-/**
- * Helper om voor één speler opponents en kleur-history bij te werken.
- */
 async function updateParticipation(
   tournament_id: number,
   user_id: number,
   opponentId: number | null,
-  color: "W" | "B" | "N",
+  color: "W" | "B" | "N"
 ) {
   const part = await prisma.participation.findUnique({
     where: { user_id_tournament_id: { user_id, tournament_id } },

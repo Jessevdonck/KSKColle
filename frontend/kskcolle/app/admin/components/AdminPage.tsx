@@ -25,14 +25,14 @@ const AdminPage = () => {
     () => getAll('tournament?active=true')
   )
   // 3) Haal alle calendar events op en filter toekomstige
-  const { data: allEvents = [] } = useSWR(
-    'calendarEvent',
-    () => getAll('calendarEvent')
-  )
-  const upcomingCount = allEvents.filter(ev => {
-    // ev.date is ISO-string
-    return new Date(ev.date) >= new Date()
-  }).length
+  // const { data: allEvents = [] } = useSWR(
+  //   'calendarEvent',
+  //   () => getAll('calendarEvent')
+  // )
+  // const upcomingCount = allEvents.filter(ev => {
+  //   // ev.date is ISO-string
+  //   return new Date(ev.date) >= new Date()
+  // }).length
 
   useEffect(() => {
     setIsClient(true)
@@ -195,9 +195,9 @@ const AdminPage = () => {
                       <p className="text-gray-600 leading-relaxed mb-4">
                         Activiteiten gepland na vandaag
                       </p>
-                      <p className="text-2xl font-bold text-orange-800 mb-4">
+                      {/* <p className="text-2xl font-bold text-orange-800 mb-4">
                         {upcomingCount}
-                      </p>
+                      </p> */}
                     </div>
                   </div>
                 </div>

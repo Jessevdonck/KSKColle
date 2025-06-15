@@ -83,6 +83,10 @@ model Participation {
   opponents          String?          @default("[]") 
   color_history      String?          @default("[]") 
   bye_round          Int?
+
+  tie_break          Float?           @default(0)
+
+  wins               Int?             @default(0)
   
   user               User              @relation(fields: [user_id], references: [user_id])
   tournament         Tournament        @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)

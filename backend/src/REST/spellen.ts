@@ -7,6 +7,7 @@ import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
+import { updateTieBreakAndWins } from '../service/tieBreakService';
 
 /**
  * @api {get} /spel Get all spellen
@@ -94,12 +95,17 @@ getSpelById.validationScheme = {
  * @apiError (403) Forbidden You don't have access to this resource.
  * @apiError (404) NotFound The requested resource could not be found.
  */
-const updateSpel = async (ctx: KoaContext<UpdateSpelResponse, IdParams, UpdateSpelRequest>) => {
-  const spelId = Number(ctx.params.id); 
-  const updatedSpeler = await spellenService.updateSpel(spelId, ctx.request.body); 
-  
-  ctx.body = updatedSpeler; 
-};
+const updateSpel = async (
+  ctx: KoaContext<UpdateSpelResponse, IdParams, UpdateSpelRequest>
+) => {
+  const updatedGame = await spellenService.updateSpel(
+    Number(ctx.params.id),
+    ctx.request.body
+  )
+  // now `updatedGame.round.tournament` actually exists
+  await updateTieBreakAndWins(updatedGame.round.tournament.tournament_id)
+  ctx.body = updatedGame
+}
 
 updateSpel.validationScheme = {
   params: {

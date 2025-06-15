@@ -1,5 +1,5 @@
 import { prisma } from "./data/";
-import type { Spel, SpelCreateInput, SpelUpdateInput, GameWithRoundAndTournament } from "../types/spel";
+import type { Spel, SpelCreateInput, SpelUpdateInput, GameWithRoundAndTournament, SpelWithTournament } from "../types/spel";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 
@@ -21,7 +21,7 @@ export const getAllSpellen = async (): Promise<Spel[]> => {
   }
 };
 
-export const getSpelById = async (game_id: number): Promise<Spel> => {
+export const getSpelById = async (game_id: number) => {
   try {
     const game = await prisma.game.findUnique({
       where: {
@@ -137,7 +137,7 @@ export const createSpel = async (spel: SpelCreateInput) => {
   }
 };
 
-export const updateSpel = async (game_id: number, data: SpelUpdateInput): Promise<Spel> => {
+export const updateSpel = async (game_id: number, data: SpelUpdateInput) => {
   try {
     const updatedGame = await prisma.game.update({
       where: {
