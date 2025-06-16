@@ -52,6 +52,7 @@ model Round {
   tournament_id      Int
   ronde_nummer       Int            
   ronde_datum        DateTime
+  calendar_event_id  Int?
   
   tournament    Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade) 
   games              Game[]            @relation("RoundGames") 

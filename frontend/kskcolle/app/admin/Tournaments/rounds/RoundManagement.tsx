@@ -197,7 +197,7 @@ export default function RoundManagement({ tournament }: Props) {
 
       {/* Timeline */}
       <div className="space-y-6">
-        {timeline.map((e, idx) => {
+        {timeline.map((e) => {
           if (e.kind === "round") {
             return (
               <RoundSection
@@ -205,6 +205,7 @@ export default function RoundManagement({ tournament }: Props) {
                 roundNumber={e.roundNumber}
                 roundData={e.roundData}
                 tournamentId={T.tournament_id}
+                tournamentName={T.naam}
                 makeupDays={makeupDays}
                 onGenerate={() =>
                   genPair({

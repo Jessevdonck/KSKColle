@@ -81,33 +81,34 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
           key={game.game_id}
           className="border border-neutral-200 rounded-lg p-4 hover:border-mainAccent/30 transition-colors"
         >
-          <div className="flex items-center justify-between">
-            {/* Players */}
-            <div className="flex items-center gap-4 flex-1">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold">
+          {/* Main game row - responsive flex layout */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Players - takes full width on mobile, flex-1 on desktop */}
+            <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className="w-8 h-8 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                   W
                 </div>
-                <span className="font-medium text-textColor">
+                <span className="font-medium text-textColor truncate">
                   {game.speler1.voornaam} {game.speler1.achternaam}
                 </span>
               </div>
 
-              <ChevronRight className="h-4 w-4 text-gray-400" />
+              <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 {game.speler2 ? (
                   <>
-                    <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                    <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                       Z
                     </div>
-                    <span className="font-medium text-textColor">
+                    <span className="font-medium text-textColor truncate">
                       {game.speler2.voornaam} {game.speler2.achternaam}
                     </span>
                   </>
                 ) : (
                   <>
-                    <div className="w-8 h-8 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
+                    <div className="w-8 h-8 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs flex-shrink-0">
                       -
                     </div>
                     <span className="text-gray-500 italic">Bye</span>
@@ -116,17 +117,17 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
               </div>
             </div>
 
-            {/* Result and Actions */}
-            <div className="flex items-center gap-3">
+            {/* Result and Actions - stacks on mobile, inline on desktop */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-3">
               {/* Result Selector */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 {getResultIcon(game.result)}
                 <Select
                   onValueChange={(val) => handleResultChange(game.game_id, val)}
                   defaultValue={game.result || "not_played"}
                   disabled={isMutating}
                 >
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-full sm:w-32">
                     <SelectValue placeholder="Selecteer" />
                   </SelectTrigger>
                   <SelectContent>
@@ -144,16 +145,17 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
                   size="sm"
                   variant="outline"
                   onClick={() => setPostponing(game.game_id)}
-                  className="border-amber-200 text-amber-600 hover:bg-amber-50"
+                  className="border-amber-200 text-amber-600 hover:bg-amber-50 w-full sm:w-auto"
                 >
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-4 w-4 mr-2 sm:mr-0" />
+                  <span className="sm:hidden">Uitstellen</span>
                 </Button>
               )}
             </div>
           </div>
 
           {/* Result Status */}
-          <div className="mt-3 flex justify-end">
+          <div className="mt-3 flex justify-start sm:justify-end">
             <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getResultColor(game.result)}`}>
               {game.result === "not_played" || !game.result ? "Nog te spelen" : game.result}
             </span>
@@ -166,7 +168,7 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
                 <Clock className="h-4 w-4" />
                 Partij uitstellen
               </h4>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Select
                   onValueChange={(val) => setSelectedMD(Number(val))}
                   value={selectedMD === "" ? undefined : selectedMD.toString()}
@@ -182,16 +184,18 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button
-                  onClick={handlePostpone}
-                  disabled={selectedMD === ""}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Bevestig
-                </Button>
-                <Button variant="outline" onClick={() => setPostponing(null)}>
-                  Annuleer
-                </Button>
+                <div className="flex gap-2 sm:gap-3">
+                  <Button
+                    onClick={handlePostpone}
+                    disabled={selectedMD === ""}
+                    className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
+                  >
+                    Bevestig
+                  </Button>
+                  <Button variant="outline" onClick={() => setPostponing(null)} className="flex-1 sm:flex-none">
+                    Annuleer
+                  </Button>
+                </div>
               </div>
             </div>
           )}

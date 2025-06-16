@@ -1,38 +1,38 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from "react"
-import useSWR from 'swr'
+import useSWR from "swr"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import UsersManagement from "../Users/UsersManagement"
 import TournamentsManagement from "../Tournaments/TournamentsManagement"
 import CalendarManagement from "../Calendar/CalendarManagement"
 import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield } from "lucide-react"
-import { getAll } from '../../api/index'
-
+import { getAll } from "../../api/index"
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [isClient, setIsClient] = useState(false)
 
   // 1) Haal gebruikers op
-  const { data: users = [] } = useSWR(
-    'users',
-    () => getAll('users')
-  )
+  const { data: users = [] } = useSWR("users", () => getAll("users"))
   // 2) Haal actieve toernooien op
-  const { data: activeTournaments = [] } = useSWR(
-    'tournament?active=true',
-    () => getAll('tournament?active=true')
-  )
-  // 3) Haal alle calendar events op en filter toekomstige
-  // const { data: allEvents = [] } = useSWR(
-  //   'calendarEvent',
-  //   () => getAll('calendarEvent')
-  // )
-  // const upcomingCount = allEvents.filter(ev => {
-  //   // ev.date is ISO-string
-  //   return new Date(ev.date) >= new Date()
-  // }).length
+  const { data: activeTournaments = [] } = useSWR("tournament?active=true", () => getAll("tournament?active=true"))
+  // 3) Haal calendar events op 
+  const { data: events = [] } = useSWR("calendar", () => getAll("calendar"));
+
+  const today = new Date()
+  const upcomingEventsCount = events.filter((ev: { date: string }) => {
+    // ev.date is bv "2025-06-17T00:00:00.000Z"
+    return new Date(ev.date) > today
+  }).length
+
+  const tabs = [
+    { value: "dashboard", label: "Dashboard", icon: BarChart3 },
+    { value: "users", label: "Leden", icon: Users },
+    { value: "tournaments", label: "Toernooien", icon: Trophy },
+    { value: "calendar", label: "Kalender", icon: CalendarDays },
+  ]
 
   useEffect(() => {
     setIsClient(true)
@@ -70,6 +70,8 @@ const AdminPage = () => {
     )
   }
 
+  const currentTab = tabs.find((tab) => tab.value === activeTab)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
@@ -99,36 +101,53 @@ const AdminPage = () => {
               </h2>
             </div>
             <div className="p-6">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 gap-2 bg-neutral-100 p-2 rounded-lg">
-                <TabsTrigger
-                  value="dashboard"
-                  className="flex items-center gap-2 data-[state=active]:bg-mainAccent data-[state=active]:text-white"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="users"
-                  className="flex items-center gap-2 data-[state=active]:bg-mainAccent data-[state=active]:text-white"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Leden</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="tournaments"
-                  className="flex items-center gap-2 data-[state=active]:bg-mainAccent data-[state=active]:text-white"
-                >
-                  <Trophy className="h-4 w-4" />
-                  <span className="hidden sm:inline">Toernooien</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="calendar"
-                  className="flex items-center gap-2 data-[state=active]:bg-mainAccent data-[state=active]:text-white"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                  <span className="hidden sm:inline">Kalender</span>
-                </TabsTrigger>
-              </TabsList>
+              {/* Desktop Navigation */}
+              <div className="hidden lg:block">
+                <TabsList className="grid w-full grid-cols-4 gap-2 bg-neutral-100 p-2 rounded-lg">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon
+                    return (
+                      <TabsTrigger
+                        key={tab.value}
+                        value={tab.value}
+                        className="flex items-center justify-center gap-2 data-[state=active]:bg-mainAccent data-[state=active]:text-white"
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{tab.label}</span>
+                      </TabsTrigger>
+                    )
+                  })}
+                </TabsList>
+              </div>
+
+              {/* Mobile Navigation - Dropdown */}
+              <div className="lg:hidden">
+                <Select value={activeTab} onValueChange={handleTabChange}>
+                  <SelectTrigger className="w-full bg-neutral-100 border-neutral-200 h-12">
+                    <div className="flex items-center gap-3">
+                      {currentTab && (
+                        <>
+                          <currentTab.icon className="h-5 w-5 text-mainAccent" />
+                          <span className="font-medium">{currentTab.label}</span>
+                        </>
+                      )}
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tabs.map((tab) => {
+                      const Icon = tab.icon
+                      return (
+                        <SelectItem key={tab.value} value={tab.value}>
+                          <div className="flex items-center gap-3">
+                            <Icon className="h-4 w-4 text-mainAccent" />
+                            <span>{tab.label}</span>
+                          </div>
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -154,12 +173,8 @@ const AdminPage = () => {
                       <h3 className="text-xl font-semibold text-textColor mb-3 group-hover:text-mainAccent transition-colors">
                         Actieve Leden
                       </h3>
-                      <p className="text-gray-600 leading-relaxed mb-4">
-                        Het aantal geregistreerde clubleden
-                      </p>
-                      <p className="text-2xl font-bold text-blue-800 mb-4">
-                        {users.length}
-                      </p>
+                      <p className="text-gray-600 leading-relaxed mb-4">Het aantal geregistreerde clubleden</p>
+                      <p className="text-2xl font-bold text-blue-800 mb-4">{users.length}</p>
                     </div>
                   </div>
 
@@ -173,12 +188,8 @@ const AdminPage = () => {
                       <h3 className="text-xl font-semibold text-textColor mb-3 group-hover:text-mainAccent transition-colors">
                         Actieve Toernooien
                       </h3>
-                      <p className="text-gray-600 leading-relaxed mb-4">
-                        Toernooien die nog niet afgerond zijn
-                      </p>
-                      <p className="text-2xl font-bold text-green-800 mb-4">
-                        {activeTournaments.length}
-                      </p>
+                      <p className="text-gray-600 leading-relaxed mb-4">Toernooien die nog niet afgerond zijn</p>
+                      <p className="text-2xl font-bold text-green-800 mb-4">{activeTournaments.length}</p>
                     </div>
                   </div>
 
@@ -192,12 +203,10 @@ const AdminPage = () => {
                       <h3 className="text-xl font-semibold text-textColor mb-3 group-hover:text-mainAccent transition-colors">
                         Komende Evenementen
                       </h3>
-                      <p className="text-gray-600 leading-relaxed mb-4">
-                        Activiteiten gepland na vandaag
+                      <p className="text-gray-600 leading-relaxed mb-4">Activiteiten gepland na vandaag</p>
+                      <p className="text-2xl font-bold text-orange-800 mb-4">
+                        {upcomingEventsCount}
                       </p>
-                      {/* <p className="text-2xl font-bold text-orange-800 mb-4">
-                        {upcomingCount}
-                      </p> */}
                     </div>
                   </div>
                 </div>
@@ -206,9 +215,15 @@ const AdminPage = () => {
           </TabsContent>
 
           {/* Andere tabs */}
-          <TabsContent value="users" className="mt-0"><UsersManagement /></TabsContent>
-          <TabsContent value="tournaments" className="mt-0"><TournamentsManagement /></TabsContent>
-          <TabsContent value="calendar" className="mt-0"><CalendarManagement /></TabsContent>
+          <TabsContent value="users" className="mt-0">
+            <UsersManagement />
+          </TabsContent>
+          <TabsContent value="tournaments" className="mt-0">
+            <TournamentsManagement />
+          </TabsContent>
+          <TabsContent value="calendar" className="mt-0">
+            <CalendarManagement />
+          </TabsContent>
         </Tabs>
       </div>
     </div>

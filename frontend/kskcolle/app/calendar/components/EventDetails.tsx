@@ -1,6 +1,6 @@
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Calendar, FileText, Tag, Clock } from "lucide-react"
+import { Calendar, FileText, Clock, Pen } from "lucide-react"
 
 interface CalendarEvent {
   id: string
@@ -93,15 +93,10 @@ export default function EventDetails({ date, events }: EventDetailsProps) {
 
                     {event.description && (
                       <div className="flex items-start gap-2 mb-3">
-                        <FileText className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <Pen className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                         <p className="text-sm text-gray-600">{event.description}</p>
                       </div>
                     )}
-
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <Tag className="h-3 w-3" />
-                      <span>Evenement ID: {event.id}</span>
-                    </div>
                   </div>
                 ))}
               </div>
