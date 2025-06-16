@@ -1,5 +1,5 @@
 import { prisma } from "./data/";
-import type { Spel, SpelCreateInput, SpelUpdateInput, GameWithRoundAndTournament, SpelWithTournament } from "../types/spel";
+import type { Spel, SpelCreateInput, SpelUpdateInput, GameWithRoundAndTournament } from "../types/spel";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 
