@@ -1,6 +1,6 @@
 // src/service/rondeService.ts
 import { prisma } from "../data";
-import type { Ronde, RondeCreateInput, RondeUpdateInput } from "../types/ronde";
+import type { Ronde, RondeUpdateInput } from "../types/ronde";
 import handleDBError from "./handleDBError";
 import ServiceError from "../core/serviceError";
 
