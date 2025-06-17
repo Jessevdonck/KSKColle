@@ -16,11 +16,7 @@ export async function createAndSavePairings(
     const tour = await prisma.tournament.findUnique({
       where: { tournament_id },
       include: {
-        participations: {
-          include: {
-            user: true,
-          },
-        },
+        participations: { include: { user: true } },
         rounds: true,
       },
     });
@@ -32,35 +28,26 @@ export async function createAndSavePairings(
         ? new SwissStrategy()
         : new RoundRobinStrategy();
 
-    // 3) Bouw kleur-history map
-    const colorHistoryMap: Record<number, Array<"W" | "B" | "N">> = {};
-    for (const part of tour.participations) {
-      const hist = JSON.parse(part.color_history || "[]") as Array<"W" | "B" | "N">;
-      colorHistoryMap[part.user.user_id] = hist;
-    }
-
-    // 4) Dummy-history voor opponents (zonder kleurinfo)
+    // 3) Dummy-history voor eerdere ronden (kleurinfo uit result)
     const previousRounds: Pairing[][] = (
       await Promise.all(
         tour.rounds
           .filter((r) => r.ronde_nummer < round_number)
           .sort((a, b) => a.ronde_nummer - b.ronde_nummer)
           .map((r) =>
-            prisma.game.findMany({
-              where: { round_id: r.round_id },
-            })
+            prisma.game.findMany({ where: { round_id: r.round_id } })
           )
       )
     ).map((games) =>
       games.map< Pairing >((g) => ({
         speler1_id: g.speler1_id,
         speler2_id: g.speler2_id,
-        color1: "N",
-        color2: "N",
+        color1: g.result?.startsWith("1-0") ? "W" : g.result?.startsWith("0-1") ? "B" : "N",
+        color2: g.result?.startsWith("0-1") ? "B" : g.result?.startsWith("1-0") ? "W" : "N",
       }))
     );
 
-    // 5) Maak spelers-array met actuele scores
+    // 4) Maak spelers-array met actuele scores
     const players = tour.participations.map((part) => ({
       user_id: part.user.user_id,
       score: part.score ?? 0,
@@ -70,25 +57,24 @@ export async function createAndSavePairings(
       schaakrating_elo: part.user.schaakrating_elo,
     }));
 
-    // 6) Vraag pairings aan de strategie op
+    // 5) Vraag paringen aan strategie
     let { pairings, byePlayer } = strategy.generatePairings(
       players,
       round_number,
       previousRounds
     );
 
-    // 7) Kleur-balancing: draai om indien speler1 al vaak wit speelde
-    pairings = pairings.map((p) => {
-      const hist = colorHistoryMap[p.speler1_id] || [];
-      const whites = hist.filter((c) => c === "W").length;
-      const blacks = hist.filter((c) => c === "B").length;
-      if (whites > blacks) {
-        return { ...p, color1: "B", color2: "W" };
-      }
-      return { ...p, color1: "W", color2: "B" };
-    });
+    // 6) Vrije kleur-alternatie: draai om in even ronden
+    if (strategy instanceof SwissStrategy && round_number % 2 === 0) {
+      pairings = pairings.map((p) => ({
+        speler1_id: p.speler1_id,
+        speler2_id: p.speler2_id,
+        color1: p.color2,
+        color2: p.color1,
+      }));
+    }
 
-    // 8) Maak de nieuwe ronde aan
+    // 7) Maak nieuwe ronde
     const round = await prisma.round.create({
       data: {
         tournament_id,
@@ -97,19 +83,23 @@ export async function createAndSavePairings(
       },
     });
 
-    // 9) Zet alle games klaar (inclusief bye)
+    // 8) Bereid gamesData (incl. bye)
     type GameData = {
       round_id: number;
-      speler1_id: number;
-      speler2_id: number | null;
+      speler1_id: number; // wit
+      speler2_id: number | null; // zwart
       winnaar_id?: number;
       result?: string;
     };
-    const gamesData: GameData[] = pairings.map((p) => ({
-      round_id: round.round_id,
-      speler1_id: p.speler1_id,
-      speler2_id: p.speler2_id,
-    }));
+    const gamesData: GameData[] = pairings.map((p) => {
+      const whiteId = p.color1 === "W" ? p.speler1_id : p.speler2_id!;
+      const blackId = p.color1 === "W" ? p.speler2_id! : p.speler1_id;
+      return {
+        round_id: round.round_id,
+        speler1_id: whiteId,
+        speler2_id: blackId,
+      };
+    });
     if (byePlayer) {
       gamesData.push({
         round_id: round.round_id,
@@ -120,10 +110,10 @@ export async function createAndSavePairings(
       });
     }
 
-    // 10) Sla ze in batch op
+    // 9) Sla games in batch op
     await prisma.game.createMany({ data: gamesData });
 
-    // 11) Update opponents én kleur-history
+    // 10) Update participation én kleur-history
     for (const p of pairings) {
       await updateParticipation(
         tournament_id,
@@ -141,7 +131,7 @@ export async function createAndSavePairings(
       }
     }
 
-    // 12) Geef de bye speler zijn punt
+    // 11) Verleen bye-punt
     if (byePlayer) {
       await prisma.participation.update({
         where: {

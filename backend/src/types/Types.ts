@@ -22,6 +22,12 @@ export interface Participation {
   bye_round: number | null;
 }
 
+export type Competitor = {
+  user_id: number;
+  score: number;
+  schaakrating_elo: number;
+};
+
 export interface Pairing {
   speler1_id: number;
   speler2_id: number | null;
@@ -31,10 +37,10 @@ export interface Pairing {
 
 export interface IPairingStrategy {
   generatePairings(
-    players: Player[],
+    players: Competitor[],
     roundNumber: number,
     previousRounds: Pairing[][]
-  ): { pairings: Pairing[]; byePlayer?: Player };
+  ): { pairings: Pairing[]; byePlayer?: Competitor };
 }
 
 export interface MakeupDay {

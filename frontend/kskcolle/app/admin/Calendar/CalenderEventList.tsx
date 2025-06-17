@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Pencil, Trash2, Calendar, FileText, Tag, Edit } from "lucide-react"
+import { Pencil, Trash2, Calendar, FileText, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CalendarEvent } from "../../../data/types"
 import { deleteById } from "@/app/api"
@@ -12,7 +12,7 @@ import CalendarEventForm from "./CalenderEventForm"
 
 interface CalendarEventListProps {
   events: CalendarEvent[]
-  mutate: () => void
+  mutate: (data?: CalendarEvent[] | Promise<CalendarEvent[]> | undefined, shouldRevalidate?: boolean) => Promise<CalendarEvent[] | undefined>
 }
 
 const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate }) => {
@@ -24,11 +24,18 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
 
   const handleDelete = async (id: number) => {
     if (window.confirm("Weet je zeker dat je dit evenement wilt verwijderen?")) {
+      // Optimistische update: direct uit lijst
+      const previous = events
+      const updated = events.filter((e) => e.event_id !== id)
+      await mutate(updated, false)
+
       try {
         await deleteById("calendar", { arg: id.toString() })
-        mutate()
+        // geen extra mutate(), blijft verwijderd
       } catch (error) {
         console.error("Error deleting event:", error)
+        // rollback
+        await mutate(previous, false)
       }
     }
   }
@@ -77,10 +84,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
       {editingEvent && (
         <CalendarEventForm
           event={editingEvent}
-          mutate={() => {
-            mutate()
-            setEditingEvent(null)
-          }}
+          mutate={async () => { await mutate(); setEditingEvent(null) }}
           onCancel={handleCancel}
         />
       )}
@@ -142,8 +146,9 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
                     </td>
                     <td className="p-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium border ${getEventTypeColor(event.type)}`}
-                      >
+                        className={`px-3 py-1 rounded-full text-sm font-medium border ${getEventTypeColor(
+                          event.type
+                        )}`}>
                         {event.type}
                       </span>
                     </td>
@@ -190,7 +195,9 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
                     </div>
                   </div>
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(
+                      event.type
+                    )}`}
                   >
                     {event.type}
                   </span>
@@ -202,7 +209,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
                     onClick={() => handleEdit(event)}
                     className="flex-1 bg-mainAccent hover:bg-mainAccentDark"
                   >
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Pencil className="h-4 w-4 mr-2" />
                     Bewerken
                   </Button>
                   <Button

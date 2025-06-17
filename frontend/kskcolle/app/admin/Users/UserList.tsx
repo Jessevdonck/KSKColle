@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/button"
 import type { User } from "@/data/types"
 import EditForm from "./components/forms/EditForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Users, Edit, Trash2, Mail, Trophy, Calendar, Shield, UserIcon, Search } from "lucide-react"
+import {
+  Users,
+  Edit,
+  Trash2,
+  Mail,
+  Trophy,
+  Calendar,
+  UserIcon,
+  Search,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 
 type UserListProps = {
@@ -15,22 +24,29 @@ type UserListProps = {
   isDeleting?: boolean
 }
 
-export default function UserList({ users, onDelete, isDeleting = false }: UserListProps) {
+export default function UserList({ users, onEdit, onDelete, isDeleting = false }: UserListProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Filter users based on search term
+  // Handler voor bevestiging bij verwijderen
+  const handleDelete = async (userId: number) => {
+    const confirmed = window.confirm("Weet je zeker dat je deze speler wilt verwijderen?")
+    if (!confirmed) return
+    await onDelete(userId)
+  }
+
+  // Filter gebruikers op zoekterm
   const filteredUsers = users.filter((user) => {
     const searchLower = searchTerm.toLowerCase()
     return (
       `${user.voornaam} ${user.achternaam}`.toLowerCase().includes(searchLower) ||
       user.email.toLowerCase().includes(searchLower) ||
-      (user.fide_id && user.fide_id.toString().includes(searchLower)) ||
+      (user.fide_id?.toString().includes(searchLower) ?? false) ||
       user.schaakrating_elo.toString().includes(searchLower)
     )
   })
 
-  if (!users || users.length === 0) {
+  if (!users.length) {
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
@@ -45,44 +61,6 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
           </div>
           <h3 className="text-xl font-bold text-gray-700 mb-2">Geen spelers gevonden</h3>
           <p className="text-gray-600">Voeg een nieuwe speler toe om te beginnen.</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (filteredUsers.length === 0 && searchTerm) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Users className="h-6 w-6" />
-            Spelers Overzicht
-          </h2>
-          <p className="text-white/80 mt-1">{users.length} spelers geregistreerd</p>
-        </div>
-        <div className="p-6">
-          <div className="mb-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Zoek spelers op naam, email, FIDE ID of rating..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4"
-              />
-            </div>
-          </div>
-          <div className="text-center py-12">
-            <div className="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-              <Search className="h-10 w-10 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-700 mb-2">Geen resultaten gevonden</h3>
-            <p className="text-gray-600">Probeer een andere zoekterm of wis de zoekopdracht.</p>
-            <Button onClick={() => setSearchTerm("")} variant="outline" className="mt-4">
-              Wis zoekopdracht
-            </Button>
-          </div>
         </div>
       </div>
     )
@@ -143,7 +121,6 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                     </div>
                   </th>
                   <th className="p-4 text-left font-semibold text-textColor">FIDE ID</th>
-                  
                   <th className="p-4 text-center font-semibold text-textColor">Acties</th>
                 </tr>
               </thead>
@@ -156,57 +133,38 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                     }`}
                   >
                     <td className="p-4">
-                      <Button
-                        variant="link"
-                        onClick={() => setEditingUser(user)}
-                        className="p-0 h-auto font-normal text-left justify-start hover:text-mainAccent"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-mainAccent/10 rounded-full flex items-center justify-center">
-                            <UserIcon className="h-5 w-5 text-mainAccent" />
-                          </div>
-                          <span data-cy="name_output" className="font-medium">
-                            {`${user.voornaam} ${user.achternaam}`}
-                          </span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-mainAccent/10 rounded-full flex items-center justify-center">
+                          <UserIcon className="h-5 w-5 text-mainAccent" />
                         </div>
-                      </Button>
+                        <span className="font-medium">{`${user.voornaam} ${user.achternaam}`}</span>
+                      </div>
                     </td>
                     <td className="p-4">
-                      <span data-cy="birthdate_output" className="text-gray-700">
-                        {new Date(user.geboortedatum).toLocaleDateString("nl-NL")}
-                      </span>
+                      {new Date(user.geboortedatum).toLocaleDateString("nl-NL")}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <Trophy className="h-4 w-4 text-mainAccent" />
-                        <span data-cy="rating_output" className="font-semibold text-textColor">
-                          {user.schaakrating_elo}
-                        </span>
+                        <span className="font-semibold text-textColor">{user.schaakrating_elo}</span>
                       </div>
                     </td>
-                    <td className="p-4">
-                      <span data-cy="fide_output" className="text-gray-700">
-                        {user.fide_id || "N/A"}
-                      </span>
-                    </td>
-                    
-                    <td className="p-4">
+                    <td className="p-4">{user.fide_id ?? "N/A"}</td>
+                    <td className="p-4 text-center">
                       <div className="flex justify-center gap-2">
                         <Button
-                          onClick={() => setEditingUser(user)}
                           size="sm"
                           className="bg-mainAccent hover:bg-mainAccentDark"
-                          data-cy="edit_button"
+                          onClick={() => setEditingUser(user)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
-                          onClick={() => onDelete(user.user_id)}
                           size="sm"
                           variant="outline"
                           className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                          onClick={() => handleDelete(user.user_id)}
                           disabled={isDeleting}
-                          data-cy="delete_button"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -264,18 +222,18 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
 
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => setEditingUser(user)}
                     size="sm"
                     className="flex-1 bg-mainAccent hover:bg-mainAccentDark"
+                    onClick={() => setEditingUser(user)}
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     Bewerken
                   </Button>
                   <Button
-                    onClick={() => onDelete(user.user_id)}
                     size="sm"
                     variant="outline"
                     className="border-red-200 text-red-600 hover:bg-red-50"
+                    onClick={() => handleDelete(user.user_id)}
                     disabled={isDeleting}
                   >
                     <Trash2 className="h-4 w-4" />
