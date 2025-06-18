@@ -3,7 +3,7 @@ import { IPairingStrategy, Pairing, Competitor } from "../types/Types";
 export class SwissStrategy implements IPairingStrategy {
   async generatePairings(
     players: Competitor[],
-    roundNumber: number,
+    _roundNumber: number,
     previousRounds: Pairing[][]
   ): Promise<{ pairings: Pairing[]; byePlayer?: Competitor }> {
     // 1. Vermijd herhaling door opponent-history
