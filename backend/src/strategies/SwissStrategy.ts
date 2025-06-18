@@ -6,72 +6,72 @@ export class SwissStrategy implements IPairingStrategy {
     roundNumber: number,
     previousRounds: Pairing[][]
   ): Promise<{ pairings: Pairing[]; byePlayer?: Competitor }> {
-    // Dynamisch importeren van ES-module
-    const { Swiss } = await import("tournament-pairings");
-
-    // 1) Build history maps
-    const avoidMap = new Map<number, number[]>();
-    const seatingMap = new Map<number, (1 | -1)[]>();
-    const byeMap = new Map<number, boolean>();
-
-    players.forEach(p => {
-      avoidMap.set(p.user_id, []);
-      seatingMap.set(p.user_id, []);
-      byeMap.set(p.user_id, false);
-    });
+    // 1. Vermijd herhaling door opponent-history
+    const historyMap = new Map<number, Set<number>>();
+    players.forEach(p => historyMap.set(p.user_id, new Set()));
 
     for (const round of previousRounds) {
       for (const game of round) {
-        const a = game.speler1_id;
-        const b = game.speler2_id;
-        if (b === null) {
-          byeMap.set(a, true);
-          continue;
+        if (game.speler2_id !== null) {
+          historyMap.get(game.speler1_id)?.add(game.speler2_id);
+          historyMap.get(game.speler2_id)?.add(game.speler1_id);
         }
-        avoidMap.get(a)!.push(b);
-        avoidMap.get(b)!.push(a);
-        seatingMap.get(a)!.push(game.color1 === "W" ? 1 : -1);
-        seatingMap.get(b)!.push(game.color2 === "W" ? 1 : -1);
       }
     }
 
-    // 2) Map naar Swiss-spelerformaat
-    const swissPlayers = players.map(p => ({
-      id: p.user_id,
-      score: p.score ?? 0,
-      rating: p.schaakrating_elo,
-      avoid: avoidMap.get(p.user_id) ?? [],
-      seating: seatingMap.get(p.user_id) ?? [],
-      receivedBye: byeMap.get(p.user_id) ?? false,
-    }));
+    // 2. Sorteer op score, dan rating
+    const sortedPlayers = [...players].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return b.schaakrating_elo - a.schaakrating_elo;
+    });
 
-    // 3) Genereer pairings via Swiss-algoritme
-    let swissMatches;
-    try {
-      swissMatches = Swiss(swissPlayers, roundNumber);
-    } catch (err) {
-      swissMatches = Swiss(
-        players.map(p => ({ id: p.user_id, score: p.score ?? 0, rating: p.schaakrating_elo })),
-        roundNumber
-      );
-    }
-
-    // 4) Extract bye-player indien aanwezig
-    const byeMatch = swissMatches.find(m => m.player2 === null);
+    // 3. Bye bij oneven aantal
     let byePlayer: Competitor | undefined;
-    if (byeMatch) {
-      byePlayer = players.find(p => p.user_id === (byeMatch.player1 as number));
+    if (sortedPlayers.length % 2 === 1) {
+      byePlayer = sortedPlayers.pop();
     }
 
-    // 5) Zet om naar Pairing[]
-    const pairings: Pairing[] = swissMatches
-      .filter(m => m.player2 !== null)
-      .map(m => ({
-        speler1_id: m.player1 as number,
-        speler2_id: m.player2 as number,
-        color1: "W",
-        color2: "B",
-      }));
+    // 4. Pairings maken
+    const pairings: Pairing[] = [];
+    const used = new Set<number>();
+
+    for (let i = 0; i < sortedPlayers.length; i++) {
+      const p1 = sortedPlayers[i];
+      if (used.has(p1!.user_id)) continue;
+
+      // Zoek p2 die nog niet gepaired is en niet al tegen p1 heeft gespeeld
+      let p2: Competitor | undefined;
+      for (let j = i + 1; j < sortedPlayers.length; j++) {
+        const candidate = sortedPlayers[j];
+        if (used.has(candidate!.user_id)) continue;
+        if (!historyMap.get(p1!.user_id)?.has(candidate!.user_id)) {
+          p2 = candidate;
+          break;
+        }
+      }
+
+      // Geen unieke tegenstander gevonden → neem eerste ongebruikte
+      if (!p2) {
+        for (let j = i + 1; j < sortedPlayers.length; j++) {
+          const candidate = sortedPlayers[j];
+          if (!used.has(candidate!.user_id)) {
+            p2 = candidate;
+            break;
+          }
+        }
+      }
+
+      if (p2) {
+        pairings.push({
+          speler1_id: p1!.user_id,
+          speler2_id: p2.user_id,
+          color1: "W",
+          color2: "B",
+        });
+        used.add(p1!.user_id);
+        used.add(p2.user_id);
+      }
+    }
 
     return byePlayer ? { pairings, byePlayer } : { pairings };
   }
