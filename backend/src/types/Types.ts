@@ -22,17 +22,19 @@ export interface Participation {
   bye_round: number | null;
 }
 
-export type Competitor = {
+export interface Competitor {
   user_id: number;
   score: number;
   schaakrating_elo: number;
-};
+  color_history?: ("W" | "B")[];
+  tiebreak?: number; 
+}
 
 export interface Pairing {
   speler1_id: number;
   speler2_id: number | null;
-  color1: 'W' | 'B' | 'N';
-  color2: 'W' | 'B' | 'N';
+  color1: "W" | "B" | "N";
+  color2: "W" | "B" | "N";
 }
 
 export interface IPairingStrategy {
