@@ -40,7 +40,7 @@ export interface IPairingStrategy {
     players: Competitor[],
     roundNumber: number,
     previousRounds: Pairing[][]
-  ): { pairings: Pairing[]; byePlayer?: Competitor };
+  ): Promise<{ pairings: Pairing[]; byePlayer?: Competitor }>;
 }
 
 export interface MakeupDay {

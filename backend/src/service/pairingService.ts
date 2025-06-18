@@ -58,7 +58,7 @@ export async function createAndSavePairings(
     }));
 
     // 5) Vraag paringen aan strategie
-    let { pairings, byePlayer } = strategy.generatePairings(
+    let { pairings, byePlayer } = await strategy.generatePairings(
       players,
       round_number,
       previousRounds

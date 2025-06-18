@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2022",                               /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
-    "module": "esnext",      
-    "moduleResolution": "node",                         /* Specify what module code is generated. */
+    "target": "es2022",                               /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "module": "commonjs",                             /* Specify what module code is generated. */
     "resolveJsonModule": true,                        /* Enable importing .json files. */
     "outDir": "./build",                              /* Specify an output folder for all emitted files. */
     "removeComments": true,                           /* Disable emitting comments. */
