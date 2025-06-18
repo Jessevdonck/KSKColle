@@ -2,7 +2,7 @@
 import { prisma } from "../data";
 import { SwissStrategy } from "../strategies/SwissStrategy";
 import { RoundRobinStrategy } from "../strategies/RoundRobinStrategy";
-import { IPairingStrategy, Pairing } from "../types/Types";
+import { Pairing } from "../types/Types";
 import handleDBError from "./handleDBError";
 
 export async function createAndSavePairings(
