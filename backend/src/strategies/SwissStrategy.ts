@@ -14,7 +14,7 @@ export class SwissStrategy implements IPairingStrategy {
     rematchWeight: 100,
     standingPower: 2,
     seedMultiplier: 6781,
-    colorBalanceWeight: 20, // Straffactor voor kleur‐onevenwicht
+    colorBalanceWeight: 20,
   };
 
   async generatePairings(
@@ -22,29 +22,25 @@ export class SwissStrategy implements IPairingStrategy {
     _roundNumber: number,
     previousRounds: Pairing[][]
   ): Promise<{ pairings: Pairing[]; byePlayer?: Competitor }> {
-    // --- 1) Bouw flat GameHistory uit alle voorgaande Pairings ---
+    // --- 1) Flatten game history ---
     const allGames: GameHistory[] = [];
-    previousRounds.forEach((prs, rIdx) => {
+    previousRounds.forEach((prs, rIdx) =>
       prs.forEach((p) => {
         let homePts = 0, awayPts = 0;
-        if (p.color1 === "W" && p.speler2_id != null) {
-          homePts = 1;
-        } else if (p.color2 === "W") {
-          awayPts = 1;
-        } else if (p.color1 === "N" || p.color2 === "N") {
-          homePts = 1; // bye telt als winst
-        } else {
-          homePts = awayPts = 0.5;
-        }
+        if (p.color1 === "W" && p.speler2_id != null) homePts = 1;
+        else if (p.color2 === "W") awayPts = 1;
+        else if (p.color1 === "N" || p.color2 === "N") homePts = 1;
+        else homePts = awayPts = 0.5;
+
         allGames.push({
           round: rIdx + 1,
           home:  { id: p.speler1_id, points: homePts },
           away:  { id: p.speler2_id, points: awayPts },
         });
-      });
-    });
+      })
+    );
 
-    // --- 2) Maak mutable mappings (id, punten, opponents, elo‐seed) ---
+    // --- 2) Build mappings (id, points, opponents, seed) ---
     type MapRec = { id: number; points: number; opponents: number[]; seed: number };
     const mappings: MapRec[] = players.map(p => ({
       id:        p.user_id,
@@ -53,7 +49,6 @@ export class SwissStrategy implements IPairingStrategy {
       seed:      p.schaakrating_elo
     }));
 
-    // Vul punten & opponent‐lijsten vanuit allGames
     allGames.forEach(g => {
       const mH = mappings.find(m => m.id === g.home.id)!;
       mH.points += g.home.points;
@@ -66,43 +61,57 @@ export class SwissStrategy implements IPairingStrategy {
       }
     });
 
-    // --- 3) Bouw colorHistoryMap uit previousRounds zodat we later kunnen balanceren ---
+    // --- 3) Build color history map ---
     const colorHistoryMap: Record<number, Array<"W" | "B">> = {};
     previousRounds.forEach(prs =>
-          prs.forEach(p => {
-            colorHistoryMap[p.speler1_id] ||= [];
-            if (p.color1 === "W" || p.color1 === "B") {
-              colorHistoryMap[p.speler1_id]!.push(p.color1);
-            }
-            if (p.speler2_id != null) {
-              colorHistoryMap[p.speler2_id] ||= [];
-              if (p.color2 === "W" || p.color2 === "B") {
-                colorHistoryMap[p.speler2_id]!.push(p.color2);
-              }
-            }
-          })
-        );
+      prs.forEach(p => {
+        colorHistoryMap[p.speler1_id] ||= [];
+        if (p.color1 === "W" || p.color1 === "B") {
+          colorHistoryMap[p.speler1_id]!.push(p.color1);
+        }
+        if (p.speler2_id != null) {
+          colorHistoryMap[p.speler2_id] ||= [];
+          if (p.color2 === "W" || p.color2 === "B") {
+            colorHistoryMap[p.speler2_id]!.push(p.color2);
+          }
+        }
+      })
+    );
 
-    // --- 4) Indien oneven aantal, kies bye-speler (laagste standing) ---
+    // --- 4) Determine who already had a bye ---
+    const hadBye = new Set<number>();
+    previousRounds.forEach(prs =>
+      prs.forEach(p => {
+        if (p.speler2_id === null) {
+          hadBye.add(p.speler1_id);
+        }
+      })
+    );
+
+    // --- 5) Assign bye (odd count) to lowest standing who hasn't yet had one ---
     let byePlayer: Competitor|undefined;
     if (mappings.length % 2 === 1) {
+      // sort ascending on points, then seed
       const sortedAsc = [...mappings].sort((a,b) =>
         a.points === b.points ? a.seed - b.seed : a.points - b.points
       );
-      const loserId = sortedAsc[0]!.id;
-      const idx = mappings.findIndex(m => m.id === loserId);
-      byePlayer = players.find(p => p.user_id === loserId);
+      // first pick lowest who hasn't had bye
+      let pick = sortedAsc.find(m => !hadBye.has(m.id));
+      // if everyone had bye once, pick absolute lowest
+      if (!pick) pick = sortedAsc[0];
+      // remove from mappings and record Competitor
+      const idx = mappings.findIndex(m => m.id === pick!.id);
       mappings.splice(idx, 1);
+      byePlayer = players.find(p => p.user_id === pick!.id);
     }
 
-    // --- 5) Bouw Blossom‐edges met score-/rematch-/kleur‐penalty ---
+    // --- 6) Build blossom edges with score/rematch/color penalties ---
     const edges: [number,number,number][] = [];
     for (let i = 0; i < mappings.length; i++) {
       for (let j = i+1; j < mappings.length; j++) {
         const a = mappings[i]!, b = mappings[j]!;
         const diff    = Math.pow(a.points - b.points, this.opts.standingPower);
-        const rematch = a.opponents.filter(o => o===b.id).length;
-        // kleur‐onevenwicht = |(#W - #B)_a - (#W - #B)_b|
+        const rematch = a.opponents.filter(o => o === b.id).length;
         const netA    = (colorHistoryMap[a.id]||[]).filter(c=>"W"===c).length
                       - (colorHistoryMap[a.id]||[]).filter(c=>"B"===c).length;
         const netB    = (colorHistoryMap[b.id]||[]).filter(c=>"W"===c).length
@@ -110,18 +119,18 @@ export class SwissStrategy implements IPairingStrategy {
         const colorDiff = Math.abs(netA - netB);
 
         const weight = -1 * (
-          diff +
-          this.opts.rematchWeight  * rematch +
-          this.opts.colorBalanceWeight * colorDiff
+          diff
+          + this.opts.rematchWeight        * rematch
+          + this.opts.colorBalanceWeight   * colorDiff
         );
         edges.push([a.id, b.id, weight]);
       }
     }
 
-    // --- 6) Run Edmonds‐Blossom (maximize=true kiest match met hoogste som van weights) ---
+    // --- 7) Edmonds-Blossom matching (maximize) ---
     const mate: Record<number,number> = blossom(edges, true);
 
-    // --- 7) Maak ruwe pairings in standings‐volgorde, standaard W/B toewijzen ---
+    // --- 8) Build raw pairings (W/B default) in descending standing order ---
     const used = new Set<number>();
     const raw: Pairing[] = [];
     mappings
@@ -132,25 +141,23 @@ export class SwissStrategy implements IPairingStrategy {
           raw.push({
             speler1_id: m.id,
             speler2_id: o,
-            color1:     "W" as "W",
-            color2:     "B" as "B"
+            color1:     "W" as "W" | "B" | "N",
+            color2:     "B" as "W" | "B" | "N"
           });
           used.add(m.id);
           used.add(o);
         }
       });
 
-    // --- 8) Kleur‐balancering nà de matching: swap W/B voor wie veel wit had ---
+    // --- 9) Final color‐balance swap if needed (players with too many W get B) ---
     const balanced = raw.map(p => {
       const hist = colorHistoryMap[p.speler1_id] || [];
       const whites = hist.filter(c => c==="W").length;
       const blacks = hist.filter(c => c==="B").length;
       if (whites > blacks) {
-        return { ...p, color1: "B" as "B", color2: "W" as "W" };
-      } else {
-        // als blacks>whites of gelijk, laat W/B zoals ze zijn
-        return p;
+        return { ...p, color1: "B" as "W" | "B" | "N", color2: "W" as "W" | "B" | "N" };
       }
+      return p;
     });
 
     return byePlayer
