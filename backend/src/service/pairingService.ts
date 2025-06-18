@@ -23,7 +23,7 @@ export async function createAndSavePairings(
     if (!tour) throw new Error("Toernooi niet gevonden");
 
     // 2) Kies juiste strategie
-    const strategy: IPairingStrategy =
+    const strategy =
       tour.type === "SWISS"
         ? new SwissStrategy()
         : new RoundRobinStrategy();
