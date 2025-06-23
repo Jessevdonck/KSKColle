@@ -13,6 +13,8 @@ import {
   ChevronDown,
   ChevronRight,
   Archive,
+  Globe,
+  Medal,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect } from "react"
 import LoginSheet from "./LoginSheet"
@@ -26,6 +28,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false)
   const [isMobileTournamentOpen, setIsMobileTournamentOpen] = useState(false)
+  const [isMobileLinksOpen, setIsMobileLinksOpen] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -93,6 +96,12 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/erelijsten" className="flex items-center space-x-2">
+                  <Medal size={16} />
+                  <span>Erelijsten</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
                 <Link href="/toernooien/archief" className="flex items-center space-x-2">
                   <Archive size={16} />
                   <span>Archief</span>
@@ -105,6 +114,32 @@ export default function Navbar() {
           {navItems.map((item) => (
             <NavItem key={item.href} {...item} />
           ))}
+
+          {/* External Links Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+                <Globe size={20} />
+                <span>Links</span>
+                <ChevronDown size={16} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <a href="https://blog.frbe-kbsb-ksb.be/nl/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
+                    <span>KBSB</span>
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
+                    <span>FIDE</span>
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <a href="https://www.schaakligaoostvlaanderen.be/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
+                    <span>Liga Oost-Vlaanderen</span>
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
 
         <div className="md:hidden">
@@ -206,6 +241,52 @@ export default function Navbar() {
             {navItems.map((item) => (
               <NavItem key={item.href} {...item} onClick={() => setIsMobileMenuOpen(false)} />
             ))}
+            
+            {/* Mobile External Links Dropdown */}
+            <div className="space-y-2">
+              <button
+                onClick={() => setIsMobileLinksOpen(!isMobileLinksOpen)}
+                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <Globe size={20} />
+                  <span>Links</span>
+                </div>
+                {isMobileLinksOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+
+              {isMobileLinksOpen && (
+                <div className="ml-6 space-y-2">
+                  <a
+                    href="https://blog.frbe-kbsb-ksb.be/nl/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    KBSB
+                  </a>
+                  <a
+                    href="https://www.fide.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    FIDE
+                  </a>
+                  <a
+                    href="https://www.schaakligaoostvlaanderen.be/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Liga Oost-Vlaanderen
+                  </a>
+                </div>
+              )}
+            </div>
 
             <div className="pt-4 border-t border-gray-200">{isAuthed ? <ProfileDropdown /> : <LoginSheet />}</div>
           </div>
