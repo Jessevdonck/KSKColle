@@ -3,7 +3,6 @@
 import useSWR from "swr"
 import PlayerHeader from "./PlayerHeader"
 import RecentGames from "./RecentGames"
-import RatingChart from "./RatingChart"
 import AsyncData from "../../components/AsyncData"
 import { getById } from "../../api/index"
 import type { User, GameWithRoundAndTournament } from "../../../data/types"
@@ -32,11 +31,6 @@ export default function PlayerProfile({ name }: { name: string }) {
         <div className="container mx-auto px-4 py-8 min-h-screen">
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <PlayerHeader player={player} />
-
-            {/* Rating Chart Section */}
-            <div className="p-6 border-b border-gray-200">
-              <RatingChart player={player} />
-            </div>
 
             <RecentGames games={recentGames} playerId={player.user_id} />
           </div>
