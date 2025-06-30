@@ -58,7 +58,6 @@ interface EditFormProps {
 
 export default function EditForm({ user, onClose }: EditFormProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-
   const { trigger: saveUser, isMutating } = useSWRMutation("users", save)
 
   const {
@@ -120,23 +119,25 @@ export default function EditForm({ user, onClose }: EditFormProps) {
     <div className="w-full">
       {successMessage && (
         <Alert
-          className={`mb-4 ${successMessage.includes("fout") ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}
+          className={`mb-3 ${successMessage.includes("fout") ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}
         >
-          <CheckCircle2 className={`h-4 w-4 ${successMessage.includes("fout") ? "text-red-600" : "text-green-600"}`} />
-          <AlertTitle className={successMessage.includes("fout") ? "text-red-700" : "text-green-700"}>
+          <CheckCircle2 className={`h-3 w-3 ${successMessage.includes("fout") ? "text-red-600" : "text-green-600"}`} />
+          <AlertTitle className={`${successMessage.includes("fout") ? "text-red-700" : "text-green-700"} text-sm`}>
             {successMessage.includes("fout") ? "Fout" : "Succes"}
           </AlertTitle>
-          <AlertDescription className={successMessage.includes("fout") ? "text-red-600" : "text-green-600"}>
+          <AlertDescription
+            className={`${successMessage.includes("fout") ? "text-red-600" : "text-green-600"} text-sm`}
+          >
             {successMessage}
           </AlertDescription>
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Personal Information */}
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
           <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-            <User className="h-4 w-4" />
+            <User className="h-3 w-3" />
             Persoonlijke Gegevens
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -148,11 +149,10 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 {...register("voornaam", validationRules.voornaam)}
                 id="voornaam"
                 placeholder="Voornaam"
-                className="mt-1"
+                className="mt-1 text-sm"
               />
               {errors.voornaam && <p className="text-red-500 text-xs mt-1">{errors.voornaam.message}</p>}
             </div>
-
             <div>
               <Label htmlFor="achternaam" className="text-xs font-medium text-gray-700">
                 Achternaam
@@ -161,33 +161,31 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 {...register("achternaam", validationRules.achternaam)}
                 id="achternaam"
                 placeholder="Achternaam"
-                className="mt-1"
+                className="mt-1 text-sm"
               />
               {errors.achternaam && <p className="text-red-500 text-xs mt-1">{errors.achternaam.message}</p>}
             </div>
-
             <div>
               <Label htmlFor="geboortedatum" className="text-xs font-medium text-gray-700">
                 Geboortedatum
               </Label>
-              <Input {...register("geboortedatum")} id="geboortedatum" type="date" className="mt-1" />
+              <Input {...register("geboortedatum")} id="geboortedatum" type="date" className="mt-1 text-sm" />
               {errors.geboortedatum && <p className="text-red-500 text-xs mt-1">{errors.geboortedatum.message}</p>}
             </div>
-
             <div>
               <Label htmlFor="lid_sinds" className="text-xs font-medium text-gray-700">
                 Lid Sinds
               </Label>
-              <Input {...register("lid_sinds")} id="lid_sinds" type="date" className="mt-1" />
+              <Input {...register("lid_sinds")} id="lid_sinds" type="date" className="mt-1 text-sm" />
               {errors.lid_sinds && <p className="text-red-500 text-xs mt-1">{errors.lid_sinds.message}</p>}
             </div>
           </div>
         </div>
 
         {/* Contact Information */}
-        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
           <h3 className="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2">
-            <Mail className="h-4 w-4" />
+            <Mail className="h-3 w-3" />
             Contactgegevens
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -195,10 +193,14 @@ export default function EditForm({ user, onClose }: EditFormProps) {
               <Label htmlFor="email" className="text-xs font-medium text-gray-700">
                 Email
               </Label>
-              <Input {...register("email", validationRules.email)} id="email" placeholder="Email" className="mt-1" />
+              <Input
+                {...register("email", validationRules.email)}
+                id="email"
+                placeholder="Email"
+                className="mt-1 text-sm"
+              />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
-
             <div>
               <Label htmlFor="tel_nummer" className="text-xs font-medium text-gray-700">
                 Telefoonnummer
@@ -207,7 +209,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 {...register("tel_nummer", validationRules.tel_nummer)}
                 id="tel_nummer"
                 placeholder="Telefoonnummer"
-                className="mt-1"
+                className="mt-1 text-sm"
               />
               {errors.tel_nummer && <p className="text-red-500 text-xs mt-1">{errors.tel_nummer.message}</p>}
             </div>
@@ -215,9 +217,9 @@ export default function EditForm({ user, onClose }: EditFormProps) {
         </div>
 
         {/* Chess Information */}
-        <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
+        <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-3 border border-amber-200">
           <h3 className="text-sm font-semibold text-amber-800 mb-3 flex items-center gap-2">
-            <Trophy className="h-4 w-4" />
+            <Trophy className="h-3 w-3" />
             Schaakgegevens
           </h3>
           <div className="grid grid-cols-3 gap-3">
@@ -233,13 +235,12 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 id="schaakrating_elo"
                 type="number"
                 placeholder="Clubrating"
-                className="mt-1"
+                className="mt-1 text-sm"
               />
               {errors.schaakrating_elo && (
                 <p className="text-red-500 text-xs mt-1">{errors.schaakrating_elo.message}</p>
               )}
             </div>
-
             <div>
               <Label htmlFor="fide_id" className="text-xs font-medium text-gray-700">
                 FIDE ID
@@ -249,11 +250,10 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 id="fide_id"
                 type="number"
                 placeholder="FIDE ID"
-                className="mt-1"
+                className="mt-1 text-sm"
               />
               {errors.fide_id && <p className="text-red-500 text-xs mt-1">{errors.fide_id.message}</p>}
             </div>
-
             <div>
               <Label htmlFor="schaakrating_max" className="text-xs font-medium text-gray-700">
                 Max Rating
@@ -263,7 +263,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 id="schaakrating_max"
                 type="number"
                 placeholder="Max Rating"
-                className="mt-1"
+                className="mt-1 text-sm"
               />
               {errors.schaakrating_max && (
                 <p className="text-red-500 text-xs mt-1">{errors.schaakrating_max.message}</p>
@@ -273,7 +273,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
         </div>
 
         {/* Admin Rights */}
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
           <div className="flex items-center space-x-3">
             <Checkbox
               id="isAdmin"
@@ -293,25 +293,25 @@ export default function EditForm({ user, onClose }: EditFormProps) {
               className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
             />
             <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Shield className="h-4 w-4" />
+              <Shield className="h-3 w-3" />
               Is Admin
             </Label>
           </div>
         </div>
 
         {/* Submit Button */}
-        <div className="flex gap-3">
-          <Button type="submit" disabled={isMutating} className="flex-1 bg-mainAccent hover:bg-mainAccentDark">
+        <div className="flex gap-2">
+          <Button type="submit" disabled={isMutating} className="flex-1 bg-mainAccent hover:bg-mainAccentDark text-sm">
             {isMutating ? (
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                 Wijzigen...
               </div>
             ) : (
               "Wijzig"
             )}
           </Button>
-          <Button type="button" variant="outline" onClick={onClose} className="px-6">
+          <Button type="button" variant="outline" onClick={onClose} className="px-4 text-sm bg-transparent">
             Annuleer
           </Button>
         </div>

@@ -3,41 +3,38 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export default function ClubInfo() {
   return (
-    <section className="py-16">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Clubavond</h2>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+    <section className="py-12">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-3">Clubavond</h2>
+        <p className="text-base text-gray-600 max-w-2xl mx-auto">
           Kom langs op onze wekelijkse clubavond en ontmoet andere schaakliefhebbers
         </p>
       </div>
-
-      <div className="max-w-2xl mx-auto">
-        <Card className="shadow-lg">
-          <CardContent className="p-8">
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Clock className="h-6 w-6 text-blue-600" />
+      <div className="max-w-xl mx-auto">
+        <Card className="shadow-md">
+          <CardContent className="p-6">
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-full">
+                  <Clock className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">Wanneer</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Wanneer</h3>
                   <p className="text-gray-600">Elke donderdag om 20:00</p>
                 </div>
               </div>
-
-              <div className="flex items-center gap-4">
-                <div className="bg-green-100 p-3 rounded-full">
-                  <MapPin className="h-6 w-6 text-green-600" />
+              <div className="flex items-center gap-3">
+                <div className="bg-green-100 p-2 rounded-full">
+                  <MapPin className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900">Waar</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Waar</h3>
                   <p className="text-gray-600">Café De Graanmaat</p>
                   <p className="text-sm text-gray-500">Grote Markt, Sint-Niklaas</p>
                 </div>
               </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-blue-800 text-center">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-blue-800 text-center text-sm">
                   <strong>Nieuwe leden welkom!</strong> Kom gerust langs voor een kennismaking.
                 </p>
               </div>

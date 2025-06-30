@@ -1,5 +1,9 @@
 "use client"
+
+import type React from "react"
+import { useState, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 import useSWRMutation from "swr/mutation"
 import { save } from "../../../api/index"
 import type { MakeupDay, Round, Game } from "@/data/types"
@@ -7,13 +11,31 @@ import { format } from "date-fns"
 import { Calendar, Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
 
 interface Props {
-  makeup: MakeupDay
+  makeup: MakeupDay & { calendar_event_id?: number }
   rounds: Round[]
   onUpdate(): void
 }
 
 export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
   const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
+  const { trigger: saveEvent, isMutating: savingEvent } = useSWRMutation("calendar", save)
+  const { trigger: saveMakeup, isMutating: savingMakeup } = useSWRMutation("makeupDay", save)
+
+  // Local state voor datum en eventId
+  const [date, setDate] = useState("")
+  const [eventId, setEventId] = useState<number | undefined>(undefined)
+
+  // Hydrate state wanneer makeup data binnenkomt
+  useEffect(() => {
+    if (makeup) {
+      if (makeup.date) {
+        // Aangezien makeup.date een string is, kunnen we het direct gebruiken
+        const dateValue = typeof makeup.date === "string" ? makeup.date : new Date(makeup.date).toISOString()
+        setDate(dateValue.split("T")[0])
+      }
+      setEventId(makeup.calendar_event_id)
+    }
+  }, [makeup])
 
   // verzamel alle games met exact deze datum
   const games: Game[] = rounds
@@ -26,6 +48,36 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
   const handleResultChange = async (gameId: number, result: string) => {
     // bewaar resultaat, laat uitgestelde datum staan
     await saveGame({ id: gameId, result })
+    onUpdate()
+  }
+
+  const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value
+    setDate(newDate)
+
+    // 1) Als we al een eventId hebben, update het; anders maak nieuw aan
+    if (eventId) {
+      await saveEvent({ id: eventId, date: newDate })
+    } else {
+      const created = await saveEvent({
+        id: undefined,
+        title: `${makeup.label || format(new Date(makeup.date), "dd-MM-yyyy")}`,
+        description: `Inhaaldag voor uitgestelde partijen`,
+        type: "Inhaaldag",
+        date: newDate,
+      })
+
+      // Onthoud lokaal zodat volgende keer we updaten ipv opnieuw aanmaken
+      setEventId(created.event_id)
+
+      // Persisteer ook naar de makeup day
+      await saveMakeup({ id: makeup.id, calendar_event_id: created.event_id })
+    }
+
+    // 2) Update de makeup day's eigen datum
+    await saveMakeup({ id: makeup.id, date: newDate })
+
+    // 3) Vertel parent om te re-fetchen
     onUpdate()
   }
 
@@ -61,14 +113,33 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
 
   return (
     <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-amber-200 to-orange-200 px-6 py-4">
-        <h3 className="text-xl font-bold text-amber-800 flex items-center gap-2">
-          <div className="bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-            I
+      <div className="bg-gradient-to-r from-amber-200 to-orange-200 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <h3 className="text-xl font-bold text-amber-800 flex items-center gap-2">
+            <div className="bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+              I
+            </div>
+            {makeup.label ?? format(new Date(makeup.date), "dd-MM-yyyy")}
+          </h3>
+
+          {/* Datum input voor kalender event */}
+          <div className="relative">
+            <Input
+              type="date"
+              value={date}
+              onChange={handleDateChange}
+              disabled={savingMakeup || savingEvent}
+              className="bg-white/10 border-amber-300/50 text-amber-800 placeholder:text-amber-700/70 focus:bg-white/20 focus:border-amber-400 focus:ring-amber-300/20 min-w-[140px] backdrop-blur-sm"
+            />
+            {(savingMakeup || savingEvent) && (
+              <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700/70" />
+              </div>
+            )}
           </div>
-          Inhaaldag {makeup.label ?? format(new Date(makeup.date), "dd-MM-yyyy")}
-        </h3>
-        <p className="text-amber-700 mt-1 flex items-center gap-2">
+        </div>
+
+        <p className="text-amber-700 flex items-center gap-2">
           <Calendar className="h-4 w-4" />
           {format(new Date(makeup.date), "dd-MM-yyyy")}
         </p>

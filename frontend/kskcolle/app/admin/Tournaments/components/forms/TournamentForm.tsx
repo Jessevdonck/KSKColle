@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
 import { getAll, post } from "../../../../api/index"
-import { User, Toernooi, TournamentType } from "@/data/types"
+import { type User, type Toernooi, TournamentType } from "@/data/types"
 import { Search, Plus, Users, Trophy, Settings } from "lucide-react"
 
 interface TournamentFormData {
@@ -30,6 +30,7 @@ export default function TournamentForm() {
     formState: { errors },
     reset,
   } = useForm<TournamentFormData>()
+
   const [selectedParticipants, setSelectedParticipants] = useState<number[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -44,7 +45,7 @@ export default function TournamentForm() {
   const { trigger: createTournament, isMutating } = useSWRMutation("tournament", post)
 
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
-  const usersPerPage = 10
+  const usersPerPage = 8
 
   useEffect(() => {
     if (users) {
@@ -58,19 +59,19 @@ export default function TournamentForm() {
 
   if (usersError || tournamentsError) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <div className="text-red-500 text-4xl mb-4">⚠️</div>
-        <h3 className="text-lg font-semibold text-red-700 mb-1">Fout bij laden van gegevens</h3>
-        <p className="text-red-600">Probeer de pagina opnieuw te laden.</p>
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="text-red-500 text-3xl mb-3">⚠️</div>
+        <h3 className="text-base font-semibold text-red-700 mb-1">Fout bij laden van gegevens</h3>
+        <p className="text-red-600 text-sm">Probeer de pagina opnieuw te laden.</p>
       </div>
     )
   }
 
   if (!users || !tournaments) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mainAccent mx-auto mb-4"></div>
-        <p className="text-gray-600">Gegevens worden geladen...</p>
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-mainAccent mx-auto mb-3"></div>
+        <p className="text-gray-600 text-sm">Gegevens worden geladen...</p>
       </div>
     )
   }
@@ -85,7 +86,6 @@ export default function TournamentForm() {
       }
 
       await createTournament(tournamentData)
-
       mutateTournaments()
       reset()
       setSelectedParticipants([])
@@ -108,30 +108,29 @@ export default function TournamentForm() {
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Plus className="h-6 w-6" />
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <Plus className="h-5 w-5" />
           Nieuw Toernooi Aanmaken
         </h2>
       </div>
-
-      <div className="p-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Tournament Name */}
           <div data-cy="name_input">
             <Label htmlFor="naam" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
+              <Trophy className="h-3 w-3" />
               Toernooi Naam
             </Label>
             <Input
               id="naam"
               {...register("naam", { required: "Toernooi naam is vereist." })}
-              className="mt-1"
+              className="mt-1 text-sm"
               placeholder="Voer toernooi naam in..."
             />
             {errors.naam && (
-              <p className="text-red-500 text-sm mt-1" data-cy="error_naam">
+              <p className="text-red-500 text-xs mt-1" data-cy="error_naam">
                 {errors.naam.message}
               </p>
             )}
@@ -140,7 +139,7 @@ export default function TournamentForm() {
           {/* Number of Rounds */}
           <div>
             <Label htmlFor="rondes" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Settings className="h-4 w-4" />
+              <Settings className="h-3 w-3" />
               Aantal Rondes
             </Label>
             <Controller
@@ -149,7 +148,7 @@ export default function TournamentForm() {
               rules={{ required: "Aantal rondes is vereist", min: 1 }}
               render={({ field }) => (
                 <Select onValueChange={(value) => field.onChange(Number(value))} value={field.value?.toString()}>
-                  <SelectTrigger data-cy="round_input" className="mt-1">
+                  <SelectTrigger data-cy="round_input" className="mt-1 text-sm">
                     <SelectValue placeholder="Selecteer aantal rondes" />
                   </SelectTrigger>
                   <SelectContent>
@@ -163,7 +162,7 @@ export default function TournamentForm() {
               )}
             />
             {errors.rondes && (
-              <p className="text-red-500 text-sm mt-1" data-cy="error_rondes">
+              <p className="text-red-500 text-xs mt-1" data-cy="error_rondes">
                 {errors.rondes.message}
               </p>
             )}
@@ -180,7 +179,7 @@ export default function TournamentForm() {
               rules={{ required: "Type toernooi is vereist" }}
               render={({ field }) => (
                 <Select onValueChange={(val) => field.onChange(val as TournamentType)} value={field.value}>
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 text-sm">
                     <SelectValue placeholder="Kies type toernooi" />
                   </SelectTrigger>
                   <SelectContent>
@@ -190,7 +189,7 @@ export default function TournamentForm() {
                 </Select>
               )}
             />
-            {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type.message}</p>}
+            {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type.message}</p>}
           </div>
 
           {/* ELO Rating */}
@@ -215,26 +214,26 @@ export default function TournamentForm() {
           {/* Participants */}
           <div data-cy="participant_input">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-3">
-              <Users className="h-4 w-4" />
+              <Users className="h-3 w-3" />
               Deelnemers ({selectedParticipants.length} geselecteerd)
             </Label>
 
             {/* Search */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
               <Input
                 type="text"
                 placeholder="Zoek spelers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-9 text-sm"
               />
             </div>
 
             {/* Selected participants summary */}
             {selectedParticipants.length > 0 && (
-              <div className="mb-4 p-3 bg-mainAccent/5 rounded-lg border border-mainAccent/20">
-                <p className="text-sm text-mainAccent font-medium mb-2">Geselecteerde spelers:</p>
+              <div className="mb-3 p-3 bg-mainAccent/5 rounded-lg border border-mainAccent/20">
+                <p className="text-xs text-mainAccent font-medium mb-2">Geselecteerde spelers:</p>
                 <div className="flex flex-wrap gap-1">
                   {selectedParticipants.slice(0, 5).map((id) => {
                     const user = users.find((u) => u.user_id === id)
@@ -254,21 +253,21 @@ export default function TournamentForm() {
             )}
 
             {/* Participants grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
               {paginatedUsers.map((user) => (
                 <Button
                   key={user.user_id}
                   type="button"
                   variant={selectedParticipants.includes(user.user_id) ? "default" : "outline"}
                   onClick={() => handleParticipantToggle(user.user_id)}
-                  className={`justify-start text-left h-auto py-2 ${
+                  className={`justify-start text-left h-auto py-2 text-sm ${
                     selectedParticipants.includes(user.user_id)
                       ? "bg-mainAccent hover:bg-mainAccentDark"
-                      : "hover:bg-mainAccent/10 hover:border-mainAccent/30"
+                      : "hover:bg-mainAccent/10 hover:border-mainAccent/30 bg-transparent"
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-mainAccent/10 rounded-full flex items-center justify-center">
+                    <div className="w-5 h-5 bg-mainAccent/10 rounded-full flex items-center justify-center">
                       <Users className="h-3 w-3 text-mainAccent" />
                     </div>
                     <span>
@@ -281,17 +280,18 @@ export default function TournamentForm() {
 
             {/* Pagination */}
             {pageCount > 1 && (
-              <div className="flex justify-center items-center mt-4 space-x-4">
+              <div className="flex justify-center items-center mt-3 space-x-3">
                 <Button
                   type="button"
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                   variant="outline"
                   size="sm"
+                  className="text-xs bg-transparent"
                 >
                   Vorige
                 </Button>
-                <span className="text-sm text-gray-600">
+                <span className="text-xs text-gray-600">
                   Pagina {currentPage} van {pageCount}
                 </span>
                 <Button
@@ -300,6 +300,7 @@ export default function TournamentForm() {
                   disabled={currentPage === pageCount}
                   variant="outline"
                   size="sm"
+                  className="text-xs bg-transparent"
                 >
                   Volgende
                 </Button>
@@ -311,17 +312,17 @@ export default function TournamentForm() {
           <Button
             type="submit"
             disabled={isMutating}
-            className="w-full bg-mainAccent hover:bg-mainAccentDark py-3"
+            className="w-full bg-mainAccent hover:bg-mainAccentDark py-2 text-sm"
             data-cy="submit_tournament"
           >
             {isMutating ? (
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                 Toernooi wordt aangemaakt...
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3 w-3" />
                 Toernooi Aanmaken
               </div>
             )}

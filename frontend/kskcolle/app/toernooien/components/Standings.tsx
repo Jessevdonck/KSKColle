@@ -1,4 +1,3 @@
-import React from "react"
 import Link from "next/link"
 import { Trophy, Medal, Award, User } from "lucide-react"
 
@@ -46,46 +45,45 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   const getPositionIcon = (position: number) => {
     switch (position) {
       case 1:
-        return <Trophy className="h-5 w-5 text-yellow-500" />
+        return <Trophy className="h-4 w-4 text-yellow-500" />
       case 2:
-        return <Medal className="h-5 w-5 text-gray-400" />
+        return <Medal className="h-4 w-4 text-gray-400" />
       case 3:
-        return <Award className="h-5 w-5 text-amber-600" />
+        return <Award className="h-4 w-4 text-amber-600" />
       default:
-        return <span className="text-sm font-bold text-gray-600 w-5 text-center">{position}</span>
+        return <span className="text-xs font-bold text-gray-600 w-4 text-center">{position}</span>
     }
   }
 
   const getPositionStyle = (position: number) => {
-    const base = "flex items-center justify-center w-10 h-10 rounded-full font-bold transition-all"
+    const base = "flex items-center justify-center w-8 h-8 rounded-full font-bold transition-all"
     switch (position) {
       case 1:
-        return `${base} bg-gradient-to-br from-yellow-400 to-yellow-500 text-white shadow-lg`
+        return `${base} bg-gradient-to-br from-yellow-400 to-yellow-500 text-white shadow-md`
       case 2:
-        return `${base} bg-gradient-to-br from-gray-300 to-gray-400 text-white shadow-md`
+        return `${base} bg-gradient-to-br from-gray-300 to-gray-400 text-white shadow-sm`
       case 3:
-        return `${base} bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md`
+        return `${base} bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm`
       default:
         return `${base} bg-gradient-to-br from-neutral-100 to-neutral-200 text-gray-700`
     }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {playerScores.map((player, idx) => {
         const position = idx + 1
         const isTop = position <= 3
-
         return (
           <div
             key={player.user_id}
-            className={`rounded-lg border transition-all hover:shadow-md ${
+            className={`rounded-lg border transition-all hover:shadow-sm ${
               isTop
                 ? "bg-gradient-to-r from-mainAccent/5 to-mainAccentDark/5 border-mainAccent/20 shadow-sm"
                 : "bg-white border-neutral-200 hover:border-mainAccent/30"
             }`}
           >
-            <div className="p-4 flex items-center gap-4">
+            <div className="p-3 flex items-center gap-3">
               {/* Position */}
               <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
 
@@ -95,10 +93,10 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
                   className="block group"
                 >
-                  <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors truncate">
+                  <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors truncate text-sm">
                     {player.voornaam} {player.achternaam}
                   </div>
-                  <div className="text-sm text-gray-600 flex items-center gap-3 mt-1">
+                  <div className="text-xs text-gray-600 flex items-center gap-2 mt-1">
                     <span className="flex items-center gap-1">
                       <User className="h-3 w-3" />
                       {player.gamesPlayed} gespeeld
@@ -109,7 +107,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
               {/* Score & Tie-break */}
               <div className="text-right">
-                <div className={`text-2xl font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                <div className={`text-xl font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
                   {player.score}
                 </div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide">punten</div>
@@ -117,7 +115,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   {tournament.type === "SWISS" ? (
                     <>Bh-W: {player.tieBreak.toFixed(2)}</>
                   ) : (
-                    <>SB<sup>2</sup>: {player.tieBreak.toFixed(2)}</>
+                    <>
+                      SB<sup>2</sup>: {player.tieBreak.toFixed(2)}
+                    </>
                   )}
                 </div>
               </div>
@@ -129,10 +129,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   )
 }
 
-function calculateStandings(
-  tournament: StandingsProps["tournament"],
-  rounds: StandingsProps["rounds"]
-): PlayerScore[] {
+function calculateStandings(tournament: StandingsProps["tournament"], rounds: StandingsProps["rounds"]): PlayerScore[] {
   // 1) init
   const scoreMap: Record<number, number> = {}
   const gamesPlayed: Record<number, number> = {}
@@ -166,7 +163,7 @@ function calculateStandings(
           if (p2) scoreMap[p2] += 0.5
         }
       }
-    })
+    }),
   )
 
   // 3) buchholzList & sbMap
@@ -190,42 +187,42 @@ function calculateStandings(
         sbMap[p1] += scoreMap[p2] * 0.5
         sbMap[p2] += scoreMap[p1] * 0.5
       }
-    })
+    }),
   )
 
   // 4) finally: bouw array met tieBreak
   const players: PlayerScore[] = Object.entries(scoreMap).map(([uid, s]) => {
     const id = Number(uid)
     let tie: number
+
     if (tournament.type === "SWISS") {
       const opps = buchholzList[id]
-      const sum   = opps.reduce((a, b) => a + b, 0)
+      const sum = opps.reduce((a, b) => a + b, 0)
       const worst = opps.length > 0 ? Math.min(...opps) : 0
       tie = sum - worst
     } else {
       tie = Math.pow(sbMap[id], 2)
     }
+
     return {
-      user_id:      id,
-      voornaam:     "",     // vullen we hieronder
-      achternaam:   "",
-      score:        s,
-      gamesPlayed:  gamesPlayed[id],
-      tieBreak:     tie,
+      user_id: id,
+      voornaam: "", // vullen we hieronder
+      achternaam: "",
+      score: s,
+      gamesPlayed: gamesPlayed[id],
+      tieBreak: tie,
     }
   })
 
   // vul voornaam/achternaam
   tournament.participations.forEach(({ user }) => {
     const p = players.find((p) => p.user_id === user.user_id)!
-    p.voornaam   = user.voornaam
+    p.voornaam = user.voornaam
     p.achternaam = user.achternaam
   })
 
   // 5) sorteren: eerst op score, dan tieBreak
-  players.sort((a, b) =>
-    b.score !== a.score ? b.score - a.score : b.tieBreak - a.tieBreak
-  )
+  players.sort((a, b) => (b.score !== a.score ? b.score - a.score : b.tieBreak - a.tieBreak))
 
   return players
 }
