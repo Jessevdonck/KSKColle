@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
-import Standings from "./Standings"
+import StandingsWithModal from "./Standings"
 import { getById, getAll } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight } from "lucide-react"
@@ -31,6 +31,21 @@ type MakeupDay = {
   label: string | null
 }
 
+type Tournament = {
+  tournament_id: number
+  naam: string
+  rondes: number
+  type: "SWISS" | "ROUND_ROBIN"
+  participations: Array<{
+    user: {
+      user_id: number
+      voornaam: string
+      achternaam: string
+    }
+  }>
+  rounds: Round[]
+}
+
 export default function TournamentDetails() {
   const { id } = useParams()
   const tournamentId = Number(id)
@@ -39,41 +54,54 @@ export default function TournamentDetails() {
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] })[]
   >([])
 
-  // 1) toernooi ophalen (inclusief rounds + games)
-  const { data: tournament, error: tournamentError } = useSWR(`tournament/${tournamentId}`, () =>
-    getById(`tournament/${tournamentId}`),
+  // 1) Tournament data fetching
+  const {
+    data: tournament,
+    error: tournamentError,
+    isLoading: tournamentLoading,
+  } = useSWR<Tournament>(
+    tournamentId ? `tournament/${tournamentId}` : null,
+    () => getById(`tournament/${tournamentId}`),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
   )
 
-  // 2) inhaaldagen ophalen
-  const { data: makeupDays = [] } = useSWR<MakeupDay[]>(`makeupDay?tournament_id=${tournamentId}`, () =>
-    getAll(`makeupDay?tournament_id=${tournamentId}`),
+  // 2) Makeup days fetching
+  const { data: makeupDays = [], error: makeupError } = useSWR<MakeupDay[]>(
+    tournamentId ? `makeupDay?tournament_id=${tournamentId}` : null,
+    () => getAll(`makeupDay?tournament_id=${tournamentId}`),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
   )
 
+  // Build timeline when data is available
   useEffect(() => {
     if (tournament && makeupDays) {
-      const rounds: Round[] = tournament.rounds
+      const rounds: Round[] = tournament.rounds || []
 
-      // 3) timeline bouwen: voor elke officiële ronde + inhaaldagen ná die ronde
       type Entry = { kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] }
       const newTimeline: Entry[] = []
 
       for (let r = 1; r <= tournament.rondes; r++) {
-        // officiële ronde (stub indien nog niet gegenereerd)
+        // Official round (stub if not generated yet)
         const found = rounds.find((x) => x.ronde_nummer === r)
         newTimeline.push({
           kind: "round",
           round: found ?? { round_id: 0, ronde_nummer: r, games: [] },
         })
 
-        // inhaaldagen ná ronde r
+        // Makeup days after round r
         makeupDays
           .filter((md) => md.round_after === r)
           .forEach((md) => {
-            // alle games die precies op deze inhaaldag zijn uitgesteld
+            // All games postponed to this specific makeup day
             const games: Game[] = rounds
               .flatMap((x) => x.games)
               .filter((g) => g.uitgestelde_datum && isSameDay(parseISO(g.uitgestelde_datum), parseISO(md.date)))
-
             newTimeline.push({ kind: "makeup", day: md, games })
           })
       }
@@ -82,28 +110,24 @@ export default function TournamentDetails() {
     }
   }, [tournament, makeupDays])
 
-  useEffect(() => {
-    if (!tournament) {
-      return
-    }
-  }, [tournament])
-
-  // Bepaal de standaard ronde (laatste ronde met resultaten + 1)
+  // Set default round (last round with results + 1)
   useEffect(() => {
     if (timeline.length > 0) {
       let defaultIndex = 0
-      // Zoek de laatste ronde met resultaten
+
+      // Find the last round with results
       for (let i = timeline.length - 1; i >= 0; i--) {
         const entry = timeline[i]
         if (entry.kind === "round" && entry.round.games && entry.round.games.length > 0) {
           const hasResults = entry.round.games.some((game) => game.result !== null)
           if (hasResults) {
-            // Neem de volgende ronde als die bestaat
+            // Take the next round if it exists
             defaultIndex = Math.min(i + 1, timeline.length - 1)
             break
           }
         }
       }
+
       setCurrentIndex(defaultIndex)
     }
   }, [timeline])
@@ -119,33 +143,76 @@ export default function TournamentDetails() {
   const currentEntry = timeline[currentIndex]
   const rounds: Round[] = tournament?.rounds || []
 
+  // Loading state
+  if (tournamentLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
+          <p className="text-gray-600">Toernooi laden...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (tournamentError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <Trophy className="h-8 w-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Fout bij laden</h2>
+          <p className="text-gray-600">Het toernooi kon niet worden geladen.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // No tournament found
+  if (!tournament) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <Trophy className="h-8 w-8 text-gray-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Toernooi niet gevonden</h2>
+          <p className="text-gray-600">Het opgevraagde toernooi bestaat niet.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
-      {tournament && (
-        <div className="bg-white shadow-sm border-b border-neutral-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-mainAccent/10 p-2 rounded-lg">
-                <Trophy className="h-6 w-6 text-mainAccent" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-textColor">{tournament.naam}</h1>
-                <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    <span>{tournament.participations?.length || 0} spelers</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{tournament.rondes} rondes</span>
-                  </div>
+      <div className="bg-white shadow-sm border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-mainAccent/10 p-2 rounded-lg">
+              <Trophy className="h-6 w-6 text-mainAccent" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-textColor">{tournament.naam}</h1>
+              <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  <span>{tournament.participations?.length || 0} spelers</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>{tournament.rondes} rondes</span>
+                </div>
+                <div className="px-2 py-1 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
+                  {tournament.type}
                 </div>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -159,44 +226,49 @@ export default function TournamentDetails() {
                     <Calendar className="h-5 w-5" />
                     Rondes & Inhaaldagen
                   </h2>
+
                   {/* Navigation Controls */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={goToPrevious}
-                      className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
-                      disabled={timeline.length <= 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
-                      {currentEntry?.kind === "round"
-                        ? `Ronde ${currentEntry.round.ronde_nummer}`
-                        : `Inhaaldag ${currentEntry?.day.label}`}
+                  {timeline.length > 1 && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={goToPrevious}
+                        className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
+                        {currentEntry?.kind === "round"
+                          ? `Ronde ${currentEntry.round.ronde_nummer}`
+                          : `Inhaaldag ${currentEntry?.day.label}`}
+                      </div>
+                      <button
+                        onClick={goToNext}
+                        className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                     </div>
-                    <button
-                      onClick={goToNext}
-                      className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
-                      disabled={timeline.length <= 1}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
+                  )}
                 </div>
 
                 {/* Round Indicators */}
-                <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
-                  {timeline.map((entry, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentIndex(index)}
-                      className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
-                        index === currentIndex ? "bg-white text-mainAccent" : "bg-white/20 text-white hover:bg-white/30"
-                      }`}
-                    >
-                      {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.day.id}`}
-                    </button>
-                  ))}
-                </div>
+                {timeline.length > 1 && (
+                  <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
+                    {timeline.map((entry, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                          index === currentIndex
+                            ? "bg-white text-mainAccent"
+                            : "bg-white/20 text-white hover:bg-white/30"
+                        }`}
+                      >
+                        {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.day.id}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Current Round/Makeup Day Content */}
@@ -226,7 +298,9 @@ export default function TournamentDetails() {
                   Stand
                 </h2>
               </div>
-              <div className="p-4">{tournament && <Standings tournament={tournament} rounds={rounds} />}</div>
+              <div className="p-4">
+                <StandingsWithModal tournament={tournament} rounds={rounds} />
+              </div>
             </div>
           </div>
         </div>
@@ -235,8 +309,12 @@ export default function TournamentDetails() {
   )
 }
 
-// Component om een inhaaldag + bijbehorende partijen te tonen
+// Component to show a makeup day + associated games
 function MakeupPairings({ day, games }: { day: MakeupDay; games: Game[] }) {
+  const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
+    return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+  }
+
   return (
     <div>
       <div className="mb-4">
