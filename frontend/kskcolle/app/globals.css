@@ -72,7 +72,7 @@ html{
 
 ::selection {
   color: #FAF7F0;
-  background-color: #c27f65;
+  background-color: rgb(70, 160, 165);
 }
 
 
