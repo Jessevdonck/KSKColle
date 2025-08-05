@@ -50,7 +50,7 @@ export default function TournamentArchive() {
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-[#2e2c2c] mb-4 flex items-center justify-center">
-            <Archive className="mr-2 h-10 w-10 text-[#B17457]" />
+            <Archive className="mr-2 h-10 w-10 text-mainAccent" />
             Toernooi Archief
           </h1>
           <p className="text-xl text-[#2e2c2c]">Bekijk alle afgelopen schaaktoernooien van KSK Colle</p>
@@ -109,7 +109,7 @@ export default function TournamentArchive() {
           <>
             <div className="mb-8 text-center">
               <p className="text-lg text-[#2e2c2c]">
-                <Trophy className="inline mr-2 h-5 w-5 text-[#B17457]" />
+                <Trophy className="inline mr-2 h-5 w-5 text-mainAccent" />
                 {searchTerm
                   ? `${filteredTournaments.length} van ${archivedTournaments.length} toernooi${filteredTournaments.length !== 1 ? "en" : ""}`
                   : `${archivedTournaments.length} afgelopen toernooi${archivedTournaments.length !== 1 ? "en" : ""}`}

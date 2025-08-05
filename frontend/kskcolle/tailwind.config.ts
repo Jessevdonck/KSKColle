@@ -10,8 +10,8 @@ const config: Config = {
   theme: {
   	extend: {
   		colors: {
-			mainAccent: '#B17457',
-			mainAccentDark: '#8f5d46',
+			mainAccent: '#1e7175ff',
+			mainAccentDark: '#1c7176ff',
 			textColor: '#2e2c2c',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
