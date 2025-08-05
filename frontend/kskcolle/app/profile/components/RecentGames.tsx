@@ -34,7 +34,7 @@ export default function RecentGames({ games, playerId }: RecentGamesProps) {
       <CardContent>
         <div className="space-y-4">
           {sortedGamesArray.slice(0, 5).map((game) => (
-            <GameCard key={game.game_id} game={game} playerId={playerId} />
+            <GameCard game={game} playerId={playerId} />
           ))}
         </div>
       </CardContent>
