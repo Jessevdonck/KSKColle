@@ -289,3 +289,52 @@ test("Global color balance over a long tournament: |W - B| ≤ 2 after 11 rounds
   }
 });
 
+test("Cycle rematch prevention: geen rematches tot iedereen elkaar één keer heeft ontmoet", async () => {
+  const strat = new SwissStrategy();
+
+  // 6 spelers => maxOpponentsInCycle = 5
+  const players: Competitor[] = [
+    mkPlayer(1, 2400),
+    mkPlayer(2, 2350),
+    mkPlayer(3, 2300),
+    mkPlayer(4, 2250),
+    mkPlayer(5, 2200),
+    mkPlayer(6, 2150),
+  ];
+
+  const previousRounds: Pairing[][] = [];
+  const totalRounds = players.length - 1; // 5 ronden voor volledige cycle
+
+  const playedPairs = new Set<string>();
+
+  for (let r = 1; r <= totalRounds; r++) {
+    const { pairings, byePlayer } = await strat.generatePairings(players, r, previousRounds);
+    expect(byePlayer).toBeUndefined(); // even aantal spelers => geen bye
+
+    // controleer dat geen paar herhaald wordt binnen cycle
+    for (const p of pairings) {
+      if (p.speler2_id === null) continue;
+      const key = [p.speler1_id, p.speler2_id].sort().join("-");
+      expect(playedPairs.has(key)).toBe(false);
+      playedPairs.add(key);
+    }
+
+    pushAsPreviousRound(previousRounds, pairings);
+  }
+
+  // Na de cycle reset mogen rematches terug voorkomen
+  const { pairings: roundAfterCycle } = await strat.generatePairings(
+    players,
+    totalRounds + 1,
+    previousRounds
+  );
+  const hadRematch = roundAfterCycle.some(p => {
+    if (p.speler2_id === null) return false;
+    const key = [p.speler1_id, p.speler2_id].sort().join("-");
+    return playedPairs.has(key);
+  });
+  expect(hadRematch).toBe(true); // nu mag het
+});
+
+
+

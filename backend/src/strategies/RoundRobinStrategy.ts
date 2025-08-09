@@ -3,180 +3,89 @@ import { IPairingStrategy, Pairing, Competitor } from "../types/Types";
 export class RoundRobinStrategy implements IPairingStrategy {
   async generatePairings(
     players: Competitor[],
-    roundNumber: number,
-    previousRounds?: Pairing[][]
+    roundNumber: number
   ): Promise<{ pairings: Pairing[]; byePlayer?: Competitor }> {
-    console.log(`🔄 RoundRobin: Generating pairings for round ${roundNumber}`);
-
-    const list = [...players];
-    let byePlayer: Competitor | undefined;
-    if (list.length % 2 === 1) {
-      byePlayer = list.pop();
-    }
-
-    const P = list.length;
-    if (P < 2) {
-      return byePlayer !== undefined
-        ? { pairings: [], byePlayer }
-        : { pairings: [] };
-    }
-
-    const roundsPerCycle = P - 1;
-    const cycleNumber = Math.floor((roundNumber - 1) / roundsPerCycle);
-    const roundInCycle = ((roundNumber - 1) % roundsPerCycle) + 1;
-
-    console.log(`📊 Cycle ${cycleNumber + 1}, Round ${roundInCycle} in cycle`);
-
-    const opponentHistory = this.buildOpponentHistory(list, previousRounds || []);
-
-    let pairings: Pairing[];
-
-    if (cycleNumber === 0) {
-      pairings = this.generateFirstCyclePairings(list, roundInCycle, opponentHistory);
-    } else {
-      pairings = this.generateRepeatCyclePairings(
-        list,
-        roundInCycle,
-        previousRounds || []
-      );
-    }
-
+    const all = this.generateAllRounds(players);
+    const round = all[roundNumber - 1] ?? [];
+    const bye = round.find(p => p.speler2_id === null)?.speler1_id;
+    const byePlayer = players.find(p => p.user_id === bye);
     return byePlayer
-      ? { pairings, byePlayer }
-      : { pairings };
+      ? { pairings: round, byePlayer }
+      : { pairings: round };
   }
 
-  private buildOpponentHistory(
-    players: Competitor[],
-    previousRounds: Pairing[][]
-  ): Map<number, Set<number>> {
-    const history = new Map<number, Set<number>>();
+  generateAllRounds(players: Competitor[]): Pairing[][] {
+    if (!players?.length) return [];
+    const order = [...players].sort((a,b) => a.user_id - b.user_id);
+    const list: Competitor[] = [...order];
+    const hasOdd = list.length % 2 === 1;
+    if (hasOdd) list.push({ user_id: -1, score: 0, schaakrating_elo: 0 } as Competitor);
 
-    players.forEach(player => {
-      history.set(player.user_id, new Set<number>());
-    });
+    const n = list.length;
+    const rounds = n - 1;
+    const indices = Array.from({length:n}, (_,i)=>i);
+    const schedule: Pairing[][] = [];
 
-    previousRounds.forEach(round => {
-      round.forEach(pairing => {
-        if (pairing.speler2_id !== null) {
-          history.get(pairing.speler1_id)?.add(pairing.speler2_id);
-          history.get(pairing.speler2_id)?.add(pairing.speler1_id);
-        }
-      });
-    });
+    const colorHistory = new Map<number, ("W"|"B"|"N")[]>(list.map(p => [p.user_id, []]));
 
-    return history;
-  }
+    for (let r = 0; r < rounds; r++) {
+      const pairs: Pairing[] = [];
 
-  private generateFirstCyclePairings(
-    players: Competitor[],
-    roundInCycle: number,
-    opponentHistory: Map<number, Set<number>>
-  ): Pairing[] {
-    const pairings: Pairing[] = [];
-    const availablePlayers = [...players];
+      for (let i = 0; i < n/2; i++) {
+        const A = list[indices[i]!]!;
+        const B = list[indices[n - 1 - i]!]!;
 
-    this.shuffleArray(availablePlayers);
+        if (A.user_id === -1 && B.user_id === -1) continue;
 
-    const paired = new Set<number>();
+        if (A.user_id === -1 || B.user_id === -1) {
+          const real = A.user_id === -1 ? B : A;
+          pairs.push({ speler1_id: real.user_id, speler2_id: null, color1: "N", color2: "N" });
+          colorHistory.get(real.user_id)!.push("N");
+        } else {
+          const histA = colorHistory.get(A.user_id)!;
+          const histB = colorHistory.get(B.user_id)!;
+          const wA = histA.filter(c => c === "W").length;
+          const bA = histA.filter(c => c === "B").length;
+          const wB = histB.filter(c => c === "W").length;
+          const bB = histB.filter(c => c === "B").length;
 
-    while (availablePlayers.length > 1 && paired.size < players.length) {
-      let player1: Competitor | undefined;
-      let player2: Competitor | undefined;
+          let color1: "W"|"B" = "W", color2: "W"|"B" = "B";
 
-      for (let i = 0; i < availablePlayers.length; i++) {
-        if (!paired.has(availablePlayers[i]!.user_id)) {
-          player1 = availablePlayers[i];
-          break;
-        }
-      }
-
-      if (!player1) break;
-
-      const player1Opponents = opponentHistory.get(player1.user_id) || new Set();
-
-      for (let i = 0; i < availablePlayers.length; i++) {
-        const candidate = availablePlayers[i];
-        if (
-          candidate!.user_id !== player1.user_id &&
-          !paired.has(candidate!.user_id) &&
-          !player1Opponents.has(candidate!.user_id)
-        ) {
-          player2 = candidate;
-          break;
-        }
-      }
-
-      if (!player2) {
-        for (let i = 0; i < availablePlayers.length; i++) {
-          const candidate = availablePlayers[i];
-          if (
-            candidate!.user_id !== player1.user_id &&
-            !paired.has(candidate!.user_id)
-          ) {
-            player2 = candidate;
-            break;
+          if (wA - bA > bB - wB) {
+            color1 = "B"; color2 = "W";
+          } else if (bA - wA > wB - bB) {
+            color1 = "W"; color2 = "B";
+          } else {
+            const lastA = histA[histA.length-1];
+            const lastB = histB[histB.length-1];
+            if (lastA === lastB) {
+              color1 = lastA === "W" ? "B" : "W";
+              color2 = color1 === "W" ? "B" : "W";
+            } else {
+              color1 = lastA === "W" ? "B" : "W";
+              color2 = lastB === "W" ? "B" : "W";
+            }
           }
+
+          pairs.push({
+            speler1_id: A.user_id,
+            speler2_id: B.user_id,
+            color1,
+            color2
+          });
+
+          colorHistory.get(A.user_id)!.push(color1);
+          colorHistory.get(B.user_id)!.push(color2);
         }
       }
 
-      if (player1 && player2) {
-        const player1GetsWhite = roundInCycle % 2 === 1;
+      schedule.push(pairs);
 
-        pairings.push({
-          speler1_id: player1.user_id,
-          speler2_id: player2.user_id,
-          color1: player1GetsWhite ? "W" : "B",
-          color2: player1GetsWhite ? "B" : "W",
-        });
-
-        paired.add(player1.user_id);
-        paired.add(player2.user_id);
-      } else {
-        break;
-      }
+      const fixed = indices[0];
+      const rotated = [fixed, indices[n-1], ...indices.slice(1, n-1)];
+      for (let i = 0; i < n; i++) indices[i] = rotated[i]!;
     }
 
-    console.log(`✅ Generated ${pairings.length} pairings for first cycle`);
-    return pairings;
-  }
-
-  private generateRepeatCyclePairings(
-    players: Competitor[],
-    roundInCycle: number,
-    previousRounds: Pairing[][]
-  ): Pairing[] {
-    const roundsPerCycle = players.length - 1;
-    const firstCycle = previousRounds.slice(0, roundsPerCycle);
-    const originalRound = firstCycle[roundInCycle - 1];
-
-    if (!originalRound) {
-      console.warn(
-        `⚠️ Kan originele ronde ${roundInCycle} uit eerste cyclus niet vinden, val terug op random-first-cycle logic`
-      );
-      const opponentHistory = this.buildOpponentHistory(players, previousRounds);
-      return this.generateFirstCyclePairings(players, roundInCycle, opponentHistory);
-    }
-
-    const newPairings: Pairing[] = originalRound
-      .filter((p) => p.speler2_id !== null)
-      .map((orig) => ({
-        speler1_id: orig.speler2_id!,
-        speler2_id: orig.speler1_id,
-        color1: "W",
-        color2: "B",
-      }));
-
-    console.log(
-      `🔄 Repeating ${newPairings.length} pairings from first cycle round ${roundInCycle}, colors swapped`
-    );
-    return newPairings;
-  }
-
-  private shuffleArray<T>(array: T[]): void {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i]!, array[j]!] = [array[j]!, array[i]!];
-    }
+    return schedule;
   }
 }
