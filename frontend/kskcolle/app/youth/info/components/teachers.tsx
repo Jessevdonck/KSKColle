@@ -14,25 +14,25 @@ const teachers: Teacher[] = [
     name: "Ronny Eelen",
     role: "Verantwoordelijke Jeugdwerking",
     steps: "Stap X",
-    image: "/placeholder.svg?height=160&width=160",
+    image: "/images/image_placeholder.png",
   },
   {
     name: "Lesgever 1",
     role: "Trainer",
     steps: "Stap X",
-    image: "/placeholder.svg?height=160&width=160",
+    image: "/images/image_placeholder.png",
   },
   {
     name: "Lesgever 2",
     role: "Trainer",
     steps: "Stap X",
-    image: "/placeholder.svg?height=160&width=160",
+    image: "/images/image_placeholder.png",
   },
   {
     name: "Lesgever 3",
     role: "Trainer",
     steps: "X",
-    image: "/placeholder.svg?height=160&width=160",
+    image: "/images/image_placeholder.png",
   },
 ]
 

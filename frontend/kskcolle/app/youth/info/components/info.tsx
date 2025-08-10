@@ -18,7 +18,7 @@ export default function YouthInfo() {
             <div className="lg:col-span-1">
               <div className="bg-gradient-to-br from-mainAccent/10 to-mainAccentDark/10 rounded-lg p-3 border border-neutral-200">
                 <Image
-                  src="/images/jeugd-oude-site.png"
+                  src="/images/image_placeholder.png"
                   alt="Jeugdlokaal in Taverne De Graanmaat"
                   width={640}
                   height={360}
