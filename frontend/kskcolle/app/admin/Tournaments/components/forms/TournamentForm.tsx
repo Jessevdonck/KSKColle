@@ -20,6 +20,7 @@ interface TournamentFormData {
   type: TournamentType
   rating_enabled: boolean
   participations: number[]
+  is_youth: boolean
 }
 
 export default function TournamentForm() {
@@ -82,6 +83,7 @@ export default function TournamentForm() {
         naam: data.naam,
         rondes: Number(data.rondes),
         type: data.type,
+        is_youth: data.is_youth,
         participations: selectedParticipants,
       }
 
@@ -191,26 +193,45 @@ export default function TournamentForm() {
             />
             {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type.message}</p>}
           </div>
+          <div className="flex flex-row gap-8">
+            {/* ELO Rating */}
+            <div className="flex items-center space-x-3">
+              <Label htmlFor="rating" className="text-sm font-medium text-gray-700">
+                Gebruik ELO Rating
+              </Label>
+              <Controller
+                name="rating_enabled"
+                control={control}
+                defaultValue={true}
+                render={({ field }) => (
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(val) => field.onChange(val as boolean)}
+                    className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                  />
+                )}
+              />
+            </div>
 
-          {/* ELO Rating */}
-          <div className="flex items-center space-x-3">
-            <Label htmlFor="rating" className="text-sm font-medium text-gray-700">
-              Gebruik ELO Rating
-            </Label>
-            <Controller
-              name="rating_enabled"
-              control={control}
-              defaultValue={true}
-              render={({ field }) => (
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(val) => field.onChange(val as boolean)}
-                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
-                />
-              )}
-            />
+            <div className="flex items-center space-x-3">
+              <Label htmlFor="is_youth" className="text-sm font-medium text-gray-700">
+                Jeugd toernooi
+              </Label>
+              <Controller
+                name="is_youth"
+                control={control}
+                defaultValue={false}
+                render={({ field }) => (
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(val) => field.onChange(val as boolean)}
+                    className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                    data-cy="youth_checkbox"
+                  />
+                )}
+              />
+            </div>
           </div>
-
           {/* Participants */}
           <div data-cy="participant_input">
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-3">

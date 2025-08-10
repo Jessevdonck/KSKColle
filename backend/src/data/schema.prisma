@@ -41,10 +41,13 @@ model Tournament {
   type               TournamentType  @default(SWISS)
   rating_enabled     Boolean         @default(true)   
   finished           Boolean         @default(false) 
+  is_youth           Boolean         @default(false)
   
   participations     Participation[]  
   rounds             Round[]          
-  makeupDays         MakeupDay[]      
+  makeupDays         MakeupDay[]    
+
+  @@index([is_youth])  
 }
 
 model Round {

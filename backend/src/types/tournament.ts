@@ -8,6 +8,7 @@ export type Tournament = {
   rondes: number;
   rating_enabled: boolean;   
   finished: boolean;
+  is_youth: boolean; 
 };
 
 export type TournamentCreateInput = {
@@ -15,7 +16,8 @@ export type TournamentCreateInput = {
   rondes: number;  
   type: TournamentType;
   rating_enabled: boolean;
-  participations: number[];    
+  participations: number[];   
+  is_youth: boolean; 
 };
 
 export interface TournamentUpdateInput extends TournamentCreateInput {}

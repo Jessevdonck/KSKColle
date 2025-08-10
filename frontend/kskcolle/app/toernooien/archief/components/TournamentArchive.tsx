@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 export default function TournamentArchive() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const { data: allTournaments, error } = useSWR("tournament", getAll)
+  const { data: allTournaments, error } = useSWR("tournament?active=false", getAll)
 
   useEffect(() => {
     if (allTournaments || error) {

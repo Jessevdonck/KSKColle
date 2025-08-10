@@ -15,6 +15,7 @@ import {
   Archive,
   Globe,
   Medal,
+  PersonStanding,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect } from "react"
 import LoginSheet from "./LoginSheet"
@@ -27,6 +28,7 @@ export default function Navbar() {
   const [isClient, setIsClient] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false)
+  const [isMobileYouthOpen, setIsMobileYouthOpen] = useState(false)
   const [isMobileTournamentOpen, setIsMobileTournamentOpen] = useState(false)
   const [isMobileLinksOpen, setIsMobileLinksOpen] = useState(false)
 
@@ -80,6 +82,32 @@ export default function Navbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Jeugd werking */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+                <PersonStanding size={20} />
+                <span>Jeugd</span>
+                <ChevronDown size={16} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth/info" className="flex items-center space-x-2">
+                    <span>Info</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth/calendar" className="flex items-center space-x-2">
+                    <span>Kalender</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth/tournaments" className="flex items-center space-x-2">
+                    <span>Jeugd Kampioenschap</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
           {/* Tournaments Dropdown */}
           <DropdownMenu>
@@ -197,6 +225,46 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Foto&apos;s
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Youth Dropdown */}
+            <div className="space-y-2">
+              <button
+                onClick={() => setIsMobileYouthOpen(!isMobileYouthOpen)}
+                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <PersonStanding size={20} />
+                  <span>Jeugd</span>
+                </div>
+                {isMobileYouthOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+
+              {isMobileYouthOpen && (
+                <div className="ml-6 space-y-2">
+                  <Link
+                    href="/youth/info"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Info
+                  </Link>
+                  <Link
+                    href="/youth/calendar"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Kalender
+                  </Link>
+                  <Link
+                    href="/youth/tournaments"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Jeugd Kampioenschap
                   </Link>
                 </div>
               )}

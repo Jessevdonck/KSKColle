@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import TournamentCard from './TournamentCard'
-import { getAll } from '../../api/index'
+import { getAll } from '../../../api/index'
 import { Trophy } from 'lucide-react'
 
 export default function TournamentList() {
   const [isLoading, setIsLoading] = useState(true)
-  const { data: tournaments, error } = useSWR('tournament?active=true&is_youth=false', getAll)
+  const { data: tournaments, error } = useSWR('tournament?active=true&is_youth=true', getAll)
 
   useEffect(() => {
     if (tournaments || error) {

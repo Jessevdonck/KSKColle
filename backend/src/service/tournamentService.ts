@@ -1,36 +1,36 @@
 import { prisma } from "./data";
+import { Prisma } from "@prisma/client";
 import type { Tournament, TournamentCreateInput, TournamentUpdateInput } from "../types/tournament";
 import type { Participation } from "../types/participation";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 
-export const getAllTournaments = async (activeOnly = false): Promise<Tournament[]> => {
+export const getAllTournaments = async (
+  active?: boolean,   // undefined | true | false
+  is_youth?: boolean  // undefined | true | false
+): Promise<Tournament[]> => {
   try {
-    return await prisma.tournament.findMany({
-      where: activeOnly ? { finished: false} : {},
+    const where: Prisma.TournamentWhereInput = {};
+
+    if (typeof active === 'boolean') {
+      where.finished = !active;           // true -> finished=false, false -> finished=true
+    }
+    if (typeof is_youth === 'boolean') {
+      where.is_youth = is_youth;          // true -> jeugd, false -> niet-jeugd
+    }
+
+    return prisma.tournament.findMany({
+      where,
       include: {
-        participations: {
-          include: {
-            user: true,
-          },
-        },
-        rounds: {
-          include: {
-            games: {
-              include: {
-                speler1: true,
-                speler2: true,
-                winnaar: true,
-              },
-            },
-          },
-        },
+        participations: { include: { user: true } },
+        rounds: { include: { games: { include: { speler1: true, speler2: true, winnaar: true } } } },
       },
     });
   } catch (error) {
     throw handleDBError(error);
   }
 };
+
 
 export const getTournamentById = async (tournament_id: number): Promise<Tournament> => {
   try {
@@ -74,7 +74,8 @@ export const addTournament = async (tournament: TournamentCreateInput) => {
       data: {
         naam: tournament.naam,
         rondes: tournament.rondes,
-        type: tournament.type,   
+        type: tournament.type,  
+        is_youth: tournament.is_youth,
         participations: {
           create: tournament.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
         },

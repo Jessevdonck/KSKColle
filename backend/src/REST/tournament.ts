@@ -9,6 +9,9 @@ import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
 import { createAndSavePairings } from '../service/pairingService';
 
+const toBool = (v?: string) =>
+  v === undefined ? undefined : v === 'true' ? true : v === 'false' ? false : undefined;
+
 /**
  * @api {get} /tournament Get all tournaments
  * @apiName GetAllTournaments
@@ -21,17 +24,17 @@ import { createAndSavePairings } from '../service/pairingService';
  * @apiError (404) NotFound The requested resource could not be found.
  */
 const getAllTournament = async (ctx: KoaContext<GetAllTournamentenResponse>) => {
-  const active = ctx.query.active === 'true';
-  const spelers =  await tournamentService.getAllTournaments(active);
-  ctx.body = {
-    items: spelers,
-  };
+  const active = toBool(ctx.query.active as string | undefined);
+  const youth  = toBool((ctx.query as any).is_youth as string | undefined);
+
+  const toernooien = await tournamentService.getAllTournaments(active, youth);
+  ctx.body = { items: toernooien };
 };
+
 getAllTournament.validationScheme = {
   query: {
-    active: Joi.string()
-      .valid('true', 'false')
-      .optional(),
+    active: Joi.string().valid('true', 'false').optional(),
+    is_youth: Joi.string().valid('true', 'false').optional(),
   },
 };
 
@@ -64,6 +67,7 @@ createTournament.validationScheme = {
     rondes: Joi.number().integer().positive(),
     type: Joi.string().valid('SWISS', 'ROUND_ROBIN'),
     participations: Joi.array().items(Joi.number().integer().positive()),
+    is_youth: Joi.boolean().optional(), 
   },
 };
 
