@@ -28,6 +28,7 @@ export type UserCreateInput = {
   geboortedatum: Date;
   email: string;
   tel_nummer: string;
+  vast_nummer?: string;
   schaakrating_elo: number;
   max_rating?: number | null;
   rating_difference?: number | null;
@@ -35,6 +36,12 @@ export type UserCreateInput = {
   lid_sinds: Date;
   password: string;
   roles: string[];
+  adres_straat: string;      
+  adres_nummer: string;   
+  adres_bus: string;          
+  adres_postcode: string;      
+  adres_gemeente: string;       
+  adres_land: string;  
 };
 
 export interface LoginRequest {
@@ -56,13 +63,20 @@ export interface RegisterUserRequest {
   geboortedatum: Date;
   email: string;
   tel_nummer: string;
-  schaakrating_elo: number;
+  vast_nummer?: string;
+  schaakrating_elo?: number;
   max_rating?: number | null;
   rating_difference?: number | null;
   fide_id?: number | null;
   lid_sinds: Date;
   password: string;
   roles: string[];
+  adres_straat: string;      
+  adres_nummer: string;   
+  adres_bus: string;          
+  adres_postcode: string;      
+  adres_gemeente: string;       
+  adres_land: string;           
 }
 
 export interface UpdatePasswordRequest {

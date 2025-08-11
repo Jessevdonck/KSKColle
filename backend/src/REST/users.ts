@@ -76,6 +76,7 @@ getAllPublicUsers.validationScheme = null;
 const registerUser = async (
   ctx: KoaContext<LoginResponse, void, RegisterUserRequest>,
 ) => {
+  console.log("body: ", ctx.request.body);
   const token = await userService.register(ctx.request.body); 
 
   ctx.status = 200;
@@ -88,12 +89,20 @@ registerUser.validationScheme = {
     geboortedatum: Joi.date(),
     email: Joi.string().email(),
     tel_nummer: Joi.string(),
+    vast_nummer: Joi.string().allow("").optional(),
     lid_sinds: Joi.date(),
     schaakrating_elo: Joi.number().integer().positive(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
     password: Joi.string(),
-    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).required()
+    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).required(),
+
+    adres_straat: Joi.string().required(),
+    adres_nummer: Joi.string().required(),
+    adres_bus: Joi.string().allow("").optional(),
+    adres_postcode: Joi.string().required(),
+    adres_gemeente: Joi.string().required(),
+    adres_land: Joi.string().required(),
   },
 };
 
@@ -168,12 +177,20 @@ updateUser.validationScheme = {
     geboortedatum: Joi.date().optional(),
     email: Joi.string().email().optional(),
     tel_nummer: Joi.string().optional(),
+    vast_nummer: Joi.string().allow("").optional(),
     lid_sinds: Joi.date().optional(),
     schaakrating_elo: Joi.number().integer().positive().optional(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
     password: Joi.string().optional(),
     roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).optional(),
+
+    adres_straat: Joi.string().required(),
+    adres_nummer: Joi.string().required(),
+    adres_bus: Joi.string().allow("").optional(),
+    adres_postcode: Joi.string().required(),
+    adres_gemeente: Joi.string().required(),
+    adres_land: Joi.string().required(),
   },
 };
 

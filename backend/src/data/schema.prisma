@@ -13,13 +13,14 @@ enum TournamentType {
 }
 
 model User {
-  user_id            Int            @id @default(autoincrement())
+  user_id            Int             @id @default(autoincrement())
   voornaam           String
   achternaam         String
-  email              String         @unique(map: "idx_user_email_unique") @db.VarChar(255)
+  email              String          @unique(map: "idx_user_email_unique") @db.VarChar(255)
   tel_nummer         String
+  vast_nummer        String? 
   geboortedatum      DateTime
-  schaakrating_elo   Int  
+  schaakrating_elo   Int             @default(0)              
   schaakrating_difference Int?
   schaakrating_max   Int?
   is_admin           Boolean?
@@ -27,6 +28,12 @@ model User {
   lid_sinds          DateTime
   password_hash      String          @db.VarChar(255)
   roles              Json
+  adres_straat       String?
+  adres_nummer      String?
+  adres_bus         String?
+  adres_postcode    String?
+  adres_gemeente    String?
+  adres_land        String?           @default("Belgium")
 
   participations     Participation[]    
   speler1Games       Game[]          @relation("Speler1")

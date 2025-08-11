@@ -64,7 +64,7 @@ export default function PlayerTable({ users }: PlayerTableProps) {
 
   const columns = [
     { key: "achternaam" as SortKey, label: "Speler", icon: User },
-    { key: "schaakrating_elo" as SortKey, label: "ELO Rating", icon: Trophy },
+    { key: "schaakrating_elo" as SortKey, label: "ELIO Rating", icon: Trophy },
     { key: "schaakrating_difference" as SortKey, label: "Verschil", icon: TrendingUp },
     { key: "schaakrating_max" as SortKey, label: "Hoogste Rating", icon: Award },
   ]

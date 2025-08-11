@@ -115,6 +115,7 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
     const createdUser = await prisma.user.create({
       data: {
         ...userDataWithoutPassword,
+        schaakrating_elo: user.schaakrating_elo ?? 0,
         password_hash: passwordHash,
         roles: JSON.stringify(roleList),
       },

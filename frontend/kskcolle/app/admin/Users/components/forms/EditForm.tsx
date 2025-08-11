@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, User, Mail, Trophy, Shield } from "lucide-react"
+import { CheckCircle2, User, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox, LandPlot, Phone } from "lucide-react"
 import useSWRMutation from "swr/mutation"
 import { save } from "../../../../api/index"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -29,19 +29,45 @@ const validationRules = {
   tel_nummer: {
     required: "Telefoonnummer is required!",
   },
+  password: {
+    required: "'Wachtwoord' is vereist!",
+  },
+  adres_straat: {
+    required: "Straat is vereist!",
+  },
+  adres_nummer: {
+    required: "Huisnummer is vereist!",
+  },
+  adres_postcode: {
+    required: "Postcode is vereist!",
+  },
+  adres_gemeente: {
+    required: "Gemeente is vereist!",
+  },
+  adres_land: {
+    required: "Land is vereist!",
+  },
 }
 
 interface FormData {
   voornaam: string
   achternaam: string
   geboortedatum?: string
+  email: string
+  tel_nummer: string
+  vast_nummer?: string;
   schaakrating_elo: number
   fide_id?: number
   schaakrating_max?: number
   lid_sinds?: string
-  email: string
-  tel_nummer: string
+  password: string
   roles: string[]
+  adres_straat: string;      
+  adres_nummer: string;   
+  adres_bus: string;          
+  adres_postcode: string;      
+  adres_gemeente: string;       
+  adres_land: string; 
 }
 
 const toDateInputString = (date: Date) => {
@@ -76,11 +102,19 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       geboortedatum: toDateInputString(user.geboortedatum),
       email: user.email,
       tel_nummer: user.tel_nummer,
+      vast_nummer: user.vast_nummer,
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,
       schaakrating_max: user.schaakrating_max,
       roles: user.roles || [],
+
+      adres_straat: user.adres_straat,
+      adres_nummer: user.adres_nummer,
+      adres_bus: user.adres_bus,
+      adres_postcode: user.adres_postcode,
+      adres_gemeente: user.adres_gemeente,
+      adres_land: user.adres_land,
     },
   })
 
@@ -135,7 +169,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Personal Information */}
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200 flex flex-col gap-y-3">
           <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
             <User className="h-3 w-3" />
             Persoonlijke Gegevens
@@ -179,7 +213,101 @@ export default function EditForm({ user, onClose }: EditFormProps) {
               <Input {...register("lid_sinds")} id="lid_sinds" type="date" className="mt-1 text-sm" />
               {errors.lid_sinds && <p className="text-red-500 text-xs mt-1">{errors.lid_sinds.message}</p>}
             </div>
+
+            
           </div>
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+        <h3 className="text-base font-semibold text-blue-800 mb-3 flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
+          Adresgegevens
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div>
+            <Label htmlFor="adres_straat" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <MapPin className="h-3 w-3" />
+              Straat
+            </Label>
+            <Input
+              {...register("adres_straat", validationRules.adres_straat)}
+              id="adres_straat"
+              placeholder="Straatnaam"
+              data-cy="adres_straat"
+              className="mt-1 text-sm"
+            />
+            {errors.adres_straat && <p className="text-red-500 text-xs mt-1">{errors.adres_straat.message}</p>}
+          </div>
+          <div>
+            <Label htmlFor="adres_nummer" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Hash className="h-3 w-3" />
+              Nummer
+            </Label>
+            <Input
+              {...register("adres_nummer", validationRules.adres_nummer)}
+              id="adres_nummer"
+              placeholder="Huisnummer"
+              data-cy="adres_nummer"
+              className="mt-1 text-sm"
+            />
+            {errors.adres_nummer && <p className="text-red-500 text-xs mt-1">{errors.adres_nummer.message}</p>}
+          </div>
+          <div>
+            <Label htmlFor="adres_bus" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Mailbox className="h-3 w-3" />
+              Bus
+            </Label>
+            <Input
+              {...register("adres_bus")}
+              id="adres_bus"
+              placeholder="Bus"
+              data-cy="adres_bus"
+              className="mt-1 text-sm"
+            />
+            {errors.adres_bus && <p className="text-red-500 text-xs mt-1">{errors.adres_bus.message}</p>}
+          </div>
+          <div>
+            <Label htmlFor="adres_postcode" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Hash className="h-3 w-3" />
+              Postcode
+            </Label>
+            <Input
+              {...register("adres_postcode", validationRules.adres_postcode)}
+              id="adres_postcode"
+              placeholder="Postcode"
+              data-cy="adres_postcode"
+              className="mt-1 text-sm"
+            />
+            {errors.adres_postcode && <p className="text-red-500 text-xs mt-1">{errors.adres_postcode.message}</p>}
+          </div>
+          <div>
+            <Label htmlFor="adres_gemeente" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <LandPlot className="h-3 w-3" />
+              Gemeente
+            </Label>
+            <Input
+              {...register("adres_gemeente", validationRules.adres_gemeente)}
+              id="adres_gemeente"
+              placeholder="Gemeente"
+              data-cy="adres_gemeente"
+              className="mt-1 text-sm"
+            />
+            {errors.adres_gemeente && <p className="text-red-500 text-xs mt-1">{errors.adres_gemeente.message}</p>}
+          </div>
+          <div>
+            <Label htmlFor="adres_land" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Globe className="h-3 w-3" />
+              Land
+            </Label>
+            <Input
+              {...register("adres_land", validationRules.adres_land)}
+              id="adres_land"
+              placeholder="Land"
+              data-cy="adres_land"
+              className="mt-1 text-sm"
+            />
+            {errors.adres_land && <p className="text-red-500 text-xs mt-1">{errors.adres_land.message}</p>}
+          </div>
+        </div>
+      </div>
         </div>
 
         {/* Contact Information */}
@@ -203,16 +331,31 @@ export default function EditForm({ user, onClose }: EditFormProps) {
             </div>
             <div>
               <Label htmlFor="tel_nummer" className="text-xs font-medium text-gray-700">
-                Telefoonnummer
+                GSM
               </Label>
               <Input
                 {...register("tel_nummer", validationRules.tel_nummer)}
                 id="tel_nummer"
-                placeholder="Telefoonnummer"
+                placeholder="GSM"
                 className="mt-1 text-sm"
               />
               {errors.tel_nummer && <p className="text-red-500 text-xs mt-1">{errors.tel_nummer.message}</p>}
             </div>
+            <div>
+            <Label htmlFor="vast_nummer" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Phone className="h-3 w-3" />
+              Telefoonnummer
+            </Label>
+            <Input
+              {...register("vast_nummer")}
+              id="vast_nummer"
+              placeholder="Telefoonnummer"
+              data-cy="vastnr"
+              className="mt-1 text-sm"
+            />
+            {errors.vast_nummer && <p className="text-red-500 text-xs mt-1">{errors.vast_nummer.message}</p>}
+          </div>
+            
           </div>
         </div>
 

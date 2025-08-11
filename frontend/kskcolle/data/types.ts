@@ -15,6 +15,13 @@ export interface User {
   fide_id?: number;
   nationaal_id?: number;
   lid_sinds: Date;
+  adres_straat: string;      
+  adres_nummer: string;   
+  adres_bus: string;          
+  adres_postcode: string;      
+  adres_gemeente: string;       
+  adres_land: string;   
+  vast_nummer?: string;
 }
 export interface CalendarEvent {
   event_id: number
