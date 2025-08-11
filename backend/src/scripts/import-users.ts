@@ -1,298 +1,303 @@
 /* scripts/import-users.ts
- * Draai met: npx ts-node scripts/import-users.ts
+ * Run: npx ts-node scripts/import-users.ts
  */
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import * as fs from "fs";
 import * as path from "path";
 
 dayjs.extend(utc);
-
+dayjs.extend(customParseFormat);
 const prisma = new PrismaClient();
 
-/**
- * 1) PAS HIER JE BESTAND EN SHEETNAAM AAN
- */
-const EXCEL_PATH = path.resolve(process.cwd(), "data/leden.xls");   // of leden.xlsx
-const SHEET_NAME: string | undefined = undefined; // laat undefined als je de *eerste* sheet wil
+/** === 1) BESTAND & SHEET === */
+const EXCEL_PATH = path.resolve(process.cwd(), "data", "leden.xls"); // of .xlsx
+const SHEET_NAME: string | undefined = undefined; // undefined = 1e sheet
 
-/**
- * 2) KOPPEL HIER JE KOLONNEN
- * Zet hier exact de headers zoals ze in jouw Excel staan.
- * Voorbeeldnamen — pas ze aan jouw bestand aan.
+/** === 2) KOLOM-MAPPING (pas aan jouw headers) ===
+ *  (volgens jouw screenshot)
  */
 const COLS = {
-  voornaam: "Voornaam",
-  achternaam: "Achternaam",
+  naam: "Naam",
+  adres: "Adres",
+  postcode: "Post",
+  gemeente: "Gemeente",
+  tel: "Telefoon",     // vast nummer
+  gsm: "GSM",          // mobiel
+  geboortedatum: "Geb.Dat",
+  geboortjaar: "Geb. Jaar",  // fallback als Geb.-Dt leeg is
   email: "E-mail",
-  tel_nummer: "Telefoon",
-  geboortedatum: "Geboortedatum",         // bv. "12/03/1998" of Excel datum
-  schaakrating_elo: "ELO",
-  schaakrating_difference: "ELO Δ",       // optioneel
-  schaakrating_max: "ELO max",            // optioneel
-  is_admin: "Is admin",                   // bv. "ja"/"nee" of TRUE/FALSE
-  fide_id: "FIDE ID",                     // optioneel
-  lid_sinds: "Lid sinds",                 // datum
-  // Als je in Excel al een wachtwoordkolom hebt, zet die hieronder.
-  // Anders genereren we een tijdelijk wachtwoord voor elke gebruiker.
-  plain_password: undefined as string | undefined,
-  // Als je rollen in Excel staan als JSON of komma-lijst, vul dat veld in:
-  roles: undefined as string | undefined,
-};
+  lid_sinds_jaar: "Start",      // "Sinds": jaar
+  // niet nodig: "Nr", "Opmerkingen", ...
+} as const;
 
-/**
- * 3) ALGEMENE DEFAULTS
- */
+/** Staat “Naam” als "Achternaam Voornaam"? In jouw screenshot: ja. */
+const NAME_IS_LASTNAME_THEN_FIRSTNAME = true;
+
+/** Defaults */
 const DEFAULT_ROLE_ARRAY = ["USER"];
 const TEMP_PASSWORD_LENGTH = 10;
 const DATE_INPUT_FORMATS = [
-  "DD/MM/YYYY",
-  "D/M/YYYY",
-  "YYYY-MM-DD",
-  "DD-MM-YYYY",
-  "D-M-YYYY",
+  "DD/MM/YYYY","D/M/YYYY","YYYY-MM-DD","DD-MM-YYYY","D-M-YYYY",
+  "DD/MM/YYYY HH:mm","DD/MM/YYYY HH:mm:ss",
+  "YYYY-MM-DD HH:mm","YYYY-MM-DD HH:mm:ss",
+  "M/D/YYYY","MM/DD/YYYY","M/D/YYYY HH:mm:ss"
 ];
 
-/**
- * Helpers
- */
-function parseBool(v: any): boolean | null {
-  if (typeof v === "boolean") return v;
-  if (typeof v === "number") return v !== 0;
-  if (typeof v === "string") {
-    const s = v.trim().toLowerCase();
-    if (["ja", "yes", "true", "waar", "1"].includes(s)) return true;
-    if (["nee", "no", "false", "onwaar", "0", ""].includes(s)) return false;
-  }
-  return null;
-}
 
+/** Helpers */
+// function parseBool(v: any): boolean | null {
+//   if (typeof v === "boolean") return v;
+//   const s = String(v ?? "").trim().toLowerCase();
+//   if (!s) return null;
+//   if (["ja","yes","true","waar","1"].includes(s)) return true;
+//   if (["nee","no","false","onwaar","0"].includes(s)) return false;
+//   return null;
+// }
 function parseIntSafe(v: any): number | null {
-  if (v === null || v === undefined || v === "") return null;
+  if (v == null || v === "") return null;
   const n = Number(String(v).replace(/[^\d-]/g, ""));
   return Number.isFinite(n) ? n : null;
 }
-
 function parseDateExcelOrString(v: any): Date | null {
   if (v == null || v === "") return null;
 
-  // 1) Excel serial numbers
+  // 1) Als het al een Date is (door cellDates:true) -> direct gebruiken
+  if (v instanceof Date && !isNaN(v.getTime())) return v;
+
+  // 2) Excel-serieel getal
   if (typeof v === "number") {
-    // Excel's epoch: days since 1899-12-30
+    // Excel 1900-system
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-    const ms = v * 24 * 60 * 60 * 1000;
+    const ms = Math.round(v * 86400000);
     const d = new Date(excelEpoch.getTime() + ms);
     return isNaN(d.getTime()) ? null : d;
   }
 
-  // 2) Try known string formats
-  if (typeof v === "string") {
-    const s = v.trim();
-    for (const fmt of DATE_INPUT_FORMATS) {
-      const m = dayjs.utc(s, fmt, true);
-      if (m.isValid()) return m.toDate();
-    }
-    // fallback: Date.parse
-    const d = new Date(s);
-    if (!isNaN(d.getTime())) return d;
+  // 3) Strings (met en zonder tijd)
+  const s = String(v).trim().replace(/\s+/g, " ");
+  for (const fmt of DATE_INPUT_FORMATS) {
+    const m = dayjs.utc(s, fmt, true);
+    if (m.isValid()) return m.toDate();
   }
 
-  return null;
+  // 4) Laatste poging: native parse
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
 }
-
 function randomPassword(len = TEMP_PASSWORD_LENGTH): string {
-  const chars =
-    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@$%?&";
-  let out = "";
-  for (let i = 0; i < len; i++) {
-    out += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return out;
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@$%?&";
+  return Array.from({ length: len }, () => chars[Math.floor(Math.random()*chars.length)]).join("");
 }
 
-/**
- * 4) Validatie met Zod
- */
-const UserRowSchema = z.object({
+/** Naam parsers */
+function splitName(fullRaw: any): { voornaam: string; achternaam: string } {
+  const full = String(fullRaw ?? "").trim().replace(/\s+/g, " ");
+  if (!full) return { voornaam: "Onbekend", achternaam: "Onbekend" };
+
+  if (full.includes(",")) {
+    const [a, v] = full.split(",", 2).map(s => s.trim());
+    return { voornaam: v || "Onbekend", achternaam: a || "Onbekend" };
+  }
+
+  const parts: string[] = full.split(" ").filter(Boolean);
+
+  if (NAME_IS_LASTNAME_THEN_FIRSTNAME) {
+    // "Achternaam Voornaam" -> laatste woord = voornaam
+    if (parts.length === 1) return { voornaam: parts[0]!, achternaam: parts[0]! };
+    const voornaam = parts.pop()!;                    // non-null assertion
+    const achternaam = parts.join(" ").trim();
+    return { voornaam, achternaam };
+  } else {
+    // "Voornaam Achternaam"
+    if (parts.length === 1) return { voornaam: parts[0]!, achternaam: parts[0]! };
+    const achternaam = parts.slice(1).join(" ").trim();
+    const voornaam = parts[0]!;                       // non-null assertion
+    return { voornaam, achternaam };
+  }
+}
+
+
+/** Adres parser (straat + nummer + bus) */
+function parseAddress(adresRaw: any): { straat?: string; nummer?: string; bus?: string } {
+  const s = String(adresRaw ?? "").trim();
+  if (!s) return {};
+
+  const re = /^(.+?)\s+(\d+[A-Za-z]?)(?:\s*(?:bus|b|B|\/)\s*([A-Za-z0-9\-]+))?$/;
+  const m = s.match(re);
+  if (!m) return { straat: s };
+
+  const straat = m[1]?.trim();
+  const nummer = m[2]?.trim();
+  const bus    = m[3]?.trim();
+
+  // Belangrijk: voeg 'bus' alleen toe als er effectief een waarde is
+  return {
+    ...(straat ? { straat } : {}),
+    ...(nummer ? { nummer } : {}),
+    ...(bus ? { bus } : {}),
+  };
+}
+
+
+/** Validatie van de gemapte rij (alleen wat we nodig hebben) */
+const RowSchema = z.object({
   voornaam: z.string().min(1),
   achternaam: z.string().min(1),
   email: z.string().email(),
-  tel_nummer: z.string().min(3),
-  geboortedatum: z.date(),
-  schaakrating_elo: z.number().int().nonnegative().default(0),
-  schaakrating_difference: z.number().int().nullable().optional(),
-  schaakrating_max: z.number().int().nullable().optional(),
-  is_admin: z.boolean().nullable().optional(),
-  fide_id: z.number().int().nullable().optional(),
-  lid_sinds: z.date(),
-  // Als Excel geen wachtwoorden bevat, vullen we later een random in:
-  plain_password: z.string().optional(),
-  roles: z.array(z.string()).optional(), // als Excel rollen heeft
+  tel_nummer: z.string().min(1),       // verplicht in jouw schema
+  vast_nummer: z.string().optional(),
+  geboortedatum: z.date(),             // required
+  lid_sinds: z.date(),                 // required
+  // Optioneel/extra
+  adres_straat: z.string().optional(),
+  adres_nummer: z.string().optional(),
+  adres_bus: z.string().optional(),
+  adres_postcode: z.string().optional(),
+  adres_gemeente: z.string().optional(),
 });
+type ValidRow = z.infer<typeof RowSchema>;
 
-type UserRow = z.infer<typeof UserRowSchema>;
-
-/**
- * 5) Lezen van Excel + mappen naar UserRow
- */
-function readRowsFromExcel(): any[] {
-  if (!fs.existsSync(EXCEL_PATH)) {
-    throw new Error(`Bestand niet gevonden op: ${EXCEL_PATH}`);
-  }
-  const workbook = XLSX.readFile(EXCEL_PATH, { cellDates: false });
-  const sheetName =
-    SHEET_NAME ?? workbook.SheetNames[0] ?? (() => { throw new Error("Geen sheet gevonden"); })();
-
-  const sheet = workbook.Sheets[sheetName];
+/** Excel → raw rows */
+function readRows(): any[] {
+  const wb = XLSX.readFile(EXCEL_PATH, { cellDates: true, raw: false }); // <= belangrijk
+  const sheetName = SHEET_NAME ?? wb.SheetNames[0];
+  if (!sheetName) throw new Error("Geen sheet gevonden");
+  const sheet = wb.Sheets[sheetName];
   if (!sheet) throw new Error(`Sheet "${sheetName}" niet gevonden`);
-
-  // raw rows as objects (key: header)
-  const rows = XLSX.utils.sheet_to_json<any>(sheet, { defval: null });
-  return rows;
+  return XLSX.utils.sheet_to_json<any>(sheet, { defval: null });
 }
 
-function mapRawToUserRow(raw: any, rowIndex: number): UserRow {
-  const geboortedatum = parseDateExcelOrString(
-    raw[COLS.geboortedatum as string]
-  );
-  const lid_sinds = parseDateExcelOrString(raw[COLS.lid_sinds as string]);
 
-  const rolesInput = COLS.roles ? raw[COLS.roles] : undefined;
-  let roles: string[] | undefined = undefined;
-  if (rolesInput) {
-    // probeer JSON, anders split op komma
-    try {
-      const parsed = JSON.parse(String(rolesInput));
-      if (Array.isArray(parsed)) roles = parsed.map(String);
-    } catch {
-      roles = String(rolesInput)
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
+/** Excel raw → ValidRow (map + schoonmaken) */
+function mapRaw(raw: any, rowIndex: number): ValidRow | null {
+  // Naam
+  const { voornaam, achternaam } = splitName(raw[COLS.naam]);
+
+  // Email: als ontbreekt of ongeldig → skip
+  const email = String(raw[COLS.email] ?? "").trim();
+  if (!email) {
+    console.warn(`Rij ${rowIndex + 2}: geen e-mail → overgeslagen.`);
+    return null;
   }
 
-  const obj = {
-    voornaam: String(raw[COLS.voornaam]).trim(),
-    achternaam: String(raw[COLS.achternaam]).trim(),
-    email: String(raw[COLS.email]).trim(),
-    tel_nummer: String(raw[COLS.tel_nummer]).trim(),
-    geboortedatum: geboortedatum ?? new Date("1970-01-01"),
-    schaakrating_elo: parseIntSafe(raw[COLS.schaakrating_elo]) ?? 0,
-    schaakrating_difference: parseIntSafe(
-      COLS.schaakrating_difference ? raw[COLS.schaakrating_difference] : null
-    ),
-    schaakrating_max: parseIntSafe(
-      COLS.schaakrating_max ? raw[COLS.schaakrating_max] : null
-    ),
-    is_admin:
-      COLS.is_admin != null
-        ? parseBool(raw[COLS.is_admin]) ?? undefined
-        : undefined,
-    fide_id: parseIntSafe(COLS.fide_id ? raw[COLS.fide_id] : null),
-    lid_sinds: lid_sinds ?? new Date("1970-01-01"),
-    plain_password: COLS.plain_password
-      ? (raw[COLS.plain_password] ? String(raw[COLS.plain_password]) : undefined)
-      : undefined,
-    roles,
+  // Telefoons
+  const gsm = String(raw[COLS.gsm] ?? "").trim();
+  const tel = String(raw[COLS.tel] ?? "").trim();
+  const tel_nummer = gsm || tel || "0000000000"; // fallback zodat schema niet faalt
+  const vast_nummer = tel || undefined;
+
+  // Geboortedatum
+  const dGeb = parseDateExcelOrString(raw[COLS.geboortedatum]);
+  let geboortedatum = dGeb;
+  if (!geboortedatum) {
+    const jaar = parseIntSafe(raw[COLS.geboortjaar]);
+    if (jaar) geboortedatum = new Date(Date.UTC(jaar, 0, 1)); // 1 jan
+  }
+  if (!geboortedatum) geboortedatum = new Date(Date.UTC(1970, 0, 1)); // last-resort default
+
+  // Lid sinds (uit kolom "St" = jaar)
+  const sindsJaar = parseIntSafe(raw[COLS.lid_sinds_jaar]);
+  const lid_sinds = sindsJaar ? new Date(Date.UTC(sindsJaar, 0, 1)) : new Date();
+
+  // Adres
+  const { straat, nummer, bus } = parseAddress(raw[COLS.adres]);
+  const adres_postcode = String(raw[COLS.postcode] ?? "").trim() || undefined;
+  const adres_gemeente = String(raw[COLS.gemeente] ?? "").trim() || undefined;
+
+  // Valideer + return
+  const candidate = {
+    voornaam,
+    achternaam,
+    email,
+    tel_nummer,
+    vast_nummer,
+    geboortedatum: geboortedatum!,
+    lid_sinds,
+    adres_straat: straat,
+    adres_nummer: nummer,
+    adres_bus: bus,
+    adres_postcode,
+    adres_gemeente,
   };
 
-  const parsed = UserRowSchema.safeParse(obj);
+  const parsed = RowSchema.safeParse(candidate);
   if (!parsed.success) {
-    const msg = parsed.error.issues
-      .map((i) => `${i.path.join(".")}: ${i.message}`)
-      .join("; ");
-    throw new Error(`Rij ${rowIndex + 2}: ${msg}`); // +2 omdat header = rij 1
+    const msg = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ");
+    throw new Error(`Rij ${rowIndex + 2}: ${msg}`);
   }
   return parsed.data;
 }
 
-/**
- * 6) Upsert naar DB (unique op email)
- * - password_hash wordt altijd gezet (van plain of random)
- * - roles: Excel → anders DEFAULT_ROLE_ARRAY
- */
-async function upsertUser(row: UserRow) {
-  const plainPassword = row.plain_password ?? randomPassword();
+/** Prisma upsert — let op: we "pushen" enkel velden die we nodig hebben */
+async function upsertUser(row: ValidRow) {
+  const plainPassword = randomPassword();
   const password_hash = await bcrypt.hash(plainPassword, 10);
-  const rolesJson = JSON.stringify(row.roles ?? DEFAULT_ROLE_ARRAY);
 
-  // Prisma modelvelden:
-  // user_id (autoinc), voornaam, achternaam, email(unique), tel_nummer,
-  // geboortedatum(DateTime), schaakrating_elo(Int), schaakrating_difference(Int?),
-  // schaakrating_max(Int?), is_admin(Boolean?), fide_id(Int? unique),
-  // lid_sinds(DateTime), password_hash(String), roles(Json)
+  // Alleen velden toevoegen die (1) verplicht zijn of (2) effectief een waarde hebben.
   const data = {
     voornaam: row.voornaam,
     achternaam: row.achternaam,
     email: row.email,
-    tel_nummer: row.tel_nummer,
-    geboortedatum: row.geboortedatum,
-    schaakrating_elo: row.schaakrating_elo,
-    schaakrating_difference: row.schaakrating_difference ?? null,
-    schaakrating_max: row.schaakrating_max ?? null,
-    is_admin: row.is_admin ?? null,
-    fide_id: row.fide_id ?? null,
-    lid_sinds: row.lid_sinds,
-    password_hash,
-    roles: JSON.parse(rolesJson),
+    tel_nummer: row.tel_nummer,                 // verplicht
+    geboortedatum: row.geboortedatum,           // verplicht
+    lid_sinds: row.lid_sinds,                   // verplicht
+    password_hash,                              // verplicht
+    roles: DEFAULT_ROLE_ARRAY,                  // default
+    // prisma default: schaakrating_elo = 0, adres_land = "Belgium"
+    ...(row.vast_nummer ? { vast_nummer: row.vast_nummer } : {}),
+    ...(row.adres_straat ? { adres_straat: row.adres_straat } : {}),
+    ...(row.adres_nummer ? { adres_nummer: row.adres_nummer } : {}),
+    ...(row.adres_bus ? { adres_bus: row.adres_bus } : {}),
+    ...(row.adres_postcode ? { adres_postcode: row.adres_postcode } : {}),
+    ...(row.adres_gemeente ? { adres_gemeente: row.adres_gemeente } : {}),
   } as const;
 
   const user = await prisma.user.upsert({
     where: { email: row.email },
     create: data,
-    update: data,
+    update: data, // als je enkel *nieuwe* users wil maken: zet update: {} en catch je prisma error
   });
 
-  return { user, plainPassword }; // we houden het plain pw bij om later een CSV te schrijven
+  return { user, plainPassword };
 }
 
-/**
- * 7) Main flow
- */
+/** Main */
 async function main() {
-  console.log("Excel lezen:", EXCEL_PATH);
-  const rawRows = readRowsFromExcel();
-  console.log(`Gevonden rijen (excl. header): ${rawRows.length}`);
+  console.log("Lezen:", EXCEL_PATH);
+  const rows = readRows();
 
-  const tempCreds: Array<{ email: string; password: string }> = [];
-  let ok = 0;
-  let fails = 0;
+  const creds: Array<{ email: string; password: string }> = [];
+  let ok = 0, skip = 0, fail = 0;
 
-  for (let i = 0; i < rawRows.length; i++) {
-    const raw = rawRows[i];
+  for (let i = 0; i < rows.length; i++) {
     try {
-      const row = mapRawToUserRow(raw, i);
-      const { user, plainPassword } = await upsertUser(row);
-      tempCreds.push({ email: user.email, password: plainPassword });
+      const mapped = mapRaw(rows[i], i);
+      if (!mapped) { skip++; continue; }
+      const { user, plainPassword } = await upsertUser(mapped);
+      creds.push({ email: user.email, password: plainPassword });
       ok++;
-      if (i % 25 === 0) console.log(`... verwerkt tot rij ${i + 1}`);
+      if (i % 25 === 0) console.log(`... rij ${i + 1} verwerkt`);
     } catch (e: any) {
-      fails++;
-      console.error(`FOUT bij rij ${i + 2}:`, e.message);
+      fail++;
+      console.error(`FOUT op rij ${i + 2}:`, e.message);
     }
   }
 
-  // Exporteer tijdelijke wachtwoorden (alleen voor admin ogen!)
-  const outPath = path.resolve(process.cwd(), "data", "imported_user_passwords.csv");
-  const csv = ["email,password", ...tempCreds.map((c) => `${c.email},${c.password}`)].join("\n");
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, csv, "utf8");
+  // Tijdelijke wachtwoorden opslaan
+  const out = path.resolve(process.cwd(), "data", "imported_user_passwords.csv");
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, ["email,password", ...creds.map(c => `${c.email},${c.password}`)].join("\n"), "utf8");
 
-  console.log("Klaar.");
-  console.log(`Succesvol: ${ok}, Fouten: ${fails}`);
-  console.log(`Tijdelijke wachtwoorden: ${outPath}`);
+  console.log(`Klaar. OK=${ok}, SKIP=${skip}, FAIL=${fail}`);
+  console.log(`Tijdelijke wachtwoorden: ${out}`);
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch(e => { console.error(e); process.exit(1); })
+  .finally(() => prisma.$disconnect());

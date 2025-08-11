@@ -128,3 +128,5 @@ dist
 # build map
 build/
 
+
+backend/src/scripts/data/imported_user_passwords.csv
