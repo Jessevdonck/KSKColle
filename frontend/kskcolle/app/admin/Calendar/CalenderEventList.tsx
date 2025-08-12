@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button"
 import type { CalendarEvent } from "../../../data/types"
 import { deleteById } from "@/app/api"
 import CalendarEventForm from "./CalenderEventForm"
+import { KeyedMutator } from "swr"
 
 interface CalendarEventListProps {
   events: CalendarEvent[]
-  mutate: (data?: CalendarEvent[] | Promise<CalendarEvent[]> | undefined, shouldRevalidate?: boolean) => Promise<CalendarEvent[] | undefined>
+  mutate: KeyedMutator<CalendarEvent[]>;
 }
 
 const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate }) => {
@@ -22,23 +23,24 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
     setEditingEvent(event)
   }
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Weet je zeker dat je dit evenement wilt verwijderen?")) {
-      // Optimistische update: direct uit lijst
-      const previous = events
-      const updated = events.filter((e) => e.event_id !== id)
-      await mutate(updated, false)
+ const handleDelete = async (id: number) => {
+  if (!window.confirm("Weet je zeker dat je dit evenement wilt verwijderen?")) return;
 
-      try {
-        await deleteById("calendar", { arg: id.toString() })
-        // geen extra mutate(), blijft verwijderd
-      } catch (error) {
-        console.error("Error deleting event:", error)
-        // rollback
-        await mutate(previous, false)
-      }
+  await mutate(async (current) => {
+    const previous = current ?? [];
+    const optimistic = previous.filter(e => e.event_id !== id);
+
+    try {
+      // Zorg dat je hier een number doorgeeft, geen string
+      await deleteById("calendar", { arg: id }); 
+      return optimistic;         // blijvend verwijderen in cache
+    } catch (e) {
+      console.error("Error deleting event:", e);
+      return previous;           // rollback
     }
-  }
+  }, false); // geen extra revalidate
+};
+
 
   const handleCancel = () => {
     setEditingEvent(null)
