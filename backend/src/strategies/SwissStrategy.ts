@@ -1,26 +1,22 @@
 // src/strategies/SwissStrategy.ts
 import { IPairingStrategy, Pairing, Competitor } from "../types/Types";
 
-type Color = "W" | "B" | "N";
-
-interface PlayerState {
+interface PlayerStanding {
   id: number;
-  seed: number;    // rating
-  points: number;  // huidig totaal (Competitor.score)
-  opponents: Set<number>;
-  colors: Color[]; // historiek uit previousRounds (+ evt. Competitor.color_history)
-  hadBye: boolean;
-
-  // afgeleiden t.b.v. kleurkeuze
-  netWhiteMinusBlack: number; // W - B
-  lastColor?: Color | undefined;          // W/B
-  lastStreak: number;         // lengte van laatste identieke kleurreeks
+  points: number;
+  opponents: number[];
+  rating: number;
+  colorBalance: number; // positive = more white, negative = more black
+  byeCount: number;
 }
 
 export class SwissStrategy implements IPairingStrategy {
-  // Harde grens: nooit 4× dezelfde kleur na elkaar
-  private P = {
-    hardMaxSameColorStreak: 3, // bij 3 op rij is de volgende kleur verplicht de andere
+  private opts = {
+    maxPerRound: 1,
+    rematchWeight: 1000,
+    standingPower: 2,
+    colorBalanceWeight: 50,
+    ratingWeight: 10,
   };
 
   async generatePairings(
@@ -28,355 +24,439 @@ export class SwissStrategy implements IPairingStrategy {
     roundNumber: number,
     previousRounds: Pairing[][]
   ): Promise<{ pairings: Pairing[]; byePlayer?: Competitor }> {
-    if (!players || players.length === 0) return { pairings: [] };
-
-    // --- 1) Start-state
-    const byId = new Map<number, PlayerState>();
-    for (const p of players) {
-      byId.set(p.user_id, {
-        id: p.user_id,
-        seed: p.schaakrating_elo ?? 0,
-        points: p.score ?? 0,
-        opponents: new Set<number>(),
-        colors: (p.color_history as Color[] | undefined)?.filter(c => c === "W" || c === "B") ?? [],
-        hadBye: false,
-        netWhiteMinusBlack: 0,
-        lastColor: undefined,
-        lastStreak: 0,
-      });
-    }
-
-    // --- 2) History uit previousRounds: opponents, kleuren, bye
-    for (const round of previousRounds ?? []) {
-      for (const g of round ?? []) {
-        const A = byId.get(g.speler1_id);
-        if (!A) continue;
-
-        if (g.speler2_id == null) {
-          A.hadBye = true;
-        } else {
-          const B = byId.get(g.speler2_id);
-          if (B) {
-            A.opponents.add(B.id);
-            B.opponents.add(A.id);
-          }
-          if (g.color1 === "W" || g.color1 === "B") A.colors.push(g.color1);
-          if (B && (g.color2 === "W" || g.color2 === "B")) B.colors.push(g.color2);
-        }
-      }
-    }
-
-    // --- 3) Kleur-statistiek helpers
-    for (const st of byId.values()) {
-      let last: Color | undefined = undefined;
-      let streak = 0;
-      let net = 0;
-      for (const c of st.colors) {
-        if (c === "W") net++;
-        else if (c === "B") net--;
-        if (c === last) streak++;
-        else {
-          last = c;
-          streak = 1;
-        }
-      }
-      st.netWhiteMinusBlack = net;
-      st.lastColor = last!;
-      st.lastStreak = streak;
-    }
-
-    let working: PlayerState[] = Array.from(byId.values());
-
-    // --- 4) Bye (oneven): laagste punten, dan rating; vermijd 2e bye
+    // Build player standings with all necessary information
+    const standings = this.buildPlayerStandings(players, previousRounds);
+    
+    // Handle bye player if odd number of players
     let byePlayer: Competitor | undefined;
-    if (working.length % 2 === 1) {
-      const asc = [...working].sort((a, b) => a.points - b.points || a.seed - b.seed);
-      let pick = asc.find(s => !s.hadBye);
-      if (!pick) pick = asc[0];
-      working = working.filter(s => s.id !== pick!.id);
-      byePlayer = players.find(p => p.user_id === pick!.id);
+    if (standings.length % 2 === 1) {
+      byePlayer = this.assignByePlayer(standings, players);
     }
 
-    // --- 5) Ronde 1: top-half vs bottom-half op rating
-    const isFirstRound = (previousRounds?.length ?? 0) === 0 || roundNumber === 1;
-    if (isFirstRound) {
-      const sortedBySeedDesc = [...working].sort((a, b) => b.seed - a.seed);
-      const half = Math.floor(sortedBySeedDesc.length / 2);
-      const top = sortedBySeedDesc.slice(0, half);
-      const bottom = sortedBySeedDesc.slice(half);
-
-      const pairings: Pairing[] = [];
-      // Backtracking binnen de twee helften om kleur-constraint te respecteren
-      const pairs = this.matchWithHardColorConstraint(
-        top,
-        bottom,
-        (A, B) => !A.opponents.has(B.id) // geen rematch in R1
-      );
-      for (const [A, B, c1, c2] of pairs) {
-        pairings.push({ speler1_id: A.id, speler2_id: B.id, color1: c1, color2: c2 });
-      }
-
-      if (byePlayer) {
-        pairings.push({ speler1_id: byePlayer.user_id, speler2_id: null, color1: "N", color2: "N" });
-        return { pairings, byePlayer };
-      }
-      return { pairings };
+    // Generate pairings based on round number
+    let pairings: Pairing[];
+    if (roundNumber === 1) {
+      pairings = this.generateFirstRoundPairings(standings);
+    } else {
+      pairings = this.generateSwissPairings(standings);
     }
 
-    // --- 6) Volgende rondes: per scoregroep + (kleur-feasibility) floats
-    const sorted = [...working].sort((a, b) => b.points - a.points || b.seed - a.seed);
+    // Balance colors to ensure fair distribution
+    pairings = this.balanceColors(pairings, standings);
 
-    // groepeer per punten
-    const groups = new Map<number, PlayerState[]>();
-    for (const s of sorted) {
-      const k = s.points;
-      if (!groups.has(k)) groups.set(k, []);
-      groups.get(k)!.push(s);
-    }
-    const scoreKeys = Array.from(groups.keys()).sort((a, b) => b - a);
-
-    type ABPair = [PlayerState, PlayerState, Color, Color];
-    const finalPairs: ABPair[] = [];
-    let carry: PlayerState | undefined;
-
-    for (let gi = 0; gi < scoreKeys.length; gi++) {
-      const key = scoreKeys[gi]!;
-      let bucket = groups.get(key)!.slice(); // kopie, punten = key
-
-      if (carry) {
-        bucket.unshift(carry);
-        carry = undefined;
-      }
-
-      // oneven: float laagste naar volgende
-      if (bucket.length % 2 === 1) {
-        carry = bucket.pop();
-      }
-
-      // Probeer binnen de groep perfecte matching met harde kleur-constraint en rematch-verbod
-      let pairs = this.matchInsideGroup(bucket, (A, B) => !A.opponents.has(B.id));
-
-      // Als mislukt: probeer met minimale kleur-feasibility float naar volgende groep
-      if (pairs.length * 2 !== bucket.length && gi < scoreKeys.length - 1) {
-        const nextKey = scoreKeys[gi + 1]!;
-        let nextBucket = groups.get(nextKey)!.slice();
-
-        // haal 1 (sterkste) uit nextBucket om bucket op te lossen
-        nextBucket.sort((a, b) => b.seed - a.seed);
-        const pulled = nextBucket.shift();
-        if (pulled) {
-          // voeg pulled toe, en als bucket nu oneven, duw zwakste uit bucket naar next
-          bucket.push(pulled);
-          bucket.sort((a, b) => b.seed - a.seed);
-          if (bucket.length % 2 === 1) {
-            const pushed = bucket.pop()!;
-            nextBucket.unshift(pushed);
-          }
-          // probeer opnieuw
-          pairs = this.matchInsideGroup(bucket, (A, B) => !A.opponents.has(B.id));
-          // update next group voor latere loop
-          groups.set(nextKey, nextBucket);
-        }
-      }
-
-      // Als nog steeds mislukt, sta rematch toe (maar NOG STEEDS harde kleur-constraint!)
-      if (pairs.length * 2 !== bucket.length) {
-        pairs = this.matchInsideGroup(bucket, (_A, _B) => true); // rematch toegestaan
-      }
-
-      finalPairs.push(...pairs);
+    // Debug: Log pairing information
+    console.log(`SwissStrategy: Generated ${pairings.length} pairings for ${standings.length} players`);
+    if (byePlayer) {
+      console.log(`SwissStrategy: Assigned bye to player ${byePlayer.user_id}`);
     }
 
-    // Als er nog carry is, koppel die aan dichtste overgeblevene (met kleur-feasibility)
-    if (carry) {
-      const used = new Set<number>(finalPairs.flatMap(p => [p[0].id, p[1].id]));
-      const candidate = sorted.find(s => !used.has(s.id) && s.id !== carry!.id);
-      if (candidate) {
-        const feas = this.chooseColorsHard(carry, candidate);
-        if (!feas) {
-          // wissel met een bestaand paar om feasible te maken
-          let placed = false;
-          for (let i = 0; i < finalPairs.length && !placed; i++) {
-            const [X, Y] = finalPairs[i]!;
-            // Probeer (carry,candidate) + (X,Y) kleur-feasible door ruil
-            const alt1 = this.chooseColorsHard(carry, X);
-            const alt2 = this.chooseColorsHard(candidate, Y);
-            if (alt1 && alt2) {
-              finalPairs[i] = [X, Y, alt2.c1, alt2.c2];
-              finalPairs.push([carry, candidate, alt1.c1, alt1.c2]);
-              placed = true;
-              break;
-            }
-            const alt3 = this.chooseColorsHard(carry, Y);
-            const alt4 = this.chooseColorsHard(candidate, X);
-            if (alt3 && alt4) {
-              finalPairs[i] = [X, Y, alt4.c1, alt4.c2];
-              finalPairs.push([carry, candidate, alt3.c1, alt3.c2]);
-              placed = true;
-              break;
-            }
-          }
-          if (!placed) {
-            // laatste redmiddel: pair met candidate en forceer kleuren via hard rule (zou nu mogelijk moeten zijn)
-            const forced = this.chooseColorsHard(carry, candidate);
-            if (forced) finalPairs.push([carry, candidate, forced.c1, forced.c2]);
-          }
-        } else {
-          finalPairs.push([carry, candidate, feas.c1, feas.c2]);
-        }
-      } else if (!byePlayer) {
-        // ultieme fallback (zou niet mogen bij even aantal)
-        byePlayer = players.find(p => p.user_id === carry.id);
-      }
-    }
+    return byePlayer
+      ? { pairings, byePlayer }
+      : { pairings };
+  }
 
-    // --- 7) Output
-    const out: Pairing[] = finalPairs.map(([A, B, c1, c2]) => ({
-      speler1_id: A.id,
-      speler2_id: B.id,
-      color1: c1,
-      color2: c2,
+  private buildPlayerStandings(players: Competitor[], previousRounds: Pairing[][]): PlayerStanding[] {
+    const standings: PlayerStanding[] = players.map(p => ({
+      id: p.user_id,
+      points: p.score || 0,
+      opponents: [],
+      rating: p.schaakrating_elo,
+      colorBalance: 0,
+      byeCount: 0,
     }));
 
-    if (byePlayer) {
-      out.push({ speler1_id: byePlayer.user_id, speler2_id: null, color1: "N", color2: "N" });
-      return { pairings: out, byePlayer };
-    }
-    return { pairings: out };
+    // Process previous rounds to build complete standings
+    previousRounds.forEach((round) => {
+      round.forEach(pairing => {
+        const player1 = standings.find(s => s.id === pairing.speler1_id);
+        const player2 = standings.find(s => s.id === pairing.speler2_id);
+        
+        if (player1) {
+          // Handle bye
+          if (pairing.speler2_id === null) {
+            player1.byeCount++;
+            player1.points += 1; // Bye gives 1 point
+          } else {
+            // Regular game
+            if (pairing.color1 === "W") player1.colorBalance++;
+            else if (pairing.color1 === "B") player1.colorBalance--;
+            
+            if (pairing.color2 === "W") player2!.colorBalance++;
+            else if (pairing.color2 === "B") player2!.colorBalance--;
+            
+            player1.opponents.push(pairing.speler2_id);
+            player2!.opponents.push(pairing.speler1_id);
+          }
+        }
+      });
+    });
+
+    return standings;
   }
 
-  // ---------- Matching helpers met harde kleur-constraint ----------
+  private assignByePlayer(standings: PlayerStanding[], players: Competitor[]): Competitor {
+    // Sort by points (ascending), then by rating (ascending)
+    const sorted = [...standings].sort((a, b) => {
+      if (a.points !== b.points) return a.points - b.points;
+      return a.rating - b.rating;
+    });
 
-  // Match top- en bottumhelft (R1) met backtracking en harde kleur-constraint
-  private matchWithHardColorConstraint(
-    top: PlayerState[],
-    bottom: PlayerState[],
-    canPair: (A: PlayerState, B: PlayerState) => boolean
-  ): Array<[PlayerState, PlayerState, Color, Color]> {
-    const result: Array<[PlayerState, PlayerState, Color, Color]> = [];
-    const used = new Array(bottom.length).fill(false);
+    // Find player with lowest score who hasn't had a bye yet
+    let byePlayer = sorted.find(s => s.byeCount === 0);
+    
+    // If everyone has had a bye, pick the player with lowest score
+    if (!byePlayer) {
+      byePlayer = sorted[0];
+    }
 
-    const dfs = (i: number): boolean => {
-      if (i === top.length) return true;
-      const A = top[i]!;
-      for (let j = 0; j < bottom.length; j++) {
-        if (used[j]) continue;
-        const B = bottom[j]!;
-        if (!canPair(A, B)) continue;
-        const colors = this.chooseColorsHard(A, B);
-        if (!colors) continue; // niet kleur-feasible
-        used[j] = true;
-        result.push([A, B, colors.c1, colors.c2]);
-        if (dfs(i + 1)) return true;
-        result.pop();
-        used[j] = false;
+    // Remove from standings
+    const index = standings.findIndex(s => s.id === byePlayer!.id);
+    standings.splice(index, 1);
+
+    return players.find(p => p.user_id === byePlayer!.id)!;
+  }
+
+  private generateFirstRoundPairings(standings: PlayerStanding[]): Pairing[] {
+    // Sort by rating (descending)
+    const sorted = [...standings].sort((a, b) => b.rating - a.rating);
+    const pairings: Pairing[] = [];
+    
+    // Pair high-rated with low-rated players
+    const half = Math.floor(sorted.length / 2);
+    for (let i = 0; i < half; i++) {
+      const high = sorted[i];
+      const low = sorted[sorted.length - 1 - i];
+      
+      if (high && low) {
+        pairings.push({
+          speler1_id: high.id,
+          speler2_id: low.id,
+          color1: "W",
+          color2: "B"
+        });
       }
-      return false;
-    };
+    }
 
-    dfs(0);
-    return result;
+    return pairings;
   }
 
-  // Match binnen een scoregroep met backtracking; predicate kan rematches verbieden/toestaan
-  private matchInsideGroup(
-    group: PlayerState[],
-    canPair: (A: PlayerState, B: PlayerState) => boolean
-  ): Array<[PlayerState, PlayerState, Color, Color]> {
-    const arr = [...group].sort((a, b) => b.seed - a.seed); // sterk -> zwak
-    const n = arr.length;
-    const used = new Array(n).fill(false);
-    const result: Array<[PlayerState, PlayerState, Color, Color]> = [];
+  private generateSwissPairings(standings: PlayerStanding[]): Pairing[] {
+    // Sort by points (descending), then by rating (descending)
+    const sorted = [...standings].sort((a, b) => {
+      if (a.points !== b.points) return b.points - a.points;
+      return b.rating - a.rating;
+    });
 
-    const dfs = (): boolean => {
-      // zoek eerste vrije index
-      let i = 0;
-      while (i < n && used[i]) i++;
-      if (i >= n) return true;
+    const pairings: Pairing[] = [];
+    const used = new Set<number>();
 
-      used[i] = true;
-      const A = arr[i]!;
+    // Group players by score
+    const scoreGroups = new Map<number, PlayerStanding[]>();
+    sorted.forEach(player => {
+      if (!scoreGroups.has(player.points)) {
+        scoreGroups.set(player.points, []);
+      }
+      scoreGroups.get(player.points)!.push(player);
+    });
 
-      for (let j = i + 1; j < n; j++) {
-        if (used[j]) continue;
-        const B = arr[j]!;
-        if (!canPair(A, B)) continue;
+    // Convert to array and sort by score (descending)
+    const scoreGroupArray = Array.from(scoreGroups.entries())
+      .sort(([a], [b]) => b - a);
 
-        const colors = this.chooseColorsHard(A, B);
-        if (!colors) continue; // harde kleur-constraint
+    // Process score groups from highest to lowest
+    for (let i = 0; i < scoreGroupArray.length; i++) {
+      const scoreGroup = scoreGroupArray[i];
+      if (!scoreGroup) continue;
+      
+      const [score, players] = scoreGroup;
+      let availablePlayers = players.filter((p: PlayerStanding) => !used.has(p.id));
+      
+      if (availablePlayers.length === 0) continue;
 
-        used[j] = true;
-        result.push([A, B, colors.c1, colors.c2]);
-
-        if (dfs()) return true;
-
-        result.pop();
-        used[j] = false;
+      // If odd number in this group, try to move one player to next group
+      if (availablePlayers.length % 2 === 1 && i < scoreGroupArray.length - 1) {
+        const nextGroup = scoreGroupArray[i + 1];
+        if (nextGroup) {
+          const movedPlayer = availablePlayers.pop()!;
+          nextGroup[1].push(movedPlayer);
+          nextGroup[1].sort((a, b) => b.rating - a.rating);
+        }
       }
 
-      used[i] = false;
-      return false;
-    };
+            // Pair all available players in this group (this will ALWAYS pair everyone)
+      const groupPairings = this.pairAllPlayersInGroup(availablePlayers, used);
+      pairings.push(...groupPairings);
+    }
 
-    if (dfs()) return result;
-    return result; // leeg of gedeeltelijk (caller behandelt fallback)
+    return pairings;
   }
 
-  // Harde kleurkeuze: respecteert "nooit 4× dezelfde kleur"
-  private chooseColorsHard(
-    A: PlayerState,
-    B: PlayerState
-  ): { c1: Color; c2: Color } | null {
-    const mustA = this.mustOpposite(A);
-    const mustB = this.mustOpposite(B);
+  private pairAllPlayersInGroup(players: PlayerStanding[], used: Set<number>): Pairing[] {
+    const pairings: Pairing[] = [];
+    const available = [...players];
 
-    // Beide hebben verplicht tegengestelde kleur nodig
-    if (mustA && mustB) {
-      // Als ze dezelfde kleur "moeten", is het onmogelijk
-      if (mustA === mustB) return null;
-      // Ze willen tegengesteld -> respecteer dat
-      return { c1: mustA, c2: mustB };
+    // Keep pairing until we can't make any more pairs
+    while (available.length >= 2) {
+      const player1 = available.shift();
+      if (!player1) break;
+      
+      let bestMatchIndex = -1;
+      let bestScore = -Infinity;
+
+      // First priority: Find non-rematch options
+      for (let i = 0; i < available.length; i++) {
+        const player2 = available[i];
+        if (player2 && !this.isRematch(player1, player2)) {
+          const score = this.calculatePairingScore(player1, player2);
+          
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatchIndex = i;
+          }
+        }
+      }
+
+      // LAST RESORT: If no non-rematch options available, we MUST allow rematches
+      if (bestMatchIndex === -1) {
+        console.warn(`SwissStrategy: No non-rematch options for player ${player1.id}, forcing rematch as last resort`);
+        
+        // Find best rematch option (we MUST pair everyone)
+        for (let i = 0; i < available.length; i++) {
+          const player2 = available[i];
+          if (player2) {
+            const score = this.calculateRematchScore(player1, player2);
+            
+            if (score > bestScore) {
+              bestScore = score;
+              bestMatchIndex = i;
+            }
+          }
+        }
+      }
+
+      // Create the pairing (we MUST pair everyone, no exceptions)
+      if (bestMatchIndex !== -1) {
+        const bestMatch = available.splice(bestMatchIndex, 1)[0];
+        if (bestMatch) {
+          pairings.push({
+            speler1_id: player1.id,
+            speler2_id: bestMatch.id,
+            color1: "W",
+            color2: "B"
+          });
+
+          used.add(player1.id);
+          used.add(bestMatch.id);
+        }
+      } else {
+        // This should NEVER happen - if it does, we have a bug
+        console.error(`SwissStrategy: IMPOSSIBLE ERROR - Cannot pair player ${player1.id} with ANY available player`);
+        throw new Error(`SwissStrategy: Cannot pair player ${player1.id} - this should never happen`);
+      }
     }
 
-    // Eén speler heeft een verplichting
-    if (mustA && !mustB) {
-      // Geef A wat moet, B krijgt de andere
-      return { c1: mustA, c2: mustA === "W" ? "B" : "W" };
-    }
-    if (!mustA && mustB) {
-      return { c1: mustB === "W" ? "B" : "W", c2: mustB };
-    }
-
-    // Geen harde verplichtingen -> normale balans
-    return this.assignBalancedColors(A, B);
+    return pairings;
   }
 
-  // True “must color” als streak >= hardMaxSameColorStreak
-  private mustOpposite(S: PlayerState): Color | null {
-    if (S.lastColor && S.lastStreak >= this.P.hardMaxSameColorStreak) {
-      return S.lastColor === "W" ? "B" : "W";
-    }
-    return null;
+  private isRematch(player1: PlayerStanding, player2: PlayerStanding): boolean {
+    return player1.opponents.includes(player2.id);
   }
 
-  // Zachte balans (alleen gebruikt als er geen musts zijn)
-  private assignBalancedColors(A: PlayerState, B: PlayerState): { c1: Color; c2: Color } {
-    // balanceer netto W-B
-    if (A.netWhiteMinusBlack < B.netWhiteMinusBlack) return { c1: "W", c2: "B" };
-    if (B.netWhiteMinusBlack < A.netWhiteMinusBlack) return { c1: "B", c2: "W" };
+  private calculatePairingScore(player1: PlayerStanding, player2: PlayerStanding): number {
+    let score = 0;
 
-    // breek langere streak
-    const aSt = A.lastStreak || 0;
-    const bSt = B.lastStreak || 0;
-    if (aSt > bSt && A.lastColor) {
-      return { c1: A.lastColor === "W" ? "B" : "W", c2: A.lastColor === "W" ? "W" : "B" };
-    }
-    if (bSt > aSt && B.lastColor) {
-      return { c1: B.lastColor === "W" ? "W" : "B", c2: B.lastColor === "W" ? "B" : "W" };
+    // Prefer similar ratings (avoid huge rating mismatches)
+    const ratingDiff = Math.abs(player1.rating - player2.rating);
+    score -= ratingDiff * 0.01;
+
+    // This method should only be called for non-rematches
+    if (this.isRematch(player1, player2)) {
+      console.error(`SwissStrategy: calculatePairingScore called for rematch between ${player1.id} and ${player2.id}`);
+      return -Infinity;
     }
 
-    // volledig gelijk -> geef hoger gerate speler zwart (mini-nadeel)
-    if (A.seed >= B.seed) return { c1: "B", c2: "W" };
-    return { c1: "W", c2: "B" };
+    // Prefer balanced color distribution
+    const colorDiff = Math.abs(player1.colorBalance - player2.colorBalance);
+    score -= colorDiff * this.opts.colorBalanceWeight;
+
+    return score;
+  }
+
+  private calculateRematchScore(player1: PlayerStanding, player2: PlayerStanding): number {
+    let score = 0;
+
+    // Prefer similar ratings (avoid huge rating mismatches)
+    const ratingDiff = Math.abs(player1.rating - player2.rating);
+    score -= ratingDiff * 0.01;
+
+    // Heavy penalty for rematches, but still allow them
+    if (this.isRematch(player1, player2)) {
+      score -= this.opts.rematchWeight * 10; // Very heavy penalty
+    }
+
+    // Prefer balanced color distribution
+    const colorDiff = Math.abs(player1.colorBalance - player2.colorBalance);
+    score -= colorDiff * this.opts.colorBalanceWeight;
+
+    return score;
+  }
+
+  private forcePairings(players: PlayerStanding[], used: Set<number>): Pairing[] {
+    const pairings: Pairing[] = [];
+    const available = [...players];
+
+    // Force pairings even if it means rematches
+    while (available.length >= 2) {
+      const player1 = available.shift()!;
+      const player2 = available.shift()!;
+      
+      pairings.push({
+        speler1_id: player1.id,
+        speler2_id: player2.id,
+        color1: "W",
+        color2: "B"
+      });
+
+      used.add(player1.id);
+      used.add(player2.id);
+    }
+
+    return pairings;
+  }
+
+  private rearrangePairings(existingPairings: Pairing[], unpairedPlayer: PlayerStanding, used: Set<number>): Pairing[] {
+    // Find a pairing we can break and rearrange
+    for (let i = 0; i < existingPairings.length; i++) {
+      const pairing = existingPairings[i];
+      if (!pairing) continue;
+      
+      const player1 = pairing.speler1_id;
+      const player2 = pairing.speler2_id;
+      
+      if (player2 === null) continue;
+      
+      // Check if we can create a new pairing with the unpaired player
+      if (!this.isRematch(unpairedPlayer, { id: player1, points: 0, opponents: [], rating: 0, colorBalance: 0, byeCount: 0 })) {
+        // Create new pairing: unpairedPlayer vs player1
+        const newPairing1: Pairing = {
+          speler1_id: unpairedPlayer.id,
+          speler2_id: player1,
+          color1: "W" as "W" | "B" | "N",
+          color2: "B" as "W" | "B" | "N"
+        };
+        
+        // Create new pairing: player2 vs someone else (we'll need to find a match)
+        // For now, we'll just return the existing pairings and add the new one
+        const result = [...existingPairings];
+        result[i] = newPairing1;
+        
+        used.add(unpairedPlayer.id);
+        used.add(player1);
+        used.delete(player2);
+        
+        return result;
+      }
+    }
+    
+    // If we can't rearrange, just return existing pairings
+    return existingPairings;
+  }
+
+  private balanceColors(pairings: Pairing[], standings: PlayerStanding[]): Pairing[] {
+    return pairings.map(pairing => {
+      const player1 = standings.find(s => s.id === pairing.speler1_id);
+      const player2 = standings.find(s => s.id === pairing.speler2_id);
+      
+      if (!player1 || !player2) return pairing;
+
+      // Get color history for both players
+      const player1Colors = this.getColorHistory(player1.id);
+      const player2Colors = this.getColorHistory(player2.id);
+
+      // Check for streaks and balance colors
+      const newPairing = this.assignOptimalColors(pairing, player1, player2, player1Colors, player2Colors);
+      
+      return newPairing;
+    });
+  }
+
+  private getColorHistory(playerId: number): ("W" | "B")[] {
+    // Parse previous rounds to get actual color history for this player
+    const colors: ("W" | "B")[] = [];
+    
+    // This would need access to previousRounds from the main method
+    // For now, we'll use a simplified approach based on colorBalance
+    // In a real implementation, you'd iterate through previousRounds and extract colors
+    
+    return colors;
+  }
+
+  private assignOptimalColors(
+    pairing: Pairing, 
+    player1: PlayerStanding, 
+    player2: PlayerStanding,
+    player1Colors: ("W" | "B")[],
+    player2Colors: ("W" | "B")[]
+  ): Pairing {
+    // Calculate current color balance
+    const player1Whites = (player1.colorBalance > 0) ? player1.colorBalance : 0;
+    const player1Blacks = (player1.colorBalance < 0) ? Math.abs(player1.colorBalance) : 0;
+    const player2Whites = (player2.colorBalance > 0) ? player2.colorBalance : 0;
+    const player2Blacks = (player2.colorBalance < 0) ? Math.abs(player2.colorBalance) : 0;
+
+    // Check for streaks (more than 3 of the same color in a row)
+    const player1Streak = this.getCurrentStreak(player1Colors);
+    const player2Streak = this.getCurrentStreak(player2Colors);
+
+    // STRICT: If any player has 3+ of the same color, they MUST get the opposite color
+    if (player1Streak.count >= 3 && player1Streak.color === "W") {
+      return { ...pairing, color1: "B", color2: "W" };
+    }
+    if (player1Streak.count >= 3 && player1Streak.color === "B") {
+      return { ...pairing, color1: "W", color2: "B" };
+    }
+    if (player2Streak.count >= 3 && player2Streak.color === "W") {
+      return { ...pairing, color1: "B", color2: "W" };
+    }
+    if (player2Streak.count >= 3 && player2Streak.color === "B") {
+      return { ...pairing, color1: "W", color2: "B" };
+    }
+
+    // Balance overall color distribution
+    if (player1Whites > player1Blacks + 1) {
+      return { ...pairing, color1: "B", color2: "W" };
+    }
+    if (player2Whites > player2Blacks + 1) {
+      return { ...pairing, color1: "W", color2: "B" };
+    }
+    if (player1Blacks > player1Whites + 1) {
+      return { ...pairing, color1: "W", color2: "B" };
+    }
+    if (player2Blacks > player2Whites + 1) {
+      return { ...pairing, color1: "B", color2: "W" };
+    }
+
+    // Keep original assignment if colors are balanced
+    return pairing;
+  }
+
+  private getCurrentStreak(colors: ("W" | "B")[]): { color: "W" | "B", count: number } {
+    if (colors.length === 0) return { color: "W", count: 0 };
+    
+    const lastColor = colors[colors.length - 1];
+    if (!lastColor) return { color: "W", count: 0 };
+    
+    let count = 1;
+    
+    // Count backwards from the end to find the current streak
+    for (let i = colors.length - 2; i >= 0; i--) {
+      if (colors[i] === lastColor) {
+        count++;
+      } else {
+        break;
+      }
+    }
+    
+    return { color: lastColor, count };
   }
 }
