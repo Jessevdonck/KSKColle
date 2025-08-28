@@ -168,11 +168,11 @@ export class SwissStrategy implements IPairingStrategy {
       const scoreGroup = scoreGroupArray[i];
       if (!scoreGroup) continue;
       
-      const [score, players] = scoreGroup;
+      const [_score, players] = scoreGroup;
       let availablePlayers = players.filter((p: PlayerStanding) => !used.has(p.id));
       
       if (availablePlayers.length === 0) continue;
-
+      
       // If odd number in this group, try to move one player to next group
       if (availablePlayers.length % 2 === 1 && i < scoreGroupArray.length - 1) {
         const nextGroup = scoreGroupArray[i + 1];
@@ -301,66 +301,66 @@ export class SwissStrategy implements IPairingStrategy {
     return score;
   }
 
-  private forcePairings(players: PlayerStanding[], used: Set<number>): Pairing[] {
-    const pairings: Pairing[] = [];
-    const available = [...players];
+  // private forcePairings(players: PlayerStanding[], used: Set<number>): Pairing[] {
+  //   const pairings: Pairing[] = [];
+  //   const available = [...players];
 
-    // Force pairings even if it means rematches
-    while (available.length >= 2) {
-      const player1 = available.shift()!;
-      const player2 = available.shift()!;
+  //   // Force pairings even if it means rematches
+  //   while (available.length >= 2) {
+  //     const player1 = available.shift()!;
+  //     const player2 = available.shift()!;
       
-      pairings.push({
-        speler1_id: player1.id,
-        speler2_id: player2.id,
-        color1: "W",
-        color2: "B"
-      });
+  //     pairings.push({
+  //       speler1_id: player1.id,
+  //       speler2_id: player2.id,
+  //       color1: "W",
+  //       color2: "B"
+  //     });
 
-      used.add(player1.id);
-      used.add(player2.id);
-    }
+  //     used.add(player1.id);
+  //     used.add(player2.id);
+  //   }
 
-    return pairings;
-  }
+  //   return pairings;
+  // }
 
-  private rearrangePairings(existingPairings: Pairing[], unpairedPlayer: PlayerStanding, used: Set<number>): Pairing[] {
-    // Find a pairing we can break and rearrange
-    for (let i = 0; i < existingPairings.length; i++) {
-      const pairing = existingPairings[i];
-      if (!pairing) continue;
+  // private rearrangePairings(existingPairings: Pairing[], unpairedPlayer: PlayerStanding, used: Set<number>): Pairing[] {
+  //   // Find a pairing we can break and rearrange
+  //   for (let i = 0; i < existingPairings.length; i++) {
+  //     const pairing = existingPairings[i];
+  //     if (!pairing) continue;
       
-      const player1 = pairing.speler1_id;
-      const player2 = pairing.speler2_id;
+  //     const player1 = pairing.speler1_id;
+  //     const player2 = pairing.speler2_id;
       
-      if (player2 === null) continue;
+  //     if (player2 === null) continue;
       
-      // Check if we can create a new pairing with the unpaired player
-      if (!this.isRematch(unpairedPlayer, { id: player1, points: 0, opponents: [], rating: 0, colorBalance: 0, byeCount: 0 })) {
-        // Create new pairing: unpairedPlayer vs player1
-        const newPairing1: Pairing = {
-          speler1_id: unpairedPlayer.id,
-          speler2_id: player1,
-          color1: "W" as "W" | "B" | "N",
-          color2: "B" as "W" | "B" | "N"
-        };
+  //     // Check if we can create a new pairing with the unpaired player
+  //     if (!this.isRematch(unpairedPlayer, { id: player1, points: 0, opponents: [], rating: 0, colorBalance: 0, byeCount: 0 })) {
+  //       // Create new pairing: unpairedPlayer vs player1
+  //       const newPairing1: Pairing = {
+  //         speler1_id: unpairedPlayer.id,
+  //         speler2_id: player1,
+  //         color1: "W" as "W" | "B" | "N",
+  //         color2: "B" as "W" | "B" | "N"
+  //       };
         
-        // Create new pairing: player2 vs someone else (we'll need to find a match)
-        // For now, we'll just return the existing pairings and add the new one
-        const result = [...existingPairings];
-        result[i] = newPairing1;
+  //       // Create new pairing: player2 vs someone else (we'll need to find a match)
+  //       // For now, we'll just return the existing pairings and add the new one
+  //       const result = [...existingPairings];
+  //       result[i] = newPairing1;
         
-        used.add(unpairedPlayer.id);
-        used.add(player1);
-        used.delete(player2);
+  //       used.add(unpairedPlayer.id);
+  //       used.add(player1);
+  //       used.delete(player2);
         
-        return result;
-      }
-    }
+  //       return result;
+  //     }
+  //   }
     
-    // If we can't rearrange, just return existing pairings
-    return existingPairings;
-  }
+  //   // If we can't rearrange, just return existing pairings
+  //   return existingPairings;
+  // }
 
   private balanceColors(pairings: Pairing[], standings: PlayerStanding[]): Pairing[] {
     return pairings.map(pairing => {
@@ -380,7 +380,7 @@ export class SwissStrategy implements IPairingStrategy {
     });
   }
 
-  private getColorHistory(playerId: number): ("W" | "B")[] {
+  private getColorHistory(_playerId: number): ("W" | "B")[] {
     // Parse previous rounds to get actual color history for this player
     const colors: ("W" | "B")[] = [];
     
