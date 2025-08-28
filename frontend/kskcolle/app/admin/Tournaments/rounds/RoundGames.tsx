@@ -44,6 +44,11 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
         return <CheckCircle className="h-3 w-3 text-green-500" />
       case "1/2-1/2":
         return <Minus className="h-3 w-3 text-yellow-500" />
+      case "1-0FF":
+      case "0-1FF":
+        return <XCircle className="h-3 w-3 text-red-500" />
+      case "0-0":
+        return <Minus className="h-3 w-3 text-blue-500" />
       case "not_played":
       case null:
         return <XCircle className="h-3 w-3 text-gray-400" />
@@ -59,6 +64,11 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
         return "bg-green-100 text-green-800 border-green-200"
       case "1/2-1/2":
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "1-0FF":
+      case "0-1FF":
+        return "bg-red-100 text-red-800 border-red-200"
+      case "0-0":
+        return "bg-blue-100 text-blue-800 border-blue-200"
       case "not_played":
       case null:
         return "bg-gray-100 text-gray-600 border-gray-200"
@@ -132,9 +142,12 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
                     <SelectValue placeholder="Selecteer" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1-0">1-0</SelectItem>
-                    <SelectItem value="0-1">0-1</SelectItem>
-                    <SelectItem value="1/2-1/2">½-½</SelectItem>
+                    <SelectItem value="1-0">1-0 (Wit wint)</SelectItem>
+                    <SelectItem value="0-1">0-1 (Zwart wint)</SelectItem>
+                    <SelectItem value="1/2-1/2">½-½ (Remise)</SelectItem>
+                    <SelectItem value="1-0FF">1-0FF (Zwart forfait)</SelectItem>
+                    <SelectItem value="0-1FF">0-1FF (Wit forfait)</SelectItem>
+                    <SelectItem value="0-0">0-0 (Scheidsrechterlijke beslissing)</SelectItem>
                     <SelectItem value="not_played">Niet gespeeld</SelectItem>
                   </SelectContent>
                 </Select>
@@ -157,9 +170,13 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
 
           {/* Result Status */}
           <div className="mt-2 flex justify-start sm:justify-end">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getResultColor(game.result)}`}>
-              {game.result === "not_played" || !game.result ? "Nog te spelen" : game.result}
-            </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getResultColor(game.result)}`}>
+            {game.result === "not_played" || !game.result ? "Nog te spelen" : 
+             game.result === "1-0FF" ? "Zwart forfait" :
+             game.result === "0-1FF" ? "Wit forfait" :
+             game.result === "0-0" ? "Scheidsrechterlijke beslissing" :
+             game.result}
+          </span>
           </div>
 
           {/* Postpone Selection */}

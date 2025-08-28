@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import {
-  Crown,
   Home,
   Users,
   Trophy,
@@ -18,6 +17,7 @@ import {
   PersonStanding,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect } from "react"
+import Image from "next/image"
 import LoginSheet from "./LoginSheet"
 import { useAuth } from "../contexts/auth"
 import ProfileDropdown from "./ProfileDropdown"
@@ -49,7 +49,13 @@ export default function Navbar() {
     <nav className="bg-neutral-50 text-textColor p-4 shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Crown size={32} className="text-mainAccent" />
+          <Image 
+            src="/images/logo.png" 
+            alt="KSK Colle Logo" 
+            width={32} 
+            height={32} 
+            className="object-contain"
+          />
           <span className="text-xl font-bold text-textColor">KSK Colle</span>
         </Link>
 

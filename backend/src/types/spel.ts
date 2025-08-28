@@ -1,12 +1,22 @@
 import type { ListResponse } from "./common";
 
+export enum GameResult {
+  WHITE_WIN = "1-0",
+  BLACK_WIN = "0-1", 
+  DRAW = "1/2-1/2",
+  WHITE_FORFEIT = "1-0FF",
+  BLACK_FORFEIT = "0-1FF",
+  REFEREE_DECISION = "0-0",
+  NOT_PLAYED = "not_played"
+}
+
 export type Spel = {
   game_id: number;
   round_id: number;
   speler1_id: number ;
   speler2_id?: number | null;
   winnaar_id?: number | null;
-  result?: string | null;
+  result?: GameResult | null;
   uitgestelde_datum?: Date | null;
 };
 
@@ -16,7 +26,7 @@ export type SpelWithTournament = {
   speler1_id: number ;
   speler2_id?: number | null;
   winnaar_id?: number | null;
-  result?: string | null;
+  result?: GameResult | null;
   uitgestelde_datum?: Date | null;
 
   round: {
@@ -37,7 +47,7 @@ export type SpelCreateInput = {
   speler1_id: number;
   speler2_id?: number | null;
   winnaar_id?: number | null;
-  result?: string | null;
+  result?: GameResult | null;
   uitgestelde_datum?: Date | null;
 };
 
@@ -47,7 +57,7 @@ export interface GameWithRoundAndTournament {
   speler1_id: number;
   speler2_id: number | null;
   winnaar_id: number | null;
-  result: string | null;
+  result: GameResult | null;
   uitgestelde_datum: Date | null;
   speler1_naam: string;
   speler2_naam: string | null;

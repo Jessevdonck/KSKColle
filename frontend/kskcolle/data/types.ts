@@ -39,18 +39,18 @@ export interface CalendarEventInput {
   type: string
 }
 
-export type Game = {
+export interface Game {
   game_id: number;
   round_id: number;
   speler1_id: number;
-  speler2_id: number;
+  speler2_id: number | null;
   winnaar_id: number | null;
   result: string | null;
-  uitgestelde_datum ?: Date | null
-  speler1: User;
-  speler2: User;
-  winnaar: User | null;
-};
+  uitgestelde_datum: Date | null;
+  speler1: Player;
+  speler2: Player | null;
+  round: Round;
+}
 
 export type Round = {
   round_id: number;
@@ -89,21 +89,21 @@ export interface GameWithRoundAndTournament {
   game_id: number;
   round_id: number;
   speler1_id: number;
-  speler2_id: number;
-  speler1_naam: string;
-  speler2_naam: string;
+  speler2_id: number | null;
   winnaar_id: number | null;
-  result?: string;
-  uitgestelde_datum?: string;
+  result: string | null;
+  uitgestelde_datum: Date | null;
+  speler1_naam: string;
+  speler2_naam: string | null;
   round: {
     round_id: number;
     tournament_id: number;
     ronde_nummer: number;
-    ronde_datum: string;
+    ronde_datum: Date;
     tournament: {
       tournament_id: number;
       naam: string;
       rondes: number;
-    }
-  }
+    };
+  };
 }

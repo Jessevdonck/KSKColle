@@ -129,7 +129,18 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
     if (score === 1) return "Winst"
     if (score === 0.5) return "Remise"
     if (score === 0) return "Verlies"
-    return result
+    
+    // Handle special results
+    switch (result) {
+      case "1-0FF":
+        return "Zwart forfait"
+      case "0-1FF":
+        return "Wit forfait"
+      case "0-0":
+        return "Scheidsrechterlijke beslissing"
+      default:
+        return result
+    }
   }
 
   const getResultColor = (score: number) => {
