@@ -5,7 +5,7 @@ import handleDBError from "./handleDBError";
 
 export const getAllSpellen = async (): Promise<Spel[]> => {
   try {
-    return await prisma.game.findMany({
+    const games = await prisma.game.findMany({
       include: {
         round: {
           include: {
@@ -16,6 +16,8 @@ export const getAllSpellen = async (): Promise<Spel[]> => {
         speler2: true,
       },
     });
+
+    return games as Spel[];
   } catch (error) {
     throw handleDBError(error);
   }
@@ -42,7 +44,7 @@ export const getSpelById = async (game_id: number) => {
       throw ServiceError.notFound('No game with this id exists');
     }
 
-    return game;
+    return game as any;
   } catch (error) {
     throw handleDBError(error);
   }
@@ -74,7 +76,7 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
       speler1_id: game.speler1_id,
       speler2_id: game.speler2_id,
       winnaar_id: game.winnaar_id,
-      result: game.result,
+      result: game.result as any,
       uitgestelde_datum: game.uitgestelde_datum,
       speler1_naam: `${game.speler1.voornaam} ${game.speler1.achternaam}`,
       speler2_naam: game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : null,
@@ -97,7 +99,7 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
 
 export const getSpellenByTournamentId = async (tournament_id: number): Promise<Spel[]> => {
   try {
-    return await prisma.game.findMany({
+    const games = await prisma.game.findMany({
       where: {
         round: {
           tournament_id,
@@ -113,6 +115,8 @@ export const getSpellenByTournamentId = async (tournament_id: number): Promise<S
         speler2: true,
       },
     });
+
+    return games as Spel[];
   } catch (error) {
     throw handleDBError(error);
   }
@@ -120,7 +124,7 @@ export const getSpellenByTournamentId = async (tournament_id: number): Promise<S
 
 export const createSpel = async (spel: SpelCreateInput) => {
   try {
-    return await prisma.game.create({
+    const game = await prisma.game.create({
       data: spel,
       include: {
         round: {
@@ -132,6 +136,8 @@ export const createSpel = async (spel: SpelCreateInput) => {
         speler2: true,
       },
     });
+
+    return game as any;
   } catch (error) {
     throw handleDBError(error);
   }
@@ -155,7 +161,7 @@ export const updateSpel = async (game_id: number, data: SpelUpdateInput) => {
       },
     });
     console.log('Updated game:', updatedGame);
-    return updatedGame;
+    return updatedGame as any;
   } catch (error) {
     throw handleDBError(error);
   }
