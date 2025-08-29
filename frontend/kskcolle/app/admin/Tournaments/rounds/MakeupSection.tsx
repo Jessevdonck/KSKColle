@@ -17,7 +17,7 @@ interface Props {
   onUpdate(): void
 }
 
-export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
+export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }: Props) {
   const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
   const { trigger: saveEvent, isMutating: savingEvent } = useSWRMutation("calendar", save)
   const { trigger: saveMakeup, isMutating: savingMakeup } = useSWRMutation("makeupDay", save)
