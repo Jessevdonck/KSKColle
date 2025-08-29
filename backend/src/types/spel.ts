@@ -1,14 +1,6 @@
 import type { ListResponse } from "./common";
 
-export enum GameResult {
-  WHITE_WIN = "1-0",
-  BLACK_WIN = "0-1", 
-  DRAW = "1/2-1/2",
-  WHITE_FORFEIT = "1-0FF",
-  BLACK_FORFEIT = "0-1FF",
-  REFEREE_DECISION = "0-0",
-  NOT_PLAYED = "not_played"
-}
+export type GameResult = "1-0" | "0-1" | "1/2-1/2" | "1-0FF" | "0-1FF" | "0-0" | "not_played";
 
 export type Spel = {
   game_id: number;

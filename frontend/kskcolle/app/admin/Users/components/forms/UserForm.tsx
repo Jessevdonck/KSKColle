@@ -19,6 +19,7 @@ const EMPTY_USER = {
   schaakrating_elo: 0,
   fide_id: 0,
   schaakrating_max: 0,
+  is_youth: false,
   lid_sinds: new Date(),
   roles: [],
   adres_straat: "",       
@@ -77,6 +78,7 @@ interface FormData {
   schaakrating_elo: number
   fide_id?: number
   schaakrating_max?: number
+  is_youth: boolean
   lid_sinds?: string
   password: string
   roles: string[]
@@ -116,6 +118,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,
       schaakrating_max: user.schaakrating_max,
+      is_youth: user.is_youth || false,
       roles: user.roles || [],
       adres_straat: user.adres_straat ?? "",
       adres_nummer: user.adres_nummer ?? "",
@@ -137,6 +140,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       schaakrating_elo: Number(values.schaakrating_elo),
       fide_id: values.fide_id ? Number(values.fide_id) : null,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
+      is_youth: values.is_youth,
       roles: values.roles,
     }
 
@@ -455,6 +459,16 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
               {errors.schaakrating_max && (
                 <p className="text-red-500 text-xs mt-1">{errors.schaakrating_max.message}</p>
               )}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                {...register("is_youth")}
+                id="is_youth"
+                data-cy="is_youth"
+              />
+              <Label htmlFor="is_youth" className="text-sm font-medium text-gray-700">
+                Jeugdspeler
+              </Label>
             </div>
           </div>
         </div>
