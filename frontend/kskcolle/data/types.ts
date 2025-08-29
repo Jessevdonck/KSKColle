@@ -52,8 +52,8 @@ export interface Game {
   winnaar_id: number | null;
   result: string | null;
   uitgestelde_datum: Date | null;
-  speler1: Player;
-  speler2: Player | null;
+  speler1: User;
+  speler2: User | null;
   round: Round;
 }
 
