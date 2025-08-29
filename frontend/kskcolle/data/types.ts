@@ -12,6 +12,7 @@ export interface User {
   schaakrating_difference?: number;
   schaakrating_max?: number;
   is_admin?: boolean;
+  is_youth?: boolean;
   fide_id?: number;
   nationaal_id?: number;
   lid_sinds: Date;
@@ -28,7 +29,9 @@ export interface CalendarEvent {
   title: string
   description: string
   date: string
+  startuur: string
   type: string
+  tournament_id?: number
 }
 
 export interface CalendarEventInput {
@@ -36,7 +39,9 @@ export interface CalendarEventInput {
   title: string
   description: string
   date: Date
+  startuur: string
   type: string
+  tournament_id?: number
 }
 
 export interface Game {
@@ -57,6 +62,7 @@ export type Round = {
   tournament_id: number;
   ronde_nummer: number;
   ronde_datum: Date;
+  startuur: string;
   games: Game[];
 };
 
@@ -64,7 +70,9 @@ export type MakeupDay = {
   id: number
   round_after: number
   date: string
+  startuur: string
   label?: string
+  calendar_event_id?: number
 }
 
 
@@ -100,6 +108,7 @@ export interface GameWithRoundAndTournament {
     tournament_id: number;
     ronde_nummer: number;
     ronde_datum: Date;
+    startuur: string;
     tournament: {
       tournament_id: number;
       naam: string;

@@ -112,6 +112,7 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                     </div>
                   </th>
                   <th className="p-3 text-left font-semibold text-textColor text-sm">FIDE ID</th>
+                  <th className="p-3 text-center font-semibold text-textColor text-sm">Status</th>
                   <th className="p-3 text-center font-semibold text-textColor text-sm">Acties</th>
                 </tr>
               </thead>
@@ -139,6 +140,20 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                       </div>
                     </td>
                     <td className="p-3 text-sm">{user.fide_id ?? "N/A"}</td>
+                    <td className="p-3 text-center">
+                      <div className="flex justify-center gap-1">
+                        {user.is_admin && (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full border border-green-200">
+                            Admin
+                          </span>
+                        )}
+                        {user.is_youth && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-200">
+                            Jeugd
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-3 text-center">
                       <div className="flex justify-center gap-1">
                         <Button
@@ -185,11 +200,18 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                       </div>
                     </div>
                   </div>
-                  {user.is_admin && (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full border border-green-200">
-                      Admin
-                    </span>
-                  )}
+                  <div className="flex gap-1">
+                    {user.is_admin && (
+                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full border border-green-200">
+                        Admin
+                      </span>
+                    )}
+                    {user.is_youth && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-200">
+                        Jeugd
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-xs mb-3">

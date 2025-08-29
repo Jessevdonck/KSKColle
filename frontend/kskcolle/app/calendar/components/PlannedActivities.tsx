@@ -137,7 +137,7 @@ const PlannedActivities = () => {
                     <th className="p-3 text-left font-semibold text-textColor text-sm">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-3 w-3" />
-                        Datum
+                        Datum & Tijd
                       </div>
                     </th>
                     <th className="p-3 text-left font-semibold text-textColor text-sm">Type</th>
@@ -163,6 +163,11 @@ const PlannedActivities = () => {
                           <span className="text-gray-700 text-sm">
                             {format(new Date(event.date), "dd MMM yyyy", { locale: nl })}
                           </span>
+                          {event.startuur && (
+                            <span className="text-mainAccent font-medium text-sm">
+                              • {event.startuur}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="p-3">
@@ -207,6 +212,11 @@ const PlannedActivities = () => {
                     <div className="flex items-center gap-2 text-gray-600">
                       <Clock className="h-3 w-3" />
                       <span>{format(new Date(event.date), "dd MMM yyyy", { locale: nl })}</span>
+                      {event.startuur && (
+                        <span className="text-mainAccent font-medium">
+                          • {event.startuur}
+                        </span>
+                      )}
                     </div>
                     {event.description && (
                       <div className="flex items-start gap-2 text-gray-600">

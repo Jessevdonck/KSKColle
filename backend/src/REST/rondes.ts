@@ -53,6 +53,7 @@ createRonde.validationScheme = {
     tournament_id: Joi.number().integer().positive().required(),
     ronde_nummer: Joi.number().integer().positive().required(),
     ronde_datum: Joi.date().required(),
+    startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).default("20:00"),
   },
 };
 
@@ -128,6 +129,7 @@ updateRonde.validationScheme = {
   body: {
     ronde_nummer: Joi.number().integer().positive(),
     ronde_datum: Joi.date(),
+    startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
   },
 };
 

@@ -94,6 +94,7 @@ registerUser.validationScheme = {
     schaakrating_elo: Joi.number().integer().positive(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
+    is_youth: Joi.boolean().optional(),
     password: Joi.string(),
     roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).required(),
 
@@ -182,6 +183,7 @@ updateUser.validationScheme = {
     schaakrating_elo: Joi.number().integer().positive().optional(),
     fide_id: Joi.number().integer().positive().allow(null).optional(),
     schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
+    is_youth: Joi.boolean().optional(),
     password: Joi.string().optional(),
     roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).optional(),
 

@@ -9,6 +9,7 @@ export interface Player {
   achternaam: string;
   email: string;
   schaakrating_elo: number;
+  is_youth?: boolean;
 }
 
 export interface Participation {
@@ -50,5 +51,7 @@ export interface MakeupDay {
   tournament_id: number
   round_after: number
   date: Date      // ISO string
+  startuur: string
   label?: string | null
+  calendar_event_id?: number | null
 }

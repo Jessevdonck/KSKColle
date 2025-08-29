@@ -11,6 +11,7 @@ export type User = {
   max_rating?: number | null;           
   rating_difference?: number | null;    
   is_admin?: boolean | null;            
+  is_youth?: boolean | null;            
   fide_id?: number | null | undefined;                    
   lid_sinds: Date;
   password_hash: string;
@@ -33,6 +34,7 @@ export type UserCreateInput = {
   max_rating?: number | null;
   rating_difference?: number | null;
   fide_id?: number | null;
+  is_youth?: boolean;
   lid_sinds: Date;
   password: string;
   roles: string[];
@@ -68,6 +70,7 @@ export interface RegisterUserRequest {
   max_rating?: number | null;
   rating_difference?: number | null;
   fide_id?: number | null;
+  is_youth?: boolean;
   lid_sinds: Date;
   password: string;
   roles: string[];
@@ -88,7 +91,7 @@ export interface UpdatePasswordResponse {
   message: string;
 }
 
-export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email'> {}
+export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email' | 'is_youth'> {}
 
 export interface UserUpdateInput extends UserCreateInput {}
 

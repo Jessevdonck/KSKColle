@@ -30,6 +30,7 @@ createEvent.validationScheme = {
     description: Joi.string(),
     type: Joi.string(),
     date: Joi.date(),
+    startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).default("20:00"),
   },
 };
 
@@ -59,6 +60,7 @@ updateEvent.validationScheme = {
     description: Joi.string().optional(),
     type: Joi.string().optional(),
     date: Joi.date().optional(),
+    startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
   },
 };
 

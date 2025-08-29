@@ -59,6 +59,7 @@ interface FormData {
   schaakrating_elo: number
   fide_id?: number
   schaakrating_max?: number
+  is_youth?: boolean
   lid_sinds?: string
   password: string
   roles: string[]
@@ -107,6 +108,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       schaakrating_elo: user.schaakrating_elo,
       fide_id: user.fide_id,
       schaakrating_max: user.schaakrating_max,
+      is_youth: user.is_youth || false,
       roles: user.roles || [],
 
       adres_straat: user.adres_straat,
@@ -129,6 +131,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       schaakrating_elo: Number(values.schaakrating_elo),
       fide_id: values.fide_id ? Number(values.fide_id) : null,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
+      is_youth: values.is_youth || false,
       roles: Array.isArray(values.roles) ? values.roles : JSON.parse(values.roles as string),
     }
 
@@ -417,28 +420,44 @@ export default function EditForm({ user, onClose }: EditFormProps) {
 
         {/* Admin Rights */}
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
-          <div className="flex items-center space-x-3">
-            <Checkbox
-              id="isAdmin"
-              checked={watch("roles").includes("admin")}
-              onCheckedChange={(checked) => {
-                const currentRoles = getValues("roles")
-                const updatedRoles = Array.isArray(currentRoles) ? currentRoles : JSON.parse(currentRoles as string)
-                if (checked) {
-                  setValue("roles", [...updatedRoles, "admin"])
-                } else {
-                  setValue(
-                    "roles",
-                    updatedRoles.filter((role) => role !== "admin"),
-                  )
-                }
-              }}
-              className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
-            />
-            <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Shield className="h-3 w-3" />
-              Is Admin
-            </Label>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="isAdmin"
+                checked={watch("roles").includes("admin")}
+                onCheckedChange={(checked) => {
+                  const currentRoles = getValues("roles")
+                  const updatedRoles = Array.isArray(currentRoles) ? currentRoles : JSON.parse(currentRoles as string)
+                  if (checked) {
+                    setValue("roles", [...updatedRoles, "admin"])
+                  } else {
+                    setValue(
+                      "roles",
+                      updatedRoles.filter((role) => role !== "admin"),
+                    )
+                  }
+                }}
+                className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+              />
+              <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Shield className="h-3 w-3" />
+                Is Admin
+              </Label>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="isYouth"
+                checked={watch("is_youth")}
+                onCheckedChange={(checked) => {
+                  setValue("is_youth", checked as boolean)
+                }}
+                className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+              />
+              <Label htmlFor="isYouth" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Trophy className="h-3 w-3" />
+                Is Jeugdspeler
+              </Label>
+            </div>
           </div>
         </div>
 

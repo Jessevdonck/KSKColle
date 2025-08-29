@@ -72,6 +72,7 @@ export const createRonde = async (input: any)=> {
         tournament_id:      input.tournament_id,
         ronde_nummer:       input.ronde_nummer,
         ronde_datum:        input.ronde_datum,
+        startuur:           input.startuur ?? "20:00",
         calendar_event_id:  input.calendar_event_id ?? undefined,
       },
     });
@@ -101,6 +102,7 @@ export const updateRonde = async (
       data: {
         ...(changes.ronde_nummer  !== undefined && { ronde_nummer:  changes.ronde_nummer  }),
         ...(changes.ronde_datum   !== undefined && { ronde_datum:    changes.ronde_datum   }),
+        ...(changes.startuur      !== undefined && { startuur:       changes.startuur      }),
         calendar_event_id: changes.calendar_event_id ?? null,
       },
     });

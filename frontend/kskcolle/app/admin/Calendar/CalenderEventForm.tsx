@@ -4,7 +4,7 @@ import type React from "react"
 import { useForm, Controller } from "react-hook-form"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { CalendarIcon, X, Plus, CalendarIcon as CalendarIconLucide, Type, FileText } from "lucide-react"
+import { CalendarIcon, X, Plus, CalendarIcon as CalendarIconLucide, Type, FileText, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,6 +27,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           title: "",
           description: "",
           date: new Date().toISOString(),
+          startuur: "20:00",
           type: "Activiteit",
         },
   })
@@ -38,6 +39,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
         title: data.title,
         description: data.description,
         date: data.date,
+        startuur: data.startuur,
         type: data.type,
       }
       console.log(payload)
@@ -112,43 +114,68 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
               <CalendarIconLucide className="h-5 w-5" />
               Datum & Tijd
             </h3>
-            <div>
-              <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4" />
-                Datum
-              </Label>
-              <Controller
-                name="date"
-                control={form.control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={`w-full justify-start text-left font-normal mt-1 ${
-                          !field.value && "text-muted-foreground"
-                        }`}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? (
-                          format(new Date(field.value), "PPP", { locale: nl })
-                        ) : (
-                          <span>Kies een datum</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
-                        onSelect={(date) => field.onChange(date?.toISOString())}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <CalendarIcon className="h-4 w-4" />
+                  Datum
+                </Label>
+                <Controller
+                  name="date"
+                  control={form.control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={`w-full justify-start text-left font-normal mt-1 ${
+                            !field.value && "text-muted-foreground"
+                          }`}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {field.value ? (
+                            format(new Date(field.value), "PPP", { locale: nl })
+                          ) : (
+                            <span>Kies een datum</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value ? new Date(field.value) : undefined}
+                          onSelect={(date) => field.onChange(date?.toISOString())}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="startuur" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Startuur
+                </Label>
+                <Input
+                  id="startuur"
+                  type="time"
+                  {...form.register("startuur", { 
+                    required: "Startuur is vereist.",
+                    pattern: {
+                      value: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+                      message: "Voer een geldig tijdstip in (HH:MM)"
+                    }
+                  })}
+                  className="mt-1"
+                  defaultValue="20:00"
+                />
+                {form.formState.errors.startuur && (
+                  <p className="text-red-500 text-sm mt-1">{form.formState.errors.startuur.message}</p>
                 )}
-              />
+              </div>
             </div>
           </div>
 

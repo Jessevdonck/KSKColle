@@ -5,6 +5,7 @@ export type Ronde = {
   tournament_id: number;
   ronde_nummer: number;
   ronde_datum: Date;
+  startuur: string;
   calendar_event_id?: number | null;
 };
 
@@ -12,6 +13,7 @@ export type RondeCreateInput = {
   tournament_id: number;
   ronde_nummer: number;
   ronde_datum: Date;
+  startuur?: string;
   calendar_event_id?: number;
 };
 

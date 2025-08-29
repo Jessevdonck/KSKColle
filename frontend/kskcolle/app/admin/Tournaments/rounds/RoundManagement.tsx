@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
-import { Calendar, Plus, Trophy, CheckCircle } from "lucide-react"
+import { Calendar, Plus, Trophy, CheckCircle, Clock } from "lucide-react"
 
 interface Props {
   tournament: Toernooi
@@ -41,6 +41,7 @@ export default function RoundManagement({ tournament }: Props) {
   const [addingNew, setAddingNew] = useState(false)
   const [newRoundAfter, setNewRoundAfter] = useState(1)
   const [newDate, setNewDate] = useState(format(new Date(), "yyyy-MM-dd"))
+  const [newStartuur, setNewStartuur] = useState("20:00")
   const [newLabel, setNewLabel] = useState("")
 
   if (!T) {
@@ -88,6 +89,7 @@ export default function RoundManagement({ tournament }: Props) {
         tournament_id: T.tournament_id,
         round_after: newRoundAfter,
         date: newDate,
+        startuur: newStartuur,
         label: newLabel || undefined,
       },
     })
@@ -162,6 +164,18 @@ export default function RoundManagement({ tournament }: Props) {
                   <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
                 </div>
                 <div>
+                  <Label className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Startuur
+                  </Label>
+                  <Input 
+                    type="time" 
+                    value={newStartuur} 
+                    onChange={(e) => setNewStartuur(e.target.value)}
+                    defaultValue="20:00"
+                  />
+                </div>
+                <div>
                   <Label>Label (optioneel)</Label>
                   <Input placeholder="bv. Inhaaldag 1" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
                 </div>
@@ -224,6 +238,7 @@ export default function RoundManagement({ tournament }: Props) {
                 key={`m${e.makeup.id}`}
                 makeup={e.makeup}
                 rounds={T.rounds}
+                tournamentId={T.tournament_id}
                 onUpdate={() => Promise.all([refetchT(), refetchMD()])}
               />
             )

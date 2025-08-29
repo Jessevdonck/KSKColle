@@ -13,6 +13,7 @@ import { Calendar, Clock, ChevronRight, CheckCircle, XCircle, Minus } from "luci
 interface Props {
   makeup: MakeupDay & { calendar_event_id?: number }
   rounds: Round[]
+  tournamentId: number
   onUpdate(): void
 }
 
@@ -21,8 +22,9 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
   const { trigger: saveEvent, isMutating: savingEvent } = useSWRMutation("calendar", save)
   const { trigger: saveMakeup, isMutating: savingMakeup } = useSWRMutation("makeupDay", save)
 
-  // Local state voor datum en eventId
+  // Local state voor datum, startuur en eventId
   const [date, setDate] = useState("")
+  const [startuur, setStartuur] = useState("20:00")
   const [eventId, setEventId] = useState<number | undefined>(undefined)
 
   // Hydrate state wanneer makeup data binnenkomt
@@ -32,6 +34,9 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
         // Aangezien makeup.date een string is, kunnen we het direct gebruiken
         const dateValue = typeof makeup.date === "string" ? makeup.date : new Date(makeup.date).toISOString()
         setDate(dateValue.split("T")[0])
+      }
+      if (makeup.startuur) {
+        setStartuur(makeup.startuur)
       }
       setEventId(makeup.calendar_event_id)
     }
@@ -57,7 +62,7 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
 
     // 1) Als we al een eventId hebben, update het; anders maak nieuw aan
     if (eventId) {
-      await saveEvent({ id: eventId, date: newDate })
+      await saveEvent({ id: eventId, date: newDate, startuur })
     } else {
       const created = await saveEvent({
         id: undefined,
@@ -65,6 +70,8 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
         description: `Inhaaldag voor uitgestelde partijen`,
         type: "Inhaaldag",
         date: newDate,
+        startuur,
+        tournament_id: tournamentId,
       })
 
       // Onthoud lokaal zodat volgende keer we updaten ipv opnieuw aanmaken
@@ -78,6 +85,22 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
     await saveMakeup({ id: makeup.id, date: newDate })
 
     // 3) Vertel parent om te re-fetchen
+    onUpdate()
+  }
+
+  const handleStartuurChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStartuur = e.target.value
+    setStartuur(newStartuur)
+
+    // Update the calendar event with new startuur
+    if (eventId) {
+      await saveEvent({ id: eventId, startuur: newStartuur })
+    }
+
+    // Update the makeup day's startuur
+    await saveMakeup({ id: makeup.id, startuur: newStartuur })
+
+    // Tell the parent to re-fetch
     onUpdate()
   }
 
@@ -132,20 +155,34 @@ export default function MakeupSection({ makeup, rounds, onUpdate }: Props) {
             {makeup.label ?? format(new Date(makeup.date), "dd-MM-yyyy")}
           </h3>
 
-          {/* Datum input voor kalender event */}
-          <div className="relative">
-            <Input
-              type="date"
-              value={date}
-              onChange={handleDateChange}
-              disabled={savingMakeup || savingEvent}
-              className="bg-white/10 border-amber-300/50 text-amber-800 placeholder:text-amber-700/70 focus:bg-white/20 focus:border-amber-400 focus:ring-amber-300/20 min-w-[140px] backdrop-blur-sm"
-            />
-            {(savingMakeup || savingEvent) && (
-              <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700/70" />
-              </div>
-            )}
+          {/* Datum en Startuur inputs voor kalender event */}
+          <div className="flex items-center gap-3">
+            {/* Datum input */}
+            <div className="relative">
+              <Input
+                type="date"
+                value={date}
+                onChange={handleDateChange}
+                disabled={savingMakeup || savingEvent}
+                className="bg-white/10 border-amber-300/50 text-amber-800 placeholder:text-amber-700/70 focus:bg-white/20 focus:border-amber-400 focus:ring-amber-300/20 min-w-[140px] backdrop-blur-sm"
+              />
+              {(savingMakeup || savingEvent) && (
+                <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700/70" />
+                </div>
+              )}
+            </div>
+
+            {/* Startuur input */}
+            <div className="relative">
+              <Input
+                type="time"
+                value={startuur}
+                onChange={handleStartuurChange}
+                disabled={savingMakeup || savingEvent}
+                className="bg-white/10 border-amber-300/50 text-amber-800 placeholder:text-amber-700/70 focus:bg-white/20 focus:border-amber-400 focus:ring-amber-300/20 min-w-[120px] backdrop-blur-sm"
+              />
+            </div>
           </div>
         </div>
 

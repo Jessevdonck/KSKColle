@@ -24,6 +24,7 @@ model User {
   schaakrating_difference Int?
   schaakrating_max   Int?
   is_admin           Boolean?
+  is_youth           Boolean          @default(false)
   fide_id            Int?            @unique
   lid_sinds          DateTime
   password_hash      String          @db.VarChar(255)
@@ -39,6 +40,8 @@ model User {
   speler1Games       Game[]          @relation("Speler1")
   speler2Games       Game[]          @relation("Speler2")
   gewonnenGames      Game[]          @relation("Winnaar")
+
+  @@index([is_youth])
 }
 
 model Tournament {
@@ -53,6 +56,7 @@ model Tournament {
   participations     Participation[]  
   rounds             Round[]          
   makeupDays         MakeupDay[]    
+  calendarEvents     CalendarEvent[] // Calendar events gerelateerd aan dit toernooi
 
   @@index([is_youth])  
 }
@@ -62,9 +66,11 @@ model Round {
   tournament_id      Int
   ronde_nummer       Int            
   ronde_datum        DateTime
+  startuur           String           @default("20:00")
   calendar_event_id  Int?
   
-  tournament    Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade) 
+  tournament         Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade) 
+  calendarEvent      CalendarEvent?   @relation(fields: [calendar_event_id], references: [event_id], onDelete: SetNull)
   games              Game[]            @relation("RoundGames") 
 
    @@unique([ronde_nummer, tournament_id]) 
@@ -109,18 +115,28 @@ model CalendarEvent {
   event_id       Int      @id @default(autoincrement())
   title          String
   date           DateTime
+  startuur       String   @default("20:00")
   type           String   @default("Activiteit")
   description    String?
+  tournament_id  Int?     // Optioneel, voor events die niet aan een toernooi gekoppeld zijn
+  
+  // Relaties
+  tournament     Tournament? @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
+  rounds         Round[]
+  makeupDays     MakeupDay[]
 }
 
 model MakeupDay {
-  id             Int       @id @default(autoincrement())
-  tournament_id  Int
-  round_after    Int       // na welke officiële ronde deze dag komt
-  date           DateTime
-  label          String?   // bv. “Inhaaldag 1”
+  id                 Int       @id @default(autoincrement())
+  tournament_id      Int
+  round_after        Int       // na welke officiële ronde deze dag komt
+  date               DateTime
+  startuur           String    @default("20:00")
+  label              String?   // bv. "Inhaaldag 1"
+  calendar_event_id  Int?
   
-  tournament     Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
+  tournament         Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
+  calendarEvent      CalendarEvent?   @relation(fields: [calendar_event_id], references: [event_id], onDelete: SetNull)
   
   @@index([tournament_id])
-}
+} 

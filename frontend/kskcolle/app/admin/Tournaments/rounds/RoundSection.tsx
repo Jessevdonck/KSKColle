@@ -35,6 +35,8 @@ export default function RoundSection({
 }: Props) {
   // local date for the <Input>
   const [date, setDate] = useState("")
+  // local startuur for the <Input>
+  const [startuur, setStartuur] = useState("20:00")
   // local eventId so we know when we've created it
   const [eventId, setEventId] = useState<number | undefined>(undefined)
 
@@ -48,6 +50,9 @@ export default function RoundSection({
             : new Date(roundData.ronde_datum).toISOString()
         setDate(d.split("T")[0])
       }
+      if (roundData.startuur) {
+        setStartuur(roundData.startuur)
+      }
       setEventId(roundData.calendar_event_id)
     }
   }, [roundData])
@@ -57,6 +62,14 @@ export default function RoundSection({
   // SWR mutation for calendar
   const { trigger: mutateEvent, isMutating: savingEvent } = useSWRMutation("calendar", saveEvent)
 
+  // Helper function to update round with correct URL structure
+  const updateRound = async (roundId: number, data: any) => {
+    return await mutateRound({ 
+      id: `${tournamentId}/rondes/${roundId}`,
+      ...data
+    })
+  }
+
   const showGenerateButton = canGenerate && (roundData?.games.length ?? 0) === 0
 
   const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +78,7 @@ export default function RoundSection({
 
     // 1) If we already have an eventId, update it; otherwise create & keep it
     if (eventId) {
-      await mutateEvent({ id: eventId, date: newDate })
+      await mutateEvent({ id: eventId, date: newDate, startuur })
     } else {
       const created = await mutateEvent({
         id: undefined,
@@ -73,17 +86,49 @@ export default function RoundSection({
         description: `${tournamentName} – ronde ${roundNumber}`,
         type: "Ronde",
         date: newDate,
+        startuur,
+        tournament_id: tournamentId,
       })
       // remember it locally so next time we update instead of re-create
       setEventId(created.event_id)
       // also persist to the DB-round row
-      //await mutateRound({ id: roundData!.round_id, calendar_event_id: created.event_id })
+      if (roundData) {
+        await updateRound(roundData.round_id, { 
+          calendar_event_id: created.event_id,
+          startuur: startuur
+        })
+      }
     }
 
-    // 2) update the round's own date
-    //await mutateRound({ id: roundData!.round_id, ronde_datum: newDate })
+    // 2) update the round's own date and startuur
+    if (roundData) {
+      await updateRound(roundData.round_id, { 
+        ronde_datum: newDate,
+        startuur: startuur
+      })
+    }
 
     // 3) tell the parent to re-fetch its SWR (and pick up the new event_id in roundData if it wants)
+    onUpdate()
+  }
+
+  const handleStartuurChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStartuur = e.target.value
+    setStartuur(newStartuur)
+
+    // Update the calendar event with new startuur
+    if (eventId) {
+      await mutateEvent({ id: eventId, startuur: newStartuur })
+    }
+
+    // Update the round's startuur
+    if (roundData) {
+      await updateRound(roundData.round_id, { 
+        startuur: newStartuur
+      })
+    }
+
+    // Tell the parent to re-fetch
     onUpdate()
   }
 
@@ -95,23 +140,40 @@ export default function RoundSection({
         <div className="flex items-center gap-4">
           <h3 className="text-xl font-bold text-white">Ronde {roundNumber}</h3>
 
-          {/* Verbeterd datum veld */}
-          <div className="relative">
-            <Input
-              type="date"
-              value={date}
-              onChange={handleDateChange}
-              disabled={savingRound || savingEvent}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/70 focus:bg-white/20 focus:border-white/40 focus:ring-white/20 min-w-[160px] backdrop-blur-sm"
-              style={{
-                colorScheme: "dark",
-              }}
-            />
-            {(savingRound || savingEvent) && (
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white/70" />
-              </div>
-            )}
+          {/* Datum en Startuur velden */}
+          <div className="flex items-center gap-3">
+            {/* Datum veld */}
+            <div className="relative">
+              <Input
+                type="date"
+                value={date}
+                onChange={handleDateChange}
+                disabled={savingRound || savingEvent}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/70 focus:bg-white/20 focus:border-white/40 focus:ring-white/20 min-w-[160px] backdrop-blur-sm"
+                style={{
+                  colorScheme: "dark",
+                }}
+              />
+              {(savingRound || savingEvent) && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white/70" />
+                </div>
+              )}
+            </div>
+
+            {/* Startuur veld */}
+            <div className="relative">
+              <Input
+                type="time"
+                value={startuur}
+                onChange={handleStartuurChange}
+                disabled={savingRound || savingEvent}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/70 focus:bg-white/20 focus:border-white/40 focus:ring-white/20 min-w-[120px] backdrop-blur-sm"
+                style={{
+                  colorScheme: "dark",
+                }}
+              />
+            </div>
           </div>
         </div>
 

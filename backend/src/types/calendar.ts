@@ -4,15 +4,19 @@ export type CalendarEvent = {
   event_id: number;
   title: string;
   date: Date;
+  startuur: string;
   type?: string | null;
-  description?: string | null;  
+  description?: string | null;
+  tournament_id?: number | null;
 };
 
 export type CalendarEventCreateInput = {
     title: string;
     date: Date;
+    startuur?: string;
     type?: string;
-    description?: string | null; 
+    description?: string | null;
+    tournament_id?: number | null;
 };
 
 
