@@ -24,7 +24,7 @@ interface CreateUserWithPasswordData {
     schaakrating_elo?: number;
     is_admin?: boolean;
     is_youth?: boolean;
-    fide_id?: number;
+    fide_id?: number | null;
     lid_sinds: Date;
     adres_straat?: string;
     adres_nummer?: string;

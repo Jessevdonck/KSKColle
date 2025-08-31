@@ -9,6 +9,7 @@ import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole, authDelay } from '../core/auth';
 import Role from '../core/roles';
 import { generateJWT } from '../core/jwt';
+import { prisma } from '../service/data';
 import type { Next } from 'koa';
 
 /**
@@ -88,7 +89,14 @@ const registerUser = async (
 
   // Genereer een token voor de nieuwe gebruiker
   const user = await userService.getUserById(userId);
-  const token = await generateJWT(user);
+  
+  // We need the full user object for JWT generation, not just the public user
+  const fullUser = await prisma.user.findUnique({ where: { user_id: userId } });
+  if (!fullUser) {
+    throw new Error('User not found after creation');
+  }
+  
+  const token = await generateJWT(fullUser);
 
   ctx.status = 200;
   ctx.body = { token };

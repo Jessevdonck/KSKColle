@@ -9,7 +9,7 @@ import type {
   ChessAppContext,
 } from '../types/koa';
 import { authDelay } from '../core/auth';
-import * as emailService from '../service/emailService';
+import emailService from '../service/emailService';
 
 interface RequestPasswordResetRequest {
   email: string;
