@@ -40,6 +40,7 @@ model User {
   speler1Games       Game[]          @relation("Speler1")
   speler2Games       Game[]          @relation("Speler2")
   gewonnenGames      Game[]          @relation("Winnaar")
+  passwordResetTokens PasswordResetToken[]
 
   @@index([is_youth])
 }
@@ -139,4 +140,18 @@ model MakeupDay {
   calendarEvent      CalendarEvent?   @relation(fields: [calendar_event_id], references: [event_id], onDelete: SetNull)
   
   @@index([tournament_id])
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  token     String   @unique @db.VarChar(255)
+  expires   DateTime
+  used      Boolean  @default(false)
+  
+  user      User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  
+  @@index([user_id])
+  @@index([token])
+  @@index([expires])
 } 

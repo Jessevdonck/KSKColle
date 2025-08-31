@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../contexts/auth';
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import ForgotPasswordForm from './ForgotPasswordForm'
 
 const validationRules = {
   email: {
@@ -26,6 +27,7 @@ interface LoginFormProps {
 export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
   const { error, loading, login } = useAuth();
   const router = useRouter();
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
@@ -39,6 +41,14 @@ export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
     onClose();
   }, [reset, onClose]);
 
+  const handleShowForgotPassword = useCallback(() => {
+    setShowForgotPassword(true);
+  }, []);
+
+  const handleBackToLogin = useCallback(() => {
+    setShowForgotPassword(false);
+  }, []);
+
   const handleLogin = useCallback(
     async ({ email, password }) => {
       const loggedIn = await login(email, password);
@@ -49,6 +59,16 @@ export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
     },
     [login, router, onSuccess],
   );
+
+  if (showForgotPassword) {
+    return (
+      <ForgotPasswordForm
+        onSuccess={() => setShowForgotPassword(false)}
+        onClose={onClose}
+        onBackToLogin={handleBackToLogin}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(handleLogin)} className="space-y-4 w-full max-w-sm">
@@ -78,6 +98,17 @@ export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
           {...register('password', validationRules.password)}
         />
         {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+        <div className="text-right">
+          <Button
+            type="button"
+            variant="link"
+            className="text-sm text-mainAccent hover:text-mainAccentDark p-0 h-auto"
+            onClick={handleShowForgotPassword}
+            data-cy="forgot_password_button"
+          >
+            Wachtwoord vergeten?
+          </Button>
+        </div>
       </div>
       <div className="flex justify-end space-x-2">
         <Button className='text-textColor bg-neutral-50 hover:bg-mainAccent hover:text-neutral-50' type="button" onClick={handleCancel} data-cy="cancel-button">

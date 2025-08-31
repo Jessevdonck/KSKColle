@@ -16,6 +16,10 @@ export default function UsersManagement() {
   const { toast } = useToast()
 
   const { data: users, error, mutate } = useSWR<User[]>("users", getAll)
+  
+  const refreshUsers = () => {
+    mutate()
+  }
   const { trigger: deleteUser, isMutating: isDeleting } = useSWRMutation("users", deleteById)
 
   const handleDeleteUser = async (userId: number) => {
@@ -77,8 +81,8 @@ export default function UsersManagement() {
       {/* Main Content */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
-          <AddOrEditUser />
-          <UserList users={users} onEdit={setSelectedUser} onDelete={handleDeleteUser} isDeleting={isDeleting} />
+          <AddOrEditUser onRefresh={refreshUsers} />
+          <UserList users={users} onEdit={setSelectedUser} onDelete={handleDeleteUser} isDeleting={isDeleting} onRefresh={refreshUsers} />
         </div>
       </div>
 

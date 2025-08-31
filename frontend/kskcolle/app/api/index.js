@@ -93,6 +93,31 @@ export const deleteMakeupDay = async (url, { arg: id }) => {
   await axios.delete(`${baseUrl}/${url}/${id}`)
 }
 
+export const requestPasswordReset = async (url, { arg: { email } }) => {
+  const { data } = await axios.post(`${baseUrl}/${url}/request`, { email });
+  return data;
+};
+
+export const resetPassword = async (url, { arg: { token, newPassword } }) => {
+  const { data } = await axios.post(`${baseUrl}/${url}/reset`, { token, newPassword });
+  return data;
+};
+
+export const validateResetToken = async (url, { arg: token }) => {
+  const { data } = await axios.get(`${baseUrl}/${url}/validate/${token}`);
+  return data;
+};
+
+export const generateNewPassword = async (url, { arg: { userId } }) => {
+  const { data } = await axios.post(`${baseUrl}/${url}/generate-password`, { userId });
+  return data;
+};
+
+export const createUserWithPassword = async (url, { arg: userData }) => {
+  const { data } = await axios.post(`${baseUrl}/${url}/create-user`, userData);
+  return data;
+};
+
 export async function getAlbums() {
   const { data } = await axios.get('/photos/albums');
   return data;

@@ -13,6 +13,7 @@ type UserListProps = {
   onEdit: (user: User) => void
   onDelete: (userId: number) => Promise<void>
   isDeleting?: boolean
+  onRefresh?: () => void
 }
 
 export default function UserList({ users, onDelete, isDeleting = false }: UserListProps) {

@@ -48,9 +48,7 @@ const validationRules = {
   tel_nummer: {
     required: "Telefoonnummer is required!",
   },
-  password: {
-    required: "'Wachtwoord' is vereist!",
-  },
+
   adres_straat: {
     required: "Straat is vereist!",
   },
@@ -80,7 +78,6 @@ interface FormData {
   schaakrating_max?: number
   is_youth: boolean
   lid_sinds?: string
-  password: string
   roles: string[]
   adres_straat: string;      
   adres_nummer: string;   
@@ -480,24 +477,14 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             Beveiliging & Rechten
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
-            <div>
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Key className="h-3 w-3" />
-                Wachtwoord
-              </Label>
-              <Input
-                {...register("password", validationRules.password)}
-                id="password"
-                type="password"
-                placeholder="Wachtwoord"
-                data-cy="password"
-                className="mt-1 text-sm"
-              />
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1" data-cy="error_password">
-                  {errors.password.message}
-                </p>
-              )}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-blue-800 text-sm">
+                <Key className="h-4 w-4" />
+                <span className="font-medium">Wachtwoord</span>
+              </div>
+              <p className="text-blue-700 text-xs mt-1">
+                Er wordt automatisch een veilig wachtwoord gegenereerd en naar het opgegeven emailadres gestuurd.
+              </p>
             </div>
             <div className="flex items-center space-x-3 mt-4">
               <Checkbox

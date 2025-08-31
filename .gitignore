@@ -130,3 +130,9 @@ build/
 
 
 backend/src/scripts/data/imported_user_passwords.csv
+
+backend/src/scripts/data/leden.xls
+
+backend/ROLES_README.md
+
+backend/EMAIL_SETUP.md

@@ -1,5 +1,6 @@
 import Router from '@koa/router';
 import * as userService from '../service/userService';
+import * as passwordGenerationService from '../service/passwordGenerationService';
 import type { User, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetUserRequest, GetAllUserResponse, PublicUser,GetAllPublicUserResponse, GetUserByNaamResponse, LoginResponse, RegisterUserRequest, UpdatePasswordRequest, UpdatePasswordResponse } from '../types/user';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
@@ -77,7 +78,16 @@ const registerUser = async (
   ctx: KoaContext<LoginResponse, void, RegisterUserRequest>,
 ) => {
   console.log("body: ", ctx.request.body);
-  const token = await userService.register(ctx.request.body); 
+  
+  // Gebruik de password generation service voor nieuwe gebruikers
+  const userId = await passwordGenerationService.createUserWithGeneratedPassword({
+    userData: ctx.request.body,
+    adminUserId: ctx.state.session?.userId || 0, // Voor nieuwe registraties is er geen admin
+  });
+
+  // Genereer een token voor de nieuwe gebruiker
+  const user = await userService.getUserById(userId);
+  const token = await userService.generateJWT(user);
 
   ctx.status = 200;
   ctx.body = { token };

@@ -20,4 +20,18 @@ export default {
         issuer: 'kskcolle.be',
       },
     },
+    email: {
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER || '',
+        pass: process.env.EMAIL_PASS || '',
+      },
+      from: process.env.EMAIL_FROM || 'noreply@kskcolle.be',
+    },
+    passwordReset: {
+      tokenExpiryHours: 24,
+      tokenLength: 32,
+    },
   };

@@ -10,6 +10,7 @@ import { CheckCircle2, User, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox,
 import useSWRMutation from "swr/mutation"
 import { save } from "../../../../api/index"
 import { Checkbox } from "@/components/ui/checkbox"
+import GeneratePasswordButton from "../../../../components/GeneratePasswordButton"
 
 const validationRules = {
   voornaam: {
@@ -29,9 +30,7 @@ const validationRules = {
   tel_nummer: {
     required: "Telefoonnummer is required!",
   },
-  password: {
-    required: "'Wachtwoord' is vereist!",
-  },
+
   adres_straat: {
     required: "Straat is vereist!",
   },
@@ -61,7 +60,6 @@ interface FormData {
   schaakrating_max?: number
   is_youth?: boolean
   lid_sinds?: string
-  password: string
   roles: string[]
   adres_straat: string;      
   adres_nummer: string;   
@@ -420,43 +418,60 @@ export default function EditForm({ user, onClose }: EditFormProps) {
 
         {/* Admin Rights */}
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="isAdmin"
-                checked={watch("roles").includes("admin")}
-                onCheckedChange={(checked) => {
-                  const currentRoles = getValues("roles")
-                  const updatedRoles = Array.isArray(currentRoles) ? currentRoles : JSON.parse(currentRoles as string)
-                  if (checked) {
-                    setValue("roles", [...updatedRoles, "admin"])
-                  } else {
-                    setValue(
-                      "roles",
-                      updatedRoles.filter((role) => role !== "admin"),
-                    )
-                  }
-                }}
-                className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
-              />
-              <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Shield className="h-3 w-3" />
-                Is Admin
-              </Label>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isAdmin"
+                  checked={watch("roles").includes("admin")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    const updatedRoles = Array.isArray(currentRoles) ? currentRoles : JSON.parse(currentRoles as string)
+                    if (checked) {
+                      setValue("roles", [...updatedRoles, "admin"])
+                    } else {
+                      setValue(
+                        "roles",
+                        updatedRoles.filter((role) => role !== "admin"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Shield className="h-3 w-3" />
+                  Is Admin
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isYouth"
+                  checked={watch("is_youth")}
+                  onCheckedChange={(checked) => {
+                    setValue("is_youth", checked as boolean)
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isYouth" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Trophy className="h-3 w-3" />
+                  Is Jeugdspeler
+                </Label>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Checkbox
-                id="isYouth"
-                checked={watch("is_youth")}
-                onCheckedChange={(checked) => {
-                  setValue("is_youth", checked as boolean)
+            
+            {/* Password Management */}
+            <div className="border-t border-purple-200 pt-4">
+              <h4 className="text-sm font-medium text-purple-800 mb-3 flex items-center gap-2">
+                <Shield className="h-3 w-3" />
+                Wachtwoord Beheer
+              </h4>
+              <GeneratePasswordButton 
+                userId={user.user_id} 
+                userName={`${user.voornaam} ${user.achternaam}`}
+                onSuccess={() => {
+                  // Optioneel: toon een success message
                 }}
-                className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
               />
-              <Label htmlFor="isYouth" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Trophy className="h-3 w-3" />
-                Is Jeugdspeler
-              </Label>
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ export interface User {
   achternaam: string;
   geboortedatum: Date;
   email: string;
+  tel_nummer: string;
   schaakrating_elo: number;
   schaakrating_difference?: number;
   schaakrating_max?: number;
@@ -24,6 +25,53 @@ export interface User {
   adres_land: string;   
   vast_nummer?: string;
 }
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetResponse {
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export interface ValidateTokenResponse {
+  valid: boolean;
+}
+
+export interface GeneratePasswordResponse {
+  message: string;
+}
+
+export interface CreateUserResponse {
+  userId: number;
+  message: string;
+}
+
+export interface CreateUserRequest {
+  voornaam: string;
+  achternaam: string;
+  email: string;
+  geboortedatum: string;
+  tel_nummer: string;
+  vast_nummer?: string;
+  schaakrating_elo?: number;
+  is_admin?: boolean;
+  is_youth?: boolean;
+  fide_id?: number;
+  lid_sinds?: string;
+  adres_straat?: string;
+  adres_nummer?: string;
+  adres_bus?: string;
+  adres_postcode?: string;
+  adres_gemeente?: string;
+  adres_land?: string;
+}
+
 export interface CalendarEvent {
   event_id: number
   title: string
