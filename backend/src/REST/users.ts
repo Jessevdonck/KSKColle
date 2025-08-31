@@ -8,6 +8,7 @@ import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole, authDelay } from '../core/auth';
 import Role from '../core/roles';
+import { generateJWT } from '../core/jwt';
 import type { Next } from 'koa';
 
 /**
@@ -87,7 +88,7 @@ const registerUser = async (
 
   // Genereer een token voor de nieuwe gebruiker
   const user = await userService.getUserById(userId);
-  const token = await userService.generateJWT(user);
+  const token = await generateJWT(user);
 
   ctx.status = 200;
   ctx.body = { token };
@@ -102,8 +103,8 @@ registerUser.validationScheme = {
     vast_nummer: Joi.string().allow("").optional(),
     lid_sinds: Joi.date(),
     schaakrating_elo: Joi.number().integer().positive(),
-    fide_id: Joi.number().integer().positive().allow(null).optional(),
-    schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
+    fide_id: Joi.number().integer().positive().optional(),
+    schaakrating_max: Joi.number().integer().positive().optional(),
     is_youth: Joi.boolean().optional(),
     password: Joi.string(),
     roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).required(),
@@ -191,8 +192,8 @@ updateUser.validationScheme = {
     vast_nummer: Joi.string().allow("").optional(),
     lid_sinds: Joi.date().optional(),
     schaakrating_elo: Joi.number().integer().positive().optional(),
-    fide_id: Joi.number().integer().positive().allow(null).optional(),
-    schaakrating_max: Joi.number().integer().positive().allow(null).optional(),
+    fide_id: Joi.number().integer().positive().optional(),
+    schaakrating_max: Joi.number().integer().positive().optional(),
     is_youth: Joi.boolean().optional(),
     password: Joi.string().optional(),
     roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).optional(),

@@ -1,4 +1,8 @@
+import { Suspense } from 'react';
 import ResetPasswordForm from '../components/ResetPasswordForm';
+
+// Force dynamic rendering to avoid static generation issues with useSearchParams
+export const dynamic = 'force-dynamic';
 
 export default function ResetPasswordPage() {
   return (
@@ -12,7 +16,16 @@ export default function ResetPasswordPage() {
         </div>
         
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <ResetPasswordForm />
+          <Suspense fallback={
+            <div className="space-y-4 w-full max-w-sm">
+              <h2 className="text-2xl font-bold text-textColor">Laden...</h2>
+              <p className="text-sm text-gray-600">
+                We laden de reset pagina...
+              </p>
+            </div>
+          }>
+            <ResetPasswordForm />
+          </Suspense>
         </div>
       </div>
     </div>

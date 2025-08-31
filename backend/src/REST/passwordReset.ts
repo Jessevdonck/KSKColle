@@ -91,7 +91,7 @@ resetPassword.validationScheme = {
  * 
  * @apiError (500) InternalServerError Server error
  */
-const validateResetToken = async (ctx: KoaContext<{ valid: boolean }>) => {
+const validateResetToken = async (ctx: KoaContext<{ valid: boolean }, { token: string }>) => {
   const { token } = ctx.params;
   
   const isValid = await passwordResetService.validateResetToken(token);
@@ -126,10 +126,10 @@ const testEmailConnection = async (ctx: KoaContext<{ message: string; success: b
         success: false
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     ctx.status = 500;
     ctx.body = { 
-      message: `Email service fout: ${error.message}`,
+      message: `Email service fout: ${error.message || 'Onbekende fout'}`,
       success: false
     };
   }

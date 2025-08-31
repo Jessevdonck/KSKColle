@@ -16,6 +16,10 @@ const makeExposedUser = ({
   schaakrating_elo, 
   fide_id,  
   email,
+  geboortedatum,
+  max_rating,
+  rating_difference,
+  lid_sinds,
   roles,
   }: User): PublicUser => ({
     user_id, 
@@ -24,6 +28,10 @@ const makeExposedUser = ({
     schaakrating_elo, 
     fide_id,  
     email,
+    geboortedatum,
+    max_rating,
+    rating_difference,
+    lid_sinds,
     roles
   } as PublicUser)
 
@@ -202,9 +210,12 @@ export const checkAndParseSession = async (
   try {
     const { roles, sub } = await verifyJWT(authToken); 
 
+    // Ensure roles is always an array
+    const rolesArray = Array.isArray(roles) ? roles : [];
+
     return {
       userId: Number(sub),
-      roles,
+      roles: rolesArray,
     };
   } catch (error: any) {
     getLogger().error(error.message, { error });

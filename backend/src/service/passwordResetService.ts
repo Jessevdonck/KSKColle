@@ -18,13 +18,7 @@ interface ResetPasswordData {
   newPassword: string;
 }
 
-interface PasswordResetTokenData {
-  id: number;
-  user_id: number;
-  token: string;
-  expires: Date;
-  used: boolean;
-}
+
 
 export const requestPasswordReset = async (data: RequestPasswordResetData): Promise<void> => {
   try {
@@ -101,17 +95,17 @@ export const resetPassword = async (data: ResetPasswordData): Promise<void> => {
     });
 
     if (!tokenRecord) {
-      throw ServiceError.badRequest('Ongeldige of verlopen reset link');
+      throw ServiceError.validationFailed('Ongeldige of verlopen reset link');
     }
 
     // Controleer of token al gebruikt is
     if (tokenRecord.used) {
-      throw ServiceError.badRequest('Deze reset link is al gebruikt');
+      throw ServiceError.validationFailed('Deze reset link is al gebruikt');
     }
 
     // Controleer of token verlopen is
     if (tokenRecord.expires < new Date()) {
-      throw ServiceError.badRequest('Deze reset link is verlopen');
+      throw ServiceError.validationFailed('Deze reset link is verlopen');
     }
 
     // Hash nieuw wachtwoord

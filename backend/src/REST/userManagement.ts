@@ -2,7 +2,7 @@ import Router from '@koa/router';
 import Joi from 'joi';
 import validate from '../core/validation';
 import * as passwordGenerationService from '../service/passwordGenerationService';
-import * as userService from '../service/userService';
+
 import type {
   KoaContext,
   KoaRouter,

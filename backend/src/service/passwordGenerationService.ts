@@ -3,7 +3,7 @@ import { hashPassword } from "../core/password";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import emailService from "./emailService";
-import crypto from "crypto";
+
 import { getLogger } from "../core/logging";
 
 const logger = getLogger();
