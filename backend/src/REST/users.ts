@@ -86,9 +86,6 @@ const registerUser = async (
     userData: ctx.request.body,
     adminUserId: ctx.state.session?.userId || 0, // Voor nieuwe registraties is er geen admin
   });
-
-  // Genereer een token voor de nieuwe gebruiker
-  const user = await userService.getUserById(userId);
   
   // We need the full user object for JWT generation, not just the public user
   const fullUser = await prisma.user.findUnique({ where: { user_id: userId } });
