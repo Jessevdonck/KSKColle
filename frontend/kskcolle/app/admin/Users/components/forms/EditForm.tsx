@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { parseRoles } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -130,7 +131,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       fide_id: values.fide_id ? Number(values.fide_id) : null,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
       is_youth: values.is_youth || false,
-      roles: Array.isArray(values.roles) ? values.roles : JSON.parse(values.roles as string),
+      roles: parseRoles(values.roles),
     }
 
     try {
@@ -426,7 +427,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                   checked={watch("roles").includes("admin")}
                   onCheckedChange={(checked) => {
                     const currentRoles = getValues("roles")
-                    const updatedRoles = Array.isArray(currentRoles) ? currentRoles : JSON.parse(currentRoles as string)
+                    const updatedRoles = parseRoles(currentRoles)
                     if (checked) {
                       setValue("roles", [...updatedRoles, "admin"])
                     } else {

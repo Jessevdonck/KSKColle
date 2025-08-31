@@ -9,6 +9,7 @@ import {
 import { User, LogOut, Settings, Lock } from 'lucide-react'
 import { useAuth } from "../contexts/auth"
 import { useRouter } from 'next/navigation'
+import { parseRoles } from "@/lib/utils"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, '_')
@@ -34,8 +35,8 @@ export default function ProfileDropdown() {
     }
   };
 
-  const roles = user?.roles ? JSON.parse(user.roles) : [];
-  const isAdmin = Array.isArray(roles) && roles.includes('admin');
+  const roles = parseRoles(user?.roles);
+  const isAdmin = roles.includes('admin');
 
   return (
     <DropdownMenu>

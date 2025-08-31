@@ -7,7 +7,6 @@ import type { IdParams } from '../types/common';
 import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole, authDelay } from '../core/auth';
-import Role from '../core/roles';
 import { generateJWT } from '../core/jwt';
 import { prisma } from '../service/data';
 import type { Next } from 'koa';
@@ -112,7 +111,7 @@ registerUser.validationScheme = {
     schaakrating_max: Joi.number().integer().positive().optional(),
     is_youth: Joi.boolean().optional(),
     password: Joi.string(),
-    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).required(),
+    roles: Joi.array().items(Joi.string().valid('user', 'admin')).required(),
 
     adres_straat: Joi.string().required(),
     adres_nummer: Joi.string().required(),
@@ -201,7 +200,7 @@ updateUser.validationScheme = {
     schaakrating_max: Joi.number().integer().positive().optional(),
     is_youth: Joi.boolean().optional(),
     password: Joi.string().optional(),
-    roles: Joi.array().items(Joi.string().valid(Role.USER, Role.ADMIN)).optional(),
+    roles: Joi.array().items(Joi.string().valid('user', 'admin')).optional(),
 
     adres_straat: Joi.string().required(),
     adres_nummer: Joi.string().required(),
@@ -315,26 +314,18 @@ const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
   const { userId, roles } = ctx.state.session;
   const { id } = ctx.params;
 
-  if (id !== 'me' && id !== userId && !roles.includes(Role.ADMIN)) {
-  return ctx.throw(
-    403,
-    "You are not allowed to view this user's information",
-    { code: 'FORBIDDEN' },
-  );
-}
+  if (id !== 'me' && id !== userId && !roles.includes('admin')) {
+    return ctx.throw(403, "You are not allowed to view this user's information", { code: 'FORBIDDEN' });
+  }
   return next();
 };
 
 const checkUserIdAdmin = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
   const { roles } = ctx.state.session;
 
-  if (!roles.includes(Role.ADMIN)) {
-  return ctx.throw(
-    403,
-    "You are not allowed to view this user's information",
-    { code: 'FORBIDDEN' },
-  );
-}
+  if (!roles.includes('admin')) {
+    return ctx.throw(403, "You are not allowed to view this user's information", { code: 'FORBIDDEN' });
+  }
   return next();
 };
 
@@ -343,16 +334,14 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
     prefix: '/users',
   });
 
-  const requireAdmin = makeRequireRole(Role.ADMIN);
-
-  router.get('/', requireAuthentication, requireAdmin, validate(getAllUsers.validationScheme), getAllUsers);
+  router.get('/', requireAuthentication, makeRequireRole('admin'), validate(getAllUsers.validationScheme), getAllUsers);
   router.get('/publicUsers', validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
-  router.post('/',requireAuthentication, requireAdmin, authDelay, validate(registerUser.validationScheme), registerUser);
+  router.post('/', requireAuthentication, makeRequireRole('admin'), authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), getUserByNaam);
   router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);
-  router.put('/:id', requireAuthentication, requireAdmin, validate(updateUser.validationScheme), checkUserIdAdmin, updateUser);
+  router.put('/:id', requireAuthentication, makeRequireRole('admin'), validate(updateUser.validationScheme), checkUserIdAdmin, updateUser);
   router.put('/:id/password', requireAuthentication, validate(updatePassword.validationScheme), checkUserId, updatePassword);
-  router.delete('/:id', requireAuthentication, requireAdmin, validate(removeUser.validationScheme), checkUserIdAdmin, removeUser);
+  router.delete('/:id', requireAuthentication, makeRequireRole('admin'), validate(removeUser.validationScheme), checkUserIdAdmin, removeUser);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

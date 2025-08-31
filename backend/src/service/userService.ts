@@ -3,7 +3,7 @@ import type { User, UserUpdateInput, PublicUser, RegisterUserRequest } from '../
 import { hashPassword, verifyPassword } from "../core/password";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
-import Role from '../core/roles';
+
 import jwt from 'jsonwebtoken';
 import { getLogger } from "../core/logging";
 import { generateJWT, verifyJWT } from "../core/jwt";
@@ -32,7 +32,7 @@ const makeExposedUser = ({
     max_rating,
     rating_difference,
     lid_sinds,
-    roles
+    roles: typeof roles === 'string' ? JSON.parse(roles) : roles
   } as PublicUser)
 
 export const getAllUsers = async (): Promise<User[]> => {
@@ -109,7 +109,13 @@ export const login = async (
     );
   }
 
-  return await generateJWT(user); 
+  // Parse roles from JSON string if needed
+  const userWithParsedRoles = {
+    ...user,
+    roles: typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles
+  };
+  
+  return await generateJWT(userWithParsedRoles); 
 };
 
 export const register = async (user: RegisterUserRequest): Promise<string> => {
@@ -118,7 +124,7 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
     
     const passwordHash = await hashPassword(password);
     
-    const roleList = roles.includes('admin') ? [Role.USER, Role.ADMIN] : [Role.USER];
+    const roleList = roles.includes('admin') ? ['user', 'admin'] : ['user'];
 
     const createdUser = await prisma.user.create({
       data: {
@@ -132,7 +138,14 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
     if(!createdUser){
       throw ServiceError.internalServerError("An unexpected error occurred when creating the user");
     }
-    return generateJWT(createdUser);
+    
+    // Parse roles from JSON string if needed
+    const userWithParsedRoles = {
+      ...createdUser,
+      roles: typeof createdUser.roles === 'string' ? JSON.parse(createdUser.roles) : createdUser.roles
+    };
+    
+    return generateJWT(userWithParsedRoles);
   } catch (error: any) {
     throw handleDBError(error);
   }
@@ -143,7 +156,7 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
   try {
     const { roles, ...userDataWithoutPassword } = changes;
     
-    const roleList = roles.includes('admin') ? [Role.USER, Role.ADMIN] : [Role.USER];
+    const roleList = roles.includes('admin') ? ['user', 'admin'] : ['user'];
 
     const user = await prisma.user.update({
       where: { user_id },
@@ -210,8 +223,17 @@ export const checkAndParseSession = async (
   try {
     const { roles, sub } = await verifyJWT(authToken); 
 
-    // Ensure roles is always an array
-    const rolesArray = Array.isArray(roles) ? roles : [];
+    // Ensure roles is always an array and parse JSON if needed
+    let rolesArray: string[] = [];
+    if (Array.isArray(roles)) {
+      rolesArray = roles;
+    } else if (typeof roles === 'string') {
+      try {
+        rolesArray = JSON.parse(roles);
+      } catch (e) {
+        rolesArray = [];
+      }
+    }
 
     return {
       userId: Number(sub),
@@ -232,12 +254,3 @@ export const checkAndParseSession = async (
   }
 };
 
-export const checkRole = (role: string, roles: string[]): void => {
-  const hasPermission = roles.includes(role); 
-
-  if (!hasPermission) {
-    throw ServiceError.forbidden(
-      'You are not allowed to view this part of the application',
-    );
-  }
-};
