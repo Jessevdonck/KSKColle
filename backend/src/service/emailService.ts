@@ -1,17 +1,10 @@
-import nodemailer from 'nodemailer';
-import config from 'config';
+import { Resend } from 'resend';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger();
 
 interface EmailConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
+  apiKey: string;
   from: string;
 }
 
@@ -30,35 +23,42 @@ interface CustomEmailData {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend | null = null;
   private config: EmailConfig;
 
   constructor() {
-    this.config = config.get<EmailConfig>('email');
+    this.config = {
+      apiKey: process.env.RESEND_API_KEY || '',
+      from: process.env.EMAIL_FROM || 'noreply@kskcolle.be',
+    };
     
-    this.transporter = nodemailer.createTransport({
-      host: this.config.host,
-      port: this.config.port,
-      secure: this.config.secure,
-      auth: {
-        user: this.config.auth.user,
-        pass: this.config.auth.pass,
-      },
-    });
+    // Initialize Resend
+    if (this.config.apiKey) {
+      this.resend = new Resend(this.config.apiKey);
+    } else {
+      logger.warn('RESEND_API_KEY not set, email service will not work');
+    }
   }
 
   async sendPasswordResetEmail(data: PasswordResetEmailData): Promise<void> {
     try {
-      const mailOptions = {
+      if (!this.resend) {
+        throw new Error('Resend API key not configured');
+      }
+
+      const { data: result, error } = await this.resend.emails.send({
         from: this.config.from,
-        to: data.to,
+        to: [data.to],
         subject: 'Wachtwoord reset - KSK Colle',
         html: this.generatePasswordResetEmailHTML(data),
         text: this.generatePasswordResetEmailText(data),
-      };
+      });
 
-      await this.transporter.sendMail(mailOptions);
-      logger.info('Password reset email sent successfully', { to: data.to });
+      if (error) {
+        throw error;
+      }
+
+      logger.info('Password reset email sent successfully', { to: data.to, id: result?.id });
     } catch (error) {
       logger.error('Failed to send password reset email', { error, to: data.to });
       throw error;
@@ -67,16 +67,23 @@ class EmailService {
 
   async sendCustomEmail(data: CustomEmailData): Promise<void> {
     try {
-      const mailOptions = {
+      if (!this.resend) {
+        throw new Error('Resend API key not configured');
+      }
+
+      const { data: result, error } = await this.resend.emails.send({
         from: this.config.from,
-        to: data.to,
+        to: [data.to],
         subject: data.subject,
         html: data.html,
         text: data.text,
-      };
+      });
 
-      await this.transporter.sendMail(mailOptions);
-      logger.info('Custom email sent successfully', { to: data.to, subject: data.subject });
+      if (error) {
+        throw error;
+      }
+
+      logger.info('Custom email sent successfully', { to: data.to, subject: data.subject, id: result?.id });
     } catch (error) {
       logger.error('Failed to send custom email', { error, to: data.to, subject: data.subject });
       throw error;
@@ -169,7 +176,12 @@ Deze email is automatisch gegenereerd. Reageer niet op deze email.
 
   async verifyConnection(): Promise<boolean> {
     try {
-      await this.transporter.verify();
+      if (!this.resend) {
+        return false;
+      }
+      
+      // Test connection by trying to get domains
+      await this.resend.domains.list();
       return true;
     } catch (error) {
       logger.error('Email service connection failed', { error });
