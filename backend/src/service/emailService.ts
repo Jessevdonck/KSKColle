@@ -102,7 +102,7 @@ class EmailService {
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 5px; }
           .content { padding: 20px; }
-          .button { display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .button { display: inline-block; padding: 12px 24px; background-color: #007bff; color: white !important; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
           .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
           .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
         </style>
@@ -122,7 +122,7 @@ class EmailService {
             <p>Klik op de onderstaande knop om uw wachtwoord te resetten:</p>
             
             <div style="text-align: center;">
-              <a href="${data.resetUrl}" class="button">Wachtwoord Resetten</a>
+              <a href="${data.resetUrl}" class="button" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white !important; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold;">Wachtwoord Resetten</a>
             </div>
             
             <p>Of kopieer deze link naar uw browser:</p>
