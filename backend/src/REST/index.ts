@@ -9,6 +9,7 @@ import installMakeupDayRouter from './makeupDay';
 import installPhotoRouter from './photos';
 import installPasswordResetRouter from './passwordReset';
 import installUserManagementRouter from './userManagement';
+import installContactRouter from './contact';
 import type { ChessAppContext, ChessAppState, KoaApplication } from '../types/koa';
 import installSessionRouter from './session';
 
@@ -105,6 +106,7 @@ export default (app: KoaApplication) => {
   installPhotoRouter(router);
   installPasswordResetRouter(router);
   installUserManagementRouter(router);
+  installContactRouter(router);
 
   app.use(router.routes()).use(router.allowedMethods());
 };

@@ -1,10 +1,90 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, User, MessageSquare, Send, Users, Calendar } from "lucide-react"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
+
+interface ContactFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  description: string;
+}
 
 const Contact = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState<ContactFormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    address: '',
+    description: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Succes!",
+          description: result.message,
+        });
+        
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+          address: '',
+          description: ''
+        });
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Fout",
+          description: error.message || "Er is een fout opgetreden. Probeer het later opnieuw.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Fout",
+        description: "Er is een fout opgetreden. Controleer je internetverbinding en probeer het opnieuw.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section id="contact" className="bg-gradient-to-br from-neutral-50 to-neutral-100 py-20 scroll-m-11">
       <div className="container mx-auto px-4">
@@ -76,7 +156,7 @@ const Contact = () => {
                   <p className="text-white/80 mt-2">Vul het formulier in en we nemen contact met je op</p>
                 </div>
 
-                <form className="p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
                   {/* Name Fields */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
@@ -89,6 +169,8 @@ const Contact = () => {
                         name="firstName"
                         type="text"
                         required
+                        value={formData.firstName}
+                        onChange={handleInputChange}
                         className="mt-2 border-neutral-300 focus:border-mainAccent focus:ring-mainAccent"
                         placeholder="Je voornaam"
                       />
@@ -103,6 +185,8 @@ const Contact = () => {
                         name="lastName"
                         type="text"
                         required
+                        value={formData.lastName}
+                        onChange={handleInputChange}
                         className="mt-2 border-neutral-300 focus:border-mainAccent focus:ring-mainAccent"
                         placeholder="Je achternaam"
                       />
@@ -121,6 +205,8 @@ const Contact = () => {
                         name="email"
                         type="email"
                         required
+                        value={formData.email}
+                        onChange={handleInputChange}
                         className="mt-2 border-neutral-300 focus:border-mainAccent focus:ring-mainAccent"
                         placeholder="je.email@voorbeeld.be"
                       />
@@ -135,6 +221,8 @@ const Contact = () => {
                         name="phoneNumber"
                         type="tel"
                         required
+                        value={formData.phoneNumber}
+                        onChange={handleInputChange}
                         className="mt-2 border-neutral-300 focus:border-mainAccent focus:ring-mainAccent"
                         placeholder="+32 9 XXX XX XX"
                       />
@@ -152,6 +240,8 @@ const Contact = () => {
                       name="address"
                       type="text"
                       required
+                      value={formData.address}
+                      onChange={handleInputChange}
                       className="mt-2 border-neutral-300 focus:border-mainAccent focus:ring-mainAccent"
                       placeholder="Je volledige adres"
                     />
@@ -167,6 +257,8 @@ const Contact = () => {
                       id="description"
                       name="description"
                       required
+                      value={formData.description}
+                      onChange={handleInputChange}
                       className="mt-2 border-neutral-300 focus:border-mainAccent focus:ring-mainAccent resize-none"
                       rows={5}
                       placeholder="Vertel ons waarmee we je verder kunnen helpen..."
@@ -178,10 +270,11 @@ const Contact = () => {
                     <Button
                       type="submit"
                       size="lg"
-                      className="bg-mainAccent text-white hover:bg-mainAccentDark font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                      disabled={isSubmitting}
+                      className="bg-mainAccent text-white hover:bg-mainAccentDark font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Send className="h-5 w-5 mr-2" />
-                      Verstuur Bericht
+                      {isSubmitting ? 'Versturen...' : 'Verstuur Bericht'}
                     </Button>
                   </div>
                 </form>

@@ -22,6 +22,9 @@ export default {
     },
     passwordReset: {
       tokenExpiryHours: 24,
-      tokenLength: 32,
+    },
+    email: {
+      resendApiKey: '',
+      from: 'noreply@jessevdonck.com',
     },
   };

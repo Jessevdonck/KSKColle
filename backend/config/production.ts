@@ -7,7 +7,7 @@ export default {
   },
   cors: {
     // 👈 1
-    origins: ['https://kskcolle-production.up.railway.app'], // 👈 2
+    origins: ['https://kskcolle-production.up.railway.app', 'https://frontendweb-kskcolle.onrender.com'], // 👈 2
     maxAge: 3 * 60 * 60, // 👈 3
   },
   auth: {
@@ -24,5 +24,9 @@ export default {
       timeCost: 6,
       memoryCost: 2 ** 17,
   },
+  },
+  email: {
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    from: 'noreply@jessevdonck.com',
   },
 };
