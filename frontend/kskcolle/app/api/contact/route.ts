@@ -32,13 +32,19 @@ export async function POST(request: NextRequest) {
     // Send to backend
     console.log('Sending request to backend:', `${BACKEND_URL}/api/contact`);
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
     const response = await fetch(`${BACKEND_URL}/api/contact`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
 
     console.log('Backend response status:', response.status);
 
@@ -62,6 +68,22 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Contact form error:', error);
+    
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        return NextResponse.json(
+          { message: 'De aanvraag is verlopen. Probeer het opnieuw.' },
+          { status: 408 }
+        );
+      }
+      if (error.message.includes('fetch failed') || error.message.includes('HeadersTimeoutError')) {
+        return NextResponse.json(
+          { message: 'Kan geen verbinding maken met de server. Controleer je internetverbinding.' },
+          { status: 503 }
+        );
+      }
+    }
+    
     return NextResponse.json(
       { message: 'Er is een interne fout opgetreden. Probeer het later opnieuw.' },
       { status: 500 }
