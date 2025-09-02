@@ -113,8 +113,8 @@ class EmailService {
       });
 
       // Send to both email addresses
-      const recipients = ['jvaerendonck@gmail.com'];
-      // const recipients = ['patrick.gillis3@telenet.be', 'niels.ongena@hotmail.be'];
+      // const recipients = ['jvaerendonck@gmail.com'];
+      const recipients = ['patrick.gillis3@telenet.be', 'niels.ongena@hotmail.be'];
       
       for (const recipient of recipients) {
         logger.info('Sending email to recipient', { recipient });
