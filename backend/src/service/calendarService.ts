@@ -3,9 +3,13 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import { CalendarEvent, CalendarEventCreateInput, EventUpdateInput } from "../types/calendar";
 
-export const getAllEvents = async (): Promise<CalendarEvent[]> => {
+export const getAllEvents = async (isYouth?: boolean): Promise<CalendarEvent[]> => {
   try {
-    return await prisma.calendarEvent.findMany();
+    const whereClause = isYouth !== undefined ? { is_youth: isYouth } : {};
+    return await prisma.calendarEvent.findMany({
+      where: whereClause,
+      orderBy: { date: 'asc' }
+    });
   } catch (error) {
     throw handleDBError(error);
   }

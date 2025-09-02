@@ -8,6 +8,8 @@ export type CalendarEvent = {
   type?: string | null;
   description?: string | null;
   tournament_id?: number | null;
+  is_youth?: boolean;
+  category?: string | null;
 };
 
 export type CalendarEventCreateInput = {
@@ -17,6 +19,8 @@ export type CalendarEventCreateInput = {
     type?: string;
     description?: string | null;
     tournament_id?: number | null;
+    is_youth?: boolean;
+    category?: string | null;
 };
 
 

@@ -120,11 +120,15 @@ model CalendarEvent {
   type           String   @default("Activiteit")
   description    String?
   tournament_id  Int?     // Optioneel, voor events die niet aan een toernooi gekoppeld zijn
+  is_youth       Boolean  @default(false) // Voor jeugd activiteiten
+  category       String?  // Voor jeugd categorieën: "Stap 1", "Stap 2", "Stap 3+4"
   
   // Relaties
   tournament     Tournament? @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
   rounds         Round[]
   makeupDays     MakeupDay[]
+  
+  @@index([is_youth])
 }
 
 model MakeupDay {

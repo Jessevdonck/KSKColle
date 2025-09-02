@@ -8,7 +8,7 @@ import { nl } from "date-fns/locale"
 import { Calendar, Clock, Info } from "lucide-react"
 
 const PlannedActivities = () => {
-  const { data: events, error } = useSWR<CalendarEvent[]>("calendar", getAll)
+  const { data: events, error } = useSWR<CalendarEvent[]>("calendar?is_youth=false", getAll)
 
   if (error) {
     return (
@@ -84,12 +84,7 @@ const PlannedActivities = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-textColor">Geplande Activiteiten</h1>
-              <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{events.length} geplande activiteiten</span>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>

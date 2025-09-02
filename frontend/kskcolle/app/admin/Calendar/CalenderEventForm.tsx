@@ -4,7 +4,7 @@ import type React from "react"
 import { useForm, Controller } from "react-hook-form"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { CalendarIcon, X, Plus, CalendarIcon as CalendarIconLucide, Type, FileText, Clock } from "lucide-react"
+import { CalendarIcon, X, Plus, CalendarIcon as CalendarIconLucide, Type, FileText, Clock, Users, Tag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +29,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           date: new Date().toISOString(),
           startuur: "20:00",
           type: "Activiteit",
+          is_youth: false,
+          category: "",
         },
   })
 
@@ -41,6 +43,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
         date: data.date,
         startuur: data.startuur,
         type: data.type,
+        is_youth: data.is_youth || false,
+        category: data.category || "",
       }
       console.log(payload)
       await save("calendar", { arg: payload })
@@ -211,6 +215,46 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                   </Button>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* Jeugd & Categorieën */}
+          <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+            <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Jeugd & Categorieën
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="is_youth"
+                  {...form.register("is_youth")}
+                  className="h-4 w-4 text-mainAccent focus:ring-mainAccent border-gray-300 rounded"
+                />
+                <Label htmlFor="is_youth" className="text-sm font-medium text-gray-700">
+                  Dit is een jeugd activiteit
+                </Label>
+              </div>
+              
+              {form.watch("is_youth") && (
+                <div>
+                  <Label htmlFor="category" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Jeugd Categorie
+                  </Label>
+                  <select
+                    id="category"
+                    {...form.register("category")}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-mainAccent focus:border-mainAccent"
+                  >
+                    <option value="">Selecteer categorie...</option>
+                    <option value="Stap 1">Stap 1</option>
+                    <option value="Stap 2">Stap 2</option>
+                    <option value="Stap 3+4">Stap 3+4</option>
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 

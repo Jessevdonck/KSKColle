@@ -10,13 +10,18 @@ import { CreateEventRequest, CreateEventResponse, GetAllEventResponse, GetEventB
 
 
 const getAllEvents = async (ctx: KoaContext<GetAllEventResponse>) => {
-  const events =  await eventService.getAllEvents();
+  const isYouth = ctx.query.is_youth === 'true' ? true : ctx.query.is_youth === 'false' ? false : undefined;
+  const events = await eventService.getAllEvents(isYouth);
   ctx.body = {
     items: events,
   };
 };
 
-getAllEvents.validationScheme = null;
+getAllEvents.validationScheme = {
+  query: {
+    is_youth: Joi.boolean().optional(),
+  },
+};
 
 const createEvent = async (ctx: KoaContext<CreateEventResponse, void, CreateEventRequest>) => {
   const newEvent: any = await eventService.createEvent(ctx.request.body);
@@ -26,11 +31,13 @@ const createEvent = async (ctx: KoaContext<CreateEventResponse, void, CreateEven
 
 createEvent.validationScheme = {
   body: {
-    title: Joi.string(),
-    description: Joi.string(),
-    type: Joi.string(),
-    date: Joi.date(),
+    title: Joi.string().required(),
+    description: Joi.string().optional(),
+    type: Joi.string().optional(),
+    date: Joi.date().required(),
     startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).default("20:00"),
+    is_youth: Joi.boolean().optional(),
+    category: Joi.string().optional(),
   },
 };
 
@@ -61,6 +68,8 @@ updateEvent.validationScheme = {
     type: Joi.string().optional(),
     date: Joi.date().optional(),
     startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
+    is_youth: Joi.boolean().optional(),
+    category: Joi.string().optional(),
   },
 };
 

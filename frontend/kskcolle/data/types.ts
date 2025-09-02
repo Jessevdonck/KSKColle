@@ -80,6 +80,8 @@ export interface CalendarEvent {
   startuur: string
   type: string
   tournament_id?: number
+  is_youth?: boolean
+  category?: string
 }
 
 export interface CalendarEventInput {
@@ -90,6 +92,8 @@ export interface CalendarEventInput {
   startuur: string
   type: string
   tournament_id?: number
+  is_youth?: boolean
+  category?: string
 }
 
 export interface Game {
