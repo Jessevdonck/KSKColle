@@ -33,19 +33,19 @@ const validationRules = {
   },
 
   adres_straat: {
-    required: "Straat is vereist!",
+    required: false,
   },
   adres_nummer: {
-    required: "Huisnummer is vereist!",
+    required: false,
   },
   adres_postcode: {
-    required: "Postcode is vereist!",
+    required: false,
   },
   adres_gemeente: {
-    required: "Gemeente is vereist!",
+    required: false,
   },
   adres_land: {
-    required: "Land is vereist!",
+    required: false,
   },
 }
 
@@ -62,12 +62,12 @@ interface FormData {
   is_youth?: boolean
   lid_sinds?: string
   roles: string[]
-  adres_straat: string;      
-  adres_nummer: string;   
-  adres_bus: string;          
-  adres_postcode: string;      
-  adres_gemeente: string;       
-  adres_land: string; 
+  adres_straat?: string;      
+  adres_nummer?: string;   
+  adres_bus?: string;          
+  adres_postcode?: string;      
+  adres_gemeente?: string;       
+  adres_land?: string; 
 }
 
 const toDateInputString = (date: Date) => {
@@ -110,12 +110,12 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       is_youth: user.is_youth || false,
       roles: user.roles || [],
 
-      adres_straat: user.adres_straat,
-      adres_nummer: user.adres_nummer,
-      adres_bus: user.adres_bus,
-      adres_postcode: user.adres_postcode,
-      adres_gemeente: user.adres_gemeente,
-      adres_land: user.adres_land,
+      adres_straat: user.adres_straat ?? "",
+      adres_nummer: user.adres_nummer ?? "",
+      adres_bus: user.adres_bus ?? "",
+      adres_postcode: user.adres_postcode ?? "",
+      adres_gemeente: user.adres_gemeente ?? "",
+      adres_land: user.adres_land ?? "",
     },
   })
 
@@ -128,10 +128,18 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       geboortedatum: values.geboortedatum ? new Date(values.geboortedatum).toISOString() : null,
       lid_sinds: values.lid_sinds ? new Date(values.lid_sinds).toISOString() : null,
       schaakrating_elo: Number(values.schaakrating_elo),
-      fide_id: values.fide_id ? Number(values.fide_id) : null,
-      schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : null,
+      fide_id: values.fide_id ? Number(values.fide_id) : undefined,
+      schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : undefined,
+      vast_nummer: values.vast_nummer?.trim() || undefined,
       is_youth: values.is_youth || false,
       roles: parseRoles(values.roles),
+      // Filter out empty address fields
+      adres_straat: values.adres_straat?.trim() || undefined,
+      adres_nummer: values.adres_nummer?.trim() || undefined,
+      adres_bus: values.adres_bus?.trim() || undefined,
+      adres_postcode: values.adres_postcode?.trim() || undefined,
+      adres_gemeente: values.adres_gemeente?.trim() || undefined,
+      adres_land: values.adres_land?.trim() || undefined,
     }
 
     try {
@@ -145,9 +153,15 @@ export default function EditForm({ user, onClose }: EditFormProps) {
           }, 2000)
         },
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving user:", error)
-      setSuccessMessage("Er is een fout opgetreden bij het opslaan van de speler")
+      console.error("Error response data:", error.response?.data)
+      console.error("Validation details:", error.response?.data?.details)
+      console.error("Formatted values sent:", formattedValues)
+      const errorMessage = error.response?.data?.details ? 
+        `Validatie fout: ${JSON.stringify(error.response.data.details)}` :
+        error.response?.data?.error || error.message
+      setSuccessMessage(`Er is een fout opgetreden: ${errorMessage}`)
     }
   }
 

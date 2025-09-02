@@ -18,10 +18,10 @@ export type User = {
   roles: Prisma.JsonValue;
 };
 
-export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles"> {}
+export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles"> {}
 
 
-export interface UserUpdateInput extends Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password"> {}
+export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password" | "adres_straat" | "adres_nummer" | "adres_bus" | "adres_postcode" | "adres_gemeente" | "adres_land">> {}
 
 export type UserCreateInput = {
   voornaam: string;
