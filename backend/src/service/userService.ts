@@ -160,7 +160,7 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
   try {
     const { roles, ...userDataWithoutPassword } = changes;
     
-    const roleList = roles.includes('admin') ? ['user', 'admin'] : ['user'];
+    const roleList = roles && roles.includes('admin') ? ['user', 'admin'] : ['user'];
 
     const user = await prisma.user.update({
       where: { user_id },

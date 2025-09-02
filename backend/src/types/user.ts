@@ -6,6 +6,8 @@ export type User = {
   voornaam: string;
   achternaam: string;
   email: string;
+  tel_nummer: string;
+  vast_nummer?: string | null;
   geboortedatum: Date;
   schaakrating_elo: number;
   max_rating?: number | null;           
@@ -16,12 +18,18 @@ export type User = {
   lid_sinds: Date;
   password_hash: string;
   roles: Prisma.JsonValue;
+  adres_straat?: string | null;
+  adres_nummer?: string | null;
+  adres_bus?: string | null;
+  adres_postcode?: string | null;
+  adres_gemeente?: string | null;
+  adres_land?: string | null;
 };
 
 export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles"> {}
 
 
-export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password" | "adres_straat" | "adres_nummer" | "adres_bus" | "adres_postcode" | "adres_gemeente" | "adres_land">> {}
+export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password" | "roles" | "adres_straat" | "adres_nummer" | "adres_bus" | "adres_postcode" | "adres_gemeente" | "adres_land">> {}
 
 export type UserCreateInput = {
   voornaam: string;
@@ -91,12 +99,9 @@ export interface UpdatePasswordResponse {
   message: string;
 }
 
-export interface UpdateUserRequest extends Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email' | 'is_youth'> {}
-
-export interface UserUpdateInput extends UserCreateInput {}
-
 export interface CreateUserRequest extends UserCreateInput {}
-export interface UpdateUserRequest extends UserUpdateInput {}
+
+export interface UpdateUserRequest extends Partial<Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email' | 'tel_nummer' | 'vast_nummer' | 'schaakrating_elo' | 'max_rating' | 'rating_difference' | 'fide_id' | 'is_youth' | 'adres_straat' | 'adres_nummer' | 'adres_bus' | 'adres_postcode' | 'adres_gemeente' | 'adres_land'>> {}
 
 export interface GetAllUserResponse extends ListResponse<User> {}
 export interface GetAllPublicUserResponse extends ListResponse<PublicUser> {}
