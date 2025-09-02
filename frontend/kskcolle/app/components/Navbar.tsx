@@ -15,6 +15,7 @@ import {
   Globe,
   Medal,
   PersonStanding,
+  Mail,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect } from "react"
 import Image from "next/image"
@@ -60,8 +61,28 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex space-x-8">
-          {/* Home */}
-          <NavItem href="/" icon={<Home size={20} />} text="Home" />
+          {/* Home & Contact Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+              <Home size={20} />
+              <span>Home</span>
+              <ChevronDown size={16} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/" className="flex items-center space-x-2">
+                  <Home size={16} />
+                  <span>Home</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/contact" className="flex items-center space-x-2">
+                  <Mail size={16} />
+                  <span>Contact</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* About Us Dropdown */}
           <DropdownMenu>
@@ -193,8 +214,9 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md">
           <div className="container mx-auto py-4 space-y-4">
-            {/* Home */}
+            {/* Home & Contact */}
             <NavItem href="/" icon={<Home size={20} />} text="Home" onClick={() => setIsMobileMenuOpen(false)} />
+            <NavItem href="/contact" icon={<Mail size={20} />} text="Contact" onClick={() => setIsMobileMenuOpen(false)} />
 
             {/* Mobile About Us Dropdown */}
             <div className="space-y-2">
