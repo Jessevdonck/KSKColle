@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Pencil, Trash2, Calendar, FileText, Tag } from "lucide-react"
+import { Pencil, Trash2, Calendar, FileText, Tag, User, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CalendarEvent } from "../../../data/types"
 import { deleteById } from "@/app/api"
@@ -14,9 +14,11 @@ import { KeyedMutator } from "swr"
 interface CalendarEventListProps {
   events: CalendarEvent[]
   mutate: KeyedMutator<CalendarEvent[]>;
+  showYouth: boolean;
+  setShowYouth: (showYouth: boolean) => void;
 }
 
-const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate }) => {
+const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, showYouth, setShowYouth }) => {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
 
   const handleEdit = (event: CalendarEvent) => {
@@ -65,10 +67,39 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Calendar className="h-6 w-6" />
-            Evenementen Overzicht
-          </h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Calendar className="h-6 w-6" />
+                Evenementen Overzicht
+              </h2>
+              <p className="text-white/80 mt-1">Geen evenementen gevonden</p>
+            </div>
+            
+            {/* Toggle Switch */}
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-medium ${!showYouth ? 'text-white' : 'text-white/60'}`}>
+                <User className="h-4 w-4 inline mr-1" />
+                Normaal
+              </span>
+              <button
+                onClick={() => setShowYouth(!showYouth)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-mainAccent ${
+                  showYouth ? 'bg-white' : 'bg-white/30'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                    showYouth ? 'translate-x-6 bg-mainAccent' : 'translate-x-1 bg-white'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${showYouth ? 'text-white' : 'text-white/60'}`}>
+                <Users className="h-4 w-4 inline mr-1" />
+                Jeugd
+              </span>
+            </div>
+          </div>
         </div>
         <div className="p-12 text-center">
           <div className="bg-mainAccent/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
@@ -93,11 +124,39 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate })
 
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Calendar className="h-6 w-6" />
-            Evenementen Overzicht
-          </h2>
-          <p className="text-white/80 mt-1">{events.length} evenementen gepland</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Calendar className="h-6 w-6" />
+                Evenementen Overzicht
+              </h2>
+              <p className="text-white/80 mt-1">{events.length} evenementen gepland</p>
+            </div>
+            
+            {/* Toggle Switch */}
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-medium ${!showYouth ? 'text-white' : 'text-white/60'}`}>
+                <User className="h-4 w-4 inline mr-1" />
+                Normaal
+              </span>
+              <button
+                onClick={() => setShowYouth(!showYouth)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-mainAccent ${
+                  showYouth ? 'bg-white' : 'bg-white/30'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                    showYouth ? 'translate-x-6 bg-mainAccent' : 'translate-x-1 bg-white'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${showYouth ? 'text-white' : 'text-white/60'}`}>
+                <Users className="h-4 w-4 inline mr-1" />
+                Jeugd
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="p-6">

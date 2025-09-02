@@ -1,13 +1,16 @@
 "use client"
 import useSWR from "swr"
+import { useState } from "react"
 import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import CalendarEventForm from "./CalenderEventForm"
 import CalendarEventList from "./CalenderEventList"
-import { Calendar, Settings } from "lucide-react"
+import { Calendar, Settings, Users, User } from "lucide-react"
 
 const CalendarManagement = () => {
-  const { data: events, error, mutate } = useSWR<CalendarEvent[]>("calendar", getAll)
+  const [showYouth, setShowYouth] = useState(false)
+  const apiUrl = showYouth ? "calendar?is_youth=true" : "calendar?is_youth=false"
+  const { data: events, error, mutate } = useSWR<CalendarEvent[]>(apiUrl, getAll)
 
   if (error) {
     return (
@@ -43,12 +46,9 @@ const CalendarManagement = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-textColor">Kalender Beheren</h1>
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{events.length} geplande evenementen</span>
-                </div>
-              </div>
+              <p className="text-gray-600 mt-1">
+                {showYouth ? "Jeugd activiteiten" : "Normale activiteiten"}
+              </p>
             </div>
           </div>
         </div>
@@ -58,7 +58,12 @@ const CalendarManagement = () => {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           <CalendarEventForm mutate={mutate} onCancel={() => {}} />
-          <CalendarEventList events={events} mutate={mutate} />
+          <CalendarEventList 
+            events={events} 
+            mutate={mutate} 
+            showYouth={showYouth}
+            setShowYouth={setShowYouth}
+          />
         </div>
       </div>
     </div>
