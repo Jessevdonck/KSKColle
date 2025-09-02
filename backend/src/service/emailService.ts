@@ -103,14 +103,22 @@ class EmailService {
   async sendContactFormEmail(data: ContactFormData): Promise<void> {
     try {
       if (!this.resend) {
+        logger.error('Resend not initialized - API key missing');
         throw new Error('Resend API key not configured');
       }
+
+      logger.info('Attempting to send contact form email', { 
+        from: this.config.from, 
+        hasApiKey: !!this.config.apiKey 
+      });
 
       // Send to both email addresses
       const recipients = ['jvaerendonck@gmail.com'];
       // const recipients = ['patrick.gillis3@telenet.be', 'niels.ongena@hotmail.be'];
       
       for (const recipient of recipients) {
+        logger.info('Sending email to recipient', { recipient });
+        
         const { data: result, error } = await this.resend.emails.send({
           from: this.config.from,
           to: [recipient],
@@ -120,13 +128,22 @@ class EmailService {
         });
 
         if (error) {
+          logger.error('Resend API error', { error, recipient });
           throw error;
         }
 
         logger.info('Contact form email sent successfully', { to: recipient, id: result?.id });
       }
     } catch (error) {
-      logger.error('Failed to send contact form email', { error, data });
+      logger.error('Failed to send contact form email', { 
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined,
+        data: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email
+        }
+      });
       throw error;
     }
   }

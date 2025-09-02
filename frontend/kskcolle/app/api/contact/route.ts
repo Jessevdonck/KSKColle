@@ -30,6 +30,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Send to backend
+    console.log('Sending request to backend:', `${BACKEND_URL}/api/contact`);
+    
     const response = await fetch(`${BACKEND_URL}/api/contact`, {
       method: 'POST',
       headers: {
@@ -38,8 +40,17 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    console.log('Backend response status:', response.status);
+
     if (!response.ok) {
-      const errorData = await response.json();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = { message: 'Unknown error occurred' };
+      }
+      
+      console.error('Backend error:', errorData);
       return NextResponse.json(
         { message: errorData.message || 'Er is een fout opgetreden bij het verzenden.' },
         { status: response.status }

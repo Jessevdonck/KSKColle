@@ -7,7 +7,7 @@ export default {
   },
   cors: {
     // 👈 1
-    origins: ['https://kskcolle-production.up.railway.app', 'https://frontendweb-kskcolle.onrender.com'], // 👈 2
+    origins: ['https://kskcolle-production.up.railway.app', 'https://frontendweb-kskcolle.onrender.com', 'https://kskcolle.onrender.com'], // 👈 2
     maxAge: 3 * 60 * 60, // 👈 3
   },
   auth: {
