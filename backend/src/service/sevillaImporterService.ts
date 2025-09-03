@@ -102,7 +102,7 @@ export class SevillaImporterService {
       const historySection = mainGroup.History || [];
       if (historySection.length > 0) {
         // Get all players from the first history entry (they should all have the same games)
-        const playersWithGames = historySection[0].Player || [];
+        const playersWithGames = historySection[0]?.Player || [];
         console.log(`About to import rounds and games from ${playersWithGames.length} players with games`);
         await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap);
       } else {
@@ -320,14 +320,7 @@ export class SevillaImporterService {
     console.log(`Round ${roundNumber}: Found ${gamesFound} games, created ${gamesInRound.size} unique games`);
   }
 
-  private parseDate(dateString: string): Date {
-    // Sevilla uses DD-MM-YYYY format
-    const parts = dateString.split('-').map(Number);
-    const day = parts[0] || 1;
-    const month = parts[1] || 1;
-    const year = parts[2] || 2024;
-    return new Date(year, month - 1, day);
-  }
+
 
   async validateSevillaData(data: any): Promise<boolean> {
     try {
