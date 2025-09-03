@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { Competitor } from '../types/Types';
 
 const prisma = new PrismaClient();
 
@@ -48,6 +47,13 @@ interface SevillaGroup {
     Date: string;
     Player: SevillaPlayer[];
   }[];
+  History?: {
+    RankOrder: number;
+    Round: number;
+    Name: string;
+    Date: string;
+    Player: SevillaPlayer[];
+  }[];
 }
 
 interface SevillaTournament {
@@ -74,7 +80,6 @@ export class SevillaImporterService {
       }
 
       const tournamentNameToUse = tournamentName || sevillaData.Name;
-      const tournamentDate = this.parseDate(latestRanking.Date);
 
       // Create tournament
       const tournament = await prisma.tournament.create({
@@ -188,51 +193,7 @@ export class SevillaImporterService {
     return playerMap;
   }
 
-  private async importRoundsAndGamesFromHistory(historyEntries: any[], tournamentId: number, playerMap: Map<number, number>) {
-    console.log(`=== importRoundsAndGamesFromHistory called with ${historyEntries.length} history entries ===`);
-    
-    for (const historyEntry of historyEntries) {
-      const roundNumber = historyEntry.Round;
-      console.log(`Processing history entry for round ${roundNumber} with ${historyEntry.Player.length} players`);
 
-      // Create round
-      const round = await prisma.round.create({
-        data: {
-          tournament_id: tournamentId,
-          ronde_nummer: roundNumber,
-          ronde_datum: this.parseDate(historyEntry.Date || '01-01-2024'),
-        },
-      });
-
-      console.log(`Created round ${roundNumber} with ID ${round.round_id}`);
-
-      // Import games for this round
-      await this.importGamesForRound(historyEntry.Player, round.round_id, roundNumber, playerMap);
-    }
-  }
-
-  private async importRoundsAndGamesFromAllRankings(rankings: any[], tournamentId: number, playerMap: Map<number, number>) {
-    console.log(`=== importRoundsAndGamesFromAllRankings called with ${rankings.length} rankings ===`);
-    
-    for (const ranking of rankings) {
-      const roundNumber = ranking.Round;
-      console.log(`Processing ranking for round ${roundNumber} with ${ranking.Player.length} players`);
-
-      // Create round
-      const round = await prisma.round.create({
-        data: {
-          tournament_id: tournamentId,
-          ronde_nummer: roundNumber,
-          ronde_datum: this.parseDate(ranking.Date),
-        },
-      });
-
-      console.log(`Created round ${roundNumber} with ID ${round.round_id}`);
-
-      // Import games for this round
-      await this.importGamesForRound(ranking.Player, round.round_id, roundNumber, playerMap);
-    }
-  }
 
   private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>) {
     console.log(`=== importRoundsAndGames called with ${players.length} players ===`);
@@ -322,8 +283,8 @@ export class SevillaImporterService {
       const blackSevillaPlayer = players.find(p => p.Name === blackPlayerName);
       
       // Determine who is white and who is black in our database
-      const whitePlayerId = whiteSevillaPlayer ? playerMap.get(whiteSevillaPlayer.ID) : null;
-      const blackPlayerId = blackSevillaPlayer ? playerMap.get(blackSevillaPlayer.ID) : null;
+      const whitePlayerId = whiteSevillaPlayer ? playerMap.get(whiteSevillaPlayer.ID) || null : null;
+      const blackPlayerId = blackSevillaPlayer ? playerMap.get(blackSevillaPlayer.ID) || null : null;
       
       console.log(`Game: ${whitePlayerName}(${whiteSevillaPlayer?.ID}->${whitePlayerId}) vs ${blackPlayerName}(${blackSevillaPlayer?.ID}->${blackPlayerId})`);
       
@@ -361,7 +322,10 @@ export class SevillaImporterService {
 
   private parseDate(dateString: string): Date {
     // Sevilla uses DD-MM-YYYY format
-    const [day, month, year] = dateString.split('-').map(Number);
+    const parts = dateString.split('-').map(Number);
+    const day = parts[0] || 1;
+    const month = parts[1] || 1;
+    const year = parts[2] || 2024;
     return new Date(year, month - 1, day);
   }
 

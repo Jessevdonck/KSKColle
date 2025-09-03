@@ -1,5 +1,4 @@
 import { SevillaImporterService } from '../service/sevillaImporterService';
-import { PrismaClient } from '@prisma/client';
 
 // Mock Prisma
 jest.mock('@prisma/client', () => ({
@@ -26,11 +25,9 @@ jest.mock('@prisma/client', () => ({
 
 describe('SevillaImporterService', () => {
   let sevillaImporter: SevillaImporterService;
-  let mockPrisma: any;
 
   beforeEach(() => {
     sevillaImporter = new SevillaImporterService();
-    mockPrisma = (sevillaImporter as any).prisma;
   });
 
   describe('validateSevillaData', () => {

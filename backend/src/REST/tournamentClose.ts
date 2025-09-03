@@ -9,7 +9,7 @@ export function installTournamentCloseRouter(router: Router) {
   // Close tournament and update ratings
   router.post('/tournament/:id/close', requireAuthentication, requireAdmin, async (ctx) => {
     try {
-      const tournamentId = parseInt(ctx.params.id);
+      const tournamentId = parseInt(ctx.params.id || '0');
       
       if (isNaN(tournamentId)) {
         ctx.status = 400;
