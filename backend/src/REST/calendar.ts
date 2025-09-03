@@ -32,12 +32,12 @@ const createEvent = async (ctx: KoaContext<CreateEventResponse, void, CreateEven
 createEvent.validationScheme = {
   body: {
     title: Joi.string().required(),
-    description: Joi.string().optional(),
-    type: Joi.string().optional(),
-    date: Joi.date().required(),
+    description: Joi.string().optional().allow(''),
+    type: Joi.string().optional().allow(''),
+    date: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).required(),
     startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).default("20:00"),
-    is_youth: Joi.boolean().optional(),
-    category: Joi.string().optional(),
+    is_youth: Joi.boolean().optional().default(false),
+    category: Joi.string().optional().allow(''),
   },
 };
 
@@ -64,12 +64,12 @@ updateEvent.validationScheme = {
   },
   body: {
     title: Joi.string().optional(),
-    description: Joi.string().optional(),
-    type: Joi.string().optional(),
-    date: Joi.date().optional(),
+    description: Joi.string().optional().allow(''),
+    type: Joi.string().optional().allow(''),
+    date: Joi.alternatives().try(Joi.date(), Joi.string().isoDate()).optional(),
     startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
     is_youth: Joi.boolean().optional(),
-    category: Joi.string().optional(),
+    category: Joi.string().optional().allow(''),
   },
 };
 

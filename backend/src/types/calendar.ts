@@ -14,7 +14,7 @@ export type CalendarEvent = {
 
 export type CalendarEventCreateInput = {
     title: string;
-    date: Date;
+    date: Date | string;
     startuur?: string;
     type?: string;
     description?: string | null;

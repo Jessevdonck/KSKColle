@@ -35,8 +35,14 @@ export const getEventById = async (event_id: number): Promise<CalendarEvent> => 
 
 export const createEvent = async (event: CalendarEventCreateInput) => {
   try {
+    // Convert date string to Date object if needed
+    const eventData = {
+      ...event,
+      date: typeof event.date === 'string' ? new Date(event.date) : event.date,
+    };
+    
     return await prisma.calendarEvent.create({
-      data: event,
+      data: eventData,
     });
   } catch (error) {
     throw handleDBError(error);
@@ -45,11 +51,17 @@ export const createEvent = async (event: CalendarEventCreateInput) => {
 
 export const updateEvent = async (event_id: number, data: EventUpdateInput): Promise<CalendarEvent> => {
   try {
+    // Convert date string to Date object if needed
+    const updateData = {
+      ...data,
+      date: data.date && typeof data.date === 'string' ? new Date(data.date) : data.date,
+    };
+    
     const updatedEvent = await prisma.calendarEvent.update({
       where: {
         event_id,
       },
-      data,
+      data: updateData,
     });
     return updatedEvent;
   } catch (error) {
