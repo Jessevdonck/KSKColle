@@ -17,8 +17,10 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
-export async function getAll(url) {
-  const { data } = await axios.get(`${baseUrl}/${url}`); 
+export async function getAll(url, params = {}) {
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = queryString ? `${baseUrl}/${url}?${queryString}` : `${baseUrl}/${url}`;
+  const { data } = await axios.get(fullUrl); 
 
   return data.items;
 }

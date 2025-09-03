@@ -179,6 +179,113 @@ describe("SwissStrategy", () => {
       expect(whiteCount).toBeGreaterThan(0);
       expect(blackCount).toBeGreaterThan(0);
     });
+
+    it("should prevent all group leaders from getting the same color", async () => {
+      const players: Competitor[] = [
+        { user_id: 1, score: 2, schaakrating_elo: 2000 }, // Group leader
+        { user_id: 2, score: 2, schaakrating_elo: 1800 }, // Group leader
+        { user_id: 3, score: 1, schaakrating_elo: 1600 }, // Second group
+        { user_id: 4, score: 1, schaakrating_elo: 1400 }, // Second group
+        { user_id: 5, score: 0, schaakrating_elo: 1200 }, // Third group
+        { user_id: 6, score: 0, schaakrating_elo: 1000 }, // Third group
+      ];
+
+      const previousRounds: Pairing[][] = [
+        // Round 1: All leaders had white
+        [
+          { speler1_id: 1, speler2_id: 2, color1: "W", color2: "B" },
+          { speler1_id: 3, speler2_id: 4, color1: "W", color2: "B" },
+          { speler1_id: 5, speler2_id: 6, color1: "W", color2: "B" },
+        ],
+        // Round 2: All leaders had white again (this was the problem)
+        [
+          { speler1_id: 1, speler2_id: 3, color1: "W", color2: "B" },
+          { speler1_id: 2, speler2_id: 4, color1: "W", color2: "B" },
+          { speler1_id: 5, speler2_id: 6, color1: "W", color2: "B" },
+        ]
+      ];
+
+      const { pairings } = await strategy.generatePairings(players, 3, previousRounds);
+
+      // Check that not all group leaders (players 1 and 2) have the same color
+      const player1Pairing = pairings.find(p => p.speler1_id === 1 || p.speler2_id === 1);
+      const player2Pairing = pairings.find(p => p.speler1_id === 2 || p.speler2_id === 2);
+      
+      expect(player1Pairing).toBeDefined();
+      expect(player2Pairing).toBeDefined();
+      
+      if (player1Pairing && player2Pairing) {
+        const player1Color = player1Pairing.speler1_id === 1 ? player1Pairing.color1 : player1Pairing.color2;
+        const player2Color = player2Pairing.speler1_id === 2 ? player2Pairing.color1 : player2Pairing.color2;
+        
+        // They should NOT both have the same color (this was the bug)
+        expect(player1Color).not.toBe(player2Color);
+        
+        // At least one should have black (since they both had white in previous rounds)
+        expect([player1Color, player2Color]).toContain("B");
+      }
+    });
+
+    it("should alternate colors properly across multiple rounds", async () => {
+      const players: Competitor[] = [
+        { user_id: 1, score: 0, schaakrating_elo: 2000 },
+        { user_id: 2, score: 0, schaakrating_elo: 1800 },
+        { user_id: 3, score: 0, schaakrating_elo: 1600 },
+        { user_id: 4, score: 0, schaakrating_elo: 1400 },
+      ];
+
+      // Round 1: All top players get white
+      const round1: Pairing[][] = [
+        [
+          { speler1_id: 1, speler2_id: 2, color1: "W", color2: "B" },
+          { speler1_id: 3, speler2_id: 4, color1: "W", color2: "B" },
+        ]
+      ];
+
+      const { pairings: round2Pairings } = await strategy.generatePairings(players, 2, round1);
+
+      // Round 2: Players who had white in round 1 should get black when possible
+      const round2: Pairing[][] = [
+        ...round1,
+        round2Pairings
+      ];
+
+      const { pairings: round3Pairings } = await strategy.generatePairings(players, 3, round2);
+
+      // Check that colors are alternating properly
+      // Player 1 had white in round 1, should get black in round 2 or 3
+      const player1Round2Pairing = round2Pairings.find(p => p.speler1_id === 1 || p.speler2_id === 1);
+      const player1Round3Pairing = round3Pairings.find(p => p.speler1_id === 1 || p.speler2_id === 1);
+
+      // Check that player 1 gets different colors across rounds (not always white)
+      const player1Colors = [];
+      if (player1Round2Pairing) {
+        const player1Round2Color = player1Round2Pairing.speler1_id === 1 ? player1Round2Pairing.color1 : player1Round2Pairing.color2;
+        player1Colors.push(player1Round2Color);
+      }
+      if (player1Round3Pairing) {
+        const player1Round3Color = player1Round3Pairing.speler1_id === 1 ? player1Round3Pairing.color1 : player1Round3Pairing.color2;
+        player1Colors.push(player1Round3Color);
+      }
+      
+      // Player 1 should have both white and black across the rounds (not always the same color)
+      const uniqueColors = [...new Set(player1Colors)];
+      expect(uniqueColors.length).toBeGreaterThan(1);
+
+      // Verify that we don't have all players with the same color in any round
+      const round2Colors = round2Pairings.flatMap(p => [p.color1, p.color2]).filter(c => c !== "N");
+      const round3Colors = round3Pairings.flatMap(p => [p.color1, p.color2]).filter(c => c !== "N");
+
+      const round2WhiteCount = round2Colors.filter(c => c === "W").length;
+      const round2BlackCount = round2Colors.filter(c => c === "B").length;
+      const round3WhiteCount = round3Colors.filter(c => c === "W").length;
+      const round3BlackCount = round3Colors.filter(c => c === "B").length;
+
+      expect(round2WhiteCount).toBeGreaterThan(0);
+      expect(round2BlackCount).toBeGreaterThan(0);
+      expect(round3WhiteCount).toBeGreaterThan(0);
+      expect(round3BlackCount).toBeGreaterThan(0);
+    });
   });
 
   describe("Bye Handling", () => {

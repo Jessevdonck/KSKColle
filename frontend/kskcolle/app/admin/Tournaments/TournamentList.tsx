@@ -6,7 +6,7 @@ import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
 import { getAll, deleteById } from "../../api/index"
 import type { Toernooi } from "@/data/types"
-import { Trophy, Users, Trash2, Eye, Calendar } from "lucide-react"
+import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle } from "lucide-react"
 
 interface TournamentListProps {
   onSelectTournament: (tournament: Toernooi) => void
@@ -14,11 +14,35 @@ interface TournamentListProps {
 
 export default function TournamentList({ onSelectTournament }: TournamentListProps) {
   const { toast } = useToast()
-  // Gebruik dezelfde key als in het form, zonder query-string
-  const { data: tournaments, error, mutate } = useSWR<Toernooi[]>("tournament", getAll)
+  // Haal alleen actieve toernooien op (finished = false)
+  const { data: tournaments, error, mutate } = useSWR<Toernooi[]>(
+    "tournament?active=true", 
+    () => getAll("tournament", { active: "true" })
+  )
   const { trigger: deleteTournament, isMutating: isDeleting } = useSWRMutation(
     "tournament",
     deleteById,
+    { revalidate: false }
+  )
+
+  const { trigger: closeTournament, isMutating: isClosing } = useSWRMutation(
+    "tournament?active=true",
+    async (url, { arg }: { arg: number }) => {
+      const response = await fetch(`http://localhost:9000/api/tournament/${arg}/close`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to close tournament');
+      }
+      
+      return response.json();
+    },
     { revalidate: false }
   )
 
@@ -60,6 +84,31 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
       // Rollback bij fout
       mutate(previous, false)
       toast({ title: "Error", description: "Kon toernooi niet verwijderen.", variant: "destructive" })
+    }
+  }
+
+  const handleClose = async (tournamentId: number, tournamentName: string) => {
+    // Vraag om bevestiging
+    const confirmed = window.confirm(
+      `Weet je zeker dat je het toernooi "${tournamentName}" wilt afsluiten?\n\nDit zal de ratings van alle spelers updaten en het toernooi als voltooid markeren.`
+    )
+    if (!confirmed) return
+
+    try {
+      await closeTournament(tournamentId)
+      toast({ 
+        title: "Success", 
+        description: `Toernooi "${tournamentName}" is afgesloten en ratings zijn geüpdatet!` 
+      })
+      // Refresh de lijst om de status te updaten
+      mutate()
+    } catch (err) {
+      console.error("Fout met toernooi af te sluiten:", err)
+      toast({ 
+        title: "Error", 
+        description: "Kon toernooi niet afsluiten.", 
+        variant: "destructive" 
+      })
     }
   }
 
@@ -119,6 +168,17 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                     <Eye className="h-4 w-4 mr-2" />
                     Beheer
                   </Button>
+                  {!t.finished && (
+                    <Button
+                      onClick={() => handleClose(t.tournament_id, t.naam)}
+                      variant="outline"
+                      className="border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
+                      disabled={isClosing}
+                      data-cy="tournament_close_button"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     onClick={() => handleDelete(t.tournament_id)}
                     variant="outline"

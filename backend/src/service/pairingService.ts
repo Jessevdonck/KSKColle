@@ -118,14 +118,6 @@ export async function createAndSavePairings(
       previousRounds
     );
 
-    if (round_number % 2 === 0) {
-      pairings = pairings.map((p) => ({
-        ...p,
-        color1: p.color2,
-        color2: p.color1,
-      }));
-    }
-
     const round = await prisma.round.create({
       data: {
         tournament_id,

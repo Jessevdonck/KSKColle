@@ -1,11 +1,25 @@
 import Image from 'next/image'
 import { User } from '../../../data/types'
-import { Mail, Phone, Smartphone } from 'lucide-react'
+import { Mail, Phone, Smartphone, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
 export default function PlayerHeader({ player }: { player: User }) {
+  const getRatingDifferenceIcon = (difference: number | null) => {
+    if (!difference) return <Minus className="h-4 w-4 text-gray-400" />
+    if (difference > 0) return <TrendingUp className="h-4 w-4 text-green-500" />
+    if (difference < 0) return <TrendingDown className="h-4 w-4 text-red-500" />
+    return <Minus className="h-4 w-4 text-gray-400" />
+  }
+
+  const getRatingDifferenceColor = (difference: number | null) => {
+    if (!difference) return "text-gray-500"
+    if (difference > 0) return "text-green-600 font-semibold"
+    if (difference < 0) return "text-red-600 font-semibold"
+    return "text-gray-500"
+  }
+
   const ratings = [
     { name: 'Club Rating', value: player.schaakrating_elo },
-    { name: 'FIDE Rating', value: 'N/A' },
+    { name: 'Rating Verschil', value: player.schaakrating_difference, icon: getRatingDifferenceIcon(player.schaakrating_difference), color: getRatingDifferenceColor(player.schaakrating_difference) },
     { name: 'Hoogste Rating', value: player.schaakrating_max ? player.schaakrating_max : 'N/A' },
   ]
 
@@ -54,7 +68,18 @@ export default function PlayerHeader({ player }: { player: User }) {
             {ratings.map((rating) => (
               <div key={rating.name} className="bg-white p-4 rounded-lg shadow text-center">
                 <p className="text-sm text-gray-600">{rating.name}</p>
-                <p className="text-2xl font-bold text-mainAccent">{rating.value}</p>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  {rating.icon && rating.icon}
+                  <p className={`text-2xl font-bold ${rating.color || 'text-mainAccent'}`}>
+                    {rating.name === 'Rating Verschil' 
+                      ? rating.value 
+                        ? typeof rating.value === 'number' && rating.value > 0 
+                          ? `+${rating.value}` 
+                          : rating.value 
+                        : '-'
+                      : rating.value}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

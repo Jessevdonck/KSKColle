@@ -18,12 +18,16 @@ export class SwissStrategy implements IPairingStrategy {
     colorBalanceWeight: 50,
     ratingWeight: 10,
   };
+  private previousRounds: Pairing[][] = [];
 
   async generatePairings(
     players: Competitor[],
     roundNumber: number,
     previousRounds: Pairing[][]
   ): Promise<{ pairings: Pairing[]; byePlayer?: Competitor }> {
+    // Store previous rounds for color history access
+    this.previousRounds = previousRounds;
+    
     // Build player standings with all necessary information
     const standings = this.buildPlayerStandings(players, previousRounds);
     
@@ -380,31 +384,38 @@ export class SwissStrategy implements IPairingStrategy {
     });
   }
 
-  private getColorHistory(_playerId: number): ("W" | "B")[] {
+  private getColorHistory(playerId: number): ("W" | "B")[] {
     // Parse previous rounds to get actual color history for this player
     const colors: ("W" | "B")[] = [];
     
-    // This would need access to previousRounds from the main method
-    // For now, we'll use a simplified approach based on colorBalance
-    // In a real implementation, you'd iterate through previousRounds and extract colors
+    // Iterate through previous rounds to extract color history
+    for (const round of this.previousRounds) {
+      for (const pairing of round) {
+        if (pairing.speler1_id === playerId && pairing.speler2_id !== null) {
+          colors.push(pairing.color1 as "W" | "B");
+        } else if (pairing.speler2_id === playerId) {
+          colors.push(pairing.color2 as "W" | "B");
+        }
+      }
+    }
     
     return colors;
   }
 
   private assignOptimalColors(
     pairing: Pairing, 
-    player1: PlayerStanding, 
-    player2: PlayerStanding,
+    _player1: PlayerStanding, 
+    _player2: PlayerStanding,
     player1Colors: ("W" | "B")[],
     player2Colors: ("W" | "B")[]
   ): Pairing {
-    // Calculate current color balance
-    const player1Whites = (player1.colorBalance > 0) ? player1.colorBalance : 0;
-    const player1Blacks = (player1.colorBalance < 0) ? Math.abs(player1.colorBalance) : 0;
-    const player2Whites = (player2.colorBalance > 0) ? player2.colorBalance : 0;
-    const player2Blacks = (player2.colorBalance < 0) ? Math.abs(player2.colorBalance) : 0;
+    // Calculate current color balance from actual history
+    const player1Whites = player1Colors.filter(c => c === "W").length;
+    const player1Blacks = player1Colors.filter(c => c === "B").length;
+    const player2Whites = player2Colors.filter(c => c === "W").length;
+    const player2Blacks = player2Colors.filter(c => c === "B").length;
 
-    // Check for streaks (more than 3 of the same color in a row)
+    // Check for streaks (more than 2 of the same color in a row)
     const player1Streak = this.getCurrentStreak(player1Colors);
     const player2Streak = this.getCurrentStreak(player2Colors);
 
@@ -422,6 +433,20 @@ export class SwissStrategy implements IPairingStrategy {
       return { ...pairing, color1: "W", color2: "B" };
     }
 
+    // Check for 2+ streaks (prefer to break them)
+    if (player1Streak.count >= 2 && player1Streak.color === "W" && player2Streak.count < 2) {
+      return { ...pairing, color1: "B", color2: "W" };
+    }
+    if (player1Streak.count >= 2 && player1Streak.color === "B" && player2Streak.count < 2) {
+      return { ...pairing, color1: "W", color2: "B" };
+    }
+    if (player2Streak.count >= 2 && player2Streak.color === "W" && player1Streak.count < 2) {
+      return { ...pairing, color1: "B", color2: "W" };
+    }
+    if (player2Streak.count >= 2 && player2Streak.color === "B" && player1Streak.count < 2) {
+      return { ...pairing, color1: "W", color2: "B" };
+    }
+
     // Balance overall color distribution
     if (player1Whites > player1Blacks + 1) {
       return { ...pairing, color1: "B", color2: "W" };
@@ -436,8 +461,14 @@ export class SwissStrategy implements IPairingStrategy {
       return { ...pairing, color1: "B", color2: "W" };
     }
 
-    // Keep original assignment if colors are balanced
-    return pairing;
+    // If both players have equal color distribution, alternate based on total games
+    // This ensures some variation even when colors are perfectly balanced
+    const totalGames = player1Colors.length + player2Colors.length;
+    if (totalGames % 2 === 0) {
+      return { ...pairing, color1: "W", color2: "B" };
+    } else {
+      return { ...pairing, color1: "B", color2: "W" };
+    }
   }
 
   private getCurrentStreak(colors: ("W" | "B")[]): { color: "W" | "B", count: number } {

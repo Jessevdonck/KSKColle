@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import UsersManagement from "../Users/UsersManagement"
 import TournamentsManagement from "../Tournaments/TournamentsManagement"
 import CalendarManagement from "../Calendar/CalendarManagement"
-import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield } from "lucide-react"
+import SevillaImportPage from "../SevillaImport/page"
+import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload } from "lucide-react"
 import { getAll } from "../../api/index"
 
 const AdminPage = () => {
@@ -32,6 +33,7 @@ const AdminPage = () => {
     { value: "users", label: "Leden", icon: Users },
     { value: "tournaments", label: "Toernooien", icon: Trophy },
     { value: "calendar", label: "Kalender", icon: CalendarDays },
+    { value: "sevilla", label: "Sevilla Import", icon: Upload },
   ]
 
   useEffect(() => {
@@ -39,7 +41,7 @@ const AdminPage = () => {
 
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1)
-      if (["dashboard", "users", "tournaments", "calendar"].includes(hash)) {
+      if (["dashboard", "users", "tournaments", "calendar", "sevilla"].includes(hash)) {
         setActiveTab(hash)
       }
     }
@@ -103,7 +105,7 @@ const AdminPage = () => {
             <div className="p-6">
               {/* Desktop Navigation */}
               <div className="hidden lg:block">
-                <TabsList className="grid w-full grid-cols-4 gap-2 bg-neutral-100 p-2 rounded-lg">
+                <TabsList className="grid w-full grid-cols-5 gap-2 bg-neutral-100 p-2 rounded-lg">
                   {tabs.map((tab) => {
                     const Icon = tab.icon
                     return (
@@ -223,6 +225,9 @@ const AdminPage = () => {
           </TabsContent>
           <TabsContent value="calendar" className="mt-0">
             <CalendarManagement />
+          </TabsContent>
+          <TabsContent value="sevilla" className="mt-0">
+            <SevillaImportPage />
           </TabsContent>
         </Tabs>
       </div>
