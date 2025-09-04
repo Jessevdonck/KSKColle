@@ -39,7 +39,9 @@ const upload = multer({
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'), false);
+      const error = new Error('Only image files are allowed') as any;
+      error.code = 'INVALID_FILE_TYPE';
+      cb(error, false);
     }
   }
 });
@@ -66,7 +68,7 @@ const uploadAvatar = async (ctx: any) => {
     });
 
     if (!ctx.req.file) {
-      throw new ServiceError('No file uploaded', 400);
+      throw ServiceError.validationFailed('No file uploaded');
     }
 
     // Delete old avatar if exists
@@ -97,6 +99,9 @@ const uploadAvatar = async (ctx: any) => {
     } else if (error?.code === 'LIMIT_FILE_SIZE') {
       ctx.status = 400;
       ctx.body = { success: false, message: 'File too large. Maximum size is 5MB.' };
+    } else if (error?.code === 'INVALID_FILE_TYPE') {
+      ctx.status = 400;
+      ctx.body = { success: false, message: 'Only image files are allowed.' };
     } else {
       ctx.status = 500;
       ctx.body = { success: false, message: 'Failed to upload avatar' };
