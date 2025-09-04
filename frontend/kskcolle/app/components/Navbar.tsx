@@ -191,28 +191,8 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/historiek/archief-clubblad" className="flex items-center">
-                  <span>Archief Clubblad</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/historiek/jubileum-1969" className="flex items-center">
-                  <span>Jubileumjaar 1969</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/historiek/jubileum-1994" className="flex items-center">
-                  <span>Jubileumjaar 1994</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/historiek/jubileum-2019" className="flex items-center">
-                  <span>Jubileumjaar 2019</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/historiek/spelerslijst-aller-tijden" className="flex items-center">
-                  <span>Spelerslijst aller tijden</span>
+                <Link href="/historiek/documenten" className="flex items-center">
+                  <span>Historische Documenten</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -451,39 +431,11 @@ export default function Navbar() {
                     Erelijsten
                   </Link>
                   <Link
-                    href="/historiek/archief-clubblad"
+                    href="/historiek/documenten"
                     className="block font-semibold hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Archief Clubblad
-                  </Link>
-                  <Link
-                    href="/historiek/jubileum-1969"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Jubileumjaar 1969
-                  </Link>
-                  <Link
-                    href="/historiek/jubileum-1994"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Jubileumjaar 1994
-                  </Link>
-                  <Link
-                    href="/historiek/jubileum-2019"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Jubileumjaar 2019
-                  </Link>
-                  <Link
-                    href="/historiek/spelerslijst-aller-tijden"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Spelerslijst aller tijden
+                    Historische Documenten
                   </Link>
                 </div>
               )}
