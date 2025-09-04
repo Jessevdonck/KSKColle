@@ -136,3 +136,7 @@ backend/src/scripts/data/leden.xls
 backend/ROLES_README.md
 
 backend/EMAIL_SETUP.md
+
+backend/src/data/imported_leden_passwords.csv
+
+backend/src/data/leden.xls
