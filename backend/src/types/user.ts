@@ -24,6 +24,7 @@ export type User = {
   adres_postcode?: string | null;
   adres_gemeente?: string | null;
   adres_land?: string | null;
+  avatar_url?: string | null;
 };
 
 export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles" | "avatar_url"> {}
