@@ -51,9 +51,6 @@ export default function RapidToernooiPage() {
                 <div className="space-y-2">
                   <p className="text-lg font-semibold">Campus Onze-Lieve-Vrouw-Presentatie Sint-Niklaas</p>
                   <p className="text-gray-600">Spoorweglaan 100, 9100 Sint-Niklaas</p>
-                  <div className="mt-4 p-3 bg-mainAccent/10 rounded-lg">
-                    <p className="font-bold text-mainAccent">KSK COLLE SINT-NIKLAAS</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
