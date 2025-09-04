@@ -149,7 +149,7 @@ export default function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth" className="flex items-center">
+                  <Link href="/youth/zomerkampen" className="flex items-center">
                     <span>Zomerkampen</span>
                   </Link>
                 </DropdownMenuItem>
@@ -369,7 +369,7 @@ export default function Navbar() {
                     Jeugd Kampioenschap
                   </Link>
                   <Link
-                    href="/youth"
+                    href="/youth/zomerkampen"
                     className="block font-semibold hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
