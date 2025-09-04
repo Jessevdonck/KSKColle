@@ -111,7 +111,7 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien" className="flex items-center">
+                <Link href="/toernooien/reglement" className="flex items-center">
                   <span>Reglementen</span>
                 </Link>
               </DropdownMenuItem>
@@ -323,7 +323,7 @@ export default function Navbar() {
                     Rapidtoernooi
                   </Link>
                   <Link
-                    href="/toernooien"
+                    href="/toernooien/reglement"
                     className="block font-semibold hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

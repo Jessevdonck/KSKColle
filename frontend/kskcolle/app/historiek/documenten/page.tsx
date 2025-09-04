@@ -39,12 +39,14 @@ export default function HistorischeDocumentenPage() {
   }
 
   const handleDownload = (document: Document) => {
-    const link = document.createElement('a')
-    link.href = `/pdf/${document.filename}`
-    link.download = document.filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    if (typeof window !== 'undefined') {
+      const link = window.document.createElement('a')
+      link.href = `/pdf/${document.filename}`
+      link.download = document.filename
+      window.document.body.appendChild(link)
+      link.click()
+      window.document.body.removeChild(link)
+    }
   }
 
   return (
