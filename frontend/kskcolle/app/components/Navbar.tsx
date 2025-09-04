@@ -41,10 +41,6 @@ export default function Navbar() {
     return null
   }
 
-  const navItems = [
-    { href: "/calendar", icon: <CalendarDays size={20} />, text: "Kalender" },
-    { href: "/spelers", icon: <ChartColumnBig size={20} />, text: "Spelers" },
-  ]
 
   return (
     <nav className="bg-neutral-50 text-textColor p-4 shadow-md sticky top-0 z-50">
@@ -60,7 +56,7 @@ export default function Navbar() {
           <span className="text-xl font-bold text-textColor">KSK Colle</span>
         </Link>
 
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden lg:flex space-x-8">
           {/* Home & Contact Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
@@ -70,14 +66,12 @@ export default function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/" className="flex items-center space-x-2">
-                  <Home size={16} />
+                <Link href="/" className="flex items-center">
                   <span>Home</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/contact" className="flex items-center space-x-2">
-                  <Mail size={16} />
+                <Link href="/contact" className="flex items-center">
                   <span>Contact</span>
                 </Link>
               </DropdownMenuItem>
@@ -93,48 +87,22 @@ export default function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/about" className="flex items-center space-x-2">
+                <Link href="/about" className="flex items-center">
                   <span>Club Info</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/interviews" className="flex items-center space-x-2">
+                <Link href="/interviews" className="flex items-center">
                   <span>Interviews</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/photos" className="flex items-center space-x-2">
+                <Link href="/photos" className="flex items-center">
                   <span>Foto&apos;s</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Jeugd werking */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-                <PersonStanding size={20} />
-                <span>Jeugd</span>
-                <ChevronDown size={16} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/info" className="flex items-center space-x-2">
-                    <span>Info</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/calendar" className="flex items-center space-x-2">
-                    <span>Kalender</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/tournaments" className="flex items-center space-x-2">
-                    <span>Jeugd Kampioenschap</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
           {/* Tournaments Dropdown */}
           <DropdownMenu>
@@ -145,30 +113,95 @@ export default function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien" className="flex items-center space-x-2">
-                  <Trophy size={16} />
+                <Link href="/toernooien" className="flex items-center">
                   <span>Huidige Toernooien</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/erelijsten" className="flex items-center space-x-2">
-                  <Medal size={16} />
+                <Link href="/toernooien" className="flex items-center">
+                  <span>Rapidtoernooi</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/toernooien" className="flex items-center">
+                  <span>Reglementen</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/erelijsten" className="flex items-center">
                   <span>Erelijsten</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien/archief" className="flex items-center space-x-2">
-                  <Archive size={16} />
+                <Link href="/toernooien/archief" className="flex items-center">
                   <span>Archief</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Rest of nav items */}
-          {navItems.map((item) => (
-            <NavItem key={item.href} {...item} />
-          ))}
+          {/* Kalender */}
+          <Link href="/calendar" className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+            <CalendarDays size={20} />
+            <span>Kalender</span>
+          </Link>
+
+          {/* Jeugd werking */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+                <PersonStanding size={20} />
+                <span>Jeugd</span>
+                <ChevronDown size={16} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth/info" className="flex items-center">
+                    <span>Info</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth/calendar" className="flex items-center">
+                    <span>Kalender</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth/tournaments" className="flex items-center">
+                    <span>Jeugd Kampioenschap</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth" className="flex items-center">
+                    <span>Zomerkampen</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth" className="flex items-center">
+                    <span>Oost-Vlaams Jeugdkampioenschap</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth" className="flex items-center">
+                    <span>Info OVJK 2025</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth" className="flex items-center">
+                    <span>Sponsoring OVJK 2025</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <Link href="/youth" className="flex items-center">
+                    <span>Lesgevers</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+          {/* Spelers */}
+          <Link href="/spelers" className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+            <ChartColumnBig size={20} />
+            <span>Spelers</span>
+          </Link>
 
           {/* External Links Dropdown */}
             <DropdownMenu>
@@ -179,17 +212,17 @@ export default function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://blog.frbe-kbsb-ksb.be/nl/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
+                  <a href="https://blog.frbe-kbsb-ksb.be/nl/" target="_blank" rel="noopener noreferrer" className="flex items-center">
                     <span>KBSB</span>
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
+                  <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="flex items-center">
                     <span>FIDE</span>
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://www.schaakligaoostvlaanderen.be/" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
+                  <a href="https://www.schaakligaoostvlaanderen.be/" target="_blank" rel="noopener noreferrer" className="flex items-center">
                     <span>Liga Oost-Vlaanderen</span>
                   </a>
                 </DropdownMenuItem>
@@ -197,7 +230,7 @@ export default function Navbar() {
             </DropdownMenu>
         </div>
 
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="text-textColor hover:text-mainAccent transition-colors"
@@ -207,12 +240,12 @@ export default function Navbar() {
           </button>
         </div>
 
-        <div className="hidden md:block">{isAuthed ? <ProfileDropdown /> : <LoginSheet />}</div>
+        <div className="hidden lg:block">{isAuthed ? <ProfileDropdown /> : <LoginSheet />}</div>
       </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md">
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md">
           <div className="container mx-auto py-4 space-y-4">
             {/* Home & Contact */}
             <NavItem href="/" icon={<Home size={20} />} text="Home" onClick={() => setIsMobileMenuOpen(false)} />
@@ -258,6 +291,63 @@ export default function Navbar() {
               )}
             </div>
 
+            {/* Mobile Tournaments Dropdown */}
+            <div className="space-y-2">
+              <button
+                onClick={() => setIsMobileTournamentOpen(!isMobileTournamentOpen)}
+                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <Trophy size={20} />
+                  <span>Toernooien</span>
+                </div>
+                {isMobileTournamentOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+
+              {isMobileTournamentOpen && (
+                <div className="ml-6 space-y-2">
+                  <Link
+                    href="/toernooien"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Huidige Toernooien
+                  </Link>
+                  <Link
+                    href="/toernooien"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Rapidtoernooi
+                  </Link>
+                  <Link
+                    href="/toernooien"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Reglementen
+                  </Link>
+                  <Link
+                    href="/erelijsten"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Erelijsten
+                  </Link>
+                  <Link
+                    href="/toernooien/archief"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Archief
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Kalender */}
+            <NavItem href="/calendar" icon={<CalendarDays size={20} />} text="Kalender" onClick={() => setIsMobileMenuOpen(false)} />
+
             {/* Mobile Youth Dropdown */}
             <div className="space-y-2">
               <button
@@ -294,49 +384,47 @@ export default function Navbar() {
                   >
                     Jeugd Kampioenschap
                   </Link>
+                  <Link
+                    href="/youth"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Zomerkampen
+                  </Link>
+                  <Link
+                    href="/youth"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Oost-Vlaams Jeugdkampioenschap
+                  </Link>
+                  <Link
+                    href="/youth"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Info OVJK 2025
+                  </Link>
+                  <Link
+                    href="/youth"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Sponsoring OVJK 2025
+                  </Link>
+                  <Link
+                    href="/youth"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Lesgevers
+                  </Link>
                 </div>
               )}
             </div>
 
-            {/* Mobile Tournaments Dropdown */}
-            <div className="space-y-2">
-              <button
-                onClick={() => setIsMobileTournamentOpen(!isMobileTournamentOpen)}
-                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
-              >
-                <div className="flex items-center space-x-2">
-                  <Trophy size={20} />
-                  <span>Toernooien</span>
-                </div>
-                {isMobileTournamentOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </button>
-
-              {isMobileTournamentOpen && (
-                <div className="ml-6 space-y-2">
-                  <Link
-                    href="/toernooien"
-                    className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Trophy size={16} />
-                    <span>Huidige Toernooien</span>
-                  </Link>
-                  <Link
-                    href="/toernooien/archief"
-                    className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Archive size={16} />
-                    <span>Archief</span>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* Rest of nav items */}
-            {navItems.map((item) => (
-              <NavItem key={item.href} {...item} onClick={() => setIsMobileMenuOpen(false)} />
-            ))}
+            {/* Mobile Spelers */}
+            <NavItem href="/spelers" icon={<ChartColumnBig size={20} />} text="Spelers" onClick={() => setIsMobileMenuOpen(false)} />
             
             {/* Mobile External Links Dropdown */}
             <div className="space-y-2">
@@ -391,7 +479,6 @@ export default function Navbar() {
     </nav>
   )
 }
-
 interface NavItemProps {
   href: string
   icon: ReactNode
@@ -411,3 +498,4 @@ function NavItem({ href, icon, text, onClick }: NavItemProps) {
     </Link>
   )
 }
+

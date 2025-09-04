@@ -9,7 +9,7 @@ const HeroHomepage = () => {
       <div
         className="absolute inset-0 bg-cover bg-no-repeat bg-center transform-gpu"
         style={{
-          backgroundImage: "url('/images/background_hero.jpg')",
+          backgroundImage: "url('/images/Clubfoto.jpg')",
           transform: "translateZ(0)", // Force GPU acceleration
         }}
       ></div>
