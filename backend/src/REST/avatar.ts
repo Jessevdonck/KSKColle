@@ -5,13 +5,13 @@ import fs from 'fs';
 import { ChessAppContext, ChessAppState } from '../types/koa';
 import { requireAuthentication } from '../core/auth';
 import * as avatarService from '../service/avatarService';
-import { ServiceError } from '../core/serviceError';
+import ServiceError from '../core/serviceError';
 
 const router = new Router({ prefix: '/avatar' });
 
 // Configure multer for avatar uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     const uploadPath = path.join(process.cwd(), 'public', 'uploads', 'avatars');
     // Ensure directory exists
     if (!fs.existsSync(uploadPath)) {
@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
     }
     cb(null, uploadPath);
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     // Generate unique filename with timestamp and random string
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
@@ -34,7 +34,7 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Only allow image files
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -88,13 +88,13 @@ const uploadAvatar = async (ctx: any) => {
       user: updatedUser,
       avatarUrl
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Avatar upload error:', error);
     
     if (error instanceof ServiceError) {
-      ctx.status = error.statusCode;
+      ctx.status = 400;
       ctx.body = { success: false, message: error.message };
-    } else if (error.code === 'LIMIT_FILE_SIZE') {
+    } else if (error?.code === 'LIMIT_FILE_SIZE') {
       ctx.status = 400;
       ctx.body = { success: false, message: 'File too large. Maximum size is 5MB.' };
     } else {
@@ -119,7 +119,7 @@ const deleteAvatar = async (ctx: any) => {
       message: 'Avatar deleted successfully',
       user: updatedUser
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Avatar delete error:', error);
     ctx.status = 500;
     ctx.body = { success: false, message: 'Failed to delete avatar' };
@@ -140,7 +140,7 @@ const getUserAvatar = async (ctx: any) => {
       success: true,
       avatarUrl
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get avatar error:', error);
     ctx.status = 500;
     ctx.body = { success: false, message: 'Failed to get avatar' };
