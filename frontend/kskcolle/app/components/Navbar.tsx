@@ -164,7 +164,7 @@ export default function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth" className="flex items-center">
+                  <Link href="/youth/sponsoring-ovjk-2025" className="flex items-center">
                     <span>Sponsoring OVJK 2025</span>
                   </Link>
                 </DropdownMenuItem>
@@ -415,7 +415,7 @@ export default function Navbar() {
                     Info OVJK 2025
                   </Link>
                   <Link
-                    href="/youth"
+                    href="/youth/sponsoring-ovjk-2025"
                     className="block font-semibold hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

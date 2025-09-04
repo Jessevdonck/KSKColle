@@ -14,8 +14,8 @@ const HeroHomepage = () => {
         }}
       ></div>
 
-      {/* Stronger Gradient Overlay for Better Contrast */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/60 to-black/50"></div>
+      {/* Lighter Gradient Overlay for Better Visibility */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/10 to-black/0"></div>
 
       {/* Content */}
       <div className="container mx-auto px-4 relative z-10 flex items-center justify-center h-full">
