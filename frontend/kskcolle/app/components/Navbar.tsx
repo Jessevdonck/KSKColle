@@ -154,12 +154,7 @@ export default function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth" className="flex items-center">
-                    <span>Oost-Vlaams Jeugdkampioenschap</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth" className="flex items-center">
+                  <Link href="/youth/info-ovjk-2025" className="flex items-center">
                     <span>Info OVJK 2025</span>
                   </Link>
                 </DropdownMenuItem>
@@ -381,14 +376,7 @@ export default function Navbar() {
                     Zomerkampen
                   </Link>
                   <Link
-                    href="/youth"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Oost-Vlaams Jeugdkampioenschap
-                  </Link>
-                  <Link
-                    href="/youth"
+                    href="/youth/info-ovjk-2025"
                     className="block font-semibold hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
