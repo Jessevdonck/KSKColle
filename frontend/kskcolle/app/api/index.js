@@ -129,3 +129,26 @@ export async function getPhotos(albumId) {
   const { data } = await axios.get(`/photos/albums/${albumId}`);
   return data;
 }
+
+// Avatar functions
+export const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  
+  const { data } = await axios.post('/avatar/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+};
+
+export const deleteAvatar = async () => {
+  const { data } = await axios.delete('/avatar');
+  return data;
+};
+
+export const getUserAvatar = async (userId) => {
+  const { data } = await axios.get(`/avatar/${userId}`);
+  return data;
+};

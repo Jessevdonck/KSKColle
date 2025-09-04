@@ -1,8 +1,15 @@
 import Image from 'next/image'
 import { User } from '../../../data/types'
 import { Mail, Phone, Smartphone, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import AvatarUpload from '../../components/AvatarUpload'
+import { useAuth } from '../../contexts/auth'
+import { useState } from 'react'
 
 export default function PlayerHeader({ player }: { player: User }) {
+  const { user: currentUser } = useAuth()
+  const [avatarUrl, setAvatarUrl] = useState(player.avatar_url)
+  const isOwnProfile = currentUser?.user_id === player.user_id
+
   const getRatingDifferenceIcon = (difference: number | null) => {
     if (!difference) return <Minus className="h-4 w-4 text-gray-400" />
     if (difference > 0) return <TrendingUp className="h-4 w-4 text-green-500" />
@@ -29,13 +36,34 @@ export default function PlayerHeader({ player }: { player: User }) {
         <div className="md:flex items-center justify-between">
           <div className="flex items-center mb-6 md:mb-0">
             <div className="flex-shrink-0 mr-6">
-              <Image
-                src={'/images/image_placeholder.png'}
-                alt={`${player.voornaam} ${player.achternaam}`}
-                width={160}
-                height={160}
-                className="h-40 w-40 rounded-full object-cover border-4 border-mainAccent"
-              />
+              {isOwnProfile ? (
+                <AvatarUpload
+                  currentAvatarUrl={avatarUrl}
+                  userId={player.user_id}
+                  onAvatarChange={setAvatarUrl}
+                  size="lg"
+                />
+              ) : (
+                <div className="h-40 w-40 rounded-full overflow-hidden border-4 border-mainAccent bg-gray-200">
+                  {avatarUrl ? (
+                    <Image
+                      src={avatarUrl.startsWith('http') 
+                        ? avatarUrl 
+                        : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:9000' : 'https://kskcolle-production.up.railway.app')}${avatarUrl}`}
+                      alt={`${player.voornaam} ${player.achternaam}`}
+                      width={160}
+                      height={160}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <span className="text-4xl font-bold text-gray-500">
+                        {player.voornaam.charAt(0)}{player.achternaam.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <div className="uppercase tracking-wide text-sm text-mainAccent font-semibold">Speler Profiel</div>

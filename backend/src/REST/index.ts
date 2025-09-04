@@ -12,6 +12,7 @@ import installUserManagementRouter from './userManagement';
 import installContactRouter from './contact';
 import installSevillaImportRouter from './sevillaImport';
 import { installTournamentCloseRouter } from './tournamentClose';
+import installAvatarRouter from './avatar';
 import type { ChessAppContext, ChessAppState, KoaApplication } from '../types/koa';
 import installSessionRouter from './session';
 
@@ -111,6 +112,7 @@ export default (app: KoaApplication) => {
   installContactRouter(router);
   installSevillaImportRouter(router);
   installTournamentCloseRouter(router);
+  installAvatarRouter(router);
 
   app.use(router.routes()).use(router.allowedMethods());
 };

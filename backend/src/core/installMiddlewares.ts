@@ -102,5 +102,6 @@ export default function installMiddlewares(app: any) {
 
   app.use(bodyParser());
   app.use(serve('apidoc'));
+  app.use(serve('public')); // Serve static files from public directory
   app.use(koaHelmet());
 }

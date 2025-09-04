@@ -3,7 +3,9 @@ const nextConfig = {
     images: {
     domains: [
       'lh3.googleusercontent.com', 
-      'drive.google.com'
+      'drive.google.com',
+      'localhost',
+      'kskcolle-production.up.railway.app'
     ],
   },
 

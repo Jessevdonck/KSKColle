@@ -96,8 +96,9 @@ export const AuthProvider = ({ children }) => {
       login,
       logout,
       register,
+      mutateUser,
     }),
-    [token, user, loginError, loginLoading, userError, registerError, registerLoading, login, logout, register],
+    [token, user, loginError, loginLoading, userError, registerError, registerLoading, login, logout, register, mutateUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
