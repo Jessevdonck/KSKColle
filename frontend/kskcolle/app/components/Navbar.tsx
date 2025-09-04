@@ -106,7 +106,7 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien" className="flex items-center">
+                <Link href="/toernooien/rapidtoernooi" className="flex items-center">
                   <span>Rapidtoernooi</span>
                 </Link>
               </DropdownMenuItem>
