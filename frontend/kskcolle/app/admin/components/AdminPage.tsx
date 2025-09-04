@@ -8,7 +8,8 @@ import UsersManagement from "../Users/UsersManagement"
 import TournamentsManagement from "../Tournaments/TournamentsManagement"
 import CalendarManagement from "../Calendar/CalendarManagement"
 import SevillaImportPage from "../SevillaImport/page"
-import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload } from "lucide-react"
+import ColorSettings from "../Settings/ColorSettings"
+import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload, Palette } from "lucide-react"
 import { getAll } from "../../api/index"
 
 const AdminPage = () => {
@@ -34,6 +35,7 @@ const AdminPage = () => {
     { value: "tournaments", label: "Toernooien", icon: Trophy },
     { value: "calendar", label: "Kalender", icon: CalendarDays },
     { value: "sevilla", label: "Sevilla Import", icon: Upload },
+    { value: "settings", label: "Instellingen", icon: Palette },
   ]
 
   useEffect(() => {
@@ -105,7 +107,7 @@ const AdminPage = () => {
             <div className="p-6">
               {/* Desktop Navigation */}
               <div className="hidden lg:block">
-                <TabsList className="grid w-full grid-cols-5 gap-2 bg-neutral-100 p-2 rounded-lg">
+                <TabsList className="grid w-full grid-cols-6 gap-2 bg-neutral-100 p-2 rounded-lg">
                   {tabs.map((tab) => {
                     const Icon = tab.icon
                     return (
@@ -228,6 +230,9 @@ const AdminPage = () => {
           </TabsContent>
           <TabsContent value="sevilla" className="mt-0">
             <SevillaImportPage />
+          </TabsContent>
+          <TabsContent value="settings" className="mt-0">
+            <ColorSettings />
           </TabsContent>
         </Tabs>
       </div>
