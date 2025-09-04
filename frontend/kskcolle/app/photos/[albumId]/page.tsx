@@ -207,9 +207,6 @@ export default function PhotoAlbumPage() {
                     </div>
 
                     <div className="p-4">
-                      <p className="font-medium text-textColor mb-3 truncate" title={p.title}>
-                        {p.title}
-                      </p>
                       <p className="text-sm text-gray-500">Klik om te vergroten</p>
                     </div>
                   </CardContent>
@@ -309,7 +306,6 @@ export default function PhotoAlbumPage() {
                   {/* Photo Info */}
                   <div className="absolute bottom-4 left-4 right-4 z-50">
                     <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white">
-                      <h3 className="text-lg font-semibold mb-1">{selectedPhoto.title}</h3>
                       <p className="text-sm text-gray-300">
                         {selectedPhotoIndex + 1} van {photos.length}
                       </p>
