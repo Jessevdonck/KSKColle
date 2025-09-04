@@ -3,8 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink } from "lucide-react"
-import Link from "next/link"
+import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink } from "lucide-react"
 import Image from "next/image"
 
 export default function InfoOVJK2025Page() {
@@ -13,15 +12,7 @@ export default function InfoOVJK2025Page() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-2 mb-4">
-            <Link 
-              href="/youth" 
-              className="text-mainAccent hover:text-mainAccentDark transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Oost-Vlaams Jeugdkampioenschap</h1>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Oost-Vlaams Jeugdkampioenschap</h1>
           <div className="bg-mainAccent/10 border border-mainAccent/20 rounded-lg p-4">
             <p className="text-lg font-semibold text-mainAccent">
               SELECTIETORNOOI VOOR HET VLAAMS KAMPIOENSCHAP 2026

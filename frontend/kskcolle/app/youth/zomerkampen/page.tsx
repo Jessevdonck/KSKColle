@@ -3,8 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Calendar, MapPin, Clock, Users, Euro, ExternalLink, Phone, Mail } from "lucide-react"
-import Link from "next/link"
+import { Calendar, MapPin, Clock, Users, Euro, ExternalLink, Phone, Mail } from "lucide-react"
 
 export default function ZomerkampenPage() {
   return (
@@ -12,15 +11,7 @@ export default function ZomerkampenPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-2 mb-4">
-            <Link 
-              href="/youth" 
-              className="text-mainAccent hover:text-mainAccentDark transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Zomerkampen schaken 2024</h1>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Zomerkampen schaken 2024</h1>
         </div>
 
         {/* Main Content */}
