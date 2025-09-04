@@ -23,6 +23,7 @@ const makeExposedUser = ({
   rating_difference,
   lid_sinds,
   roles,
+  avatar_url,
   }: User): PublicUser => ({
     user_id, 
     voornaam, 
@@ -36,7 +37,8 @@ const makeExposedUser = ({
     max_rating,
     rating_difference,
     lid_sinds,
-    roles: typeof roles === 'string' ? JSON.parse(roles) : roles
+    roles: typeof roles === 'string' ? JSON.parse(roles) : roles,
+    avatar_url
   } as PublicUser)
 
 export const getAllUsers = async (): Promise<User[]> => {
