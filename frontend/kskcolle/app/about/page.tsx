@@ -11,12 +11,12 @@ export default function AboutUs() {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       <Header />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-        <History />
         <Activities />
-        <Interviews />
         <PresidentsTimeline />
         <Team />
+        <Interviews />
         <ClubInfo />
+        <History />
       </main>
     </div>
   )

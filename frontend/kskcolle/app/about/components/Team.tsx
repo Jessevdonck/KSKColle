@@ -3,10 +3,10 @@ import { User, Mail, Phone } from "lucide-react"
 
 const teamMembers = [
   { name: "Niels Ongena", role: "Voorzitter", image: "/images/image_placeholder.png" },
-  { name: "Patrick Gillis", role: "Secretaris", image: "/images/image_placeholder.png" },
-  { name: "Maarten Covents", role: "Penningmeester", image: "/images/image_placeholder.png" },
+  { name: "Patrick Gillis", role: "Secretaris", image: "/images/Bestuur/PatrickGillis.jpg" },
+  { name: "Maarten Covents", role: "Penningmeester", image: "/images/Bestuur/MaartenCovents.jpg" },
   { name: "Ronny Eelen", role: "Verantwoordelijke jeugdwerking", image: "/images/image_placeholder.png" },
-  { name: "Thomas Buys-Devillé", role: "Materiaalmeester", image: "/images/image_placeholder.png" },
+  { name: "Thomas Buys-Devillé", role: "Materiaalmeester", image: "/images/Bestuur/ThomasBuys.jpg" },
 ]
 
 const Team = () => {

@@ -16,6 +16,8 @@ import {
   Medal,
   PersonStanding,
   Mail,
+  BookOpen,
+  History,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect } from "react"
 import Image from "next/image"
@@ -32,6 +34,7 @@ export default function Navbar() {
   const [isMobileYouthOpen, setIsMobileYouthOpen] = useState(false)
   const [isMobileTournamentOpen, setIsMobileTournamentOpen] = useState(false)
   const [isMobileLinksOpen, setIsMobileLinksOpen] = useState(false)
+  const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -56,27 +59,12 @@ export default function Navbar() {
           <span className="text-xl font-bold text-textColor">KSK Colle</span>
         </Link>
 
-        <div className="hidden lg:flex space-x-8">
-          {/* Home & Contact Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-              <Home size={20} />
-              <span>Home</span>
-              <ChevronDown size={16} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/" className="flex items-center">
-                  <span>Home</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/contact" className="flex items-center">
-                  <span>Contact</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="hidden xl:flex space-x-8">
+          {/* Home */}
+          <Link href="/" className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+            <Home size={20} />
+            <span>Home</span>
+          </Link>
 
           {/* About Us Dropdown */}
           <DropdownMenu>
@@ -127,16 +115,6 @@ export default function Navbar() {
                   <span>Reglementen</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/erelijsten" className="flex items-center">
-                  <span>Erelijsten</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien/archief" className="flex items-center">
-                  <span>Archief</span>
-                </Link>
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -145,6 +123,7 @@ export default function Navbar() {
             <CalendarDays size={20} />
             <span>Kalender</span>
           </Link>
+
 
           {/* Jeugd werking */}
             <DropdownMenu>
@@ -189,11 +168,6 @@ export default function Navbar() {
                     <span>Sponsoring OVJK 2025</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth" className="flex items-center">
-                    <span>Lesgevers</span>
-                  </Link>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -202,6 +176,47 @@ export default function Navbar() {
             <ChartColumnBig size={20} />
             <span>Spelers</span>
           </Link>
+
+          {/* Historiek Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
+              <History size={20} />
+              <span>Historiek</span>
+              <ChevronDown size={16} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/erelijsten" className="flex items-center">
+                  <span>Erelijsten</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/historiek/archief-clubblad" className="flex items-center">
+                  <span>Archief Clubblad</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/historiek/jubileum-1969" className="flex items-center">
+                  <span>Jubileumjaar 1969</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/historiek/jubileum-1994" className="flex items-center">
+                  <span>Jubileumjaar 1994</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/historiek/jubileum-2019" className="flex items-center">
+                  <span>Jubileumjaar 2019</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/historiek/spelerslijst-aller-tijden" className="flex items-center">
+                  <span>Spelerslijst aller tijden</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* External Links Dropdown */}
             <DropdownMenu>
@@ -230,7 +245,7 @@ export default function Navbar() {
             </DropdownMenu>
         </div>
 
-        <div className="lg:hidden">
+        <div className="xl:hidden">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="text-textColor hover:text-mainAccent transition-colors"
@@ -240,15 +255,22 @@ export default function Navbar() {
           </button>
         </div>
 
-        <div className="hidden lg:block">{isAuthed ? <ProfileDropdown /> : <LoginSheet />}</div>
+        <div className="hidden xl:flex items-center space-x-4">
+          <Link href="/contact" className="text-textColor hover:text-mainAccent transition-colors">
+            <Mail size={20} />
+          </Link>
+          {isAuthed ? <ProfileDropdown /> : <LoginSheet />}
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md">
+        <div className="xl:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md">
           <div className="container mx-auto py-4 space-y-4">
-            {/* Home & Contact */}
+            {/* Home */}
             <NavItem href="/" icon={<Home size={20} />} text="Home" onClick={() => setIsMobileMenuOpen(false)} />
+            
+            {/* Contact */}
             <NavItem href="/contact" icon={<Mail size={20} />} text="Contact" onClick={() => setIsMobileMenuOpen(false)} />
 
             {/* Mobile About Us Dropdown */}
@@ -327,26 +349,13 @@ export default function Navbar() {
                   >
                     Reglementen
                   </Link>
-                  <Link
-                    href="/erelijsten"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Erelijsten
-                  </Link>
-                  <Link
-                    href="/toernooien/archief"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Archief
-                  </Link>
                 </div>
               )}
             </div>
 
             {/* Mobile Kalender */}
             <NavItem href="/calendar" icon={<CalendarDays size={20} />} text="Kalender" onClick={() => setIsMobileMenuOpen(false)} />
+
 
             {/* Mobile Youth Dropdown */}
             <div className="space-y-2">
@@ -412,19 +421,73 @@ export default function Navbar() {
                   >
                     Sponsoring OVJK 2025
                   </Link>
-                  <Link
-                    href="/youth"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Lesgevers
-                  </Link>
                 </div>
               )}
             </div>
 
             {/* Mobile Spelers */}
             <NavItem href="/spelers" icon={<ChartColumnBig size={20} />} text="Spelers" onClick={() => setIsMobileMenuOpen(false)} />
+
+            {/* Mobile Historiek Dropdown */}
+            <div className="space-y-2">
+              <button
+                onClick={() => setIsMobileHistoryOpen(!isMobileHistoryOpen)}
+                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <History size={20} />
+                  <span>Historiek</span>
+                </div>
+                {isMobileHistoryOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </button>
+
+              {isMobileHistoryOpen && (
+                <div className="ml-6 space-y-2">
+                  <Link
+                    href="/erelijsten"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Erelijsten
+                  </Link>
+                  <Link
+                    href="/historiek/archief-clubblad"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Archief Clubblad
+                  </Link>
+                  <Link
+                    href="/historiek/jubileum-1969"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Jubileumjaar 1969
+                  </Link>
+                  <Link
+                    href="/historiek/jubileum-1994"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Jubileumjaar 1994
+                  </Link>
+                  <Link
+                    href="/historiek/jubileum-2019"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Jubileumjaar 2019
+                  </Link>
+                  <Link
+                    href="/historiek/spelerslijst-aller-tijden"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Spelerslijst aller tijden
+                  </Link>
+                </div>
+              )}
+            </div>
             
             {/* Mobile External Links Dropdown */}
             <div className="space-y-2">
