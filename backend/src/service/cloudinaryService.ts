@@ -34,7 +34,7 @@ export interface CloudinaryUploadResult {
 export async function uploadAvatar(
   fileBuffer: Buffer,
   userId: number,
-  originalName: string
+  _originalName: string
 ): Promise<CloudinaryUploadResult> {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
