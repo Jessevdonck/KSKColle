@@ -24,6 +24,10 @@ export default {
       memoryCost: 2 ** 17,
     },
   },
+  passwordReset: {
+    tokenLength: 32,
+    tokenExpiryHours: 24,
+  },
   email: {
     resendApiKey: process.env.RESEND_API_KEY || '',
     from: 'noreply@jessevdonck.com',

@@ -21,6 +21,7 @@ export default {
       },
     },
     passwordReset: {
+      tokenLength: 32,
       tokenExpiryHours: 24,
     },
     email: {
