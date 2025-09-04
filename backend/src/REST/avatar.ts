@@ -1,7 +1,5 @@
 import Router from '@koa/router';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import { ChessAppContext, ChessAppState } from '../types/koa';
 import { requireAuthentication } from '../core/auth';
 import * as avatarService from '../service/avatarService';
@@ -9,28 +7,9 @@ import ServiceError from '../core/serviceError';
 
 const router = new Router({ prefix: '/avatar' });
 
-// Configure multer for avatar uploads
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const uploadPath = path.join(process.cwd(), 'public', 'uploads', 'avatars');
-    // Ensure directory exists
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  },
-  filename: (_req, file, cb) => {
-    // Generate unique filename with timestamp and random string
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const extension = path.extname(file.originalname);
-    const filename = `avatar_${timestamp}_${randomString}${extension}`;
-    cb(null, filename);
-  }
-});
-
+// Configure multer for memory storage (we'll upload directly to Cloudinary)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
@@ -71,24 +50,18 @@ const uploadAvatar = async (ctx: any) => {
       throw ServiceError.validationFailed('No file uploaded');
     }
 
-    // Delete old avatar if exists
-    const currentAvatarUrl = await avatarService.getUserAvatar(userId);
-    if (currentAvatarUrl) {
-      const oldFilePath = path.join(process.cwd(), 'public', currentAvatarUrl);
-      if (fs.existsSync(oldFilePath)) {
-        fs.unlinkSync(oldFilePath);
-      }
-    }
-
-    // Update user with new avatar URL
-    const avatarUrl = `/uploads/avatars/${ctx.req.file.filename}`;
-    const updatedUser = await avatarService.updateUserAvatar(userId, avatarUrl);
+    // Upload to Cloudinary and update user
+    const updatedUser = await avatarService.updateUserAvatar(
+      userId, 
+      ctx.req.file.buffer, 
+      ctx.req.file.originalname
+    );
 
     ctx.body = {
       success: true,
       message: 'Avatar uploaded successfully',
       user: updatedUser,
-      avatarUrl
+      avatarUrl: updatedUser.avatar_url
     };
   } catch (error: any) {
     console.error('Avatar upload error:', error);

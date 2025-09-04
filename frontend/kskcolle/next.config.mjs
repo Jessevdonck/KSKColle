@@ -5,7 +5,8 @@ const nextConfig = {
       'lh3.googleusercontent.com', 
       'drive.google.com',
       'localhost',
-      'kskcolle-production.up.railway.app'
+      'kskcolle-production.up.railway.app',
+      'res.cloudinary.com'
     ],
   },
 

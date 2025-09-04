@@ -28,4 +28,9 @@ export default {
       resendApiKey: '',
       from: 'noreply@jessevdonck.com',
     },
+    cloudinary: {
+      cloudName: '',
+      apiKey: '',
+      apiSecret: '',
+    },
   };

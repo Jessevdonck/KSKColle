@@ -47,9 +47,7 @@ export default function PlayerHeader({ player }: { player: User }) {
                 <div className="h-40 w-40 rounded-full overflow-hidden border-4 border-mainAccent bg-gray-200">
                   {avatarUrl ? (
                     <Image
-                      src={avatarUrl.startsWith('http') 
-                        ? avatarUrl 
-                        : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:9000' : 'https://kskcolle-production.up.railway.app')}${avatarUrl}`}
+                      src={avatarUrl}
                       alt={`${player.voornaam} ${player.achternaam}`}
                       width={160}
                       height={160}

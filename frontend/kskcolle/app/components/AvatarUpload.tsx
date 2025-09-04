@@ -85,15 +85,13 @@ const AvatarUpload = ({
     try {
       const result = await uploadTrigger()
       
-                   if (result.success) {
-               const fullAvatarUrl = result.avatarUrl.startsWith('http') 
-                 ? result.avatarUrl 
-                 : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:9000' : 'https://kskcolle-production.up.railway.app')}${result.avatarUrl}`
-               setPreviewUrl(fullAvatarUrl)
-               onAvatarChange?.(fullAvatarUrl)
-               // Update user data in auth context
-               mutateUser((user) => user ? { ...user, avatar_url: fullAvatarUrl } : user, false)
-               toast.success('Profielfoto succesvol geüpload!')
+                         if (result.success) {
+        // Cloudinary URLs are already complete, no need to construct them
+        setPreviewUrl(result.avatarUrl)
+        onAvatarChange?.(result.avatarUrl)
+        // Update user data in auth context
+        mutateUser((user) => user ? { ...user, avatar_url: result.avatarUrl } : user, false)
+        toast.success('Profielfoto succesvol geüpload!')
         setSelectedFile(null)
         if (fileInputRef.current) {
           fileInputRef.current.value = ''

@@ -26,6 +26,7 @@
     "@types/react": "^19.0.1",
     "argon2": "^0.41.1",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.7.0",
     "config": "^3.3.12",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
