@@ -193,10 +193,10 @@ export default function RapidToernooiPage() {
                   <iframe
                     src="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform?embedded=true"
                     width="100%"
-                    height="800"
+                    height={800}
                     frameBorder="0"
-                    marginHeight="0"
-                    marginWidth="0"
+                    marginHeight={0}
+                    marginWidth={0}
                     className="rounded-lg"
                     title="Rapid Toernooi Inschrijvingsformulier"
                   >
