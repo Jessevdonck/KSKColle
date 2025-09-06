@@ -156,7 +156,7 @@ export class SevillaImporterService {
     }
   }
 
-  private async importPlayers(players: SevillaPlayer[], tournamentId: number, incremental: boolean = false): Promise<Map<number, number>> {
+  private async importPlayers(players: SevillaPlayer[], tournamentId: number, _incremental: boolean = false): Promise<Map<number, number>> {
     const playerMap = new Map<number, number>();
 
     for (const sevillaPlayer of players) {
