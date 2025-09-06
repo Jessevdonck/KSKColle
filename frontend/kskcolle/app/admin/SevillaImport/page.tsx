@@ -15,6 +15,7 @@ export default function SevillaImportPage() {
   const [file, setFile] = useState<File | null>(null);
   const [tournamentName, setTournamentName] = useState('');
   const [jsonContent, setJsonContent] = useState('');
+  const [importMode, setImportMode] = useState<'full' | 'incremental'>('full');
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
     message: string;
@@ -23,6 +24,7 @@ export default function SevillaImportPage() {
     success: boolean;
     message: string;
     tournamentId?: number;
+    incremental?: boolean;
   } | null>(null);
 
   // SWR mutations
@@ -36,7 +38,7 @@ export default function SevillaImportPage() {
 
   const { isMutating: isImporting, trigger: importTournamentData } = useSWRMutation(
     'sevilla/import',
-    async (url, { arg }: { arg: { sevillaData: any; tournamentName?: string } }) => {
+    async (url, { arg }: { arg: { sevillaData: any; tournamentName?: string; incremental?: boolean } }) => {
       const response = await api.axios.post(`/${url}`, arg);
       return response.data;
     }
@@ -92,7 +94,7 @@ export default function SevillaImportPage() {
     if (!jsonContent.trim()) {
       setValidationResult({
         valid: false,
-        message: 'Please upload a file or paste JSON content',
+        message: 'Upload een bestand of plak JSON inhoud',
       });
       return;
     }
@@ -105,7 +107,7 @@ export default function SevillaImportPage() {
       } catch (parseError) {
         setValidationResult({
           valid: false,
-          message: 'Invalid JSON format. Please check your file or pasted content.',
+          message: 'Ongeldig JSON formaat. Controleer uw bestand of geplakte inhoud.',
         });
         return;
       }
@@ -116,7 +118,7 @@ export default function SevillaImportPage() {
       console.error('Validation error:', error);
       setValidationResult({
         valid: false,
-        message: 'Failed to validate data. Please check your connection and try again.',
+        message: 'Validatie mislukt. Controleer uw verbinding en probeer opnieuw.',
       });
     }
   };
@@ -125,7 +127,7 @@ export default function SevillaImportPage() {
     if (!jsonContent.trim()) {
       setImportResult({
         success: false,
-        message: 'Please upload a file or paste JSON content',
+        message: 'Upload een bestand of plak JSON inhoud',
       });
       return;
     }
@@ -133,7 +135,7 @@ export default function SevillaImportPage() {
     if (!validationResult?.valid) {
       setImportResult({
         success: false,
-        message: 'Please validate the data first',
+        message: 'Valideer de gegevens eerst',
       });
       return;
     }
@@ -146,7 +148,7 @@ export default function SevillaImportPage() {
       } catch (parseError) {
         setImportResult({
           success: false,
-          message: 'Invalid JSON format. Please validate the data first.',
+          message: 'Ongeldig JSON formaat. Valideer de gegevens eerst.',
         });
         return;
       }
@@ -154,18 +156,20 @@ export default function SevillaImportPage() {
       const result = await importTournamentData({ 
         sevillaData,
         tournamentName: tournamentName || undefined,
+        incremental: importMode === 'incremental',
       });
       
       setImportResult({
         success: true,
         message: result.message,
         tournamentId: result.tournamentId,
+        incremental: result.incremental,
       });
     } catch (error) {
       console.error('Import error:', error);
       setImportResult({
         success: false,
-        message: 'Failed to import tournament. Please check your connection and try again.',
+        message: 'Import mislukt. Controleer uw verbinding en probeer opnieuw.',
       });
     }
   };
@@ -173,9 +177,9 @@ export default function SevillaImportPage() {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Sevilla Tournament Import</h1>
+        <h1 className="text-3xl font-bold mb-2">Sevilla Toernooi Import</h1>
         <p className="text-muted-foreground">
-          Import tournament data from Sevilla (.json) files into your system.
+          Importeer toernooigegevens van Sevilla (.json) bestanden naar uw systeem.
         </p>
       </div>
 
@@ -185,15 +189,15 @@ export default function SevillaImportPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Upload className="h-5 w-5" />
-              Upload Sevilla File
+              Sevilla Bestand Uploaden
             </CardTitle>
             <CardDescription>
-              Upload a .json file exported from Sevilla or paste the JSON content directly.
+              Upload een .json bestand geëxporteerd uit Sevilla of plak de JSON inhoud direct.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="file-upload">Choose File</Label>
+              <Label htmlFor="file-upload">Kies Bestand</Label>
               <Input
                 id="file-upload"
                 type="file"
@@ -203,14 +207,14 @@ export default function SevillaImportPage() {
               />
               {file && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                  Geselecteerd: {file.name} ({(file.size / 1024).toFixed(1)} KB)
                 </p>
               )}
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="json-content">Or Paste JSON Content</Label>
+                <Label htmlFor="json-content">Of Plak JSON Inhoud</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -218,12 +222,12 @@ export default function SevillaImportPage() {
                   onClick={loadSampleData}
                   className="text-xs"
                 >
-                  Load Sample Data
+                  Laad Voorbeelddata
                 </Button>
               </div>
               <Textarea
                 id="json-content"
-                placeholder="Paste your Sevilla JSON content here..."
+                placeholder="Plak uw Sevilla JSON inhoud hier..."
                 value={jsonContent}
                 onChange={handleJsonPaste}
                 rows={8}
@@ -232,10 +236,10 @@ export default function SevillaImportPage() {
             </div>
 
             <div>
-              <Label htmlFor="tournament-name">Tournament Name (Optional)</Label>
+              <Label htmlFor="tournament-name">Toernooi Naam (Optioneel)</Label>
               <Input
                 id="tournament-name"
-                placeholder="Leave empty to use name from Sevilla file"
+                placeholder="Laat leeg om naam uit Sevilla bestand te gebruiken"
                 value={tournamentName}
                 onChange={(e) => setTournamentName(e.target.value)}
                 className="mt-1"
@@ -249,10 +253,10 @@ export default function SevillaImportPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Validate Data
+              Valideer Gegevens
             </CardTitle>
             <CardDescription>
-              Validate the Sevilla data before importing to ensure it's in the correct format.
+              Valideer de Sevilla gegevens voor het importeren om te zorgen dat het in het juiste formaat is.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -264,10 +268,10 @@ export default function SevillaImportPage() {
               {isValidating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Validating...
+                  Valideren...
                 </>
               ) : (
-                'Validate Data'
+                'Valideer Gegevens'
               )}
             </Button>
 
@@ -291,13 +295,56 @@ export default function SevillaImportPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
-              Import Tournament
+              Importeer Toernooi
             </CardTitle>
             <CardDescription>
-              Import the validated tournament data into your system.
+              Importeer de gevalideerde toernooigegevens naar uw systeem.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* Import Mode Selection */}
+            <div>
+              <Label htmlFor="import-mode">Import Modus</Label>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    id="import-mode-full"
+                    type="radio"
+                    name="import-mode"
+                    value="full"
+                    checked={importMode === 'full'}
+                    onChange={(e) => setImportMode(e.target.value as 'full' | 'incremental')}
+                    className="h-4 w-4 text-mainAccent focus:ring-mainAccent"
+                  />
+                  <Label htmlFor="import-mode-full" className="text-sm font-normal">
+                    <strong>Volledige Import:</strong> Maak een nieuw toernooi (of vervang bestaande)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    id="import-mode-incremental"
+                    type="radio"
+                    name="import-mode"
+                    value="incremental"
+                    checked={importMode === 'incremental'}
+                    onChange={(e) => setImportMode(e.target.value as 'full' | 'incremental')}
+                    className="h-4 w-4 text-mainAccent focus:ring-mainAccent"
+                  />
+                  <Label htmlFor="import-mode-incremental" className="text-sm font-normal">
+                    <strong>Incrementele Import:</strong> Update bestaand toernooi met nieuwe/bijgewerkte rondes
+                  </Label>
+                </div>
+              </div>
+              {importMode === 'incremental' && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    <strong>Opmerking:</strong> Dit voegt nieuwe rondes toe en update bestaande rondes met wijzigingen. 
+                    Perfect voor wekelijkse updates wanneer resultaten worden gecorrigeerd of nieuwe rondes worden toegevoegd.
+                  </p>
+                </div>
+              )}
+            </div>
+
             <Button 
               onClick={importTournament}
               disabled={isImporting || !validationResult?.valid}
@@ -306,10 +353,10 @@ export default function SevillaImportPage() {
               {isImporting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Importing...
+                  {importMode === 'incremental' ? 'Updaten...' : 'Importeren...'}
                 </>
               ) : (
-                'Import Tournament'
+                importMode === 'incremental' ? 'Update Toernooi' : 'Importeer Toernooi'
               )}
             </Button>
 
@@ -323,8 +370,15 @@ export default function SevillaImportPage() {
                 <AlertDescription className={importResult.success ? 'text-green-800' : 'text-red-800'}>
                   {importResult.message}
                   {importResult.tournamentId && (
-                    <div className="mt-2">
-                      <strong>Tournament ID:</strong> {importResult.tournamentId}
+                    <div className="mt-2 space-y-1">
+                      <div>
+                        <strong>Toernooi ID:</strong> {importResult.tournamentId}
+                      </div>
+                      {importResult.incremental !== undefined && (
+                        <div>
+                          <strong>Modus:</strong> {importResult.incremental ? 'Incrementele Update' : 'Volledige Import'}
+                        </div>
+                      )}
                     </div>
                   )}
                 </AlertDescription>

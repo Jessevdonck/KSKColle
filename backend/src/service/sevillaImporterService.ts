@@ -65,7 +65,7 @@ interface SevillaTournament {
 }
 
 export class SevillaImporterService {
-  async importTournament(sevillaData: SevillaTournament, tournamentName?: string): Promise<number> {
+  async importTournament(sevillaData: SevillaTournament, tournamentName?: string, incremental: boolean = false): Promise<number> {
     try {
       // Get the main group (usually Group 1)
       const mainGroup = sevillaData.GroupReport.find(g => g.ID === 1);
@@ -81,22 +81,60 @@ export class SevillaImporterService {
 
       const tournamentNameToUse = tournamentName || sevillaData.Name;
 
-      // Create tournament
-      const tournament = await prisma.tournament.create({
-        data: {
-          naam: tournamentNameToUse,
-          rondes: latestRanking.Round,
-          type: 'SWISS',
-          rating_enabled: true,
-          finished: false, // Set to false so it appears in active tournaments
-          is_youth: false,
-        },
-      });
+      let tournament;
+      
+      if (incremental) {
+        // Try to find existing tournament
+        tournament = await prisma.tournament.findFirst({
+          where: { 
+            naam: tournamentNameToUse,
+            finished: false // Only active tournaments
+          },
+          include: { rounds: true }
+        });
 
-      console.log(`Created tournament: ${tournament.naam} (ID: ${tournament.tournament_id})`);
+        if (tournament) {
+          console.log(`Found existing tournament: ${tournament.naam} (ID: ${tournament.tournament_id}) with ${tournament.rounds.length} rounds`);
+          
+          // Update tournament info if needed
+          if (latestRanking.Round > tournament.rondes) {
+            await prisma.tournament.update({
+              where: { tournament_id: tournament.tournament_id },
+              data: { rondes: latestRanking.Round }
+            });
+            console.log(`Updated tournament rounds from ${tournament.rondes} to ${latestRanking.Round}`);
+          }
+        } else {
+          // Create new tournament if not found
+          tournament = await prisma.tournament.create({
+            data: {
+              naam: tournamentNameToUse,
+              rondes: latestRanking.Round,
+              type: 'SWISS',
+              rating_enabled: true,
+              finished: false,
+              is_youth: false,
+            },
+          });
+          console.log(`Created new tournament: ${tournament.naam} (ID: ${tournament.tournament_id})`);
+        }
+      } else {
+        // Original behavior - always create new tournament
+        tournament = await prisma.tournament.create({
+          data: {
+            naam: tournamentNameToUse,
+            rondes: latestRanking.Round,
+            type: 'SWISS',
+            rating_enabled: true,
+            finished: false,
+            is_youth: false,
+          },
+        });
+        console.log(`Created tournament: ${tournament.naam} (ID: ${tournament.tournament_id})`);
+      }
 
       // Import players from the latest ranking (they should be the same across all rounds)
-      const playerMap = await this.importPlayers(latestRanking.Player, tournament.tournament_id);
+      const playerMap = await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
 
       // Import rounds and games from the History section (which contains all games)
       const historySection = mainGroup.History || [];
@@ -104,7 +142,7 @@ export class SevillaImporterService {
         // Get all players from the first history entry (they should all have the same games)
         const playersWithGames = historySection[0]?.Player || [];
         console.log(`About to import rounds and games from ${playersWithGames.length} players with games`);
-        await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap);
+        await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap, incremental);
       } else {
         console.log('No history section found, skipping games import');
       }
@@ -118,7 +156,7 @@ export class SevillaImporterService {
     }
   }
 
-  private async importPlayers(players: SevillaPlayer[], tournamentId: number): Promise<Map<number, number>> {
+  private async importPlayers(players: SevillaPlayer[], tournamentId: number, incremental: boolean = false): Promise<Map<number, number>> {
     const playerMap = new Map<number, number>();
 
     for (const sevillaPlayer of players) {
@@ -173,19 +211,49 @@ export class SevillaImporterService {
         }
       }
 
-      // Create participation (store Sevilla rating data in existing fields for now)
-      await prisma.participation.create({
-        data: {
-          user_id: user.user_id,
-          tournament_id: tournamentId,
-          score: sevillaPlayer.Score,
-          bye_round: null,
-          // Store Sevilla rating data in existing fields temporarily
-          buchholz: sevillaPlayer.IRtg, // Initial rating
-          sonnebornBerger: sevillaPlayer.Rating, // Final rating  
-          tie_break: sevillaPlayer.Rtg_W_We, // Rating change
-        },
+      // Check if participation already exists
+      const existingParticipation = await prisma.participation.findUnique({
+        where: {
+          user_id_tournament_id: {
+            user_id: user.user_id,
+            tournament_id: tournamentId
+          }
+        }
       });
+
+      if (!existingParticipation) {
+        // Create participation (store Sevilla rating data in existing fields for now)
+        await prisma.participation.create({
+          data: {
+            user_id: user.user_id,
+            tournament_id: tournamentId,
+            score: sevillaPlayer.Score,
+            bye_round: null,
+            // Store Sevilla rating data in existing fields temporarily
+            buchholz: sevillaPlayer.IRtg, // Initial rating
+            sonnebornBerger: sevillaPlayer.Rating, // Final rating  
+            tie_break: sevillaPlayer.Rtg_W_We, // Rating change
+          },
+        });
+        console.log(`Created participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId}`);
+      } else {
+        // Update existing participation with latest score and rating data
+        await prisma.participation.update({
+          where: {
+            user_id_tournament_id: {
+              user_id: user.user_id,
+              tournament_id: tournamentId
+            }
+          },
+          data: {
+            score: sevillaPlayer.Score,
+            buchholz: sevillaPlayer.IRtg, // Initial rating
+            sonnebornBerger: sevillaPlayer.Rating, // Final rating  
+            tie_break: sevillaPlayer.Rtg_W_We, // Rating change
+          },
+        });
+        console.log(`Updated participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId}`);
+      }
 
       playerMap.set(sevillaPlayer.ID, user.user_id);
     }
@@ -195,8 +263,8 @@ export class SevillaImporterService {
 
 
 
-  private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>) {
-    console.log(`=== importRoundsAndGames called with ${players.length} players ===`);
+  private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>, incremental: boolean = false) {
+    console.log(`=== importRoundsAndGames called with ${players.length} players (incremental: ${incremental}) ===`);
     
     // Debug: show first few players
     console.log(`First 3 players:`, players.slice(0, 3).map(p => ({ name: p.Name, hasGame: !!p.Game, gameLength: p.Game?.length || 0 })));
@@ -218,16 +286,48 @@ export class SevillaImporterService {
     console.log(`Found ${sortedRounds.length} unique rounds: ${sortedRounds.join(', ')}`);
 
     for (const roundNumber of sortedRounds) {
-      // Create round
-      const round = await prisma.round.create({
-        data: {
-          tournament_id: tournamentId,
-          ronde_nummer: roundNumber,
-          ronde_datum: new Date(), // We don't have exact dates from Sevilla
-        },
-      });
-
-      console.log(`Created round ${roundNumber} with ID ${round.round_id}`);
+      let round;
+      
+      if (incremental) {
+        // Check if round exists
+        const existingRound = await prisma.round.findFirst({
+          where: { 
+            tournament_id: tournamentId,
+            ronde_nummer: roundNumber 
+          }
+        });
+        
+        if (existingRound) {
+          console.log(`Round ${roundNumber} exists, updating games...`);
+          round = existingRound;
+          
+          // Delete existing games for this round to replace them
+          await prisma.game.deleteMany({
+            where: { round_id: existingRound.round_id }
+          });
+          console.log(`Deleted existing games for round ${roundNumber}`);
+        } else {
+          // Create new round
+          round = await prisma.round.create({
+            data: {
+              tournament_id: tournamentId,
+              ronde_nummer: roundNumber,
+              ronde_datum: new Date(), // We don't have exact dates from Sevilla
+            },
+          });
+          console.log(`Created new round ${roundNumber} with ID ${round.round_id}`);
+        }
+      } else {
+        // Original behavior - always create new round
+        round = await prisma.round.create({
+          data: {
+            tournament_id: tournamentId,
+            ronde_nummer: roundNumber,
+            ronde_datum: new Date(), // We don't have exact dates from Sevilla
+          },
+        });
+        console.log(`Created round ${roundNumber} with ID ${round.round_id}`);
+      }
 
       // Import games for this round
       await this.importGamesForRound(players, round.round_id, roundNumber, playerMap);

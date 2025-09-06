@@ -11,11 +11,15 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
   // Import Sevilla tournament
   router.post('/sevilla/import', requireAuthentication, requireAdmin, async (ctx) => {
   try {
-    const { sevillaData, tournamentName } = ctx.request.body as { sevillaData: any; tournamentName?: string };
+    const { sevillaData, tournamentName, incremental } = ctx.request.body as { 
+      sevillaData: any; 
+      tournamentName?: string; 
+      incremental?: boolean;
+    };
 
     if (!sevillaData) {
       ctx.status = 400;
-      ctx.body = { error: 'Sevilla data is required' };
+      ctx.body = { error: 'Sevilla gegevens zijn vereist' };
       return;
     }
 
@@ -23,22 +27,61 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
     const isValid = await sevillaImporter.validateSevillaData(sevillaData);
     if (!isValid) {
       ctx.status = 400;
-      ctx.body = { error: 'Invalid Sevilla data format' };
+      ctx.body = { error: 'Ongeldig Sevilla data formaat' };
       return;
     }
 
-    // Import tournament
-    const tournamentId = await sevillaImporter.importTournament(sevillaData, tournamentName);
+    // Import tournament (incremental or full)
+    const tournamentId = await sevillaImporter.importTournament(sevillaData, tournamentName, incremental || false);
 
     ctx.status = 201;
     ctx.body = {
-      message: 'Tournament imported successfully',
+      message: incremental ? 'Toernooi succesvol bijgewerkt' : 'Toernooi succesvol geïmporteerd',
       tournamentId,
+      incremental: incremental || false,
     };
   } catch (error) {
     console.error('Error importing Sevilla tournament:', error);
     ctx.status = 500;
-    ctx.body = { error: 'Failed to import tournament' };
+    ctx.body = { error: 'Import van toernooi mislukt' };
+  }
+});
+
+  // Incremental import Sevilla tournament (only new rounds)
+  router.post('/sevilla/import/incremental', requireAuthentication, requireAdmin, async (ctx) => {
+  try {
+    const { sevillaData, tournamentName } = ctx.request.body as { 
+      sevillaData: any; 
+      tournamentName?: string; 
+    };
+
+    if (!sevillaData) {
+      ctx.status = 400;
+      ctx.body = { error: 'Sevilla gegevens zijn vereist' };
+      return;
+    }
+
+    // Validate Sevilla data
+    const isValid = await sevillaImporter.validateSevillaData(sevillaData);
+    if (!isValid) {
+      ctx.status = 400;
+      ctx.body = { error: 'Ongeldig Sevilla data formaat' };
+      return;
+    }
+
+    // Import tournament incrementally
+    const tournamentId = await sevillaImporter.importTournament(sevillaData, tournamentName, true);
+
+    ctx.status = 201;
+    ctx.body = {
+      message: 'Toernooi succesvol bijgewerkt (incrementeel)',
+      tournamentId,
+      incremental: true,
+    };
+  } catch (error) {
+    console.error('Error importing Sevilla tournament incrementally:', error);
+    ctx.status = 500;
+    ctx.body = { error: 'Incrementele import van toernooi mislukt' };
   }
 });
 
@@ -49,7 +92,7 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
 
     if (!sevillaData) {
       ctx.status = 400;
-      ctx.body = { error: 'Sevilla data is required' };
+      ctx.body = { error: 'Sevilla gegevens zijn vereist' };
       return;
     }
 
@@ -58,12 +101,12 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
     ctx.status = 200;
     ctx.body = {
       valid: isValid,
-      message: isValid ? 'Sevilla data is valid' : 'Invalid Sevilla data format',
+      message: isValid ? 'Sevilla gegevens zijn geldig' : 'Ongeldig Sevilla data formaat',
     };
   } catch (error) {
     console.error('Error validating Sevilla data:', error);
     ctx.status = 500;
-    ctx.body = { error: 'Failed to validate Sevilla data' };
+    ctx.body = { error: 'Validatie van Sevilla gegevens mislukt' };
   }
 });
 
@@ -81,7 +124,7 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
   } catch (error) {
     console.error('Error loading sample Sevilla data:', error);
     ctx.status = 500;
-    ctx.body = { error: 'Failed to load sample data' };
+    ctx.body = { error: 'Laden van voorbeelddata mislukt' };
   }
 });
 
