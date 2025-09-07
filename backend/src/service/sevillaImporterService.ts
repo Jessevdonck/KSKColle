@@ -363,7 +363,7 @@ export class SevillaImporterService {
   /**
    * Bepaal het juiste ronde nummer rekening houdend met inhaaldagen
    */
-  private async determineCorrectRoundNumber(tournamentId: number, sevillaRoundNumber: number, existingRounds: any[]): Promise<number> {
+  private async determineCorrectRoundNumber(_tournamentId: number, sevillaRoundNumber: number, existingRounds: any[]): Promise<number> {
     // Als er geen bestaande rondes zijn, gebruik het Sevilla ronde nummer
     if (existingRounds.length === 0) {
       return sevillaRoundNumber;

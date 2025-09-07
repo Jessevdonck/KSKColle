@@ -80,3 +80,5 @@ export const removeEvent = async (event_id: number): Promise<void> => {
     throw handleDBError(error);
   }
 };
+
+export const deleteEvent = removeEvent;

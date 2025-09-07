@@ -56,7 +56,6 @@ export interface MakeupDay {
   calendar_event_id?: number | null
 }
 
-export enum RoundType {
-  REGULAR = 'REGULAR',
-  MAKEUP = 'MAKEUP'
-}
+import { RoundType } from '@prisma/client'
+
+export { RoundType }

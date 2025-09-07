@@ -148,22 +148,24 @@ export async function updateMakeupRound(
     }
 
     // Update de ronde
+    const updateData: any = {};
+    if (data.ronde_datum !== undefined) updateData.ronde_datum = data.ronde_datum;
+    if (data.startuur !== undefined) updateData.startuur = data.startuur;
+    if (data.label !== undefined) updateData.label = data.label;
+    
     const updatedRound = await prisma.round.update({
       where: { round_id },
-      data: {
-        ronde_datum: data.ronde_datum,
-        startuur: data.startuur,
-        label: data.label,
-      },
+      data: updateData,
     });
 
     // Update de calendar event als die bestaat
     if (round.calendar_event_id && (data.ronde_datum || data.startuur || data.label)) {
-      await calendarService.updateEvent(round.calendar_event_id, {
-        date: data.ronde_datum,
-        startuur: data.startuur,
-        title: data.label ? `${updatedRound.label}` : undefined,
-      });
+      const eventUpdateData: any = {};
+      if (data.ronde_datum !== undefined) eventUpdateData.date = data.ronde_datum;
+      if (data.startuur !== undefined) eventUpdateData.startuur = data.startuur;
+      if (data.label !== undefined) eventUpdateData.title = data.label;
+      
+      await calendarService.updateEvent(round.calendar_event_id, eventUpdateData);
     }
 
     return updatedRound;

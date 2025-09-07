@@ -214,12 +214,16 @@ export async function updateMakeupRoundDate(
     }
 
     // Update de ronde
+    const updateData: any = {
+      ronde_datum: new_date,
+    };
+    if (new_startuur !== undefined) {
+      updateData.startuur = new_startuur;
+    }
+    
     const updatedRound = await prisma.round.update({
       where: { round_id },
-      data: {
-        ronde_datum: new_date,
-        startuur: new_startuur || undefined,
-      },
+      data: updateData,
       include: {
         games: {
           include: {
@@ -233,16 +237,23 @@ export async function updateMakeupRoundDate(
 
     // Update calendar event
     if (round.calendar_event_id) {
-      await calendarService.updateEvent(round.calendar_event_id, {
+      const eventUpdateData: any = {
         date: new_date,
-        startuur: new_startuur || updatedRound.startuur,
-      });
+        title: `Inhaaldag - ${round.label || `Na ronde ${round.ronde_nummer - 1}`}`,
+      };
+      if (new_startuur !== undefined) {
+        eventUpdateData.startuur = new_startuur;
+      } else {
+        eventUpdateData.startuur = updatedRound.startuur;
+      }
+      
+      await calendarService.updateEvent(round.calendar_event_id, eventUpdateData);
     }
 
     return {
       ...updatedRound,
       is_sevilla_imported: false,
-      games: updatedRound.games
+      games: updatedRound.games || []
     };
   } catch (error) {
     throw handleDBError(error);
