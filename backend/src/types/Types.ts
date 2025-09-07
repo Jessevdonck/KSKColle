@@ -55,3 +55,8 @@ export interface MakeupDay {
   label?: string | null
   calendar_event_id?: number | null
 }
+
+export enum RoundType {
+  REGULAR = 'REGULAR',
+  MAKEUP = 'MAKEUP'
+}

@@ -12,6 +12,11 @@ enum TournamentType {
   ROUND_ROBIN
 }
 
+enum RoundType {
+  REGULAR
+  MAKEUP
+}
+
 model User {
   user_id            Int             @id @default(autoincrement())
   voornaam           String
@@ -70,6 +75,9 @@ model Round {
   ronde_datum        DateTime
   startuur           String           @default("20:00")
   calendar_event_id  Int?
+  type               RoundType        @default(REGULAR)
+  label              String?          // Voor inhaaldagen: "Inhaaldag na ronde 3"
+  is_sevilla_imported Boolean         @default(false) // True voor Sevilla geïmporteerde rondes
   
   tournament         Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade) 
   calendarEvent      CalendarEvent?   @relation(fields: [calendar_event_id], references: [event_id], onDelete: SetNull)

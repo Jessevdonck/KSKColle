@@ -6,6 +6,8 @@ import installRondeRouter from './rondes';
 import installSpelRouter from './spellen';
 import installCalendarRouter from './calendar';
 import installMakeupDayRouter from './makeupDay';
+import installMakeupRoundRouter from './makeupRound';
+import installTournamentRoundsRouter from './tournamentRounds';
 import installPhotoRouter from './photos';
 import installPasswordResetRouter from './passwordReset';
 import installUserManagementRouter from './userManagement';
@@ -106,6 +108,8 @@ export default (app: KoaApplication) => {
   installSpelRouter(router);
   installCalendarRouter(router);
   installMakeupDayRouter(router);
+  installMakeupRoundRouter(router);
+  installTournamentRoundsRouter(router);
   installPhotoRouter(router);
   installPasswordResetRouter(router);
   installUserManagementRouter(router);

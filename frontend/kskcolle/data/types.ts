@@ -116,6 +116,10 @@ export type Round = {
   ronde_nummer: number;
   ronde_datum: Date;
   startuur: string;
+  type: 'REGULAR' | 'MAKEUP';
+  label?: string;
+  calendar_event_id?: number;
+  is_sevilla_imported: boolean;
   games: Game[];
 };
 

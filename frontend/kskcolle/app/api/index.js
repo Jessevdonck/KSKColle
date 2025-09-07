@@ -95,6 +95,36 @@ export const deleteMakeupDay = async (url, { arg: id }) => {
   await axios.delete(`${baseUrl}/${url}/${id}`)
 }
 
+// Nieuwe API functies voor het hybride inhaaldag systeem
+export const getAllTournamentRounds = async (tournamentId) => {
+  const { data } = await axios.get(`${baseUrl}/tournamentRounds?tournament_id=${tournamentId}`);
+  return data.items;
+};
+
+export const createMakeupRound = async (url, { arg }) => {
+  const { data } = await axios.post(`${baseUrl}/tournamentRounds/makeup`, arg);
+  return data;
+};
+
+export const addGameToMakeupRound = async (roundId, { arg }) => {
+  const { data } = await axios.post(`${baseUrl}/tournamentRounds/${roundId}/games`, arg);
+  return data;
+};
+
+export const deleteMakeupRound = async (roundId) => {
+  await axios.delete(`${baseUrl}/tournamentRounds/${roundId}`);
+};
+
+export const updateMakeupRoundDate = async (roundId, { arg }) => {
+  const { data } = await axios.put(`${baseUrl}/tournamentRounds/${roundId}/date`, arg);
+  return data;
+};
+
+export const postponeGameToMakeupRound = async (url, { arg }) => {
+  const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone-game`, arg);
+  return data;
+};
+
 export const requestPasswordReset = async (url, { arg: { email } }) => {
   const { data } = await axios.post(`${baseUrl}/${url}/request`, { email });
   return data;
