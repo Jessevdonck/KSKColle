@@ -11,8 +11,9 @@ export interface MakeupRound {
   ronde_datum: Date;
   startuur: string;
   type: RoundType;
-  label?: string;
-  calendar_event_id?: number;
+  label: string | null;
+  calendar_event_id: number | null;
+  is_sevilla_imported: boolean;
 }
 
 /**

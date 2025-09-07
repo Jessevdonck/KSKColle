@@ -11,8 +11,8 @@ export interface TournamentRound {
   ronde_datum: Date;
   startuur: string;
   type: RoundType;
-  label?: string;
-  calendar_event_id?: number;
+  label: string | null;
+  calendar_event_id: number | null;
   is_sevilla_imported: boolean; // Nieuwe veld om te onderscheiden
   games: any[];
 }
@@ -239,7 +239,7 @@ export async function updateMakeupRoundDate(
     if (round.calendar_event_id) {
       const eventUpdateData: any = {
         date: new_date,
-        title: `Inhaaldag - ${round.label || `Na ronde ${round.ronde_nummer - 1}`}`,
+        title: `Inhaaldag - ${updatedRound.label || `Na ronde ${updatedRound.ronde_nummer - 1}`}`,
       };
       if (new_startuur !== undefined) {
         eventUpdateData.startuur = new_startuur;
