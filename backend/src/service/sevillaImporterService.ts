@@ -18,6 +18,16 @@ interface SevillaPlayer {
   Rtg_W_We: number;    // Rating change
   RatedGames: number;
   Game: SevillaGame[];
+  Abs?: {
+    Round: number;
+    PlayerNr: number;
+    Player: string;
+    Reason: string;
+    Score: number;
+    PlainScore: number;
+    Pos: number;
+    OrgPos: number;
+  }[];
 }
 
 interface SevillaGame {
@@ -170,7 +180,7 @@ export class SevillaImporterService {
       } else {
         console.log('No history section found, using ranking section');
         // Fallback to ranking section if no history
-        const playerMap = await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
+        await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
       }
 
       console.log(`Successfully imported tournament with ${latestRanking.Player.length} players and ${latestRanking.Round} rounds`);
