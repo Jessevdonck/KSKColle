@@ -2,7 +2,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
-import { getById, generatePairings, endTournament, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, postponeGameToMakeupRound } from "../../../api/index"
+import { getById, generatePairings, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, postponeGameToMakeupRound } from "../../../api/index"
 import type { Toernooi, MakeupDay, Round } from "@/data/types"
 import RoundSection from "./RoundSection"
 import MakeupSection from "./MakeupSection"
@@ -40,7 +40,6 @@ export default function RoundManagement({ tournament }: Props) {
 
   // 4) Mutations
   const { trigger: genPair, isMutating: generatingPairs } = useSWRMutation("tournament", generatePairings)
-  const { trigger: endT, isMutating: ending } = useSWRMutation("tournament", endTournament)
   const { trigger: createMakeup, isMutating: creatingMD } = useSWRMutation("makeupDay", postMakeupDay)
   const { trigger: createMakeupRoundMutation, isMutating: creatingMakeupRound } = useSWRMutation("tournamentRounds", createMakeupRound)
   const { trigger: deleteMakeupRoundMutation, isMutating: deletingMakeupRound } = useSWRMutation("tournamentRounds", deleteMakeupRound)
@@ -60,7 +59,6 @@ export default function RoundManagement({ tournament }: Props) {
   const [newRoundAfterRound, setNewRoundAfterRound] = useState(1)
   const [newDateRound, setNewDateRound] = useState(format(new Date(), "yyyy-MM-dd"))
   const [newStartuurRound, setNewStartuurRound] = useState("20:00")
-  const [newLabelRound, setNewLabelRound] = useState("")
 
   // Form-state voor het toevoegen van games aan inhaaldagen
   const [addingGameToRound, setAddingGameToRound] = useState<number | null>(null)
@@ -170,12 +168,10 @@ export default function RoundManagement({ tournament }: Props) {
           after_round_number: newRoundAfterRound,
           date: newDateRound,
           startuur: newStartuurRound,
-          label: newLabelRound || undefined,
         },
       })
       refetchRounds()
       setAddingNewRound(false)
-      setNewLabelRound("")
       toast({ title: "Success", description: "Inhaaldag ronde toegevoegd." })
     } catch (error) {
       toast({ title: "Error", description: "Kon inhaaldag ronde niet toevoegen", variant: "destructive" })
@@ -185,10 +181,16 @@ export default function RoundManagement({ tournament }: Props) {
   // handler voor verwijderen inhaaldag ronde
   const handleDeleteMakeupRound = async (roundId: number) => {
     try {
-      await deleteMakeupRoundMutation()
+      console.log('handleDeleteMakeupRound called with roundId:', roundId);
+      console.log('calling deleteMakeupRoundMutation with:', { roundId });
+      
+      await deleteMakeupRoundMutation({
+        roundId
+      })
       refetchRounds()
       toast({ title: "Success", description: "Inhaaldag ronde verwijderd." })
     } catch (error) {
+      console.error('Error in handleDeleteMakeupRound:', error);
       toast({ title: "Error", description: "Kon inhaaldag ronde niet verwijderen", variant: "destructive" })
     }
   }
@@ -481,10 +483,6 @@ export default function RoundManagement({ tournament }: Props) {
                       onChange={(e) => setNewStartuurRound(e.target.value)}
                       defaultValue="20:00"
                     />
-                  </div>
-                  <div>
-                    <Label>Label (optioneel)</Label>
-                    <Input placeholder="bv. Inhaaldag 1" value={newLabelRound} onChange={(e) => setNewLabelRound(e.target.value)} />
                   </div>
                 </div>
                 <div className="flex space-x-2">
@@ -902,47 +900,6 @@ export default function RoundManagement({ tournament }: Props) {
         </div>
       )}
 
-      {/* End Tournament */}
-      {allDone && !T.finished && (
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Toernooi Beëindigen
-            </h3>
-          </div>
-          <div className="p-6">
-            <p className="text-gray-600 mb-4">
-              Alle rondes zijn voltooid. Je kunt het toernooi nu officieel beëindigen.
-            </p>
-            <Button
-              onClick={() =>
-                endT(T.tournament_id)
-                  .then(() => Promise.all([refetchT(), refetchMD(), refetchRounds()]))
-                  .then(() => toast({ title: "Success", description: "Toernooi beëindigd." }))
-                  .catch(() =>
-                    toast({ title: "Error", description: "Kon toernooi niet beëindigen", variant: "destructive" }),
-                  )
-              }
-              disabled={ending}
-              className="bg-red-600 hover:bg-red-700"
-              data-cy="end_tournament_button"
-            >
-              {ending ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Even geduld...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  Eindig Toernooi
-                </div>
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Game Uitstellen Modal */}
       {postponingGame && (

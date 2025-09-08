@@ -321,11 +321,14 @@ export class SevillaImporterService {
           console.log(`Round ${roundNumber} exists, updating games...`);
           round = existingRound;
           
-          // Delete existing games for this round to replace them
+          // Only delete games that are not postponed (don't have uitgestelde_datum)
           await prisma.game.deleteMany({
-            where: { round_id: existingRound.round_id }
+            where: { 
+              round_id: existingRound.round_id,
+              uitgestelde_datum: null // Only delete non-postponed games
+            }
           });
-          console.log(`Deleted existing games for round ${roundNumber}`);
+          console.log(`Deleted non-postponed games for round ${roundNumber}`);
         } else {
           // Create new round - determine the correct round number considering makeup days
           const correctRoundNumber = await this.determineCorrectRoundNumber(tournamentId, roundNumber, existingRounds);
@@ -430,7 +433,7 @@ export class SevillaImporterService {
       if (gamesInRound.has(gameId)) continue;
       gamesInRound.add(gameId);
 
-      // Determine winner and result
+      // Determine winner and result first
       let winnaarId: number | null = null;
       let result: string = playerGame.Res;
       
@@ -461,6 +464,28 @@ export class SevillaImporterService {
         // Handle other results or incomplete games
         winnaarId = null;
         result = playerGame.Res || '0-0';
+      }
+
+      // Check if this game already exists (for postponed games)
+      const existingGame = await prisma.game.findFirst({
+        where: {
+          round_id: roundId,
+          speler1_id: whitePlayerId || playerUserId,
+          speler2_id: blackPlayerId || opponentUserId,
+        }
+      });
+
+      if (existingGame) {
+        console.log(`Game already exists, updating result: ${existingGame.game_id}`);
+        // Update the existing game with the new result
+        await prisma.game.update({
+          where: { game_id: existingGame.game_id },
+          data: {
+            winnaar_id: winnaarId,
+            result: result,
+          }
+        });
+        continue;
       }
 
       // Create game - use the actual players who played (white and black)

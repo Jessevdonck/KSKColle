@@ -36,7 +36,6 @@ export default function RoundList({
 }: RoundListProps) {
   const [addingForRound, setAddingForRound] = useState<number | null>(null)
   const [date, setDate] = useState<string>('')
-  const [label, setLabel] = useState<string>('')
 
   const { trigger: createMakeupDay } = useSWRMutation(
     'makeupDay',
@@ -45,7 +44,6 @@ export default function RoundList({
       onSuccess: () => {
         setAddingForRound(null)
         setDate('')
-        setLabel('')
         onMakeupDaysChange()
       }
     }
@@ -68,7 +66,6 @@ export default function RoundList({
     tournament_id,
     round_after: addingForRound,
     date,
-    label: label || undefined,
   };
   console.log('Payload naar POST /api/makeupDay:', payload);
 
@@ -108,22 +105,13 @@ export default function RoundList({
 
             {addingForRound === roundNumber && (
               <div className="mt-2 p-4 bg-gray-50 border rounded">
-                <div className="grid grid-cols-3 gap-4 items-end">
+                <div className="grid grid-cols-2 gap-4 items-end">
                   <div>
                     <Label>Datum</Label>
                     <Input
                       type="date"
                       value={date}
                       onChange={e => setDate(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label>Label</Label>
-                    <Input
-                      type="text"
-                      placeholder="bv. Inhaaldag 1"
-                      value={label}
-                      onChange={e => setLabel(e.target.value)}
                     />
                   </div>
                   <div className="flex space-x-2">

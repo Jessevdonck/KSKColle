@@ -70,7 +70,10 @@ export async function createMakeupRoundBetween(
     // 3. Verschuif alle rondes na de inhaaldag
     await shiftRoundsAfter(tournament_id, correctRoundNumber);
 
-    // 4. Maak de inhaaldag ronde aan
+    // 4. Bepaal het inhaaldag nummer
+    const makeupDayNumber = getMakeupDayNumber(existingRounds, after_round_number);
+
+    // 5. Maak de inhaaldag ronde aan
     const makeupRound = await prisma.round.create({
       data: {
         tournament_id,
@@ -78,7 +81,7 @@ export async function createMakeupRoundBetween(
         ronde_datum: date,
         startuur,
         type: RoundType.MAKEUP,
-        label: label || `Inhaaldag na ronde ${after_round_number}`,
+        label: `Inhaaldag ${makeupDayNumber}`,
         is_sevilla_imported: false,
       },
     });
@@ -90,9 +93,7 @@ export async function createMakeupRoundBetween(
     });
 
     if (tournament) {
-      const eventTitle = label 
-        ? `${tournament.naam} - ${label}`
-        : `${tournament.naam} - Inhaaldag na ronde ${after_round_number}`;
+      const eventTitle = `${tournament.naam} - Inhaaldag ${makeupDayNumber}`;
       
       const calendarEvent = await calendarService.createEvent({
         title: eventTitle,
@@ -304,6 +305,15 @@ function determineMakeupRoundNumber(existingRounds: any[], after_round_number: n
 
   const lastRoundNumber = Math.max(...roundsUpToAfter.map(r => r.ronde_nummer));
   return lastRoundNumber + 1;
+}
+
+/**
+ * Bepaal het inhaaldag nummer (1, 2, 3, etc.)
+ */
+function getMakeupDayNumber(existingRounds: any[], after_round_number: number): number {
+  // Tel alle bestaande inhaaldagen
+  const existingMakeupDays = existingRounds.filter(r => r.type === 'MAKEUP');
+  return existingMakeupDays.length + 1;
 }
 
 /**

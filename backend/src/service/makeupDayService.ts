@@ -28,21 +28,26 @@ export async function addMakeupDay(
       throw new Error(`Tournament with ID ${tournament_id} not found`)
     }
 
-    // 2. Maak de makeup day aan
+    // 2. Bepaal het inhaaldag nummer
+    const existingMakeupDays = await prisma.makeupDay.findMany({
+      where: { tournament_id },
+      orderBy: { id: 'asc' }
+    })
+    const makeupDayNumber = existingMakeupDays.length + 1
+
+    // 3. Maak de makeup day aan
     const makeupDay = await prisma.makeupDay.create({
       data: {
         tournament_id,
         round_after,
         date,
         startuur,
-        label: label ?? null,
+        label: `Inhaaldag ${makeupDayNumber}`,
       },
     })
 
-    // 3. Maak automatisch een calendar event aan met toernooi naam + label
-    const eventTitle = label 
-      ? `${tournament.naam} - ${label}`
-      : `${tournament.naam} - Inhaaldag na ronde ${round_after}`
+    // 4. Maak automatisch een calendar event aan met toernooi naam + label
+    const eventTitle = `${tournament.naam} - Inhaaldag ${makeupDayNumber}`
     
     const calendarEvent = await calendarService.createEvent({
       title: eventTitle,
@@ -53,7 +58,7 @@ export async function addMakeupDay(
       tournament_id: tournament_id,
     })
 
-    // 4. Update de makeup day met de calendar event ID
+    // 5. Update de makeup day met de calendar event ID
     const updatedMakeupDay = await prisma.makeupDay.update({
       where: { id: makeupDay.id },
       data: {

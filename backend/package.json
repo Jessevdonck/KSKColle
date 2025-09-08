@@ -13,7 +13,8 @@
     "test": "env-cmd -f .env.test jest --runInBand",
     "test:coverage": "env-cmd -f .env.test jest --runInBand --coverage",
     "generate-docs": "apidoc -i src/ -o apidoc/",
-    "import-sevilla": "tsx src/scripts/importSevillaTournament.ts"
+    "import-sevilla": "tsx src/scripts/importSevillaTournament.ts",
+    "update-leden": "tsx src/scripts/update-leden.ts"
   },
   "author": "",
   "license": "ISC",

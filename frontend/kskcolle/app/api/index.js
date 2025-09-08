@@ -111,7 +111,19 @@ export const addGameToMakeupRound = async (roundId, { arg }) => {
   return data;
 };
 
-export const deleteMakeupRound = async (roundId) => {
+export const deleteMakeupRound = async (url, { arg }) => {
+  console.log('deleteMakeupRound called with:', { url, arg });
+  console.log('typeof arg:', typeof arg);
+  console.log('arg value:', arg);
+  
+  // Extract roundId from the arg object
+  const roundId = arg.roundId || arg;
+  console.log('extracted roundId:', roundId);
+  
+  if (!roundId) {
+    throw new Error('roundId is required but was undefined');
+  }
+  
   await axios.delete(`${baseUrl}/tournamentRounds/${roundId}`);
 };
 

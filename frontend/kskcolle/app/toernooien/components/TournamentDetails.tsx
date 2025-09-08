@@ -4,7 +4,7 @@ import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
-import { getById, getAll } from "../../api/index"
+import { getById, getAll, getAllTournamentRounds } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -23,13 +23,6 @@ type Round = {
   games: Game[]
 }
 
-type MakeupDay = {
-  id: number
-  tournament_id: number
-  round_after: number
-  date: string
-  label: string | null
-}
 
 type Tournament = {
   tournament_id: number
@@ -68,10 +61,10 @@ export default function TournamentDetails() {
     },
   )
 
-  // 2) Makeup days fetching
-  const { data: makeupDays = [], error: makeupError } = useSWR<MakeupDay[]>(
-    tournamentId ? `makeupDay?tournament_id=${tournamentId}` : null,
-    () => getAll(`makeupDay?tournament_id=${tournamentId}`),
+  // 2) All tournament rounds fetching (includes makeup days)
+  const { data: allRounds = [], error: roundsError } = useSWR<any[]>(
+    tournamentId ? `tournamentRounds?tournament_id=${tournamentId}` : null,
+    () => getAllTournamentRounds(tournamentId),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -80,35 +73,39 @@ export default function TournamentDetails() {
 
   // Build timeline when data is available
   useEffect(() => {
-    if (tournament && makeupDays) {
+    if (tournament && allRounds) {
       const rounds: Round[] = tournament.rounds || []
 
-      type Entry = { kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] }
+      type Entry = { kind: "round"; round: Round } | { kind: "makeup"; round: any; games: Game[] }
       const newTimeline: Entry[] = []
 
-      for (let r = 1; r <= tournament.rondes; r++) {
-        // Official round (stub if not generated yet)
-        const found = rounds.find((x) => x.ronde_nummer === r)
-        newTimeline.push({
-          kind: "round",
-          round: found ?? { round_id: 0, ronde_nummer: r, games: [] },
-        })
+      // Sort all rounds by ronde_nummer
+      const sortedRounds = [...allRounds].sort((a, b) => a.ronde_nummer - b.ronde_nummer)
 
-        // Makeup days after round r
-        makeupDays
-          .filter((md) => md.round_after === r)
-          .forEach((md) => {
-            // All games postponed to this specific makeup day
-            const games: Game[] = rounds
-              .flatMap((x) => x.games)
-              .filter((g) => g.uitgestelde_datum && isSameDay(parseISO(g.uitgestelde_datum), parseISO(md.date)))
-            newTimeline.push({ kind: "makeup", day: md, games })
+      let makeupDayCounter = 1
+
+      for (const round of sortedRounds) {
+        if (round.type === 'REGULAR') {
+          // Regular round
+          const found = rounds.find((x) => x.ronde_nummer === round.ronde_nummer)
+          newTimeline.push({
+            kind: "round",
+            round: found ?? { round_id: round.round_id, ronde_nummer: round.ronde_nummer, games: round.games || [] },
           })
+        } else if (round.type === 'MAKEUP') {
+          // Makeup day - add sequential number
+          newTimeline.push({
+            kind: "makeup",
+            round: { ...round, makeupDayNumber: makeupDayCounter },
+            games: round.games || []
+          })
+          makeupDayCounter++
+        }
       }
 
       setTimeline(newTimeline)
     }
-  }, [tournament, makeupDays])
+  }, [tournament, allRounds])
 
   // Set default round (last round with results + 1)
   useEffect(() => {
@@ -239,7 +236,7 @@ export default function TournamentDetails() {
                       <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
                         {currentEntry?.kind === "round"
                           ? `Ronde ${currentEntry.round.ronde_nummer}`
-                          : `Inhaaldag ${currentEntry?.day.label}`}
+                          : `Inhaaldag ${currentEntry?.round.makeupDayNumber}`}
                       </div>
                       <button
                         onClick={goToNext}
@@ -264,7 +261,7 @@ export default function TournamentDetails() {
                             : "bg-white/20 text-white hover:bg-white/30"
                         }`}
                       >
-                        {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.day.id}`}
+                        {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.round.makeupDayNumber}`}
                       </button>
                     ))}
                   </div>
@@ -277,7 +274,7 @@ export default function TournamentDetails() {
                   currentEntry.kind === "round" ? (
                     <RoundPairings round={currentEntry.round} />
                   ) : (
-                    <MakeupPairings day={currentEntry.day} games={currentEntry.games} />
+                    <MakeupPairings round={currentEntry.round} games={currentEntry.games} />
                   )
                 ) : (
                   <div className="text-center py-8">
@@ -310,7 +307,7 @@ export default function TournamentDetails() {
 }
 
 // Component to show a makeup day + associated games
-function MakeupPairings({ day, games }: { day: MakeupDay; games: Game[] }) {
+function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
@@ -322,11 +319,11 @@ function MakeupPairings({ day, games }: { day: MakeupDay; games: Game[] }) {
           <div className="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
             I
           </div>
-          Inhaaldag {day.label}
+          Inhaaldag {round.makeupDayNumber}
         </h3>
         <p className="text-gray-600 flex items-center gap-2 text-sm">
           <Calendar className="h-3 w-3" />
-          {format(parseISO(day.date), "dd-MM-yyyy")}
+          {format(parseISO(round.ronde_datum), "dd-MM-yyyy")}
         </p>
       </div>
 
