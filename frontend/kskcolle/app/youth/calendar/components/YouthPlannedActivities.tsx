@@ -87,13 +87,13 @@ const YouthPlannedActivities = () => {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
           <div className="text-center">
-            <div className="bg-mainAccent/10 p-4 rounded-xl inline-flex mb-4">
-              <Users className="h-12 w-12 text-mainAccent" />
+            <div className="bg-mainAccent/10 p-3 rounded-xl inline-flex mb-3">
+              <Users className="h-8 w-8 text-mainAccent" />
             </div>
-            <h1 className="text-4xl font-bold text-textColor mb-2">Jeugd Kalender</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-2xl font-bold text-textColor mb-1">Jeugd Kalender</h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Overzicht van alle geplande jeugd activiteiten en evenementen
             </p>
           </div>
@@ -101,19 +101,17 @@ const YouthPlannedActivities = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Stats */}
-          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-8 py-6">
+          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <Calendar className="h-6 w-6" />
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
                   Jeugd Activiteiten
                 </h2>
-
               </div>
-
             </div>
           </div>
 
@@ -125,16 +123,16 @@ const YouthPlannedActivities = () => {
               <p className="text-gray-500">Er zijn momenteel geen jeugd activiteiten gepland.</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {monthEntries.map(([monthKey, { monthName, events: monthEvents }]) => (
                 <div key={monthKey} className="bg-white rounded-lg shadow-md overflow-hidden">
                   {/* Month Header */}
-                  <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
+                  <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
                       {monthName}
                     </h2>
-                    <p className="text-white/80 mt-1 text-sm">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
+                    <p className="text-white/80 mt-0.5 text-xs">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
                   </div>
 
                   {/* Desktop Table */}
@@ -142,90 +140,90 @@ const YouthPlannedActivities = () => {
                     <table className="w-full">
                       <thead className="bg-neutral-50 border-b border-neutral-200">
                         <tr>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Titel</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Datum & Tijd</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Categorie</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Beschrijving</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Titel</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Datum & Tijd</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Type</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Categorie</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Beschrijving</th>
                         </tr>
                       </thead>
                       <tbody>
                         {monthEvents.map((event, index) => (
-                          <tr
-                            key={event.event_id}
-                            className={`border-b border-neutral-100 transition-all hover:bg-mainAccent/5 ${
-                              index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
-                            }`}
-                          >
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-textColor text-sm">{event.title}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-3 w-3 text-mainAccent" />
-                                <span className="text-gray-700 text-sm">
-                                  {format(new Date(event.date), "dd MMM yyyy", { locale: nl })}
-                                </span>
-                                {event.startuur && (
-                                  <span className="text-mainAccent font-medium text-sm">
-                                    • {event.startuur}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(
-                                  event.type,
-                                )}`}
-                              >
-                                {event.type}
+                        <tr
+                          key={event.event_id}
+                          className={`border-b border-neutral-100 transition-all hover:bg-mainAccent/5 ${
+                            index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
+                          }`}
+                        >
+                          <td className="px-3 py-2">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium text-textColor text-xs">{event.title}</span>
+                            </div>
+                          </td>
+                          <td className="px-3 py-2">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3 text-mainAccent" />
+                              <span className="text-gray-700 text-xs">
+                                {format(new Date(event.date), "dd MMM yyyy", { locale: nl })}
                               </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              {event.category && (
-                                <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(
-                                    event.category,
-                                  )}`}
-                                >
-                                  {event.category}
+                              {event.startuur && (
+                                <span className="text-mainAccent font-medium text-xs">
+                                  • {event.startuur}
                                 </span>
                               )}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="text-gray-600 text-sm">
-                                {event.description || "Geen beschrijving beschikbaar"}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2">
+                            <span
+                              className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(
+                                event.type,
+                              )}`}
+                            >
+                              {event.type}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2">
+                            {event.category && (
+                              <span
+                                className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(
+                                  event.category,
+                                )}`}
+                              >
+                                {event.category}
                               </span>
-                            </td>
-                          </tr>
+                            )}
+                          </td>
+                          <td className="px-3 py-2">
+                            <span className="text-gray-600 text-xs">
+                              {event.description || "Geen beschrijving beschikbaar"}
+                            </span>
+                          </td>
+                        </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
 
                   {/* Mobile Cards */}
-                  <div className="md:hidden p-3 space-y-3">
+                  <div className="md:hidden p-2 space-y-2">
                     {monthEvents.map((event) => (
                       <div
                         key={event.event_id}
-                        className="border border-neutral-200 rounded-lg p-3 hover:border-mainAccent/30 transition-all"
+                        className="border border-neutral-200 rounded-lg p-2 hover:border-mainAccent/30 transition-all"
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2 flex-1">
-                            <h3 className="font-semibold text-textColor text-sm">{event.title}</h3>
+                        <div className="flex items-start justify-between mb-1">
+                          <div className="flex items-center gap-1 flex-1">
+                            <h3 className="font-semibold text-textColor text-xs">{event.title}</h3>
                           </div>
                           <div className="flex flex-col gap-1">
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
+                              className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
                             >
                               {event.type}
                             </span>
                             {event.category && (
                               <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(event.category)}`}
+                                className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(event.category)}`}
                               >
                                 {event.category}
                               </span>
@@ -233,8 +231,8 @@ const YouthPlannedActivities = () => {
                           </div>
                         </div>
 
-                        <div className="space-y-2 text-xs">
-                          <div className="flex items-center gap-2 text-gray-600">
+                        <div className="space-y-1 text-xs">
+                          <div className="flex items-center gap-1 text-gray-600">
                             <Clock className="h-3 w-3" />
                             <span>{format(new Date(event.date), "dd MMM yyyy", { locale: nl })}</span>
                             {event.startuur && (
@@ -244,7 +242,7 @@ const YouthPlannedActivities = () => {
                             )}
                           </div>
                           {event.description && (
-                            <div className="flex items-start gap-2 text-gray-600">
+                            <div className="flex items-start gap-1 text-gray-600">
                               <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
                               <span>{event.description}</span>
                             </div>

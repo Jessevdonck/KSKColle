@@ -186,14 +186,14 @@ export default function TournamentDetails() {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-mainAccent/10 p-2 rounded-lg">
-              <Trophy className="h-6 w-6 text-mainAccent" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
+          <div className="flex items-center gap-2">
+            <div className="bg-mainAccent/10 p-1.5 rounded-lg">
+              <Trophy className="h-5 w-5 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-textColor">{tournament.naam}</h1>
-              <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+              <h1 className="text-xl font-bold text-textColor">{tournament.naam}</h1>
+              <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
                   <span>{tournament.participations?.length || 0} spelers</span>
@@ -202,7 +202,7 @@ export default function TournamentDetails() {
                   <Calendar className="h-3 w-3" />
                   <span>{tournament.rondes} rondes</span>
                 </div>
-                <div className="px-2 py-1 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
+                <div className="px-1.5 py-0.5 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
                   {tournament.type}
                 </div>
               </div>
@@ -212,15 +212,15 @@ export default function TournamentDetails() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Rounds & Makeup Days with Navigation */}
           <div className="xl:col-span-2">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
+              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
                     Rondes & Inhaaldagen
                   </h2>
 
@@ -269,7 +269,7 @@ export default function TournamentDetails() {
               </div>
 
               {/* Current Round/Makeup Day Content */}
-              <div className="p-6 min-h-[400px]">
+              <div className="p-4 min-h-[300px]">
                 {currentEntry ? (
                   currentEntry.kind === "round" ? (
                     <RoundPairings round={currentEntry.round} />
@@ -288,14 +288,14 @@ export default function TournamentDetails() {
 
           {/* Standings */}
           <div className="xl:col-span-1">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-6">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
+            <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-4">
+              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
                   Stand
                 </h2>
               </div>
-              <div className="p-4">
+              <div className="p-3">
                 <StandingsWithModal tournament={tournament} rounds={rounds} />
               </div>
             </div>
@@ -340,6 +340,7 @@ function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-amber-200 to-orange-200">
+                <th className="p-3 text-center font-semibold text-amber-800 text-sm w-12">Bord</th>
                 <th className="p-3 text-left font-semibold text-amber-800 text-sm">Wit</th>
                 <th className="p-3 text-center font-semibold text-amber-800 w-8"></th>
                 <th className="p-3 text-left font-semibold text-amber-800 text-sm">Zwart</th>
@@ -354,6 +355,11 @@ function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
                     idx % 2 === 0 ? "bg-white" : "bg-amber-50/50"
                   } hover:bg-amber-100/50 transition-colors`}
                 >
+                  <td className="p-3 text-center">
+                    <div className="bg-amber-200 text-amber-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                      {idx + 1}
+                    </div>
+                  </td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold">

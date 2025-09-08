@@ -104,21 +104,20 @@ const PlannedActivities = () => {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-mainAccent/10 p-2 rounded-lg">
-              <Calendar className="h-6 w-6 text-mainAccent" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
+          <div className="flex items-center gap-2">
+            <div className="bg-mainAccent/10 p-1.5 rounded-lg">
+              <Calendar className="h-5 w-5 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-textColor">Geplande Activiteiten</h1>
-
+              <h1 className="text-xl font-bold text-textColor">Geplande Activiteiten</h1>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
         {events.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
@@ -136,16 +135,16 @@ const PlannedActivities = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {monthEntries.map(([monthKey, { monthName, events: monthEvents }]) => (
               <div key={monthKey} className="bg-white rounded-lg shadow-md overflow-hidden">
                 {/* Month Header */}
-                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
                     {monthName}
                   </h2>
-                  <p className="text-white/80 mt-1 text-sm">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
+                  <p className="text-white/80 mt-0.5 text-xs">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
                 </div>
 
                 {/* Desktop Table */}
@@ -153,20 +152,20 @@ const PlannedActivities = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b border-neutral-200">
-                        <th className="p-3 text-left font-semibold text-textColor text-sm">
-                          <div className="flex items-center gap-2">
+                        <th className="p-2 text-left font-semibold text-textColor text-xs">
+                          <div className="flex items-center gap-1">
                             <Info className="h-3 w-3" />
                             Activiteit
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-sm">
-                          <div className="flex items-center gap-2">
+                        <th className="p-2 text-left font-semibold text-textColor text-xs">
+                          <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             Datum & Tijd
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-sm">Type</th>
-                        <th className="p-3 text-left font-semibold text-textColor text-sm">Beschrijving</th>
+                        <th className="p-2 text-left font-semibold text-textColor text-xs">Type</th>
+                        <th className="p-2 text-left font-semibold text-textColor text-xs">Beschrijving</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -177,35 +176,35 @@ const PlannedActivities = () => {
                             index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
                           }`}
                         >
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-textColor text-sm">{event.title}</span>
+                          <td className="p-2">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium text-textColor text-xs">{event.title}</span>
                             </div>
                           </td>
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
+                          <td className="p-2">
+                            <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3 text-mainAccent" />
-                              <span className="text-gray-700 text-sm">
+                              <span className="text-gray-700 text-xs">
                                 {format(new Date(event.date), "dd MMM yyyy", { locale: nl })}
                               </span>
                               {event.startuur && (
-                                <span className="text-mainAccent font-medium text-sm">
+                                <span className="text-mainAccent font-medium text-xs">
                                   • {event.startuur}
                                 </span>
                               )}
                             </div>
                           </td>
-                          <td className="p-3">
+                          <td className="p-2">
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(
+                              className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(
                                 event.type,
                               )}`}
                             >
                               {event.type}
                             </span>
                           </td>
-                          <td className="p-3">
-                            <span className="text-gray-600 text-sm">
+                          <td className="p-2">
+                            <span className="text-gray-600 text-xs">
                               {event.description || "Geen beschrijving beschikbaar"}
                             </span>
                           </td>
@@ -216,25 +215,25 @@ const PlannedActivities = () => {
                 </div>
 
                 {/* Mobile Cards */}
-                <div className="md:hidden p-3 space-y-3">
+                <div className="md:hidden p-2 space-y-2">
                   {monthEvents.map((event) => (
                     <div
                       key={event.event_id}
-                      className="border border-neutral-200 rounded-lg p-3 hover:border-mainAccent/30 transition-all"
+                      className="border border-neutral-200 rounded-lg p-2 hover:border-mainAccent/30 transition-all"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2 flex-1">
-                          <h3 className="font-semibold text-textColor text-sm">{event.title}</h3>
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex items-center gap-1 flex-1">
+                          <h3 className="font-semibold text-textColor text-xs">{event.title}</h3>
                         </div>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
+                          className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
                         >
                           {event.type}
                         </span>
                       </div>
 
-                      <div className="space-y-2 text-xs">
-                        <div className="flex items-center gap-2 text-gray-600">
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center gap-1 text-gray-600">
                           <Clock className="h-3 w-3" />
                           <span>{format(new Date(event.date), "dd MMM yyyy", { locale: nl })}</span>
                           {event.startuur && (
@@ -244,7 +243,7 @@ const PlannedActivities = () => {
                           )}
                         </div>
                         {event.description && (
-                          <div className="flex items-start gap-2 text-gray-600">
+                          <div className="flex items-start gap-1 text-gray-600">
                             <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
                             <span>{event.description}</span>
                           </div>

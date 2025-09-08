@@ -59,6 +59,7 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
+              <th className="p-3 text-center font-semibold text-sm w-12">Bord</th>
               <th className="p-3 text-left font-semibold text-sm">Wit</th>
               <th className="p-3 text-center font-semibold w-8"></th>
               <th className="p-3 text-left font-semibold text-sm">Zwart</th>
@@ -73,6 +74,11 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
                   index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
                 } hover:bg-mainAccent/5 transition-colors`}
               >
+                <td className="p-3 text-center">
+                  <div className="bg-mainAccent/10 text-mainAccent rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                    {index + 1}
+                  </div>
+                </td>
                 <td className="p-3">
                   <Link
                     href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}

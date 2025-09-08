@@ -159,7 +159,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-1">
         {playerScores.map((player, idx) => {
           const position = idx + 1
           const isTop = position <= 3
@@ -173,30 +173,29 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
               }`}
               onClick={() => setSelectedPlayer(player)}
             >
-              <div className="p-3 flex items-center gap-3">
+              <div className="p-2 flex items-center gap-2">
                 {/* Position */}
                 <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
 
                 {/* Player Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors truncate text-sm">
+                  <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors truncate text-xs">
                     {player.voornaam} {player.achternaam}
                   </div>
-                  <div className="text-xs text-gray-600 flex items-center gap-2 mt-1">
+                  <div className="text-xs text-gray-600 flex items-center gap-1">
                     <span className="flex items-center gap-1">
                       <User className="h-3 w-3" />
-                      {player.gamesPlayed} gespeeld
+                      {player.gamesPlayed}
                     </span>
                   </div>
                 </div>
 
                 {/* Score & Tie-break */}
                 <div className="text-right">
-                  <div className={`text-xl font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                  <div className={`text-lg font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
                     {player.score}
                   </div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">punten</div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500">
                     {tournament.type === "SWISS" ? (
                       <>Bh-W: {player.tieBreak.toFixed(2)}</>
                     ) : (
@@ -217,39 +216,39 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b border-mainAccent/20 p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-mainAccent/20 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-mainAccent" />
+            <div className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b border-mainAccent/20 p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-mainAccent/20 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-mainAccent" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-textColor">
+                  <h2 className="text-base font-semibold text-textColor">
                     {selectedPlayer.voornaam} {selectedPlayer.achternaam}
                   </h2>
-                  <p className="text-sm text-gray-600">Toernooi geschiedenis</p>
+                  <p className="text-xs text-gray-600">Toernooi geschiedenis</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedPlayer(null)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="h-5 w-5 text-gray-500" />
+                <X className="h-4 w-4 text-gray-500" />
               </button>
             </div>
 
             {/* Stats Summary */}
-            <div className="p-4 border-b border-gray-200">
-              <div className="grid grid-cols-3 gap-4">
+            <div className="p-3 border-b border-gray-200">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-mainAccent">{selectedPlayer.score}</div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">Totaal Punten</div>
+                  <div className="text-xl font-bold text-mainAccent">{selectedPlayer.score}</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">Punten</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-textColor">{selectedPlayer.gamesPlayed}</div>
+                  <div className="text-xl font-bold text-textColor">{selectedPlayer.gamesPlayed}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">Partijen</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-textColor">{selectedPlayer.tieBreak.toFixed(2)}</div>
+                  <div className="text-xl font-bold text-textColor">{selectedPlayer.tieBreak.toFixed(2)}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">
                     {tournament.type === "SWISS" ? "Bh-W" : "SB²"}
                   </div>
@@ -258,30 +257,30 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             </div>
 
             {/* Games History */}
-            <div className="p-4 max-h-96 overflow-y-auto">
-              <h3 className="font-semibold text-textColor mb-3 flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+            <div className="p-3 max-h-80 overflow-y-auto">
+              <h3 className="font-semibold text-textColor mb-2 flex items-center gap-1 text-sm">
+                <Calendar className="h-3 w-3" />
                 Partijen per ronde
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {getPlayerHistory(selectedPlayer.user_id).map((game, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-mainAccent/20 rounded-full flex items-center justify-center text-sm font-semibold text-mainAccent">
+                  <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-mainAccent/20 rounded-full flex items-center justify-center text-xs font-semibold text-mainAccent">
                         R{game.round}
                       </div>
                       <div>
-                        <div className="font-medium text-sm text-textColor">{game.opponent || "Bye"}</div>
+                        <div className="font-medium text-xs text-textColor">{game.opponent || "Bye"}</div>
                         {game.color && (
                           <div className="text-xs text-gray-500">{game.color === "white" ? "Wit" : "Zwart"}</div>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getResultColor(game.score)}`}>
+                    <div className="flex items-center gap-1">
+                      <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getResultColor(game.score)}`}>
                         {getResultDisplay(game.result, game.score)}
                       </span>
-                      <div className="text-lg font-bold text-textColor min-w-[2rem] text-center">{game.score}</div>
+                      <div className="text-sm font-bold text-textColor min-w-[1.5rem] text-center">{game.score}</div>
                     </div>
                   </div>
                 ))}
@@ -289,17 +288,17 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <div className="p-2 border-t border-gray-200 bg-gray-50">
               <div className="flex justify-between items-center">
                 <Link
                   href={`/profile/${createUrlFriendlyName(selectedPlayer.voornaam, selectedPlayer.achternaam)}`}
-                  className="text-sm text-mainAccent hover:text-mainAccentDark transition-colors font-medium"
+                  className="text-xs text-mainAccent hover:text-mainAccentDark transition-colors font-medium"
                 >
                   Bekijk volledig profiel →
                 </Link>
                 <button
                   onClick={() => setSelectedPlayer(null)}
-                  className="px-4 py-2 bg-mainAccent text-white rounded-lg hover:bg-mainAccentDark transition-colors text-sm font-medium"
+                  className="px-3 py-1.5 bg-mainAccent text-white rounded-lg hover:bg-mainAccentDark transition-colors text-xs font-medium"
                 >
                   Sluiten
                 </button>
