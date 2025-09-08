@@ -14,8 +14,7 @@ export async function addMakeupDay(
   tournament_id: number,
   round_after: number,
   date: Date,
-  startuur: string,
-  label?: string
+  startuur: string
 ): Promise<MakeupDay> {
   try {
     // 1. Haal de toernooi naam op

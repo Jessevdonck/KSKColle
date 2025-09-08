@@ -57,8 +57,7 @@ const createMakeupRound = async (
     tournament_id,
     after_round_number,
     parsedDate,
-    startuur,
-    label ?? undefined
+    startuur
   );
 
   ctx.status = 201;

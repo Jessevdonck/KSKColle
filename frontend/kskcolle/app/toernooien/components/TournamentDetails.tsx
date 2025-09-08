@@ -76,7 +76,7 @@ export default function TournamentDetails() {
     if (tournament && allRounds) {
       const rounds: Round[] = tournament.rounds || []
 
-      type Entry = { kind: "round"; round: Round } | { kind: "makeup"; round: any; games: Game[] }
+      type Entry = { kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] }
       const newTimeline: Entry[] = []
 
       // Sort all rounds by ronde_nummer
@@ -96,7 +96,7 @@ export default function TournamentDetails() {
           // Makeup day - add sequential number
           newTimeline.push({
             kind: "makeup",
-            round: { ...round, makeupDayNumber: makeupDayCounter },
+            day: { ...round, makeupDayNumber: makeupDayCounter },
             games: round.games || []
           })
           makeupDayCounter++
@@ -236,7 +236,7 @@ export default function TournamentDetails() {
                       <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
                         {currentEntry?.kind === "round"
                           ? `Ronde ${currentEntry.round.ronde_nummer}`
-                          : `Inhaaldag ${currentEntry?.round.makeupDayNumber}`}
+                          : `Inhaaldag ${currentEntry?.day.makeupDayNumber}`}
                       </div>
                       <button
                         onClick={goToNext}
@@ -261,7 +261,7 @@ export default function TournamentDetails() {
                             : "bg-white/20 text-white hover:bg-white/30"
                         }`}
                       >
-                        {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.round.makeupDayNumber}`}
+                        {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.day.makeupDayNumber}`}
                       </button>
                     ))}
                   </div>
@@ -274,7 +274,7 @@ export default function TournamentDetails() {
                   currentEntry.kind === "round" ? (
                     <RoundPairings round={currentEntry.round} />
                   ) : (
-                    <MakeupPairings round={currentEntry.round} games={currentEntry.games} />
+                    <MakeupPairings round={currentEntry.day} games={currentEntry.games} />
                   )
                 ) : (
                   <div className="text-center py-8">
