@@ -53,7 +53,35 @@ const YouthPlannedActivities = () => {
     return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800 border-gray-200"
   }
 
+  // Sorteer events op datum (dichtstbijzijnde eerst)
   const sortedEvents = events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+  // Group events by month
+  const eventsByMonth = sortedEvents.reduce((acc, event) => {
+    const eventDate = new Date(event.date)
+    const monthKey = `${eventDate.getFullYear()}-${eventDate.getMonth()}`
+    const monthName = format(eventDate, "MMMM yyyy", { locale: nl })
+    
+    if (!acc[monthKey]) {
+      acc[monthKey] = {
+        monthName,
+        events: []
+      }
+    }
+    acc[monthKey].events.push(event)
+    return acc
+  }, {} as Record<string, { monthName: string; events: CalendarEvent[] }>)
+
+  // Sort months chronologically (earliest first)
+  const monthEntries = Object.entries(eventsByMonth).sort(([a], [b]) => {
+    const [yearA, monthA] = a.split('-').map(Number)
+    const [yearB, monthB] = b.split('-').map(Number)
+    
+    if (yearA !== yearB) {
+      return yearA - yearB
+    }
+    return monthA - monthB
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
@@ -97,123 +125,136 @@ const YouthPlannedActivities = () => {
               <p className="text-gray-500">Er zijn momenteel geen jeugd activiteiten gepland.</p>
             </div>
           ) : (
-            <div>
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-neutral-50 border-b border-neutral-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Titel</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Datum & Tijd</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Categorie</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Beschrijving</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedEvents.map((event, index) => (
-                      <tr
+            <div className="space-y-6">
+              {monthEntries.map(([monthKey, { monthName, events: monthEvents }]) => (
+                <div key={monthKey} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  {/* Month Header */}
+                  <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      {monthName}
+                    </h2>
+                    <p className="text-white/80 mt-1 text-sm">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
+                  </div>
+
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-neutral-50 border-b border-neutral-200">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Titel</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Datum & Tijd</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Categorie</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Beschrijving</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {monthEvents.map((event, index) => (
+                          <tr
+                            key={event.event_id}
+                            className={`border-b border-neutral-100 transition-all hover:bg-mainAccent/5 ${
+                              index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
+                            }`}
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-textColor text-sm">{event.title}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-3 w-3 text-mainAccent" />
+                                <span className="text-gray-700 text-sm">
+                                  {format(new Date(event.date), "dd MMM yyyy", { locale: nl })}
+                                </span>
+                                {event.startuur && (
+                                  <span className="text-mainAccent font-medium text-sm">
+                                    • {event.startuur}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(
+                                  event.type,
+                                )}`}
+                              >
+                                {event.type}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              {event.category && (
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(
+                                    event.category,
+                                  )}`}
+                                >
+                                  {event.category}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-gray-600 text-sm">
+                                {event.description || "Geen beschrijving beschikbaar"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Cards */}
+                  <div className="md:hidden p-3 space-y-3">
+                    {monthEvents.map((event) => (
+                      <div
                         key={event.event_id}
-                        className={`border-b border-neutral-100 transition-all hover:bg-mainAccent/5 ${
-                          index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
-                        }`}
+                        className="border border-neutral-200 rounded-lg p-3 hover:border-mainAccent/30 transition-all"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-textColor text-sm">{event.title}</span>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2 flex-1">
+                            <h3 className="font-semibold text-textColor text-sm">{event.title}</h3>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-3 w-3 text-mainAccent" />
-                            <span className="text-gray-700 text-sm">
-                              {format(new Date(event.date), "dd MMM yyyy", { locale: nl })}
+                          <div className="flex flex-col gap-1">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
+                            >
+                              {event.type}
                             </span>
+                            {event.category && (
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(event.category)}`}
+                              >
+                                {event.category}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 text-xs">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Clock className="h-3 w-3" />
+                            <span>{format(new Date(event.date), "dd MMM yyyy", { locale: nl })}</span>
                             {event.startuur && (
-                              <span className="text-mainAccent font-medium text-sm">
+                              <span className="text-mainAccent font-medium">
                                 • {event.startuur}
                               </span>
                             )}
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(
-                              event.type,
-                            )}`}
-                          >
-                            {event.type}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {event.category && (
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(
-                                event.category,
-                              )}`}
-                            >
-                              {event.category}
-                            </span>
+                          {event.description && (
+                            <div className="flex items-start gap-2 text-gray-600">
+                              <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                              <span>{event.description}</span>
+                            </div>
                           )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-gray-600 text-sm">
-                            {event.description || "Geen beschrijving beschikbaar"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="md:hidden p-3 space-y-3">
-                {sortedEvents.map((event) => (
-                  <div
-                    key={event.event_id}
-                    className="border border-neutral-200 rounded-lg p-3 hover:border-mainAccent/30 transition-all"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2 flex-1">
-                        <h3 className="font-semibold text-textColor text-sm">{event.title}</h3>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
-                        >
-                          {event.type}
-                        </span>
-                        {event.category && (
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(event.category)}`}
-                          >
-                            {event.category}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-xs">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Clock className="h-3 w-3" />
-                        <span>{format(new Date(event.date), "dd MMM yyyy", { locale: nl })}</span>
-                        {event.startuur && (
-                          <span className="text-mainAccent font-medium">
-                            • {event.startuur}
-                          </span>
-                        )}
-                      </div>
-                      {event.description && (
-                        <div className="flex items-start gap-2 text-gray-600">
-                          <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                          <span>{event.description}</span>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
