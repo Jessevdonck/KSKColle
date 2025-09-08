@@ -44,7 +44,7 @@ export default function TournamentDetails() {
   const tournamentId = Number(id)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [timeline, setTimeline] = useState<
-    ({ kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] })[]
+    ({ kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] })[]
   >([])
 
   // 1) Tournament data fetching

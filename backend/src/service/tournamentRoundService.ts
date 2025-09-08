@@ -54,8 +54,7 @@ export async function createMakeupRoundBetween(
   tournament_id: number,
   after_round_number: number,
   date: Date,
-  startuur: string,
-  label?: string
+  startuur: string
 ): Promise<TournamentRound> {
   try {
     // 1. Haal alle bestaande rondes op
@@ -71,7 +70,7 @@ export async function createMakeupRoundBetween(
     await shiftRoundsAfter(tournament_id, correctRoundNumber);
 
     // 4. Bepaal het inhaaldag nummer
-    const makeupDayNumber = getMakeupDayNumber(existingRounds, after_round_number);
+    const makeupDayNumber = getMakeupDayNumber(existingRounds);
 
     // 5. Maak de inhaaldag ronde aan
     const makeupRound = await prisma.round.create({
@@ -310,7 +309,7 @@ function determineMakeupRoundNumber(existingRounds: any[], after_round_number: n
 /**
  * Bepaal het inhaaldag nummer (1, 2, 3, etc.)
  */
-function getMakeupDayNumber(existingRounds: any[], after_round_number: number): number {
+function getMakeupDayNumber(existingRounds: any[]): number {
   // Tel alle bestaande inhaaldagen
   const existingMakeupDays = existingRounds.filter(r => r.type === 'MAKEUP');
   return existingMakeupDays.length + 1;

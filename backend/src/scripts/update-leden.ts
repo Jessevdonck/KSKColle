@@ -69,7 +69,7 @@ function splitName(fullName: any): { voornaam: string; achternaam: string } {
   if (!name) return { voornaam: "Unknown", achternaam: "Unknown" };
   
   const parts = name.split(/\s+/);
-  if (parts.length === 1) return { voornaam: parts[0], achternaam: "" };
+  if (parts.length === 1) return { voornaam: parts[0] || "", achternaam: "" };
   
   if (NAME_IS_LASTNAME_THEN_FIRSTNAME) {
     // Als er maar 2 delen zijn, neem het tweede deel als voornaam
@@ -90,8 +90,8 @@ function parseAddress(addr: any): { straat: string; nummer: string; bus: string 
   const match = s.match(/^(.+?)\s+(\d+[a-zA-Z]?)(?:\s*,\s*(.+))?$/);
   if (match) {
     return {
-      straat: match[1].trim(),
-      nummer: match[2].trim(),
+      straat: match[1]?.trim() || "",
+      nummer: match[2]?.trim() || "",
       bus: match[3]?.trim() || ""
     };
   }
@@ -105,14 +105,14 @@ function readRows(): any[] {
   const sheetName = SHEET_NAME ?? wb.SheetNames[0];
   if (!sheetName) throw new Error("Geen sheet gevonden");
   const sheet = wb.Sheets[sheetName];
+  if (!sheet) throw new Error("Sheet niet gevonden");
   return XLSX.utils.sheet_to_json<any>(sheet, { defval: null });
 }
 
 /** Excel raw → ValidRow */
 function mapRaw(raw: any, rowIndex: number): any | null {
-  const nameParts = raw[COLS.naam] ? String(raw[COLS.naam]).split(' ') : [];
-  const voornaam = nameParts[0] || 'Unknown';
-  const achternaam = nameParts.slice(1).join(' ') || 'Unknown';
+  // Parse name into first and last name
+  const { voornaam, achternaam } = splitName(raw[COLS.naam]);
 
   const email = String(raw[COLS.email] ?? "").trim();
   if (!email) {
