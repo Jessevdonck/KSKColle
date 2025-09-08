@@ -34,7 +34,7 @@ const createMakeupDay = async (
   // de frontend stuurt body als { arg: { ... } }, dus we halen die eruit
   const body = (ctx.request.body as any)?.arg ?? ctx.request.body;
 
-  const { tournament_id, round_after, date, startuur, label } = body;
+  const { tournament_id, round_after, date, startuur } = body;
 
   console.log("BODY binnen:", body);
 

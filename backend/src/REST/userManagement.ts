@@ -19,7 +19,7 @@ interface CreateUserRequest {
   voornaam: string;
   achternaam: string;
   email: string;
-  geboortedatum: string;
+  geboortedatum?: string;
   tel_nummer: string;
   vast_nummer?: string;
   schaakrating_elo?: number;
@@ -77,7 +77,7 @@ generatePassword.validationScheme = {
  * @apiBody {String} voornaam First name
  * @apiBody {String} achternaam Last name
  * @apiBody {String} email Email address
- * @apiBody {String} geboortedatum Birth date (ISO string)
+ * @apiBody {String} [geboortedatum] Birth date (ISO string, optional)
  * @apiBody {String} tel_nummer Phone number
  * @apiBody {String} [vast_nummer] Landline number
  * @apiBody {Number} [schaakrating_elo] Chess rating
@@ -106,7 +106,7 @@ const createUser = async (ctx: KoaContext<{ userId: number; message: string }, v
   // Parse dates
   const parsedUserData = {
     ...userData,
-    geboortedatum: new Date(userData.geboortedatum),
+    ...(userData.geboortedatum && userData.geboortedatum.trim() !== '' && { geboortedatum: new Date(userData.geboortedatum) }),
     lid_sinds: userData.lid_sinds ? new Date(userData.lid_sinds) : new Date(),
   };
   
@@ -127,7 +127,7 @@ createUser.validationScheme = {
     voornaam: Joi.string().required(),
     achternaam: Joi.string().required(),
     email: Joi.string().email().required(),
-    geboortedatum: Joi.string().isoDate().required(),
+    geboortedatum: Joi.string().isoDate().allow('').optional(),
     tel_nummer: Joi.string().required(),
     vast_nummer: Joi.string().optional(),
     schaakrating_elo: Joi.number().integer().min(0).optional(),

@@ -59,7 +59,7 @@ getAllPublicUsers.validationScheme = null;
  * 
  * @apiBody {String} voornaam First name of the user.
  * @apiBody {String} achternaam Last name of the user.
- * @apiBody {Date} geboortedatum Birthdate of the user.
+ * @apiBody {Date} [geboortedatum] Birthdate of the user (optional).
  * @apiBody {String} email Email address of the user.
  * @apiBody {String} tel_nummer Phone number of the user.
  * @apiBody {Date} lid_sinds Date when the user became a member.
@@ -101,7 +101,7 @@ registerUser.validationScheme = {
   body: {
     voornaam: Joi.string(),
     achternaam: Joi.string(),
-    geboortedatum: Joi.date(),
+    geboortedatum: Joi.date().optional(),
     email: Joi.string().email(),
     tel_nummer: Joi.string(),
     vast_nummer: Joi.string().allow("").optional(),

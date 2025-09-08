@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "../core/password";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -16,7 +16,7 @@ dayjs.extend(customParseFormat);
 const prisma = new PrismaClient();
 
 /** === 1) BESTAND & SHEET === */
-const EXCEL_PATH = path.resolve(process.cwd(), "data", "leden.xls"); // of .xlsx
+const EXCEL_PATH = path.resolve(process.cwd(), "src", "data", "leden.xls"); // of .xlsx
 const SHEET_NAME: string | undefined = undefined; // undefined = 1e sheet
 
 /** === 2) KOLOM-MAPPING (pas aan jouw headers) ===
@@ -152,7 +152,7 @@ const RowSchema = z.object({
   email: z.string().email(),
   tel_nummer: z.string().min(1),       // verplicht in jouw schema
   vast_nummer: z.string().optional(),
-  geboortedatum: z.date(),             // required
+  geboortedatum: z.date().optional(),  // optional
   lid_sinds: z.date(),                 // required
   // Optioneel/extra
   adres_straat: z.string().optional(),
@@ -237,7 +237,7 @@ function mapRaw(raw: any, rowIndex: number): ValidRow | null {
 /** Prisma upsert — let op: we "pushen" enkel velden die we nodig hebben */
 async function upsertUser(row: ValidRow) {
   const plainPassword = randomPassword();
-  const password_hash = await bcrypt.hash(plainPassword, 10);
+  const password_hash = await hashPassword(plainPassword);
 
   // Alleen velden toevoegen die (1) verplicht zijn of (2) effectief een waarde hebben.
   const data = {
@@ -245,7 +245,7 @@ async function upsertUser(row: ValidRow) {
     achternaam: row.achternaam,
     email: row.email,
     tel_nummer: row.tel_nummer,                 // verplicht
-    geboortedatum: row.geboortedatum,           // verplicht
+    ...(row.geboortedatum ? { geboortedatum: row.geboortedatum } : {}),
     lid_sinds: row.lid_sinds,                   // verplicht
     password_hash,                              // verplicht
     roles: DEFAULT_ROLE_ARRAY,                  // default

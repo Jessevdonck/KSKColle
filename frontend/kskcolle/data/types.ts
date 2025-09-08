@@ -6,7 +6,7 @@ export interface User {
   user_id: number;
   voornaam: string;
   achternaam: string;
-  geboortedatum: Date;
+  geboortedatum?: Date | null;
   email: string;
   tel_nummer: string;
   schaakrating_elo: number;
@@ -57,7 +57,7 @@ export interface CreateUserRequest {
   voornaam: string;
   achternaam: string;
   email: string;
-  geboortedatum: string;
+  geboortedatum?: string;
   tel_nummer: string;
   vast_nummer?: string;
   schaakrating_elo?: number;

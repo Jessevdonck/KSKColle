@@ -8,7 +8,7 @@ export type User = {
   email: string;
   tel_nummer: string;
   vast_nummer?: string | null;
-  geboortedatum: Date;
+  geboortedatum?: Date | null;
   schaakrating_elo: number;
   max_rating?: number | null;           
   rating_difference?: number | null;    
@@ -35,7 +35,7 @@ export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam
 export type UserCreateInput = {
   voornaam: string;
   achternaam: string;
-  geboortedatum: Date;
+  geboortedatum?: Date | null;
   email: string;
   tel_nummer: string;
   vast_nummer?: string;
@@ -71,7 +71,7 @@ export interface GetUserRequest {
 export interface RegisterUserRequest {
   voornaam: string;
   achternaam: string;
-  geboortedatum: Date;
+  geboortedatum?: Date | null;
   email: string;
   tel_nummer: string;
   vast_nummer?: string;

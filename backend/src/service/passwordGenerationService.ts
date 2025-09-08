@@ -18,7 +18,7 @@ interface CreateUserWithPasswordData {
     voornaam: string;
     achternaam: string;
     email: string;
-    geboortedatum: Date;
+    geboortedatum?: Date;
     tel_nummer: string;
     vast_nummer?: string;
     schaakrating_elo?: number;
@@ -250,9 +250,11 @@ export const createUserWithGeneratedPassword = async (data: CreateUserWithPasswo
     const roles = data.userData.is_admin ? ['user', 'admin'] : ['user'];
 
     // Maak gebruiker aan
+    const { geboortedatum, ...userDataWithoutBirthdate } = data.userData;
     const newUser = await prisma.user.create({
       data: {
-        ...data.userData,
+        ...userDataWithoutBirthdate,
+        ...(geboortedatum && { geboortedatum }),
         password_hash: passwordHash,
         roles: JSON.stringify(roles),
         schaakrating_elo: data.userData.schaakrating_elo ?? 0,

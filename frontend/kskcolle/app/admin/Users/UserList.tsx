@@ -133,7 +133,7 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                         <span className="font-medium text-sm">{`${user.voornaam} ${user.achternaam}`}</span>
                       </div>
                     </td>
-                    <td className="p-3 text-sm">{new Date(user.geboortedatum).toLocaleDateString("nl-NL")}</td>
+                    <td className="p-3 text-sm">{user.geboortedatum ? new Date(user.geboortedatum).toLocaleDateString("nl-NL") : '-'}</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Trophy className="h-3 w-3 text-mainAccent" />
@@ -229,7 +229,7 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                       <span>Geboortedatum</span>
                     </div>
                     <div className="text-gray-700 text-sm">
-                      {new Date(user.geboortedatum).toLocaleDateString("nl-NL")}
+                      {user.geboortedatum ? new Date(user.geboortedatum).toLocaleDateString("nl-NL") : '-'}
                     </div>
                   </div>
                 </div>

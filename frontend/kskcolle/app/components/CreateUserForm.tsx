@@ -26,9 +26,8 @@ const validationRules = {
     },
   },
   geboortedatum: {
-    required: 'Geboortedatum is vereist',
     validate: (value: string) => {
-      if (!value) return 'Geboortedatum is vereist';
+      if (!value) return true; // Optional
       const date = new Date(value);
       if (isNaN(date.getTime())) return 'Ongeldige datum';
       if (date > new Date()) return 'Geboortedatum kan niet in de toekomst liggen';
@@ -195,7 +194,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="geboortedatum" className="text-sm font-medium text-gray-700">Geboortedatum *</Label>
+            <Label htmlFor="geboortedatum" className="text-sm font-medium text-gray-700">Geboortedatum</Label>
             <Input
               id="geboortedatum"
               type="date"
