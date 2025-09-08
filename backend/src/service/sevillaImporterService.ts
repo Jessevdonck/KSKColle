@@ -596,7 +596,7 @@ export class SevillaImporterService {
         // Check if player has an Abs entry for this round (indicating they were absent with message)
         const hasAbsEntry = player.Abs && player.Abs.some((abs: any) => abs.Round === roundNumber);
         
-        if (hasAbsEntry) {
+        if (hasAbsEntry && player.Abs) {
           const absEntry = player.Abs.find((abs: any) => abs.Round === roundNumber);
           const absScore = absEntry?.Score || 0;
           
