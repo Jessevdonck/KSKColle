@@ -56,8 +56,7 @@ const createMakeupDay = async (
     tournament_id,
     round_after,
     parsedDate,
-    startuur,
-    label ?? undefined
+    startuur
   );
 
   ctx.status = 201;

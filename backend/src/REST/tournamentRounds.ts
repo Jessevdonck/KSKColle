@@ -37,7 +37,7 @@ const createMakeupRound = async (
 ) => {
   const body = (ctx.request.body as any)?.arg ?? ctx.request.body;
 
-  const { tournament_id, after_round_number, date, startuur, label } = body;
+  const { tournament_id, after_round_number, date, startuur } = body;
 
   if (
     typeof tournament_id !== 'number' ||
