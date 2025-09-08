@@ -83,6 +83,7 @@ export interface CalendarEvent {
   tournament_id?: number
   is_youth?: boolean
   category?: string
+  instructors?: string // JSON array van lesgever namen
 }
 
 export interface CalendarEventInput {
@@ -95,6 +96,7 @@ export interface CalendarEventInput {
   tournament_id?: number
   is_youth?: boolean
   category?: string
+  instructors?: string // JSON array van lesgever namen
 }
 
 export interface Game {

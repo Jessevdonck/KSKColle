@@ -6,6 +6,7 @@ import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Calendar, Clock, Info, Users, Tag } from "lucide-react"
+import Link from "next/link"
 
 const YouthPlannedActivities = () => {
   const { data: events, error } = useSWR<CalendarEvent[]>("calendar?is_youth=true", getAll)
@@ -51,6 +52,19 @@ const YouthPlannedActivities = () => {
       "Stap 3+4": "bg-red-100 text-red-800 border-red-200",
     }
     return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800 border-gray-200"
+  }
+
+  const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
+    return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+  }
+
+  const parseInstructors = (instructorsJson: string | undefined): string[] => {
+    if (!instructorsJson) return []
+    try {
+      return JSON.parse(instructorsJson)
+    } catch {
+      return []
+    }
   }
 
   // Sorteer events op datum (dichtstbijzijnde eerst)
@@ -144,6 +158,7 @@ const YouthPlannedActivities = () => {
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Datum & Tijd</th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Type</th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Categorie</th>
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Lesgevers</th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Beschrijving</th>
                         </tr>
                       </thead>
@@ -182,22 +197,41 @@ const YouthPlannedActivities = () => {
                               {event.type}
                             </span>
                           </td>
-                          <td className="px-3 py-2">
-                            {event.category && (
-                              <span
-                                className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(
-                                  event.category,
-                                )}`}
-                              >
-                                {event.category}
+                            <td className="px-3 py-2">
+                              {event.category && (
+                                <span
+                                  className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(
+                                    event.category,
+                                  )}`}
+                                >
+                                  {event.category}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="flex flex-wrap gap-1">
+                                {parseInstructors(event.instructors).map((instructor, idx) => {
+                                  const [voornaam, achternaam] = instructor.split(' ')
+                                  return (
+                                    <Link
+                                      key={idx}
+                                      href={`/profile/${createUrlFriendlyName(voornaam || '', achternaam || '')}`}
+                                      className="px-1.5 py-0.5 bg-mainAccent/10 text-gray-800 rounded-full text-xs font-medium hover:bg-mainAccent/20 hover:text-gray-900 transition-colors"
+                                    >
+                                      {instructor}
+                                    </Link>
+                                  )
+                                })}
+                                {parseInstructors(event.instructors).length === 0 && (
+                                  <span className="text-gray-400 text-xs italic">Geen lesgever</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2">
+                              <span className="text-gray-600 text-xs">
+                                {event.description || "Geen beschrijving beschikbaar"}
                               </span>
-                            )}
-                          </td>
-                          <td className="px-3 py-2">
-                            <span className="text-gray-600 text-xs">
-                              {event.description || "Geen beschrijving beschikbaar"}
-                            </span>
-                          </td>
+                            </td>
                         </tr>
                         ))}
                       </tbody>
@@ -241,6 +275,25 @@ const YouthPlannedActivities = () => {
                               </span>
                             )}
                           </div>
+                          {parseInstructors(event.instructors).length > 0 && (
+                            <div className="flex items-start gap-1 text-gray-600">
+                              <span className="text-xs text-gray-500 mt-0.5 flex-shrink-0">Lesgevers:</span>
+                              <div className="flex flex-wrap gap-1">
+                                {parseInstructors(event.instructors).map((instructor, idx) => {
+                                  const [voornaam, achternaam] = instructor.split(' ')
+                                  return (
+                                    <Link
+                                      key={idx}
+                                      href={`/profile/${createUrlFriendlyName(voornaam || '', achternaam || '')}`}
+                                      className="text-gray-700 hover:text-gray-900 transition-colors font-medium"
+                                    >
+                                      {instructor}
+                                    </Link>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
                           {event.description && (
                             <div className="flex items-start gap-1 text-gray-600">
                               <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />

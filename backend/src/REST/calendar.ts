@@ -38,6 +38,7 @@ createEvent.validationScheme = {
     startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).default("20:00"),
     is_youth: Joi.boolean().optional().default(false),
     category: Joi.string().optional().allow(''),
+    instructors: Joi.string().optional().allow(''),
   },
 };
 
@@ -70,6 +71,7 @@ updateEvent.validationScheme = {
     startuur: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
     is_youth: Joi.boolean().optional(),
     category: Joi.string().optional().allow(''),
+    instructors: Joi.string().optional().allow(''),
   },
 };
 

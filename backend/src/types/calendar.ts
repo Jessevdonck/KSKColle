@@ -10,6 +10,7 @@ export type CalendarEvent = {
   tournament_id?: number | null;
   is_youth?: boolean;
   category?: string | null;
+  instructors?: string | null; // JSON array van lesgever namen
 };
 
 export type CalendarEventCreateInput = {
@@ -21,6 +22,7 @@ export type CalendarEventCreateInput = {
     tournament_id?: number | null;
     is_youth?: boolean;
     category?: string | null;
+    instructors?: string | null; // JSON array van lesgever namen
 };
 
 

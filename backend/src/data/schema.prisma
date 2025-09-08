@@ -136,6 +136,7 @@ model CalendarEvent {
   tournament_id  Int?     // Optioneel, voor events die niet aan een toernooi gekoppeld zijn
   is_youth       Boolean  @default(false) // Voor jeugd activiteiten
   category       String?  // Voor jeugd categorieën: "Stap 1", "Stap 2", "Stap 3+4"
+  instructors    String?  // JSON array van lesgever namen voor jeugd activiteiten
   
   // Relaties
   tournament     Tournament? @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
