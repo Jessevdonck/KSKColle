@@ -80,9 +80,16 @@ const registerUser = async (
 ) => {
   console.log("body: ", ctx.request.body);
   
+  // Parse dates
+  const parsedUserData = {
+    ...ctx.request.body,
+    geboortedatum: ctx.request.body.geboortedatum ? new Date(ctx.request.body.geboortedatum) : null,
+    lid_sinds: ctx.request.body.lid_sinds ? new Date(ctx.request.body.lid_sinds) : new Date(),
+  };
+
   // Gebruik de password generation service voor nieuwe gebruikers
   const userId = await passwordGenerationService.createUserWithGeneratedPassword({
-    userData: ctx.request.body,
+    userData: parsedUserData,
     adminUserId: ctx.state.session?.userId || 0, // Voor nieuwe registraties is er geen admin
   });
   

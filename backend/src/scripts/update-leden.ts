@@ -198,7 +198,10 @@ async function updateUser(row: any): Promise<{ updated: boolean; user: any }> {
     hasChanges = true;
   }
   
-  if (row.geboortedatum.getTime() !== existingUser.geboortedatum.getTime()) {
+  if (row.geboortedatum && existingUser.geboortedatum && row.geboortedatum.getTime() !== existingUser.geboortedatum.getTime()) {
+    updates.geboortedatum = row.geboortedatum;
+    hasChanges = true;
+  } else if (row.geboortedatum && !existingUser.geboortedatum) {
     updates.geboortedatum = row.geboortedatum;
     hasChanges = true;
   }

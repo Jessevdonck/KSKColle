@@ -106,7 +106,7 @@ const createUser = async (ctx: KoaContext<{ userId: number; message: string }, v
   // Parse dates
   const parsedUserData = {
     ...userData,
-    ...(userData.geboortedatum && userData.geboortedatum.trim() !== '' && { geboortedatum: new Date(userData.geboortedatum) }),
+    geboortedatum: userData.geboortedatum && userData.geboortedatum.trim() !== '' ? new Date(userData.geboortedatum) : null,
     lid_sinds: userData.lid_sinds ? new Date(userData.lid_sinds) : new Date(),
   };
   

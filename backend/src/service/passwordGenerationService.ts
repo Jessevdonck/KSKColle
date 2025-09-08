@@ -18,7 +18,7 @@ interface CreateUserWithPasswordData {
     voornaam: string;
     achternaam: string;
     email: string;
-    geboortedatum?: Date;
+    geboortedatum?: Date | null;
     tel_nummer: string;
     vast_nummer?: string;
     schaakrating_elo?: number;
