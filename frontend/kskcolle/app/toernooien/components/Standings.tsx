@@ -100,6 +100,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           score = isPlayer1 ? 0 : 1
         } else if (playerGame.result === "½-½" || playerGame.result === "1/2-1/2") {
           score = 0.5
+        } else if (playerGame.result === "0.5-0") {
+          // Absent with message - player gets 0.5 points
+          score = isPlayer1 ? 0.5 : 0
         }
 
         history.push({
@@ -127,7 +130,11 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   const getResultDisplay = (result: string | null, score: number) => {
     if (!result) return "Bye"
     if (score === 1) return "Winst"
-    if (score === 0.5) return "Remise"
+    if (score === 0.5) {
+      // Check if it's absent with message or draw
+      if (result === "0.5-0") return "Abs met bericht"
+      return "Remise"
+    }
     if (score === 0) return "Verlies"
     
     // Handle special results
@@ -337,6 +344,9 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
         } else if (result === "½-½" || result === "1/2-1/2") {
           scoreMap[p1] += 0.5
           if (p2) scoreMap[p2] += 0.5
+        } else if (result === "0.5-0") {
+          // Absent with message - player gets 0.5 points
+          scoreMap[p1] += 0.5
         }
       }
     }),

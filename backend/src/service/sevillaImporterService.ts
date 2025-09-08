@@ -65,6 +65,27 @@ interface SevillaTournament {
 }
 
 export class SevillaImporterService {
+  /**
+   * Normalize player names to fix encoding issues and improve matching
+   */
+  private normalizeName(name: string): string {
+    let normalized = name;
+    
+    // Handle specific corrupted names
+    if (normalized.includes('Thomas Buys-Devill')) {
+      normalized = 'Thomas Buys-Devillé';
+    } else if (normalized.includes('Buys-Devill')) {
+      normalized = normalized.replace('Buys-Devill', 'Buys-Devillé');
+    } else if (normalized.includes('Devill')) {
+      normalized = normalized.replace('Devill', 'Devillé');
+    }
+    
+    // Handle Unicode replacement characters
+    normalized = normalized.replace(/\uFFFD/g, 'é');
+    
+    return normalized;
+  }
+
   async importTournament(sevillaData: SevillaTournament, tournamentName?: string, incremental: boolean = false): Promise<number> {
     try {
       // Get the main group (usually Group 1)
@@ -133,18 +154,23 @@ export class SevillaImporterService {
         console.log(`Created tournament: ${tournament.naam} (ID: ${tournament.tournament_id})`);
       }
 
-      // Import players from the latest ranking (they should be the same across all rounds)
-      const playerMap = await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
-
-      // Import rounds and games from the History section (which contains all games)
+      // Import players from the History section (which contains all players with games)
       const historySection = mainGroup.History || [];
       if (historySection.length > 0) {
         // Get all players from the first history entry (they should all have the same games)
         const playersWithGames = historySection[0]?.Player || [];
-        console.log(`About to import rounds and games from ${playersWithGames.length} players with games`);
+        console.log(`About to import players and games from ${playersWithGames.length} players with games`);
+        console.log(`First few players with games:`, playersWithGames.slice(0, 3).map(p => ({ id: p.ID, name: p.Name, hasGame: !!p.Game, gameLength: p.Game?.length || 0 })));
+        
+        // Import players from the History section
+        const playerMap = await this.importPlayers(playersWithGames, tournament.tournament_id, incremental);
+        
+        // Import rounds and games
         await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap, incremental);
       } else {
-        console.log('No history section found, skipping games import');
+        console.log('No history section found, using ranking section');
+        // Fallback to ranking section if no history
+        const playerMap = await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
       }
 
       console.log(`Successfully imported tournament with ${latestRanking.Player.length} players and ${latestRanking.Round} rounds`);
@@ -158,12 +184,26 @@ export class SevillaImporterService {
 
   private async importPlayers(players: SevillaPlayer[], tournamentId: number, _incremental: boolean = false): Promise<Map<number, number>> {
     const playerMap = new Map<number, number>();
+    const processedSevillaIds = new Set<number>(); // Track processed players by Sevilla ID to avoid duplicates
+    let skippedCount = 0;
 
     for (const sevillaPlayer of players) {
+      // Fix encoding issues and normalize name
+      const normalizedName = this.normalizeName(sevillaPlayer.Name);
+      
+      // Check if we've already processed this player (by Sevilla ID, not name)
+      if (processedSevillaIds.has(sevillaPlayer.ID)) {
+        console.log(`Skipping duplicate player by ID: "${sevillaPlayer.Name}" (Sevilla ID: ${sevillaPlayer.ID})`);
+        continue;
+      }
+      processedSevillaIds.add(sevillaPlayer.ID);
+      
       // Parse name into first and last name
-      const nameParts = sevillaPlayer.Name.split(' ');
+      const nameParts = normalizedName.split(' ');
       const voornaam = nameParts[0] || 'Unknown';
       const achternaam = nameParts.slice(1).join(' ') || 'Unknown';
+
+      console.log(`Processing player: "${sevillaPlayer.Name}" -> normalized: "${normalizedName}" -> "${voornaam}" "${achternaam}"`);
 
       // Try to find existing user by name or create new one
       let user = await prisma.user.findFirst({
@@ -175,27 +215,23 @@ export class SevillaImporterService {
                 { achternaam: achternaam }
               ]
             },
-            { email: sevillaPlayer.PlayerID.includes('@') ? sevillaPlayer.PlayerID : `${sevillaPlayer.PlayerID}@kskcolle.be` },
+            { email: sevillaPlayer.PlayerID && sevillaPlayer.PlayerID.includes('@') ? sevillaPlayer.PlayerID : `${sevillaPlayer.PlayerID || `sevilla_${sevillaPlayer.ID}`}@kskcolle.be` },
           ],
         },
       });
 
+      // Check if this user is already mapped to another Sevilla player
+      const existingMapping = Array.from(playerMap.entries()).find(([_, userId]) => userId === user?.user_id);
+      if (existingMapping && existingMapping[0] !== sevillaPlayer.ID) {
+        console.log(`User ${user?.voornaam} ${user?.achternaam} is already mapped to Sevilla ID ${existingMapping[0]}, skipping Sevilla ID ${sevillaPlayer.ID}`);
+        continue; // Skip this player
+      }
+
       if (!user) {
-        // Create new user
-        user = await prisma.user.create({
-          data: {
-            voornaam: voornaam,
-            achternaam: achternaam,
-            email: sevillaPlayer.PlayerID.includes('@') ? sevillaPlayer.PlayerID : `${sevillaPlayer.PlayerID}@kskcolle.be`,
-            tel_nummer: '000000000', // Default phone number
-            geboortedatum: new Date('1990-01-01'), // Default birth date
-            schaakrating_elo: sevillaPlayer.Rating || 1500,
-            lid_sinds: new Date(),
-            password_hash: 'imported', // Will need to be changed
-            roles: JSON.stringify(['SPELER']),
-          },
-        });
-        console.log(`Created new user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
+        // Skip players that don't exist in the database
+        console.log(`Skipping player "${sevillaPlayer.Name}" - not found in database`);
+        skippedCount++;
+        continue;
       } else {
         // Update rating if it's different
         console.log(`Found existing user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
@@ -258,6 +294,7 @@ export class SevillaImporterService {
       playerMap.set(sevillaPlayer.ID, user.user_id);
     }
 
+    console.log(`Player import summary: ${playerMap.size} players found and mapped, ${skippedCount} players skipped (not found in database)`);
     return playerMap;
   }
 
@@ -287,6 +324,10 @@ export class SevillaImporterService {
 
     const sortedRounds = Array.from(allRounds).sort((a, b) => a - b);
     console.log(`Found ${sortedRounds.length} unique rounds: ${sortedRounds.join(', ')}`);
+    
+    // Also check for absent players with scores (they might not have games but have scores)
+    const playersWithScores = players.filter(p => p.Score > 0);
+    console.log(`Found ${playersWithScores.length} players with scores > 0`);
 
     // Get existing rounds to understand the current structure
     const existingRounds = await prisma.round.findMany({
@@ -360,6 +401,9 @@ export class SevillaImporterService {
 
       // Import games for this round
       await this.importGamesForRound(players, round.round_id, roundNumber, playerMap);
+      
+      // Import absent players with scores for this round
+      await this.importAbsentPlayers(players, round.round_id, roundNumber, playerMap);
     }
   }
 
@@ -505,7 +549,65 @@ export class SevillaImporterService {
     console.log(`Round ${roundNumber}: Found ${gamesFound} games, created ${gamesInRound.size} unique games`);
   }
 
-
+  /**
+   * Import absent players who have scores but no games (bye games)
+   * This handles players with "Abs with msg" who get 0.5 points
+   */
+  private async importAbsentPlayers(players: SevillaPlayer[], roundId: number, roundNumber: number, playerMap: Map<number, number>) {
+    console.log(`=== importAbsentPlayers for round ${roundNumber} ===`);
+    
+    for (const player of players) {
+      // Check if player has a game in this round
+      const hasGameInRound = player.Game && player.Game.some(g => g.Round === roundNumber);
+      
+      if (!hasGameInRound) {
+        const playerUserId = playerMap.get(player.ID);
+        if (!playerUserId) {
+          console.warn(`Could not find user ID for absent player: ${player.ID}`);
+          continue;
+        }
+        
+        // Check if this player already has a game in this round
+        const existingGame = await prisma.game.findFirst({
+          where: {
+            round_id: roundId,
+            OR: [
+              { speler1_id: playerUserId },
+              { speler2_id: playerUserId }
+            ]
+          }
+        });
+        
+        if (existingGame) {
+          console.log(`Player ${player.Name} already has a game in round ${roundNumber}, skipping`);
+          continue;
+        }
+        
+        // Check if player has an Abs entry for this round (indicating they were absent with message)
+        const hasAbsEntry = player.Abs && player.Abs.some((abs: any) => abs.Round === roundNumber);
+        
+        if (hasAbsEntry) {
+          const absEntry = player.Abs.find((abs: any) => abs.Round === roundNumber);
+          const absScore = absEntry?.Score || 0;
+          
+          console.log(`Creating absent game for player: ${player.Name} (Abs Score: ${absScore})`);
+          
+          // Create a game for this absent player (Abs with message = 0.5 points)
+          await prisma.game.create({
+            data: {
+              round_id: roundId,
+              speler1_id: playerUserId,
+              speler2_id: null, // No opponent for absent player
+              winnaar_id: null, // No winner for absent with message
+              result: "0.5-0", // Absent with message gives 0.5 points
+            },
+          });
+          
+          console.log(`Created absent game for player: ${player.Name} (ID: ${player.ID}) in round ${roundNumber} - 0.5 points`);
+        }
+      }
+    }
+  }
 
   async validateSevillaData(data: any): Promise<boolean> {
     try {
