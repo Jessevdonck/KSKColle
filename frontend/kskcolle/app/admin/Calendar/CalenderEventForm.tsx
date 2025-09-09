@@ -253,7 +253,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                 <>
                   <div>
                     <StepMultiSelect
-                      value={Array.isArray(form.watch("category")) ? form.watch("category") : []}
+                      value={Array.isArray(form.watch("category")) ? form.watch("category") as string[] : []}
                       onChange={(categories) => form.setValue("category", categories)}
                       label="Jeugd Stappen"
                     />
