@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import useSWRMutation from "swr/mutation"
@@ -9,6 +10,10 @@ import { save } from "../../../api/index"
 import type { MakeupDay, Round, Game } from "@/data/types"
 import { format } from "date-fns"
 import { Calendar, Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
+
+const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
+  return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+}
 
 interface Props {
   makeup: MakeupDay & { calendar_event_id?: number }
@@ -211,27 +216,33 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
                 <div className="flex items-center justify-between">
                   {/* Players */}
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold">
+                    <Link
+                      href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
+                      className="group flex items-center gap-3 hover:text-mainAccent transition-colors"
+                    >
+                      <div className="w-8 h-8 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
                         W
                       </div>
-                      <span className="font-medium text-gray-800">
+                      <span className="font-medium text-gray-800 group-hover:text-mainAccent transition-colors">
                         {game.speler1.voornaam} {game.speler1.achternaam}
                       </span>
-                    </div>
+                    </Link>
 
                     <ChevronRight className="h-4 w-4 text-amber-400" />
 
                     <div className="flex items-center gap-3">
                       {game.speler2 ? (
-                        <>
-                          <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                        <Link
+                          href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
+                          className="group flex items-center gap-3 hover:text-mainAccent transition-colors"
+                        >
+                          <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
                             Z
                           </div>
-                          <span className="font-medium text-gray-800">
+                          <span className="font-medium text-gray-800 group-hover:text-mainAccent transition-colors">
                             {game.speler2.voornaam} {game.speler2.achternaam}
                           </span>
-                        </>
+                        </Link>
                       ) : (
                         <>
                           <div className="w-8 h-8 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">

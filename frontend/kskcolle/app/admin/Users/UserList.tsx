@@ -1,12 +1,17 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import type { User } from "@/data/types"
 import EditForm from "./components/forms/EditForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
+
+const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
+  return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+}
 
 type UserListProps = {
   users: User[]
@@ -126,12 +131,15 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                     }`}
                   >
                     <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-mainAccent/10 rounded-full flex items-center justify-center">
+                      <Link
+                        href={`/profile/${createUrlFriendlyName(user.voornaam, user.achternaam)}`}
+                        className="group flex items-center gap-2 hover:text-mainAccent transition-colors"
+                      >
+                        <div className="w-8 h-8 bg-mainAccent/10 rounded-full flex items-center justify-center group-hover:bg-mainAccent/20 transition-colors">
                           <UserIcon className="h-4 w-4 text-mainAccent" />
                         </div>
-                        <span className="font-medium text-sm">{`${user.voornaam} ${user.achternaam}`}</span>
-                      </div>
+                        <span className="font-medium text-sm group-hover:text-mainAccent transition-colors">{`${user.voornaam} ${user.achternaam}`}</span>
+                      </Link>
                     </td>
                     <td className="p-3 text-sm">{user.geboortedatum ? new Date(user.geboortedatum).toLocaleDateString("nl-NL") : '-'}</td>
                     <td className="p-3">

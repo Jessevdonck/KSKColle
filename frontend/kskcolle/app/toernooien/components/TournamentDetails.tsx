@@ -377,28 +377,34 @@ function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold">
+                    <Link
+                      href={`/profile/${createUrlFriendlyName(g.speler1.voornaam, g.speler1.achternaam)}`}
+                      className="group flex items-center gap-2 hover:text-mainAccent transition-colors"
+                    >
+                      <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
                         W
                       </div>
-                      <span className="font-medium text-gray-800 text-sm">
+                      <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
                         {g.speler1.voornaam} {g.speler1.achternaam}
                       </span>
-                    </div>
+                    </Link>
                   </td>
                   <td className="p-3 text-center">
                     <div className="text-amber-400 text-sm">vs</div>
                   </td>
                   <td className="p-3">
                     {g.speler2 ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                      <Link
+                        href={`/profile/${createUrlFriendlyName(g.speler2.voornaam, g.speler2.achternaam)}`}
+                        className="group flex items-center gap-2 hover:text-mainAccent transition-colors"
+                      >
+                        <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
                           Z
                         </div>
-                        <span className="font-medium text-gray-800 text-sm">
+                        <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
                           {g.speler2.voornaam} {g.speler2.achternaam}
                         </span>
-                      </div>
+                      </Link>
                     ) : (
                       <div className="flex items-center gap-2 text-amber-600 italic">
                         <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
