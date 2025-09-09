@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import useSWR from "swr"
 import type { CalendarEvent } from "../../../../data/types"
 import { getAll } from "@/app/api"
@@ -7,9 +8,57 @@ import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Calendar, Clock, Info, Users, Tag } from "lucide-react"
 import Link from "next/link"
+import CalendarFilters from "../../../components/CalendarFilters"
 
 const YouthPlannedActivities = () => {
   const { data: events, error } = useSWR<CalendarEvent[]>("calendar?is_youth=true", getAll)
+  
+  // Filter states
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
+  // Available filter options for youth
+  const eventTypes = [
+    { value: "Interclub", label: "Interclub", color: "bg-blue-100 text-blue-800 border-blue-200" },
+    { value: "Toernooi", label: "Toernooi", color: "bg-green-100 text-green-800 border-green-200" },
+    { value: "Oost-Vlaamse Interclub", label: "Oost-Vlaamse Interclub", color: "bg-purple-100 text-purple-800 border-purple-200" },
+    { value: "Vergadering", label: "Vergadering", color: "bg-orange-100 text-orange-800 border-orange-200" },
+    { value: "Activiteit", label: "Activiteit", color: "bg-gray-100 text-gray-800 border-gray-200" }
+  ]
+
+  const categories = [
+    { value: "Stap 1", label: "Stap 1", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+    { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-200" },
+    { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" },
+    { value: "Stap 3", label: "Stap 3", color: "bg-red-100 text-red-800 border-red-200" },
+    { value: "Stap 4", label: "Stap 4", color: "bg-red-100 text-red-800 border-red-200" }
+  ]
+
+  // Filter events based on selected filters
+  const filteredEvents = useMemo(() => {
+    if (!events) return []
+    
+    return events.filter(event => {
+      const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
+      const categoryMatch = selectedCategories.length === 0 || 
+        (event.category && selectedCategories.some(cat => {
+          const eventCategories = parseCategories(event.category)
+          return eventCategories.some(eventCat => 
+            eventCat.toLowerCase().includes(cat.toLowerCase()) || 
+            cat.toLowerCase().includes(eventCat.toLowerCase())
+          )
+        }))
+      
+      return typeMatch && categoryMatch
+    })
+  }, [events, selectedTypes, selectedCategories])
+
+  const handleClearAll = () => {
+    setSelectedTypes([])
+    setSelectedCategories([])
+  }
+
+  const hasActiveFilters = selectedTypes.length > 0 || selectedCategories.length > 0
 
   if (error) {
     return (
@@ -78,9 +127,9 @@ const YouthPlannedActivities = () => {
   }
 
   // Sorteer events op datum (dichtstbijzijnde eerst)
-  const sortedEvents = events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  const sortedEvents = filteredEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-  // Group events by month
+  // Group events by month for list view
   const eventsByMonth = sortedEvents.reduce((acc, event) => {
     const eventDate = new Date(event.date)
     const monthKey = `${eventDate.getFullYear()}-${eventDate.getMonth()}`
@@ -107,6 +156,7 @@ const YouthPlannedActivities = () => {
     return monthA - monthB
   })
 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
@@ -126,6 +176,26 @@ const YouthPlannedActivities = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+        {/* Filters */}
+        <div className="mb-4">
+          <CalendarFilters
+            eventTypes={eventTypes}
+            categories={categories}
+            selectedTypes={selectedTypes}
+            selectedCategories={selectedCategories}
+            onTypesChange={setSelectedTypes}
+            onCategoriesChange={setSelectedCategories}
+            onClearAll={handleClearAll}
+            isYouth={true}
+          />
+          {/* Results count */}
+          {hasActiveFilters && (
+            <div className="mt-3 text-sm text-gray-600">
+              {filteredEvents.length} van {events?.length || 0} activiteiten getoond
+            </div>
+          )}
+        </div>
+
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Stats */}
           <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
@@ -143,8 +213,15 @@ const YouthPlannedActivities = () => {
           {sortedEvents.length === 0 ? (
             <div className="p-12 text-center">
               <div className="text-gray-400 text-6xl mb-4">📅</div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">Geen jeugd activiteiten</h3>
-              <p className="text-gray-500">Er zijn momenteel geen jeugd activiteiten gepland.</p>
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                {events?.length === 0 ? "Geen jeugd activiteiten" : "Geen resultaten gevonden"}
+              </h3>
+              <p className="text-gray-500">
+                {events?.length === 0 
+                  ? "Er zijn momenteel geen jeugd activiteiten gepland." 
+                  : "Probeer andere filters om meer resultaten te zien."
+                }
+              </p>
             </div>
           ) : (
             <div className="space-y-4">

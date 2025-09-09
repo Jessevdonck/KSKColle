@@ -1,14 +1,61 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import useSWR from "swr"
 import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Calendar, Clock, Info } from "lucide-react"
+import CalendarFilters from "../../components/CalendarFilters"
 
 const PlannedActivities = () => {
   const { data: events, error } = useSWR<CalendarEvent[]>("calendar?is_youth=false", getAll)
+  
+  // Filter states
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
+  // Available filter options
+  const eventTypes = [
+    { value: "Interclub", label: "Interclub", color: "bg-blue-100 text-blue-800 border-blue-200" },
+    { value: "Oost-Vlaamse Interclub", label: "Oost-Vlaamse Interclub", color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+    { value: "Toernooi", label: "Toernooi", color: "bg-green-100 text-green-800 border-green-200" },
+    { value: "Ronde", label: "Ronde", color: "bg-purple-100 text-purple-800 border-purple-200" },
+    { value: "Inhaaldag", label: "Inhaaldag", color: "bg-amber-100 text-amber-800 border-amber-200" },
+    { value: "Vergadering", label: "Vergadering", color: "bg-orange-100 text-orange-800 border-orange-200" },
+    { value: "Activiteit", label: "Activiteit", color: "bg-gray-100 text-gray-800 border-gray-200" }
+  ]
+
+  const categories = [
+    { value: "IC", label: "IC", color: "bg-blue-100 text-blue-800 border-blue-200" },
+    { value: "OVIC", label: "OVIC", color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+    { value: "Toernooi", label: "Toernooi", color: "bg-green-100 text-green-800 border-green-200" },
+    { value: "Training", label: "Training", color: "bg-purple-100 text-purple-800 border-purple-200" },
+    { value: "Vergadering", label: "Vergadering", color: "bg-orange-100 text-orange-800 border-orange-200" }
+  ]
+
+  // Filter events based on selected filters
+  const filteredEvents = useMemo(() => {
+    if (!events) return []
+    
+    return events.filter(event => {
+      const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
+      const categoryMatch = selectedCategories.length === 0 || 
+        (event.category && selectedCategories.some(cat => 
+          event.category?.toString().toLowerCase().includes(cat.toLowerCase())
+        ))
+      
+      return typeMatch && categoryMatch
+    })
+  }, [events, selectedTypes, selectedCategories])
+
+  const handleClearAll = () => {
+    setSelectedTypes([])
+    setSelectedCategories([])
+  }
+
+  const hasActiveFilters = selectedTypes.length > 0 || selectedCategories.length > 0
 
   if (error) {
     return (
@@ -71,9 +118,9 @@ const PlannedActivities = () => {
   } */
 
   // Sorteer events op datum (dichtstbijzijnde eerst)
-  const sortedEvents = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Group events by month
+  // Group events by month for month view
   const eventsByMonth = sortedEvents.reduce((acc, event) => {
     const eventDate = new Date(event.date)
     const monthKey = `${eventDate.getFullYear()}-${eventDate.getMonth()}`
@@ -100,6 +147,7 @@ const PlannedActivities = () => {
     return monthA - monthB
   })
 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
@@ -118,7 +166,27 @@ const PlannedActivities = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
-        {events.length === 0 ? (
+        {/* Filters */}
+        <div className="mb-4">
+          <CalendarFilters
+            eventTypes={eventTypes}
+            categories={categories}
+            selectedTypes={selectedTypes}
+            selectedCategories={selectedCategories}
+            onTypesChange={setSelectedTypes}
+            onCategoriesChange={setSelectedCategories}
+            onClearAll={handleClearAll}
+            isYouth={false}
+          />
+          {/* Results count */}
+          {hasActiveFilters && (
+            <div className="mt-3 text-sm text-gray-600">
+              {filteredEvents.length} van {events?.length || 0} activiteiten getoond
+            </div>
+          )}
+        </div>
+
+        {filteredEvents.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -130,8 +198,15 @@ const PlannedActivities = () => {
               <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                 <Calendar className="h-8 w-8 text-mainAccent" />
               </div>
-              <h3 className="text-lg font-bold text-gray-700 mb-2">Geen activiteiten gepland</h3>
-              <p className="text-gray-600 text-sm">Er zijn momenteel geen activiteiten ingepland.</p>
+              <h3 className="text-lg font-bold text-gray-700 mb-2">
+                {events?.length === 0 ? "Geen activiteiten gepland" : "Geen resultaten gevonden"}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {events?.length === 0 
+                  ? "Er zijn momenteel geen activiteiten ingepland." 
+                  : "Probeer andere filters om meer resultaten te zien."
+                }
+              </p>
             </div>
           </div>
         ) : (
