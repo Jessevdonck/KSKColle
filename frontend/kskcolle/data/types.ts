@@ -82,7 +82,7 @@ export interface CalendarEvent {
   type: string
   tournament_id?: number
   is_youth?: boolean
-  category?: string
+  category?: string | string[] // JSON array van stappen of string
   instructors?: string // JSON array van lesgever namen
 }
 
@@ -95,7 +95,7 @@ export interface CalendarEventInput {
   type: string
   tournament_id?: number
   is_youth?: boolean
-  category?: string
+  category?: string | string[] // JSON array van stappen of string
   instructors?: string // JSON array van lesgever namen
 }
 

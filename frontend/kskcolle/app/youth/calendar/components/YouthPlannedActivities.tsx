@@ -54,6 +54,16 @@ const YouthPlannedActivities = () => {
     return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800 border-gray-200"
   }
 
+  const parseCategories = (categoryJson: string | string[] | undefined): string[] => {
+    if (!categoryJson) return []
+    if (Array.isArray(categoryJson)) return categoryJson
+    try {
+      return JSON.parse(categoryJson)
+    } catch {
+      return [categoryJson]
+    }
+  }
+
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
@@ -198,15 +208,21 @@ const YouthPlannedActivities = () => {
                             </span>
                           </td>
                             <td className="px-3 py-3 border-r border-neutral-200">
-                              {event.category && (
-                                <span
-                                  className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(
-                                    event.category,
-                                  )}`}
-                                >
-                                  {event.category}
-                                </span>
-                              )}
+                              <div className="flex flex-wrap gap-1">
+                                {parseCategories(event.category).map((category, idx) => (
+                                  <span
+                                    key={idx}
+                                    className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(
+                                      category,
+                                    )}`}
+                                  >
+                                    {category}
+                                  </span>
+                                ))}
+                                {parseCategories(event.category).length === 0 && (
+                                  <span className="text-gray-400 text-xs italic">Geen stap</span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-3 py-3 border-r border-neutral-200">
                               <div className="flex flex-wrap gap-1">
@@ -257,12 +273,17 @@ const YouthPlannedActivities = () => {
                             >
                               {event.type}
                             </span>
-                            {event.category && (
-                              <span
-                                className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(event.category)}`}
-                              >
-                                {event.category}
-                              </span>
+                            {parseCategories(event.category).length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {parseCategories(event.category).map((category, idx) => (
+                                  <span
+                                    key={idx}
+                                    className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(category)}`}
+                                  >
+                                    {category}
+                                  </span>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </div>

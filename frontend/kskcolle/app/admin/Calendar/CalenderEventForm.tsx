@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import type { CalendarEvent } from "../../../data/types"
 import { save } from "@/app/api"
 import InstructorAutocomplete from "./InstructorAutocomplete"
+import StepMultiSelect from "./StepMultiSelect"
 
 interface CalendarEventFormProps {
   event?: CalendarEvent
@@ -23,7 +24,11 @@ interface CalendarEventFormProps {
 const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, onCancel }) => {
   const form = useForm<CalendarEvent>({
     defaultValues: event
-      ? { ...event, date: new Date(event.date).toISOString() }
+      ? { 
+          ...event, 
+          date: new Date(event.date).toISOString(),
+          category: event.category ? JSON.parse(event.category || "[]") : []
+        }
       : {
           title: "",
           description: "",
@@ -31,7 +36,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           startuur: "20:00",
           type: "Activiteit",
           is_youth: false,
-          category: "",
+          category: [],
           instructors: "",
         },
   })
@@ -46,7 +51,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
         startuur: data.startuur,
         type: data.type,
         is_youth: data.is_youth || false,
-        category: data.category || "",
+        category: Array.isArray(data.category) ? JSON.stringify(data.category) : (data.category || ""),
         instructors: data.instructors || "",
       }
       console.log(payload)
@@ -243,20 +248,11 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
               {form.watch("is_youth") && (
                 <>
                   <div>
-                    <Label htmlFor="category" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Tag className="h-4 w-4" />
-                      Jeugd Categorie
-                    </Label>
-                    <select
-                      id="category"
-                      {...form.register("category")}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-mainAccent focus:border-mainAccent"
-                    >
-                      <option value="">Selecteer categorie...</option>
-                      <option value="Stap 1">Stap 1</option>
-                      <option value="Stap 2">Stap 2</option>
-                      <option value="Stap 3+4">Stap 3+4</option>
-                    </select>
+                    <StepMultiSelect
+                      value={Array.isArray(form.watch("category")) ? form.watch("category") : []}
+                      onChange={(categories) => form.setValue("category", categories)}
+                      label="Jeugd Stappen"
+                    />
                   </div>
                   
                   <div>
