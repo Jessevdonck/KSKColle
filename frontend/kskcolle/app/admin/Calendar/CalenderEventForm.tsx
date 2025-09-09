@@ -27,7 +27,11 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
       ? { 
           ...event, 
           date: new Date(event.date).toISOString(),
-          category: event.category ? JSON.parse(event.category || "[]") : []
+          category: event.category 
+            ? (typeof event.category === 'string' 
+                ? JSON.parse(event.category || "[]") 
+                : event.category)
+            : []
         }
       : {
           title: "",
