@@ -6,7 +6,7 @@ import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
 import { getById, getAll, getAllTournamentRounds } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
-import { Calendar, Trophy, Users, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, Link } from "lucide-react"
 import { useState, useEffect } from "react"
 
 type Game = {

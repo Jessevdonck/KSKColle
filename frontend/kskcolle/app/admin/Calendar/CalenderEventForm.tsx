@@ -31,7 +31,10 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
             ? (typeof event.category === 'string' 
                 ? JSON.parse(event.category || "[]") 
                 : event.category)
-            : []
+            : [],
+          instructors: event.instructors || "",
+          is_youth: event.is_youth || false,
+          startuur: event.startuur || "20:00",
         }
       : {
           title: "",
@@ -186,7 +189,6 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                     }
                   })}
                   className="mt-1"
-                  defaultValue="20:00"
                 />
                 {form.formState.errors.startuur && (
                   <p className="text-red-500 text-sm mt-1">{form.formState.errors.startuur.message}</p>
@@ -261,7 +263,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                   
                   <div>
                     <InstructorAutocomplete
-                      value={form.watch("instructors") ? JSON.parse(form.watch("instructors") || "[]") : []}
+                      value={form.watch("instructors") && form.watch("instructors") !== "" ? JSON.parse(form.watch("instructors") || "[]") : []}
                       onChange={(instructors) => form.setValue("instructors", JSON.stringify(instructors))}
                       label="Lesgevers"
                     />
