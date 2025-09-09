@@ -312,6 +312,22 @@ function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
 
+  const getByeText = (result: string | null) => {
+    if (!result) return "Bye"
+    
+    // Check if it's an absent with message result (ABS-0.5, ABS-1, etc.)
+    if (result.startsWith("ABS-")) {
+      return "Abs with msg"
+    }
+    
+    // Check if it's a bye result (e.g., "0.5-0", "1-0", "0-0")
+    if (result.includes("-0") && result !== "0-0") {
+      return "Bye"
+    }
+    
+    return "Bye"
+  }
+
   return (
     <div>
       <div className="mb-4">
@@ -388,7 +404,7 @@ function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
                         <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
                           -
                         </div>
-                        <span className="text-sm">Bye</span>
+                        <span className="text-sm">{getByeText(g.result)}</span>
                       </div>
                     )}
                   </td>

@@ -52,6 +52,11 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) =>
 
 export default function Standings({ tournament, rounds }: StandingsProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerScore | null>(null)
+
+  const getByeText = (result: string | null) => {
+    // Always show "BYE" in player history modal
+    return "BYE"
+  }
   const playerScores = calculateStandings(tournament, rounds)
 
   const getPositionIcon = (position: number) => {
@@ -132,7 +137,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
     if (score === 1) return "Winst"
     if (score === 0.5) {
       // Check if it's absent with message or draw
-      if (result === "0.5-0") return "Abs met bericht"
+      if (result === "0.5-0") return "BYE"
       return "Remise"
     }
     if (score === 0) return "Verlies"
@@ -270,7 +275,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                         R{game.round}
                       </div>
                       <div>
-                        <div className="font-medium text-xs text-textColor">{game.opponent || "Bye"}</div>
+                        <div className="font-medium text-xs text-textColor">
+                          {game.opponent ? game.opponent : "BYE"}
+                        </div>
                         {game.color && (
                           <div className="text-xs text-gray-500">{game.color === "white" ? "Wit" : "Zwart"}</div>
                         )}

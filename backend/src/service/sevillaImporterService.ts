@@ -81,12 +81,12 @@ export class SevillaImporterService {
   private normalizeName(name: string): string {
     let normalized = name;
     
-    // Handle specific corrupted names
-    if (normalized.includes('Thomas Buys-Devill')) {
+    // Handle specific corrupted names - only fix if they don't already have the correct é
+    if (normalized.includes('Thomas Buys-Devill') && !normalized.includes('Thomas Buys-Devillé')) {
       normalized = 'Thomas Buys-Devillé';
-    } else if (normalized.includes('Buys-Devill')) {
+    } else if (normalized.includes('Buys-Devill') && !normalized.includes('Buys-Devillé')) {
       normalized = normalized.replace('Buys-Devill', 'Buys-Devillé');
-    } else if (normalized.includes('Devill')) {
+    } else if (normalized.includes('Devill') && !normalized.includes('Devillé')) {
       normalized = normalized.replace('Devill', 'Devillé');
     }
     
@@ -238,10 +238,28 @@ export class SevillaImporterService {
       }
 
       if (!user) {
-        // Skip players that don't exist in the database
-        console.log(`Skipping player "${sevillaPlayer.Name}" - not found in database`);
-        skippedCount++;
-        continue;
+        // Create new user if they don't exist in the database
+        console.log(`Creating new user for player "${sevillaPlayer.Name}"`);
+        
+        // Generate a unique email for this player
+        const email = `${sevillaPlayer.PlayerID || `sevilla_${sevillaPlayer.ID}`}@kskcolle.be`;
+        
+        user = await prisma.user.create({
+          data: {
+            voornaam: voornaam,
+            achternaam: achternaam,
+            email: email,
+            tel_nummer: "000000000", // Default phone number for imported users
+            schaakrating_elo: sevillaPlayer.Rating || 1200,
+            schaakrating_difference: sevillaPlayer.Rtg_W_We || 0,
+            lid_sinds: new Date(),
+            password_hash: "imported_user", // Placeholder for imported users
+            roles: JSON.stringify(['USER']),
+            is_active: true,
+          },
+        });
+        
+        console.log(`Created new user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
       } else {
         // Update rating if it's different
         console.log(`Found existing user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
@@ -599,21 +617,43 @@ export class SevillaImporterService {
         if (hasAbsEntry && player.Abs) {
           const absEntry = player.Abs.find((abs: any) => abs.Round === roundNumber);
           const absScore = absEntry?.Score || 0;
+          const reason = absEntry?.Reason || "";
           
-          console.log(`Creating absent game for player: ${player.Name} (Abs Score: ${absScore})`);
+          console.log(`Creating absent game for player: ${player.Name} (Reason: ${reason}, Score: ${absScore})`);
           
-          // Create a game for this absent player (Abs with message = 0.5 points)
+          // Determine result based on reason and score
+          let result: string;
+          let winnaarId: number | null = null;
+          
+          if (reason === "Pairing alloc bye") {
+            // Bye - player gets the score as points
+            result = `${absScore}-0`;
+            if (absScore > 0) {
+              winnaarId = playerUserId; // Player wins the bye
+            }
+          } else if (reason === "Abs with msg") {
+            // Absent with message - use special result format to distinguish from bye
+            result = `ABS-${absScore}`;
+            if (absScore > 0) {
+              winnaarId = playerUserId; // Player gets the points
+            }
+          } else {
+            // Unknown reason, default to 0 points
+            result = "0-0";
+          }
+          
+          // Create a game for this absent player
           await prisma.game.create({
             data: {
               round_id: roundId,
               speler1_id: playerUserId,
               speler2_id: null, // No opponent for absent player
-              winnaar_id: null, // No winner for absent with message
-              result: "0.5-0", // Absent with message gives 0.5 points
+              winnaar_id: winnaarId,
+              result: result,
             },
           });
           
-          console.log(`Created absent game for player: ${player.Name} (ID: ${player.ID}) in round ${roundNumber} - 0.5 points`);
+          console.log(`Created absent game for player: ${player.Name} (ID: ${player.ID}) in round ${roundNumber} - ${reason} - ${result}`);
         }
       }
     }
