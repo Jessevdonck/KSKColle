@@ -74,31 +74,65 @@ export default function EventDetails({ date, events }: EventDetailsProps) {
                 <p className="text-gray-500">Er zijn geen evenementen gepland op deze datum.</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {events.map((event) => (
-                  <div
-                    key={event.id}
-                    className="border border-neutral-200 rounded-lg p-4 hover:border-mainAccent/30 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <h4 className="font-semibold text-textColor flex-1">{event.title}</h4>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ml-2 ${getEventTypeColor(
-                          event.type,
-                        )}`}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Datum</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Activiteit</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Beschrijving</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((event, index) => (
+                      <tr
+                        key={event.id}
+                        className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-25"
+                        }`}
                       >
-                        {event.type}
-                      </span>
-                    </div>
+                        {/* Datum */}
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-mainAccent" />
+                            <span className="text-sm font-medium text-gray-700">
+                              {format(new Date(event.date), "d MMMM yyyy", { locale: nl })}
+                            </span>
+                          </div>
+                        </td>
 
-                    {event.description && (
-                      <div className="flex items-start gap-2 mb-3">
-                        <Pen className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-gray-600">{event.description}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                        {/* Activiteit */}
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-textColor">{event.title}</span>
+                        </td>
+
+                        {/* Beschrijving */}
+                        <td className="py-3 px-4">
+                          {event.description ? (
+                            <div className="flex items-start gap-2">
+                              <Pen className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm text-gray-600">{event.description}</p>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400 italic">Geen beschrijving</span>
+                          )}
+                        </td>
+
+                        {/* Type */}
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(
+                              event.type,
+                            )}`}
+                          >
+                            {event.type}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </>

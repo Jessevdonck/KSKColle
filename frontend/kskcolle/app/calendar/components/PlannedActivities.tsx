@@ -229,18 +229,18 @@ const PlannedActivities = () => {
                       <tr className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b-2 border-mainAccent/20">
                         <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">
                           <div className="flex items-center gap-1">
-                            <Info className="h-3 w-3" />
-                            Activiteit
-                          </div>
-                        </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">
-                          <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             Datum & Tijd
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6 border-r border-mainAccent/10">Type</th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/3">Beschrijving</th>
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">
+                          <div className="flex items-center gap-1">
+                            <Info className="h-3 w-3" />
+                            Activiteit
+                          </div>
+                        </th>
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/3 border-r border-mainAccent/10">Beschrijving</th>
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6">Type</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -251,11 +251,7 @@ const PlannedActivities = () => {
                             index % 2 === 0 ? "bg-white" : "bg-neutral-50/30"
                           }`}
                         >
-                          <td className="p-3 border-r border-neutral-200">
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium text-textColor text-xs">{event.title}</span>
-                            </div>
-                          </td>
+                          {/* Datum & Tijd */}
                           <td className="p-3 border-r border-neutral-200">
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3 text-mainAccent" />
@@ -269,7 +265,27 @@ const PlannedActivities = () => {
                               )}
                             </div>
                           </td>
+                          
+                          {/* Activiteit */}
                           <td className="p-3 border-r border-neutral-200">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium text-textColor text-xs">{event.title}</span>
+                            </div>
+                          </td>
+                          
+                          {/* Beschrijving */}
+                          <td className="p-3 border-r border-neutral-200">
+                            {event.description ? (
+                              <span className="text-gray-600 text-xs">
+                                {event.description}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 text-xs italic">Geen beschrijving</span>
+                            )}
+                          </td>
+                          
+                          {/* Type */}
+                          <td className="p-3">
                             <span
                               className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(
                                 event.type,
@@ -277,13 +293,6 @@ const PlannedActivities = () => {
                             >
                               {event.type}
                             </span>
-                          </td>
-                          <td className="p-3">
-                            {event.description && (
-                              <span className="text-gray-600 text-xs">
-                                {event.description}
-                              </span>
-                            )}
                           </td>
                         </tr>
                       ))}
@@ -298,10 +307,22 @@ const PlannedActivities = () => {
                       key={event.event_id}
                       className="border border-neutral-200 rounded-lg p-2 hover:border-mainAccent/30 transition-all"
                     >
-                      <div className="flex items-start justify-between mb-1">
-                        <div className="flex items-center gap-1 flex-1">
-                          <h3 className="font-semibold text-textColor text-xs">{event.title}</h3>
-                        </div>
+                      {/* Datum & Tijd */}
+                      <div className="flex items-center gap-1 text-gray-600 mb-2">
+                        <Clock className="h-3 w-3" />
+                        <span className="text-xs font-medium">
+                          {format(new Date(event.date), "EEEE dd MMM yyyy", { locale: nl })}
+                        </span>
+                        {event.startuur && (
+                          <span className="text-mainAccent font-medium text-xs">
+                            • {event.startuur}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Activiteit */}
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-textColor text-xs flex-1">{event.title}</h3>
                         <span
                           className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
                         >
@@ -309,23 +330,13 @@ const PlannedActivities = () => {
                         </span>
                       </div>
 
-                      <div className="space-y-1 text-xs">
-                        <div className="flex items-center gap-1 text-gray-600">
-                          <Clock className="h-3 w-3" />
-                          <span>{format(new Date(event.date), "EEEE dd MMM yyyy", { locale: nl })}</span>
-                          {event.startuur && (
-                            <span className="text-mainAccent font-medium">
-                              • {event.startuur}
-                            </span>
-                          )}
+                      {/* Beschrijving */}
+                      {event.description && (
+                        <div className="flex items-start gap-1 text-gray-600">
+                          <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-xs">{event.description}</span>
                         </div>
-                        {event.description && (
-                          <div className="flex items-start gap-1 text-gray-600">
-                            <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                            <span>{event.description}</span>
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
