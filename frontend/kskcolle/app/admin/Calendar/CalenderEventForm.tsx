@@ -29,7 +29,14 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           date: new Date(event.date).toISOString(),
           category: event.category 
             ? (typeof event.category === 'string' 
-                ? JSON.parse(event.category || "[]") 
+                ? (() => {
+                    try {
+                      return JSON.parse(event.category || "[]");
+                    } catch (error) {
+                      console.warn("Error parsing category JSON in defaultValues:", error);
+                      return [];
+                    }
+                  })()
                 : event.category)
             : [],
           instructors: event.instructors || "",
@@ -255,7 +262,19 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                 <>
                   <div>
                     <StepMultiSelect
-                      value={Array.isArray(form.watch("category")) ? form.watch("category") as string[] : []}
+                      value={(() => {
+                        const categoryValue = form.watch("category");
+                        if (Array.isArray(categoryValue)) return categoryValue;
+                        if (typeof categoryValue === 'string' && categoryValue !== "") {
+                          try {
+                            return JSON.parse(categoryValue);
+                          } catch (error) {
+                            console.warn("Error parsing category JSON:", error);
+                            return [];
+                          }
+                        }
+                        return [];
+                      })()}
                       onChange={(categories) => form.setValue("category", categories)}
                       label="Jeugd Stappen"
                     />
@@ -263,7 +282,16 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                   
                   <div>
                     <InstructorAutocomplete
-                      value={form.watch("instructors") && form.watch("instructors") !== "" ? JSON.parse(form.watch("instructors") || "[]") : []}
+                      value={(() => {
+                        try {
+                          const instructorsValue = form.watch("instructors");
+                          if (!instructorsValue || instructorsValue === "") return [];
+                          return JSON.parse(instructorsValue);
+                        } catch (error) {
+                          console.warn("Error parsing instructors JSON:", error);
+                          return [];
+                        }
+                      })()}
                       onChange={(instructors) => form.setValue("instructors", JSON.stringify(instructors))}
                       label="Lesgevers"
                     />
