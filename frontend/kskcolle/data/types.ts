@@ -84,6 +84,7 @@ export interface CalendarEvent {
   is_youth?: boolean
   category?: string | string[] // JSON array van stappen of string
   instructors?: string // JSON array van lesgever namen
+  begeleider?: string // JSON array van begeleider namen
 }
 
 export interface CalendarEventInput {

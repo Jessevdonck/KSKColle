@@ -233,13 +233,14 @@ const PlannedActivities = () => {
                             Datum & Tijd
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/5 border-r border-mainAccent/10">
                           <div className="flex items-center gap-1">
                             <Info className="h-3 w-3" />
                             Activiteit
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/3 border-r border-mainAccent/10">Beschrijving</th>
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6 border-r border-mainAccent/10">Begeleider</th>
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">Beschrijving</th>
                         <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6">Type</th>
                       </tr>
                     </thead>
@@ -273,14 +274,34 @@ const PlannedActivities = () => {
                             </div>
                           </td>
                           
+                          {/* Begeleider */}
+                          <td className="p-3 border-r border-neutral-200">
+                            <div className="flex flex-wrap gap-1">
+                              {(() => {
+                                try {
+                                  const begeleiders = event.begeleider ? JSON.parse(event.begeleider) : [];
+                                  return begeleiders.map((begeleider: string, idx: number) => (
+                                    <span
+                                      key={idx}
+                                      className="text-gray-600 text-xs font-medium"
+                                    >
+                                      {begeleider}
+                                      {idx < begeleiders.length - 1 && ", "}
+                                    </span>
+                                  ));
+                                } catch (error) {
+                                  return null;
+                                }
+                              })()}
+                            </div>
+                          </td>
+                          
                           {/* Beschrijving */}
                           <td className="p-3 border-r border-neutral-200">
-                            {event.description ? (
+                            {event.description && (
                               <span className="text-gray-600 text-xs">
                                 {event.description}
                               </span>
-                            ) : (
-                              <span className="text-gray-400 text-xs italic">Geen beschrijving</span>
                             )}
                           </td>
                           
@@ -329,6 +350,34 @@ const PlannedActivities = () => {
                           {event.type}
                         </span>
                       </div>
+
+                      {/* Begeleider */}
+                      {(() => {
+                        try {
+                          const begeleiders = event.begeleider ? JSON.parse(event.begeleider) : [];
+                          if (begeleiders.length > 0) {
+                            return (
+                              <div className="flex items-start gap-1 text-gray-600 mb-2">
+                                <span className="text-xs text-gray-500 mt-0.5 flex-shrink-0">Begeleider:</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {begeleiders.map((begeleider: string, idx: number) => (
+                                    <span
+                                      key={idx}
+                                      className="text-gray-600 text-xs font-medium"
+                                    >
+                                      {begeleider}
+                                      {idx < begeleiders.length - 1 && ", "}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          }
+                        } catch (error) {
+                          // Ignore error
+                        }
+                        return null;
+                      })()}
 
                       {/* Beschrijving */}
                       {event.description && (

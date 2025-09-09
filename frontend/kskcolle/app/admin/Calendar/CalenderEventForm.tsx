@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useForm, Controller } from "react-hook-form"
+import { useMemo } from "react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { CalendarIcon, X, Plus, CalendarIcon as CalendarIconLucide, Type, FileText, Clock, Users, Tag, User } from "lucide-react"
@@ -40,6 +41,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                 : event.category)
             : [],
           instructors: event.instructors || "",
+          begeleider: event.begeleider || "",
           is_youth: event.is_youth || false,
           startuur: event.startuur || "20:00",
         }
@@ -52,6 +54,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           is_youth: false,
           category: [],
           instructors: "",
+          begeleider: "",
         },
   })
 
@@ -67,6 +70,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
         is_youth: data.is_youth || false,
         category: Array.isArray(data.category) ? JSON.stringify(data.category) : (data.category || ""),
         instructors: data.instructors || "",
+        begeleider: data.begeleider || "",
       }
       console.log(payload)
       await save("calendar", { arg: payload })
@@ -84,6 +88,30 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
   }
 
   const commonEventTypes = ["Interclub", "Toernooi", "Oost-Vlaamse Interclub", "Vergadering"]
+
+  // Parse begeleiders for InstructorAutocomplete
+  const begeleiders = useMemo(() => {
+    try {
+      const begeleiderValue = form.watch("begeleider");
+      if (!begeleiderValue || begeleiderValue === "") return [];
+      return JSON.parse(begeleiderValue);
+    } catch (error) {
+      console.warn("Error parsing begeleider JSON:", error);
+      return [];
+    }
+  }, [form.watch("begeleider")])
+
+  // Parse instructors for InstructorAutocomplete
+  const instructors = useMemo(() => {
+    try {
+      const instructorsValue = form.watch("instructors");
+      if (!instructorsValue || instructorsValue === "") return [];
+      return JSON.parse(instructorsValue);
+    } catch (error) {
+      console.warn("Error parsing instructors JSON:", error);
+      return [];
+    }
+  }, [form.watch("instructors")])
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -239,6 +267,23 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
             </div>
           </div>
 
+          {/* Begeleider voor niet-jeugd activiteiten */}
+          {!form.watch("is_youth") && (
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Begeleider
+              </h3>
+              <div>
+                <InstructorAutocomplete
+                  value={begeleiders}
+                  onChange={(begeleiders) => form.setValue("begeleider", JSON.stringify(begeleiders))}
+                  label="Begeleider(s)"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Jeugd & Categorieën */}
           <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
             <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
@@ -282,16 +327,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                   
                   <div>
                     <InstructorAutocomplete
-                      value={(() => {
-                        try {
-                          const instructorsValue = form.watch("instructors");
-                          if (!instructorsValue || instructorsValue === "") return [];
-                          return JSON.parse(instructorsValue);
-                        } catch (error) {
-                          console.warn("Error parsing instructors JSON:", error);
-                          return [];
-                        }
-                      })()}
+                      value={instructors}
                       onChange={(instructors) => form.setValue("instructors", JSON.stringify(instructors))}
                       label="Lesgevers"
                     />

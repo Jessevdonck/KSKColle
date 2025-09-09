@@ -11,6 +11,7 @@ export type CalendarEvent = {
   is_youth?: boolean;
   category?: string | null;
   instructors?: string | null; // JSON array van lesgever namen
+  begeleider?: string | null; // JSON array van begeleider namen
 };
 
 export type CalendarEventCreateInput = {
@@ -23,6 +24,7 @@ export type CalendarEventCreateInput = {
     is_youth?: boolean;
     category?: string | null;
     instructors?: string | null; // JSON array van lesgever namen
+    begeleider?: string | null; // JSON array van begeleider namen
 };
 
 

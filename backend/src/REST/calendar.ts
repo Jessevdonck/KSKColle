@@ -39,6 +39,7 @@ createEvent.validationScheme = {
     is_youth: Joi.boolean().optional().default(false),
     category: Joi.string().optional().allow(''),
     instructors: Joi.string().optional().allow(''),
+    begeleider: Joi.string().optional().allow(''),
   },
 };
 
@@ -72,6 +73,7 @@ updateEvent.validationScheme = {
     is_youth: Joi.boolean().optional(),
     category: Joi.string().optional().allow(''),
     instructors: Joi.string().optional().allow(''),
+    begeleider: Joi.string().optional().allow(''),
   },
 };
 
