@@ -255,7 +255,6 @@ export class SevillaImporterService {
             lid_sinds: new Date(),
             password_hash: "imported_user", // Placeholder for imported users
             roles: JSON.stringify(['USER']),
-            is_active: true,
           },
         });
         
