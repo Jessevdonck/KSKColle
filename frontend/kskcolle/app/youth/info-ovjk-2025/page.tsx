@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink } from "lucide-react"
 import Image from "next/image"
+import OVJKParticipants from "../info/components/OVJKParticipants"
 
 export default function InfoOVJK2025Page() {
   return (
@@ -468,6 +469,11 @@ export default function InfoOVJK2025Page() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Participants List */}
+        <div className="mt-12">
+          <OVJKParticipants />
         </div>
 
         {/* Google Form */}
