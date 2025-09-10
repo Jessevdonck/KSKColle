@@ -253,7 +253,9 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, s
                           <div className="flex flex-wrap gap-1">
                             {(() => {
                               try {
-                                const categories = event.category ? JSON.parse(event.category) : [];
+                                const categories = event.category 
+                                  ? (typeof event.category === 'string' ? JSON.parse(event.category) : event.category)
+                                  : [];
                                 return categories.map((cat: string, idx: number) => (
                                   <span
                                     key={idx}
@@ -378,7 +380,9 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, s
                           <div className="flex flex-wrap gap-1">
                             {(() => {
                               try {
-                                const categories = event.category ? JSON.parse(event.category) : [];
+                                const categories = event.category 
+                                  ? (typeof event.category === 'string' ? JSON.parse(event.category) : event.category)
+                                  : [];
                                 return categories.map((cat: string, idx: number) => (
                                   <span
                                     key={idx}
