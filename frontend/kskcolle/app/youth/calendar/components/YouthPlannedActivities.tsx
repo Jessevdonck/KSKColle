@@ -256,7 +256,7 @@ const YouthPlannedActivities = () => {
                         <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/6 border-r border-mainAccent/10">Categorie</th>
                         <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/6 border-r border-mainAccent/10">Lesgevers</th>
                         <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/4 border-r border-mainAccent/10">Beschrijving</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/6">Type</th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/5">Type</th>
                       </tr>
                     </thead>
                       <tbody>
