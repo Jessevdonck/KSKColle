@@ -59,8 +59,9 @@ const InstructorAutocomplete: React.FC<InstructorAutocompleteProps> = ({
   }, [])
 
   const handleAddInstructor = (instructor: string) => {
-    if (!value.includes(instructor)) {
-      onChange([...value, instructor])
+    const trimmedInstructor = instructor.trim()
+    if (trimmedInstructor && !value.includes(trimmedInstructor)) {
+      onChange([...value, trimmedInstructor])
     }
     setInputValue("")
     setShowSuggestions(false)
@@ -71,9 +72,15 @@ const InstructorAutocomplete: React.FC<InstructorAutocompleteProps> = ({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && filteredUsers.length > 0) {
+    if (e.key === "Enter") {
       e.preventDefault()
-      handleAddInstructor(`${filteredUsers[0].voornaam} ${filteredUsers[0].achternaam}`)
+      if (filteredUsers.length > 0) {
+        // Add first suggestion if available
+        handleAddInstructor(`${filteredUsers[0].voornaam} ${filteredUsers[0].achternaam}`)
+      } else if (inputValue.trim() !== "") {
+        // Add custom name if no suggestions and input is not empty
+        handleAddInstructor(inputValue.trim())
+      }
     } else if (e.key === "Escape") {
       setShowSuggestions(false)
     }
@@ -114,7 +121,7 @@ const InstructorAutocomplete: React.FC<InstructorAutocompleteProps> = ({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => inputValue.length > 1 && setShowSuggestions(true)}
-          placeholder="Typ naam van lesgever..."
+          placeholder="Typ naam van lesgever of voer handmatig in..."
           className="w-full"
         />
         

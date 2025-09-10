@@ -1,20 +1,35 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import useSWR from "swr"
 import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Calendar, Clock, Info } from "lucide-react"
-import CalendarFilters from "../../components/CalendarFilters"
+import { Calendar, Clock, Info, Search, ChevronDown } from "lucide-react"
 
 const PlannedActivities = () => {
   const { data: events, error } = useSWR<CalendarEvent[]>("calendar?is_youth=false", getAll)
   
   // Filter states
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsTypeDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   // Available filter options
   const eventTypes = [
@@ -27,35 +42,46 @@ const PlannedActivities = () => {
     { value: "Activiteit", label: "Activiteit", color: "bg-gray-100 text-gray-800 border-gray-200" }
   ]
 
-  const categories = [
-    { value: "IC", label: "IC", color: "bg-blue-100 text-blue-800 border-blue-200" },
-    { value: "OVIC", label: "OVIC", color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
-    { value: "Toernooi", label: "Toernooi", color: "bg-green-100 text-green-800 border-green-200" },
-    { value: "Training", label: "Training", color: "bg-purple-100 text-purple-800 border-purple-200" },
-    { value: "Vergadering", label: "Vergadering", color: "bg-orange-100 text-orange-800 border-orange-200" }
-  ]
-
-  // Filter events based on selected filters
+  // Filter events based on selected filters and search query
   const filteredEvents = useMemo(() => {
     if (!events) return []
     
     return events.filter(event => {
       const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
-      const categoryMatch = selectedCategories.length === 0 || 
-        (event.category && selectedCategories.some(cat => 
-          event.category?.toString().toLowerCase().includes(cat.toLowerCase())
-        ))
       
-      return typeMatch && categoryMatch
+      // Search in all fields
+      const searchMatch = searchQuery === "" || (() => {
+        const query = searchQuery.toLowerCase()
+        const searchableFields = [
+          event.title,
+          event.description || "",
+          event.type,
+          event.startuur,
+          // Parse begeleiders for search
+          ...(event.begeleider ? (() => {
+            try {
+              return JSON.parse(event.begeleider)
+            } catch {
+              return []
+            }
+          })() : [])
+        ]
+        
+        return searchableFields.some(field => 
+          field.toString().toLowerCase().includes(query)
+        )
+      })()
+      
+      return typeMatch && searchMatch
     })
-  }, [events, selectedTypes, selectedCategories])
+  }, [events, selectedTypes, searchQuery])
 
   const handleClearAll = () => {
     setSelectedTypes([])
-    setSelectedCategories([])
+    setSearchQuery("")
   }
 
-  const hasActiveFilters = selectedTypes.length > 0 || selectedCategories.length > 0
+  const hasActiveFilters = selectedTypes.length > 0 || searchQuery !== ""
 
   if (error) {
     return (
@@ -168,22 +194,83 @@ const PlannedActivities = () => {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
         {/* Filters */}
         <div className="mb-4">
-          <CalendarFilters
-            eventTypes={eventTypes}
-            categories={categories}
-            selectedTypes={selectedTypes}
-            selectedCategories={selectedCategories}
-            onTypesChange={setSelectedTypes}
-            onCategoriesChange={setSelectedCategories}
-            onClearAll={handleClearAll}
-            isYouth={false}
-          />
-          {/* Results count */}
-          {hasActiveFilters && (
-            <div className="mt-3 text-sm text-gray-600">
-              {filteredEvents.length} van {events?.length || 0} activiteiten getoond
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search Field */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <input
+                    type="text"
+                    placeholder="Zoek in activiteiten, beschrijving, begeleiders..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mainAccent focus:border-mainAccent outline-none"
+                  />
+                </div>
+              </div>
+              
+              {/* Type Filter Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-w-[200px]"
+                >
+                  <span className="text-sm text-gray-700">
+                    {selectedTypes.length === 0 
+                      ? "Alle types" 
+                      : selectedTypes.length === 1 
+                        ? selectedTypes[0]
+                        : `${selectedTypes.length} types geselecteerd`
+                    }
+                  </span>
+                  <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isTypeDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isTypeDropdownOpen && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {eventTypes.map((type) => (
+                      <label
+                        key={type.value}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedTypes.includes(type.value)}
+                          onChange={() => {
+                            if (selectedTypes.includes(type.value)) {
+                              setSelectedTypes(selectedTypes.filter(t => t !== type.value))
+                            } else {
+                              setSelectedTypes([...selectedTypes, type.value])
+                            }
+                          }}
+                          className="h-4 w-4 text-mainAccent focus:ring-mainAccent border-gray-300 rounded"
+                        />
+                        <span className="text-sm text-gray-700">{type.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Clear All Button */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleClearAll}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Wis alles
+                </button>
+              )}
             </div>
-          )}
+            
+            {/* Results count */}
+            {hasActiveFilters && (
+              <div className="mt-3 text-sm text-gray-600">
+                {filteredEvents.length} van {events?.length || 0} activiteiten getoond
+              </div>
+            )}
+          </div>
         </div>
 
         {filteredEvents.length === 0 ? (
@@ -239,8 +326,8 @@ const PlannedActivities = () => {
                             Activiteit
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6 border-r border-mainAccent/10">Begeleider</th>
                         <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">Beschrijving</th>
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6 border-r border-mainAccent/10">Begeleider</th>
                         <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6">Type</th>
                       </tr>
                     </thead>
@@ -274,6 +361,15 @@ const PlannedActivities = () => {
                             </div>
                           </td>
                           
+                          {/* Beschrijving */}
+                          <td className="p-3 border-r border-neutral-200">
+                            {event.description && (
+                              <span className="text-gray-600 text-xs">
+                                {event.description}
+                              </span>
+                            )}
+                          </td>
+                          
                           {/* Begeleider */}
                           <td className="p-3 border-r border-neutral-200">
                             <div className="flex flex-wrap gap-1">
@@ -294,15 +390,6 @@ const PlannedActivities = () => {
                                 }
                               })()}
                             </div>
-                          </td>
-                          
-                          {/* Beschrijving */}
-                          <td className="p-3 border-r border-neutral-200">
-                            {event.description && (
-                              <span className="text-gray-600 text-xs">
-                                {event.description}
-                              </span>
-                            )}
                           </td>
                           
                           {/* Type */}
