@@ -15,6 +15,12 @@ import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar, Plus, Trophy, CheckCircle, Clock, Users, Gamepad2 } from "lucide-react"
 
+const getByeText = (result: string | null) => {
+  if (!result) return "Bye"
+  if (result.startsWith("ABS-")) return "Abs with msg"
+  return "Bye"
+}
+
 interface Props {
   tournament: Toernooi
 }
@@ -877,12 +883,12 @@ export default function RoundManagement({ tournament }: Props) {
                             </span>
                             <span className="text-gray-500">vs</span>
                             <span className="font-medium">
-                              {game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : 'Bye'}
+                              {game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : getByeText(game.result)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="text-sm text-gray-600">
-                              {game.result || 'Nog niet gespeeld'}
+                              {game.result ? (game.result.startsWith("ABS-") ? "Abs with msg" : game.result) : 'Nog niet gespeeld'}
                             </div>
                             {!bulkPostponeMode && round.type === 'REGULAR' && makeupRounds.length > 0 && (
                               <Button

@@ -14,6 +14,12 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
 }
 
+const getByeText = (result: string | null) => {
+  if (!result) return "Bye"
+  if (result.startsWith("ABS-")) return "Abs with msg"
+  return "Bye"
+}
+
 interface Props {
   games: Game[]
   tournamentId: number
@@ -133,7 +139,7 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
                     <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs flex-shrink-0">
                       -
                     </div>
-                    <span className="text-gray-500 italic text-sm">Bye</span>
+                    <span className="text-gray-500 italic text-sm">{getByeText(game.result)}</span>
                   </>
                 )}
               </div>
