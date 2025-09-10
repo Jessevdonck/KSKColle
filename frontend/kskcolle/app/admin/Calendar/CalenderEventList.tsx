@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Pencil, Trash2, Calendar, FileText, Tag, User, Users } from "lucide-react"
+import { Pencil, Trash2, Calendar, FileText, Tag, User, Users, Clock, Info, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CalendarEvent } from "../../../data/types"
 import { deleteById } from "@/app/api"
@@ -174,9 +174,38 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, s
                   <th className="p-4 text-left font-semibold text-textColor">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Datum
+                      Datum & Tijd
                     </div>
                   </th>
+                  <th className="p-4 text-left font-semibold text-textColor">
+                    <div className="flex items-center gap-2">
+                      <Info className="h-4 w-4" />
+                      Beschrijving
+                    </div>
+                  </th>
+                  {showYouth ? (
+                    <>
+                      <th className="p-4 text-left font-semibold text-textColor">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4" />
+                          Categorie
+                        </div>
+                      </th>
+                      <th className="p-4 text-left font-semibold text-textColor">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Lesgevers
+                        </div>
+                      </th>
+                    </>
+                  ) : (
+                    <th className="p-4 text-left font-semibold text-textColor">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Begeleider
+                      </div>
+                    </th>
+                  )}
                   <th className="p-4 text-left font-semibold text-textColor">
                     <div className="flex items-center gap-2">
                       <Tag className="h-4 w-4" />
@@ -200,11 +229,86 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, s
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-mainAccent" />
-                        <span className="text-gray-700">
-                          {format(new Date(event.date), "dd-MM-yyyy", { locale: nl })}
-                        </span>
+                        <div>
+                          <div className="text-gray-700">
+                            {format(new Date(event.date), "dd-MM-yyyy", { locale: nl })}
+                          </div>
+                          {event.startuur && (
+                            <div className="flex items-center gap-1 text-sm text-gray-500">
+                              <Clock className="h-3 w-3" />
+                              {event.startuur}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
+                    <td className="p-4">
+                      <div className="text-gray-600 text-sm max-w-xs">
+                        {event.description}
+                      </div>
+                    </td>
+                    {showYouth ? (
+                      <>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-1">
+                            {(() => {
+                              try {
+                                const categories = event.category ? JSON.parse(event.category) : [];
+                                return categories.map((cat: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full"
+                                  >
+                                    {cat}
+                                  </span>
+                                ));
+                              } catch (error) {
+                                return null;
+                              }
+                            })()}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-1">
+                            {(() => {
+                              try {
+                                const instructors = event.instructors ? JSON.parse(event.instructors) : [];
+                                return instructors.map((instructor: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                                  >
+                                    {instructor}
+                                  </span>
+                                ));
+                              } catch (error) {
+                                return null;
+                              }
+                            })()}
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <td className="p-4">
+                        <div className="flex flex-wrap gap-1">
+                          {(() => {
+                            try {
+                              const begeleiders = event.begeleider ? JSON.parse(event.begeleider) : [];
+                              return begeleiders.map((begeleider: string, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                                >
+                                  {begeleider}
+                                </span>
+                              ));
+                            } catch (error) {
+                              return null;
+                            }
+                          })()}
+                        </div>
+                      </td>
+                    )}
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium border ${getEventTypeColor(
@@ -249,11 +353,92 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, s
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-semibold text-textColor mb-1">{event.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{event.description || "Geen beschrijving"}</p>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    {event.description && (
+                      <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+                    )}
+                    
+                    {/* Date & Time */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                       <Calendar className="h-3 w-3" />
                       <span>{format(new Date(event.date), "dd-MM-yyyy", { locale: nl })}</span>
+                      {event.startuur && (
+                        <>
+                          <Clock className="h-3 w-3 ml-2" />
+                          <span>{event.startuur}</span>
+                        </>
+                      )}
                     </div>
+
+                    {/* Youth specific fields */}
+                    {showYouth ? (
+                      <>
+                        {/* Categories */}
+                        <div className="mb-2">
+                          <div className="text-xs text-gray-500 mb-1">Categorieën:</div>
+                          <div className="flex flex-wrap gap-1">
+                            {(() => {
+                              try {
+                                const categories = event.category ? JSON.parse(event.category) : [];
+                                return categories.map((cat: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full"
+                                  >
+                                    {cat}
+                                  </span>
+                                ));
+                              } catch (error) {
+                                return null;
+                              }
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Instructors */}
+                        <div className="mb-2">
+                          <div className="text-xs text-gray-500 mb-1">Lesgevers:</div>
+                          <div className="flex flex-wrap gap-1">
+                            {(() => {
+                              try {
+                                const instructors = event.instructors ? JSON.parse(event.instructors) : [];
+                                return instructors.map((instructor: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                                  >
+                                    {instructor}
+                                  </span>
+                                ));
+                              } catch (error) {
+                                return null;
+                              }
+                            })()}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      /* Begeleider for non-youth */
+                      <div className="mb-2">
+                        <div className="text-xs text-gray-500 mb-1">Begeleider:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {(() => {
+                            try {
+                              const begeleiders = event.begeleider ? JSON.parse(event.begeleider) : [];
+                              return begeleiders.map((begeleider: string, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                                >
+                                  {begeleider}
+                                </span>
+                              ));
+                            } catch (error) {
+                              return null;
+                            }
+                          })()}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(
