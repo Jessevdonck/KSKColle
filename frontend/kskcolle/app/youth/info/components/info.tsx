@@ -31,7 +31,7 @@ export default function YouthInfo() {
             <div className="lg:col-span-2 space-y-4 text-textColor">
               <p className="text-sm text-gray-700">
                 De jeugdwerking van KSK Colle vindt elke donderdag van het schooljaar (niet in schoolvakanties) plaats
-                in zaal 4 achteraan Taverne De Graanmaat. We starten om 18:30u en eindigen om 19:45u.
+                in zaal 4 achteraan Taverne De Graanmaat. Jeugd Stap 1 start om 19:00u, de andere stappen starten om 18:30u. We eindigen om 19:45u.
               </p>
 
               <div className="grid sm:grid-cols-2 gap-4">

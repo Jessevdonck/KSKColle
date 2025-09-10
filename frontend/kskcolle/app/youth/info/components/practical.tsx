@@ -21,7 +21,7 @@ export default function Practical() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Wanneer</h3>
-                  <p className="text-gray-600">Donderdag 18:30 — 19:45 (niet in schoolvakanties)</p>
+                  <p className="text-gray-600">Donderdag: Stap 1 om 19:00u, andere stappen om 18:30u — 19:45u (niet in schoolvakanties)</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">

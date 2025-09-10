@@ -13,26 +13,32 @@ const teachers: Teacher[] = [
   {
     name: "Ronny Eelen",
     role: "Verantwoordelijke Jeugdwerking",
-    steps: "Stap X",
+    steps: "Stap 2",
     image: "/images/image_placeholder.png",
   },
   {
-    name: "Lesgever 1",
+    name: "Ruud Vermeulen",
     role: "Trainer",
-    steps: "Stap X",
+    steps: "Stap 1",
     image: "/images/image_placeholder.png",
   },
   {
-    name: "Lesgever 2",
+    name: "Diego Poeck",
     role: "Trainer",
-    steps: "Stap X",
+    steps: "Stap 1+2",
     image: "/images/image_placeholder.png",
   },
   {
-    name: "Lesgever 3",
+    name: "Sven Schatteman",
     role: "Trainer",
-    steps: "X",
+    steps: "Stap 3+4",
     image: "/images/image_placeholder.png",
+  },
+  {
+    name: "Patrick Gillis",
+    role: "Trainer",
+    steps: "Stap 1",
+    image: "/images/Bestuur/PatrickGillis.jpg",
   },
 ]
 
@@ -47,7 +53,7 @@ export default function Teachers() {
           </h2>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {teachers.map((t, i) => (
               <div
                 key={i}
