@@ -328,7 +328,7 @@ const PlannedActivities = () => {
                         </th>
                         <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">Beschrijving</th>
                         <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6 border-r border-mainAccent/10">Begeleider</th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/5">Type</th>
+                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4">Type</th>
                       </tr>
                     </thead>
                     <tbody>
