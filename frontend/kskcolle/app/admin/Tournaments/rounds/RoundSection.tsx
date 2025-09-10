@@ -8,6 +8,7 @@ import useSWRMutation from "swr/mutation"
 import { save as saveRound, save as saveEvent } from "../../../api/index"
 import type { Round, MakeupDay } from "@/data/types"
 import RoundGames from "./RoundGames"
+import RoundExport from "./RoundExport"
 import { Play, Trophy } from "lucide-react"
 
 interface Props {
@@ -177,25 +178,37 @@ export default function RoundSection({
           </div>
         </div>
 
-        {showGenerateButton && (
-          <Button
-            onClick={onGenerate}
-            disabled={isGenerating}
-            className="bg-white/20 hover:bg-white/30 text-white border-white/30 transition-all duration-200"
-          >
-            {isGenerating ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                Genereren...
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Play className="h-4 w-4 text-white" />
-                Genereer Paringen
-              </div>
-            )}
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {showGenerateButton && (
+            <Button
+              onClick={onGenerate}
+              disabled={isGenerating}
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30 transition-all duration-200"
+            >
+              {isGenerating ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  Genereren...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Play className="h-4 w-4 text-white" />
+                  Genereer Paringen
+                </div>
+              )}
+            </Button>
+          )}
+          
+          {games.length > 0 && roundData && (
+            <RoundExport
+              tournamentId={tournamentId}
+              roundId={roundData.round_id}
+              roundNumber={roundNumber}
+              tournamentName={tournamentName}
+              className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+            />
+          )}
+        </div>
       </div>
 
       <div className="p-6">

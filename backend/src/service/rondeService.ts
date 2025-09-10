@@ -123,3 +123,79 @@ export const removeRound = async (
     throw handleDBError(error);
   }
 };
+
+export const getRoundForExport = async (
+  tournamentId: number,
+  roundId: number
+): Promise<any> => {
+  try {
+    const round = await prisma.round.findFirst({
+      where: {
+        tournament_id: tournamentId,
+        round_id: roundId,
+      },
+      include: {
+        tournament: {
+          select: {
+            naam: true,
+            type: true,
+            is_youth: true,
+          },
+        },
+        games: {
+          include: {
+            speler1: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+                schaakrating_elo: true,
+              },
+            },
+            speler2: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+                schaakrating_elo: true,
+              },
+            },
+            winnaar: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!round) {
+      throw ServiceError.notFound("Round not found");
+    }
+
+    return {
+      round: {
+        round_id: round.round_id,
+        ronde_nummer: round.ronde_nummer,
+        ronde_datum: round.ronde_datum,
+        startuur: round.startuur,
+        type: round.type,
+        label: round.label,
+      },
+      tournament: round.tournament,
+      games: round.games.map(game => ({
+        game_id: game.game_id,
+        speler1: game.speler1,
+        speler2: game.speler2,
+        winnaar: game.winnaar,
+        result: game.result,
+        uitgestelde_datum: game.uitgestelde_datum,
+      })),
+    };
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};

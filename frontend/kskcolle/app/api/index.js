@@ -194,3 +194,9 @@ export const getUserAvatar = async (userId) => {
   const { data } = await axios.get(`/avatar/${userId}`);
   return data;
 };
+
+// Round export function
+export const getRoundForExport = async (tournamentId, roundId) => {
+  const { data } = await axios.get(`${baseUrl}/rondes/${tournamentId}/rondes/${roundId}/export`);
+  return data;
+};

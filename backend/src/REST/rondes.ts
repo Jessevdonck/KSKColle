@@ -188,6 +188,30 @@ getAllRondesByTournamentId.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /rondes/:tournament_id/rondes/:round_id/export Get round data for PDF export
+ * @apiName GetRoundForExport
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ * @apiParam {Number} round_id The ID of the round.
+ *
+ * @apiSuccess {Object} roundData The round data with games and players for PDF export.
+ */
+const getRoundForExport = async (ctx: any) => {
+  const tournamentId = Number(ctx.params.tournament_id);
+  const roundId = Number(ctx.params.round_id);
+  
+  const roundData = await rondeService.getRoundForExport(tournamentId, roundId);
+  ctx.body = roundData;
+};
+getRoundForExport.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+    round_id: Joi.number().integer().positive(),
+  },
+};
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/rondes',
@@ -199,6 +223,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/:tournament_id/rondes',validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
   router.get('/:ronde_id', validate(getRondeById.validationScheme), getRondeById);
   router.get('/:tournament_id/rondes/:round_id', requireAuthentication, validate(getRondeByTournament.validationScheme), getRondeByTournament); 
+  router.get('/:tournament_id/rondes/:round_id/export', requireAuthentication, requireAdmin, validate(getRoundForExport.validationScheme), getRoundForExport);
   router.post('/', requireAuthentication, requireAdmin, validate(createRonde.validationScheme), createRonde);
   router.put('/:tournament_id/rondes/:ronde_id', requireAuthentication, requireAdmin, validate(updateRonde.validationScheme), updateRonde); 
   router.delete('/:tournament_id/rondes/:ronde_id', requireAuthentication, requireAdmin, validate(removeRonde.validationScheme), removeRonde); 

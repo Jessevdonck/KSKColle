@@ -6,6 +6,7 @@ import { getById, generatePairings, postMakeupDay, getAll, getAllTournamentRound
 import type { Toernooi, MakeupDay, Round } from "@/data/types"
 import RoundSection from "./RoundSection"
 import MakeupSection from "./MakeupSection"
+import RoundExport from "./RoundExport"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -640,16 +641,28 @@ export default function RoundManagement({ tournament }: Props) {
                     </div>
                   </div>
                   
-                  {round.type === 'MAKEUP' && (
-                    <Button
-                      onClick={() => handleDeleteMakeupRound(round.round_id)}
-                      disabled={deletingMakeupRound}
-                      variant="outline"
-                      className="border-white/50 text-white hover:bg-white/30 bg-white/10"
-                    >
-                      {deletingMakeupRound ? "..." : "Verwijderen"}
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {round.type === 'MAKEUP' && (
+                      <Button
+                        onClick={() => handleDeleteMakeupRound(round.round_id)}
+                        disabled={deletingMakeupRound}
+                        variant="outline"
+                        className="border-white/50 text-white hover:bg-white/30 bg-white/10"
+                      >
+                        {deletingMakeupRound ? "..." : "Verwijderen"}
+                      </Button>
+                    )}
+                    
+                    {round.games.length > 0 && round.type === 'REGULAR' && (
+                      <RoundExport
+                        tournamentId={tournament.tournament_id}
+                        roundId={round.round_id}
+                        roundNumber={round.ronde_nummer}
+                        tournamentName={tournament.naam}
+                        className="border-white/50 text-white hover:bg-white/30 bg-white/10"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
               
