@@ -135,7 +135,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           score,
         })
       } else {
-        // Player had a bye - BYE gives 0.5 points
+        // Player is bye - BYE gives 0.5 points
         history.push({
           round: round.ronde_nummer,
           opponent: null,
