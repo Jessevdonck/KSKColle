@@ -100,23 +100,43 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           score = isPlayer1 ? 0 : 1
         } else if (playerGame.result === "½-½" || playerGame.result === "1/2-1/2") {
           score = 0.5
+        } else if (playerGame.result === "0.5-0") {
+          // Absent with message - player gets 0.5 points
+          score = isPlayer1 ? 0.5 : 0
+        } else if (playerGame.result && playerGame.result.startsWith("ABS-")) {
+          // Absent with message from Sevilla import - extract score
+          const absScore = parseFloat(playerGame.result.substring(4)) || 0
+          score = isPlayer1 ? absScore : 0
+        }
+
+        // Determine opponent display
+        let opponentDisplay: string | null = null
+        if (opponent) {
+          opponentDisplay = `${opponent.voornaam} ${opponent.achternaam}`
+        } else {
+          // No opponent - check if result contains ABS
+          if (playerGame.result && playerGame.result.includes("ABS")) {
+            opponentDisplay = "Abs with msg"
+          } else {
+            opponentDisplay = null // Will be displayed as "BYE" in UI
+          }
         }
 
         history.push({
           round: round.ronde_nummer,
-          opponent: opponent ? `${opponent.voornaam} ${opponent.achternaam}` : null,
+          opponent: opponentDisplay,
           result: playerGame.result,
           color: isPlayer1 ? "white" : "black",
           score,
         })
       } else {
-        // Player had a bye
+        // Player had a bye - BYE gives 0.5 points
         history.push({
           round: round.ronde_nummer,
           opponent: null,
           result: null,
           color: null,
-          score: 0,
+          score: 0.5,
         })
       }
     })
@@ -127,9 +147,24 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   const getResultDisplay = (result: string | null, score: number) => {
     if (!result) return "Bye"
     if (score === 1) return "Winst"
-    if (score === 0.5) return "Remise"
+    if (score === 0.5) {
+      // Check if it's absent with message or draw
+      if (result && result.includes("ABS")) return "Abs with msg"
+      return "Remise"
+    }
     if (score === 0) return "Verlies"
-    return result
+    
+    // Handle special results
+    switch (result) {
+      case "1-0FF":
+        return "Zwart forfait"
+      case "0-1FF":
+        return "Wit forfait"
+      case "0-0":
+        return "Scheidsrechterlijke beslissing"
+      default:
+        return result
+    }
   }
 
   const getResultColor = (score: number) => {
@@ -261,7 +296,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getResultColor(game.score)}`}>
-                        {getResultDisplay(game.result, game.score)}
+                        {game.result ? getResultDisplay(game.result, game.score) : "Bye"}
                       </span>
                       <div className="text-lg font-bold text-textColor min-w-[2rem] text-center">{game.score}</div>
                     </div>
@@ -310,7 +345,8 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
   })
 
   // 2) score & gamesPlayed
-  rounds.forEach(({ games }) =>
+  rounds.forEach(({ games }) => {
+    // First, process all games with results
     games.forEach(({ speler1, speler2, result }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
@@ -326,10 +362,32 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
         } else if (result === "½-½" || result === "1/2-1/2") {
           scoreMap[p1] += 0.5
           if (p2) scoreMap[p2] += 0.5
+        } else if (result === "0.5-0") {
+          // Absent with message - player gets 0.5 points
+          scoreMap[p1] += 0.5
+        } else if (result && result.startsWith("ABS-")) {
+          // Absent with message from Sevilla import - extract score
+          const absScore = parseFloat(result.substring(4)) || 0
+          scoreMap[p1] += absScore
         }
       }
-    }),
-  )
+    })
+
+    // Then, check for BYE players (players who didn't play any game this round)
+    const playersWhoPlayed = new Set<number>()
+    games.forEach(({ speler1, speler2 }) => {
+      playersWhoPlayed.add(speler1.user_id)
+      if (speler2) playersWhoPlayed.add(speler2.user_id)
+    })
+
+    // Any participant who didn't play gets a BYE (0.5 points)
+    tournament.participations.forEach(({ user }) => {
+      if (!playersWhoPlayed.has(user.user_id)) {
+        scoreMap[user.user_id] += 0.5
+        // Note: BYE doesn't count as a played game, so gamesPlayed stays the same
+      }
+    })
+  })
 
   // 3) buchholzList & sbMap
   rounds.forEach(({ games }) =>
