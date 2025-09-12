@@ -12,10 +12,10 @@ export default function AboutUs() {
       <Header />
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 space-y-6">
         <Activities />
+        <ClubInfo />
         <PresidentsTimeline />
         <Team />
         <Interviews />
-        <ClubInfo />
         <History />
       </main>
     </div>
