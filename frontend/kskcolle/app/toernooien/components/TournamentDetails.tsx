@@ -4,10 +4,11 @@ import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
-import { getById, getAll, getAllTournamentRounds } from "../../api/index"
+import { getById, getAll, getAllTournamentRounds, undoPostponeGame } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
-import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, Link } from "lucide-react"
+import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useState, useEffect } from "react"
+import PostponeGameButton from './PostponeGameButton'
 
 type Game = {
   game_id: number
@@ -84,20 +85,43 @@ export default function TournamentDetails() {
 
       let makeupDayCounter = 1
 
-      for (const round of sortedRounds) {
-        if (round.type === 'REGULAR') {
-          // Regular round
-          const found = rounds.find((x) => x.ronde_nummer === round.ronde_nummer)
+      // Create all planned rounds (1 to tournament.rondes) and insert makeup rounds after their corresponding round
+      for (let i = 1; i <= tournament.rondes; i++) {
+        const existingRound = sortedRounds.find(r => r.ronde_nummer === i && r.type === 'REGULAR')
+        if (existingRound) {
+          // Existing regular round
+          const found = rounds.find((x) => x.ronde_nummer === i)
           newTimeline.push({
             kind: "round",
-            round: found ?? { round_id: round.round_id, ronde_nummer: round.ronde_nummer, games: round.games || [] },
+            round: found ?? { round_id: existingRound.round_id, ronde_nummer: i, games: existingRound.games || [] },
           })
-        } else if (round.type === 'MAKEUP') {
-          // Makeup day - add sequential number
+        } else {
+          // Non-generated round - create placeholder
+          newTimeline.push({
+            kind: "round",
+            round: { 
+              round_id: null, 
+              ronde_nummer: i, 
+              games: [],
+              ronde_datum: null,
+              startuur: '20:00',
+              type: 'REGULAR',
+              label: null,
+              is_sevilla_imported: false
+            },
+          })
+        }
+
+        // Add makeup rounds that belong to this round (ronde_nummer - 1)
+        const makeupRoundsForThisRound = sortedRounds.filter(r => 
+          r.type === 'MAKEUP' && r.ronde_nummer === i
+        )
+        
+        for (const makeupRound of makeupRoundsForThisRound) {
           newTimeline.push({
             kind: "makeup",
-            day: { ...round, makeupDayNumber: makeupDayCounter },
-            games: round.games || []
+            day: { ...makeupRound, makeupDayNumber: makeupDayCounter },
+            games: makeupRound.games || []
           })
           makeupDayCounter++
         }
@@ -135,6 +159,15 @@ export default function TournamentDetails() {
 
   const goToNext = () => {
     setCurrentIndex((prev) => (prev < timeline.length - 1 ? prev + 1 : 0))
+  }
+
+  const goToRound = (roundNumber: number) => {
+    const roundIndex = timeline.findIndex(entry => 
+      entry.kind === "round" && entry.round.ronde_nummer === roundNumber
+    )
+    if (roundIndex !== -1) {
+      setCurrentIndex(roundIndex)
+    }
   }
 
   const currentEntry = timeline[currentIndex]
@@ -187,25 +220,38 @@ export default function TournamentDetails() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
-          <div className="flex items-center gap-2">
-            <div className="bg-mainAccent/10 p-1.5 rounded-lg">
-              <Trophy className="h-5 w-5 text-mainAccent" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-textColor">{tournament.naam}</h1>
-              <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  <span>{tournament.participations?.length || 0} spelers</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{tournament.rondes} rondes</span>
-                </div>
-                <div className="px-1.5 py-0.5 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
-                  {tournament.type}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-mainAccent/10 p-1.5 rounded-lg">
+                <Trophy className="h-5 w-5 text-mainAccent" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-textColor">{tournament.naam}</h1>
+                <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    <span>{tournament.participations?.length || 0} spelers</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>{tournament.rondes} rondes</span>
+                  </div>
+                  <div className="px-1.5 py-0.5 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
+                    {tournament.type}
+                  </div>
                 </div>
               </div>
+            </div>
+            
+            {/* Postpone Game Button */}
+            <div className="w-48">
+              <PostponeGameButton 
+                tournamentId={tournamentId}
+                tournamentName={tournament.naam}
+                isHerfst={tournament.naam.toLowerCase().includes('herfst')}
+                participations={tournament.participations}
+                onGamePostponed={goToRound}
+              />
             </div>
           </div>
         </div>
@@ -274,7 +320,7 @@ export default function TournamentDetails() {
                   currentEntry.kind === "round" ? (
                     <RoundPairings round={currentEntry.round} />
                   ) : (
-                    <MakeupPairings round={currentEntry.day} games={currentEntry.games} />
+                    <MakeupPairings round={currentEntry.day} games={currentEntry.games} onGameUndone={goToRound} />
                   )
                 ) : (
                   <div className="text-center py-8">
@@ -307,10 +353,42 @@ export default function TournamentDetails() {
 }
 
 // Component to show a makeup day + associated games
-function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
+function MakeupPairings({ round, games, onGameUndone }: { round: any; games: Game[]; onGameUndone?: (originalRoundNumber: number) => void }) {
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
+
+  const handleUndoPostpone = async (gameId: number) => {
+    if (!confirm('Weet je zeker dat je het uitstel ongedaan wilt maken? De game wordt teruggeplaatst naar de originele ronde.')) {
+      return;
+    }
+
+    try {
+      const result = await undoPostponeGame('', { arg: { game_id: gameId } });
+      alert(result.message);
+      
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Failed to undo postpone game:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Kon uitstel niet ongedaan maken';
+      alert(`Fout: ${errorMessage}`);
+    }
+  }
+
+  // Check if games data is properly loaded
+  if (!games || games.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="bg-amber-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+          <Calendar className="h-8 w-8 text-amber-600" />
+        </div>
+        <h4 className="text-base font-semibold text-gray-700 mb-2">Geen partijen</h4>
+        <p className="text-gray-500 text-sm">Er zijn nog geen partijen voor deze inhaaldag.</p>
+      </div>
+    )
+  }
+
 
   const getByeText = (result: string | null) => {
     if (!result) return "Bye"
@@ -377,34 +455,37 @@ function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
                     </div>
                   </td>
                   <td className="p-3">
-                    <Link
-                      href={`/profile/${createUrlFriendlyName(g.speler1.voornaam, g.speler1.achternaam)}`}
-                      className="group flex items-center gap-2 hover:text-mainAccent transition-colors"
-                    >
-                      <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
-                        W
+                    {g.speler1 && g.speler1.voornaam && g.speler1.achternaam ? (
+                      <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
+                        <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
+                          W
+                        </div>
+                        <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
+                          {g.speler1.voornaam} {g.speler1.achternaam}
+                        </span>
                       </div>
-                      <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
-                        {g.speler1.voornaam} {g.speler1.achternaam}
-                      </span>
-                    </Link>
+                    ) : (
+                      <div className="flex items-center gap-2 text-amber-600 italic">
+                        <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
+                          ?
+                        </div>
+                        <span className="text-sm">Speler niet gevonden</span>
+                      </div>
+                    )}
                   </td>
                   <td className="p-3 text-center">
                     <div className="text-amber-400 text-sm">vs</div>
                   </td>
                   <td className="p-3">
-                    {g.speler2 ? (
-                      <Link
-                        href={`/profile/${createUrlFriendlyName(g.speler2.voornaam, g.speler2.achternaam)}`}
-                        className="group flex items-center gap-2 hover:text-mainAccent transition-colors"
-                      >
+                    {g.speler2 && g.speler2.voornaam && g.speler2.achternaam ? (
+                      <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
                         <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
                           Z
                         </div>
                         <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
                           {g.speler2.voornaam} {g.speler2.achternaam}
                         </span>
-                      </Link>
+                      </div>
                     ) : (
                       <div className="flex items-center gap-2 text-amber-600 italic">
                         <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
@@ -415,15 +496,24 @@ function MakeupPairings({ round, games }: { round: any; games: Game[] }) {
                     )}
                   </td>
                   <td className="p-3 text-center">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        g.result && g.result !== "not_played"
-                          ? "bg-green-100 text-green-800 border border-green-200"
-                          : "bg-gray-100 text-gray-600 border border-gray-200"
-                      }`}
-                    >
-                      {g.result && g.result !== "not_played" ? g.result : "Nog te spelen"}
-                    </span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          g.result && g.result !== "not_played"
+                            ? "bg-green-100 text-green-800 border border-green-200"
+                            : "bg-gray-100 text-gray-600 border border-gray-200"
+                        }`}
+                      >
+                        {g.result && g.result !== "not_played" ? g.result : "Nog te spelen"}
+                      </span>
+                      <button
+                        onClick={() => handleUndoPostpone(g.game_id)}
+                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+                        title="Uitstel ongedaan maken"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

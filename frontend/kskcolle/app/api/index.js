@@ -200,3 +200,24 @@ export const getRoundForExport = async (tournamentId, roundId) => {
   const { data } = await axios.get(`${baseUrl}/rondes/${tournamentId}/rondes/${roundId}/export`);
   return data;
 };
+
+// Game postpone functions
+export const postponeGame = async (url, { arg: { game_id } }) => {
+  const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { game_id });
+  return data;
+};
+
+export const undoPostponeGame = async (url, { arg: { game_id } }) => {
+  const { data } = await axios.post(`${baseUrl}/tournamentRounds/undo-postpone`, { game_id });
+  return data;
+};
+
+export const getPostponableGames = async (tournamentId) => {
+  const { data } = await axios.get(`${baseUrl}/tournamentRounds/postponable-games?tournament_id=${tournamentId}`);
+  return data.games;
+};
+
+export const getAvailableMakeupRounds = async (tournamentId, isHerfst) => {
+  const { data } = await axios.get(`${baseUrl}/tournamentRounds/available-makeup-rounds?tournament_id=${tournamentId}&is_herfst=${isHerfst}`);
+  return data.rounds;
+};

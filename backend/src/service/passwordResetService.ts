@@ -108,8 +108,9 @@ export const resetPassword = async (data: ResetPasswordData): Promise<void> => {
       throw ServiceError.validationFailed('Deze reset link is verlopen');
     }
 
-    // Hash nieuw wachtwoord
-    const newPasswordHash = await hashPassword(data.newPassword);
+    // Trim trailing spaces from password and hash
+    const trimmedNewPassword = data.newPassword.trim();
+    const newPasswordHash = await hashPassword(trimmedNewPassword);
 
     // Update wachtwoord in database
     await prisma.user.update({

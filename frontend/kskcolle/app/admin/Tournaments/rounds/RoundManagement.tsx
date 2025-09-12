@@ -115,12 +115,15 @@ export default function RoundManagement({ tournament }: Props) {
   }
 
   // timeline bouwen (oude systeem voor niet-Sevilla toernooien)
-  type Entry = { kind: "round"; roundNumber: number; roundData?: Round } | { kind: "makeup"; makeup: MakeupDay }
+  type Entry = { kind: "round"; roundNumber: number; roundData?: Round } | { kind: "makeup"; makeup: MakeupDay } | { kind: "makeupRound"; round: Round }
 
   const timeline: Entry[] = []
   for (let i = 1; i <= T.rondes; i++) {
     timeline.push({ kind: "round", roundNumber: i, roundData: T.rounds.find((r) => r.ronde_nummer === i) })
+    // Oude makeup days
     makeupDays.filter((md) => md.round_after === i).forEach((md) => timeline.push({ kind: "makeup", makeup: md }))
+    // Nieuwe makeup rounds
+    allRounds.filter((r) => r.ronde_nummer === i && r.type === 'MAKEUP').forEach((round) => timeline.push({ kind: "makeupRound", round }))
   }
 
   // check of officieel alles klaar is
@@ -133,20 +136,24 @@ export default function RoundManagement({ tournament }: Props) {
         .every((g) => g.result && g.result !== "not_played"),
     )
 
-  // handler voor nieuwe inhaaldag (oude systeem)
+  // handler voor nieuwe inhaaldag (nu als ronde entiteit)
   const handleAddMakeup = async () => {
-    await createMakeup({
-      arg: {
-        tournament_id: T.tournament_id,
-        round_after: newRoundAfter,
-        date: newDate,
-        startuur: newStartuur,
-        label: newLabel || undefined,
-      },
-    })
-    refetchMD()
-    setAddingNew(false)
-    toast({ title: "Success", description: "Inhaaldag toegevoegd." })
+    try {
+      await createMakeupRoundMutation({
+        arg: {
+          tournament_id: T.tournament_id,
+          after_round_number: newRoundAfter,
+          date: newDate,
+          startuur: newStartuur,
+          label: newLabel || undefined,
+        },
+      })
+      refetchRounds()
+      setAddingNew(false)
+      toast({ title: "Success", description: "Inhaaldag toegevoegd." })
+    } catch (error) {
+      toast({ title: "Error", description: "Kon inhaaldag niet toevoegen", variant: "destructive" })
+    }
   }
 
   // Bereken standaard datum voor inhaaldag (1 week na de geselecteerde ronde)
@@ -545,7 +552,7 @@ export default function RoundManagement({ tournament }: Props) {
                   isGenerating={generatingPairs}
                 />
               )
-            } else {
+            } else if (e.kind === "makeup") {
               return (
                 <MakeupSection
                   key={`m${e.makeup.id}`}
@@ -554,6 +561,30 @@ export default function RoundManagement({ tournament }: Props) {
                   tournamentId={T.tournament_id}
                   onUpdate={() => Promise.all([refetchT(), refetchMD()])}
                 />
+              )
+            } else if (e.kind === "makeupRound") {
+              // Render nieuwe makeup round als een speciale sectie
+              return (
+                <div key={`mr${e.round.round_id}`} className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden">
+                  <div className="bg-gradient-to-r from-amber-200 to-orange-200 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-xl font-bold text-amber-800 flex items-center gap-2">
+                        <div className="bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                          I
+                        </div>
+                        {e.round.label || `Inhaaldag na ronde ${e.round.ronde_nummer - 1}`}
+                      </h3>
+                      <div className="text-amber-700 text-sm">
+                        {format(new Date(e.round.ronde_datum), 'dd/MM/yyyy')} om {e.round.startuur}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="text-center py-4 text-amber-600 text-sm">
+                      {e.round.games?.length || 0} games in deze inhaaldag
+                    </div>
+                  </div>
+                </div>
               )
             }
           })}

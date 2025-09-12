@@ -54,7 +54,8 @@ export async function createMakeupRoundBetween(
   tournament_id: number,
   after_round_number: number,
   date: Date,
-  startuur: string
+  startuur: string,
+  label?: string
 ): Promise<TournamentRound> {
   try {
     // 1. Haal alle bestaande rondes op
@@ -80,7 +81,7 @@ export async function createMakeupRoundBetween(
         ronde_datum: date,
         startuur,
         type: RoundType.MAKEUP,
-        label: `Inhaaldag ${makeupDayNumber}`,
+        label: label || `Inhaaldag ${makeupDayNumber}`,
         is_sevilla_imported: false,
       },
     });
@@ -121,38 +122,129 @@ export async function createMakeupRoundBetween(
 }
 
 /**
- * Stel een game uit naar een inhaaldag
+ * Stel een game uit naar een inhaaldag (Admin versie)
+ * Gebruikt dezelfde logica als de player postponement: markeer origineel als uitgesteld en maak nieuwe game aan
  */
 export async function postponeGameToMakeupRound(
   game_id: number,
   makeup_round_id: number
 ): Promise<any> {
   try {
-    // Controleer of de inhaaldag ronde bestaat
+    // 1. Haal de originele game op
+    const originalGame = await prisma.game.findUnique({
+      where: { game_id },
+      include: {
+        speler1: true,
+        speler2: true,
+        round: {
+          include: {
+            tournament: true
+          }
+        }
+      }
+    });
+
+    if (!originalGame) {
+      throw ServiceError.notFound('Game niet gevonden');
+    }
+
+    // 2. Controleer of de game al gespeeld is
+    if (originalGame.result) {
+      throw ServiceError.validationFailed('Deze partij is al gespeeld en kan niet meer uitgesteld worden');
+    }
+
+    // 3. Controleer of de game al uitgesteld is
+    if (originalGame.uitgestelde_datum) {
+      throw ServiceError.validationFailed('Deze partij is al uitgesteld');
+    }
+
+    // 4. Controleer of de inhaaldag ronde bestaat
     const makeupRound = await prisma.round.findUnique({
       where: { round_id: makeup_round_id },
-      select: { type: true }
+      select: { type: true, tournament_id: true }
     });
 
     if (!makeupRound || makeupRound.type !== RoundType.MAKEUP) {
       throw ServiceError.validationFailed(`Ronde ${makeup_round_id} is geen inhaaldag`);
     }
 
-    // Update de game om deze naar de inhaaldag te verplaatsen
-    const updatedGame = await prisma.game.update({
+    // 5. Controleer of de inhaaldag bij hetzelfde toernooi hoort
+    if (makeupRound.tournament_id !== originalGame.round.tournament_id) {
+      throw ServiceError.validationFailed('Inhaaldag hoort niet bij hetzelfde toernooi');
+    }
+
+    // 6. Markeer de originele game als uitgesteld
+    await prisma.game.update({
       where: { game_id },
       data: {
+        result: 'uitgesteld',
+        uitgestelde_datum: new Date()
+      }
+    });
+
+    // 7. Maak een nieuwe game aan in de inhaaldag
+    const newGame = await prisma.game.create({
+      data: {
         round_id: makeup_round_id,
-        uitgestelde_datum: new Date(), // Markeer als uitgesteld
+        speler1_id: originalGame.speler1_id,
+        speler2_id: originalGame.speler2_id,
+        winnaar_id: null,
+        result: null, // Nieuwe game zonder resultaat
+        uitgestelde_datum: null // Nieuwe game is niet uitgesteld
       },
       include: {
         speler1: true,
         speler2: true,
-        winnaar: true
+        round: true
       }
     });
 
-    return updatedGame;
+    return {
+      success: true,
+      message: `Partij succesvol uitgesteld naar inhaaldag`,
+      original_game_id: game_id,
+      new_game_id: newGame.game_id,
+      new_round_id: makeup_round_id
+    };
+  } catch (error) {
+    throw handleDBError(error);
+  }
+}
+
+/**
+ * Maak een admin uitstel ongedaan (Admin versie)
+ * Verwijdert de nieuwe game en herstelt de originele game
+ */
+export async function undoAdminPostponeGame(
+  original_game_id: number,
+  new_game_id: number
+): Promise<any> {
+  try {
+    // 1. Verwijder de nieuwe game uit de inhaaldag
+    await prisma.game.delete({
+      where: { game_id: new_game_id }
+    });
+
+    // 2. Herstel de originele game naar "Nog te spelen" status
+    const restoredGame = await prisma.game.update({
+      where: { game_id: original_game_id },
+      data: {
+        result: null, // Reset naar "Nog te spelen"
+        uitgestelde_datum: null // Reset uitgestelde datum
+      },
+      include: {
+        speler1: true,
+        speler2: true,
+        round: true
+      }
+    });
+
+    return {
+      success: true,
+      message: `Uitstel ongedaan gemaakt. Game is teruggeplaatst naar originele ronde`,
+      original_game_id: original_game_id,
+      restored_round_id: restoredGame.round_id
+    };
   } catch (error) {
     throw handleDBError(error);
   }

@@ -6,7 +6,14 @@ import config from 'config';
 export const requireAuthentication = async (ctx: KoaContext, next: Next) => {
   const { authorization } = ctx.headers; 
 
-  ctx.state.session = await userService.checkAndParseSession(authorization);
+  try {
+    ctx.state.session = await userService.checkAndParseSession(authorization);
+  } catch (error: any) {
+    if (error.name === 'ServiceError' && error.isUnauthorized) {
+      ctx.throw(401, 'Gebruiker niet geauthenticeerd', { code: 'UNAUTHORIZED' });
+    }
+    throw error;
+  }
 
   return next(); 
 };

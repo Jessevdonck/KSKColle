@@ -1,6 +1,11 @@
 import ServiceError from '../core/serviceError';
 
 const handleDBError = (error: any) => {
+  // Check if error is valid
+  if (!error || typeof error !== 'object') {
+    throw ServiceError.internalServerError('Invalid error object provided to handleDBError');
+  }
+  
   const { code = '', message } = error;
 
   if (code === 'P2002') {

@@ -30,7 +30,12 @@ export default function PasswordChangeForm() {
   })
 
   const onSubmit = async (data: PasswordChangeFormData) => {
-    if (data.newPassword !== data.confirmNewPassword) {
+    // Trim trailing spaces from passwords
+    const trimmedCurrentPassword = data.currentPassword.trim();
+    const trimmedNewPassword = data.newPassword.trim();
+    const trimmedConfirmPassword = data.confirmNewPassword.trim();
+    
+    if (trimmedNewPassword !== trimmedConfirmPassword) {
       setErrorMessage("Nieuwe wachtwoorden komen niet overeen")
       return
     }
@@ -38,8 +43,8 @@ export default function PasswordChangeForm() {
     try {
       await changePassword({
         userId: user.user_id,
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword
+        currentPassword: trimmedCurrentPassword,
+        newPassword: trimmedNewPassword
       })
       setSuccessMessage("Wachtwoord succesvol gewijzigd")
       reset()
@@ -108,7 +113,7 @@ export default function PasswordChangeForm() {
                   {...register('confirmNewPassword', {
                     required: 'Bevestig nieuw wachtwoord is vereist',
                     validate: (val: string) => {
-                      if (watch('newPassword') != val) {
+                      if (watch('newPassword').trim() != val.trim()) {
                         return "Wachtwoorden komen niet overeen";
                       }
                     }

@@ -20,7 +20,7 @@ const validationRules = {
   confirmPassword: {
     required: 'Bevestig wachtwoord is vereist',
     validate: (value: string, formValues: any) => {
-      return value === formValues.newPassword || 'Wachtwoorden komen niet overeen';
+      return value.trim() === formValues.newPassword.trim() || 'Wachtwoorden komen niet overeen';
     },
   },
 };
@@ -73,9 +73,13 @@ export default function ResetPasswordForm() {
     setLoading(true);
     setError(null);
 
+    // Trim trailing spaces from passwords
+    const trimmedNewPassword = data.newPassword.trim();
+    const trimmedConfirmPassword = data.confirmPassword.trim();
+
     try {
       await resetPassword('password-reset', { 
-        arg: { token, newPassword: data.newPassword } 
+        arg: { token, newPassword: trimmedNewPassword } 
       });
       setSuccess(true);
     } catch (error: any) {

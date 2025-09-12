@@ -68,22 +68,26 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
           </div>
           Ronde {round.ronde_nummer}
         </h3>
-        <p className="text-gray-600 text-sm">{round.games.length} partijen</p>
+        <p className="text-gray-600 text-sm">
+          {round.games.length} partijen
+          {!round.round_id && <span className="text-gray-500 ml-2">(Nog niet gegenereerd)</span>}
+        </p>
       </div>
 
-      <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
-              <th className="p-3 text-center font-semibold text-sm w-12">Bord</th>
-              <th className="p-3 text-left font-semibold text-sm">Wit</th>
-              <th className="p-3 text-center font-semibold w-8"></th>
-              <th className="p-3 text-left font-semibold text-sm">Zwart</th>
-              <th className="p-3 text-center font-semibold text-sm">Uitslag</th>
-            </tr>
-          </thead>
-          <tbody>
-            {round.games.map((game, index) => (
+      {round.games.length > 0 ? (
+        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
+                <th className="p-3 text-center font-semibold text-sm w-12">Bord</th>
+                <th className="p-3 text-left font-semibold text-sm">Wit</th>
+                <th className="p-3 text-center font-semibold w-8"></th>
+                <th className="p-3 text-left font-semibold text-sm">Zwart</th>
+                <th className="p-3 text-center font-semibold text-sm">Uitslag</th>
+              </tr>
+            </thead>
+            <tbody>
+              {round.games.map((game, index) => (
               <tr
                 key={game.game_id}
                 className={`border-b border-neutral-100 ${
@@ -154,6 +158,14 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
           </tbody>
         </table>
       </div>
+      ) : (
+        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-8 text-center">
+          <div className="text-gray-500 text-lg mb-2">Ronde {round.ronde_nummer}</div>
+          <div className="text-gray-400 text-sm">
+            {!round.round_id ? "Nog niet gegenereerd" : "Geen partijen beschikbaar"}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

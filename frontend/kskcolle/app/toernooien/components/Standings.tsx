@@ -21,11 +21,13 @@ interface StandingsProps {
   rounds: Array<{
     round_id: number
     ronde_nummer: number
+    type: 'REGULAR' | 'MAKEUP'
     games: Array<{
       game_id: number
       speler1: { user_id: number; voornaam: string; achternaam: string }
       speler2: { user_id: number; voornaam: string; achternaam: string } | null
       result: string | null
+      round?: { type: 'REGULAR' | 'MAKEUP' }
     }>
   }>
 }
@@ -45,6 +47,7 @@ interface PlayerGame {
   result: string | null
   color: "white" | "black" | null
   score: number
+  isRealBye?: boolean
 }
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) =>
@@ -90,6 +93,11 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
     const history: PlayerGame[] = []
 
     rounds.forEach((round) => {
+      // Skip makeup rounds - scores are shown in original rounds
+      if (round.type === 'MAKEUP') {
+        return
+      }
+
       const playerGame = round.games.find(
         (game) => game.speler1.user_id === playerId || game.speler2?.user_id === playerId,
       )
@@ -112,18 +120,31 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           // Absent with message from Sevilla import - extract score
           const absScore = parseFloat(playerGame.result.substring(4)) || 0
           score = isPlayer1 ? absScore : 0
+        } else if (playerGame.result === 'uitgesteld') {
+          // Postponed game - no score
+          score = 0
+        } else if (playerGame.result === '...') {
+          // Game not played yet - no score
+          score = 0
         }
 
-        // Determine opponent display
+        // Determine opponent display and game type
         let opponentDisplay: string | null = null
+        let isRealBye = false
+        
         if (opponent) {
           opponentDisplay = `${opponent.voornaam} ${opponent.achternaam}`
         } else {
           // No opponent - check if result contains ABS
           if (playerGame.result && playerGame.result.includes("ABS")) {
             opponentDisplay = "Abs with msg"
-          } else {
+          } else if (playerGame.result === "1-0" && score === 1) {
+            // This is a real BYE (player gets 1 point)
             opponentDisplay = null // Will be displayed as "BYE" in UI
+            isRealBye = true
+          } else {
+            // This is a normal game without opponent data - shouldn't happen but handle gracefully
+            opponentDisplay = "Tegenstander onbekend"
           }
         }
 
@@ -133,9 +154,11 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           result: playerGame.result,
           color: isPlayer1 ? "white" : "black",
           score,
+          isRealBye,
         })
       } else {
-        // Player is bye - BYE gives 0.5 points
+        // Player is
+        //  bye - BYE gives 0.5 points
         history.push({
           round: round.ronde_nummer,
           opponent: null,
@@ -150,7 +173,8 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   }
 
   const getResultDisplay = (result: string | null, score: number) => {
-    if (!result) return "Bye"
+    if (!result || result === '...') return "Nog te spelen"
+    if (result === 'uitgesteld') return "Uitgesteld"
     if (score === 1) return "Winst"
     if (score === 0.5) {
       // Check if it's absent with message or draw
@@ -172,7 +196,8 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
     }
   }
 
-  const getResultColor = (score: number) => {
+  const getResultColor = (score: number, result?: string | null) => {
+    if (result === 'uitgesteld') return "text-orange-600 bg-orange-50"
     if (score === 1) return "text-green-600 bg-green-50"
     if (score === 0.5) return "text-yellow-600 bg-yellow-50"
     if (score === 0) return "text-red-600 bg-red-50"
@@ -301,8 +326,8 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getResultColor(game.score)}`}>
-                        {game.result ? getResultDisplay(game.result, game.score) : "Bye"}
+                      <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${getResultColor(game.score, game.result)}`}>
+                        {game.result ? getResultDisplay(game.result, game.score) : (game.isRealBye ? "Bye" : "Nog te spelen")}
                       </span>
                       <div className="text-sm font-bold text-textColor min-w-[1.5rem] text-center">{game.score}</div>
                     </div>
@@ -351,7 +376,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
   })
 
   // 2) score & gamesPlayed
-  rounds.forEach(({ games }) => {
+  rounds.forEach(({ games, type: roundType }) => {
     // First, process all games with results
     games.forEach(({ speler1, speler2, result }) => {
       const p1 = speler1.user_id
@@ -380,19 +405,24 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     })
 
     // Then, check for BYE players (players who didn't play any game this round)
-    const playersWhoPlayed = new Set<number>()
-    games.forEach(({ speler1, speler2 }) => {
-      playersWhoPlayed.add(speler1.user_id)
-      if (speler2) playersWhoPlayed.add(speler2.user_id)
-    })
+    // Only give BYE points for regular rounds, not makeup rounds
+    const isMakeupRound = roundType === 'MAKEUP'
+    
+    if (!isMakeupRound) {
+      const playersWhoPlayed = new Set<number>()
+      games.forEach(({ speler1, speler2 }) => {
+        playersWhoPlayed.add(speler1.user_id)
+        if (speler2) playersWhoPlayed.add(speler2.user_id)
+      })
 
-    // Any participant who didn't play gets a BYE (0.5 points)
-    tournament.participations.forEach(({ user }) => {
-      if (!playersWhoPlayed.has(user.user_id)) {
-        scoreMap[user.user_id] += 0.5
-        // Note: BYE doesn't count as a played game, so gamesPlayed stays the same
-      }
-    })
+      // Any participant who didn't play gets a BYE (0.5 points) - only for regular rounds
+      tournament.participations.forEach(({ user }) => {
+        if (!playersWhoPlayed.has(user.user_id)) {
+          scoreMap[user.user_id] += 0.5
+          // Note: BYE doesn't count as a played game, so gamesPlayed stays the same
+        }
+      })
+    }
   })
 
   // 3) buchholzList & sbMap

@@ -51,7 +51,9 @@ export default function LoginForm({ onSuccess, onClose }: LoginFormProps) {
 
   const handleLogin = useCallback(
     async ({ email, password }) => {
-      const loggedIn = await login(email, password);
+      // Trim trailing spaces from password
+      const trimmedPassword = password.trim();
+      const loggedIn = await login(email, trimmedPassword);
       if (loggedIn) {
         onSuccess?.();
         router.push('/');

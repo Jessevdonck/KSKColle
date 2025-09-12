@@ -48,7 +48,13 @@ export default function installMiddlewares(app: any) {
     try {
       await next(); 
     } catch (error: any) {
-      getLogger().error('Error occurred while handling a request', { error });
+      getLogger().error('Error occurred while handling a request', { 
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error?.name,
+        code: error?.code,
+        status: error?.status
+      });
   
       let statusCode = error.status || 500;
       const errorBody = {

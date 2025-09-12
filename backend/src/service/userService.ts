@@ -99,6 +99,9 @@ export const login = async (
   email: string,
   password: string,
 ): Promise<string> => {
+  // Trim trailing spaces from password
+  const trimmedPassword = password.trim();
+  
   const user = await prisma.user.findUnique({ where: { email } }); 
 
   if (!user) {
@@ -107,7 +110,7 @@ export const login = async (
     );
   }
 
-  const passwordValid = await verifyPassword(password, user.password_hash);
+  const passwordValid = await verifyPassword(trimmedPassword, user.password_hash);
 
   if (!passwordValid) {
     throw ServiceError.unauthorized(
@@ -128,7 +131,9 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
   try {
     const { password, roles, ...userDataWithoutPassword } = user;
     
-    const passwordHash = await hashPassword(password);
+    // Trim trailing spaces from password
+    const trimmedPassword = password.trim();
+    const passwordHash = await hashPassword(trimmedPassword);
     
     const roleList = roles.includes('admin') ? ['user', 'admin'] : ['user'];
 
@@ -180,19 +185,23 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
 
 export const updatePassword = async (userId: number, currentPassword: string, newPassword: string): Promise<void> => {
   try {
+    // Trim trailing spaces from passwords
+    const trimmedCurrentPassword = currentPassword.trim();
+    const trimmedNewPassword = newPassword.trim();
+    
     const user = await prisma.user.findUnique({ where: { user_id: userId } });
 
     if (!user) {
       throw ServiceError.notFound('User not found');
     }
 
-    const passwordValid = await verifyPassword(currentPassword, user.password_hash);
+    const passwordValid = await verifyPassword(trimmedCurrentPassword, user.password_hash);
 
     if (!passwordValid) {
       throw ServiceError.unauthorized('Current password is incorrect');
     }
 
-    const newPasswordHash = await hashPassword(newPassword);
+    const newPasswordHash = await hashPassword(trimmedNewPassword);
 
     await prisma.user.update({
       where: { user_id: userId },
