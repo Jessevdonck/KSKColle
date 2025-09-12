@@ -202,8 +202,11 @@ export const getRoundForExport = async (tournamentId, roundId) => {
 };
 
 // Game postpone functions
-export const postponeGame = async (url, { arg: { game_id } }) => {
-  const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { game_id });
+export const postponeGame = async (url, { arg: { game_id, makeup_round_id } }) => {
+  const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { 
+    game_id,
+    ...(makeup_round_id && { makeup_round_id })
+  });
   return data;
 };
 
