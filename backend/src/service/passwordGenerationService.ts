@@ -130,7 +130,7 @@ async function sendPasswordEmail(userId: number, password: string, isNewUser: bo
                 <li>Bewaar je wachtwoord op een veilige plek</li>
                 <li>Verander je wachtwoord na je eerste login</li>
                 <li>Deel je wachtwoord niet met anderen</li>
-                ${isNewUser ? '<li>Je kunt nu inloggen op <a href="http://localhost:3001">http://localhost:3001</a></li>' : ''}
+                ${isNewUser ? '<li>Je kunt nu inloggen op <a href="kskcolle.be">kskcolle.be</a></li>' : ''}
               </ul>
             </div>
             
