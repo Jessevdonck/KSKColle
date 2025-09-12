@@ -9,11 +9,11 @@ type PublicUserInfo = {
   voornaam: string;
   achternaam: string;
   schaakrating_elo: number;
-  rating_difference?: number | null;
-  max_rating?: number | null;
-  fide_id?: number | null;
+  rating_difference?: number | null | undefined;
+  max_rating?: number | null | undefined;
+  fide_id?: number | null | undefined;
   lid_sinds: Date;
-  avatar_url?: string | null;
+  avatar_url?: string | null | undefined;
   roles: any;
 };
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
@@ -321,7 +321,7 @@ getUserByNaam.validationScheme = {
  * @apiError (404) NotFound No user found with the given name.
  * @apiError (500) InternalServerError Server error.
  */
-const getPublicUserByNaam = async (ctx: KoaContext<{ user: PublicUserInfo }>) => {
+const getPublicUserByNaam = async (ctx: KoaContext<PublicUserInfo>) => {
   const voornaam = decodeURIComponent(ctx.query.voornaam as string);
   const achternaam = decodeURIComponent(ctx.query.achternaam as string);
 
