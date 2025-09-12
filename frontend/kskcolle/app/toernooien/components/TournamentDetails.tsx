@@ -19,9 +19,14 @@ type Game = {
 }
 
 type Round = {
-  round_id: number
+  round_id: number | null
   ronde_nummer: number
   games: Game[]
+  ronde_datum?: string | null
+  startuur?: string
+  type?: string
+  label?: string | null
+  is_sevilla_imported?: boolean
 }
 
 
