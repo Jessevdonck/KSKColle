@@ -156,6 +156,9 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
     if (isHerfst) {
       // Voor herfst: alleen de eerstvolgende inhaaldag
       targetRound = makeupRounds[0];
+      if (!targetRound) {
+        throw ServiceError.validationFailed('Geen inhaaldagen beschikbaar voor herfst toernooi');
+      }
       logger.info('Selected target round for herfst', { 
         target_round_id: targetRound.round_id,
         target_round_date: targetRound.ronde_datum
@@ -173,6 +176,9 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
         }
       } else {
         targetRound = makeupRounds[0]; // Gebruik de eerste beschikbare als fallback
+        if (!targetRound) {
+          throw ServiceError.validationFailed('Geen inhaaldagen beschikbaar voor lente toernooi');
+        }
       }
       logger.info('Selected target round for lente', { 
         target_round_id: targetRound.round_id,
@@ -315,8 +321,8 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         data,
-        errorName: error?.name,
-        errorCode: error?.code,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorCode: error instanceof Error ? (error as any).code : 'Unknown',
         errorType: typeof error
       });
     } catch (logError) {
@@ -776,8 +782,8 @@ export async function undoPostponeGame(data: UndoPostponeGameData): Promise<Undo
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         data,
-        errorName: error?.name,
-        errorCode: error?.code,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorCode: error instanceof Error ? (error as any).code : 'Unknown',
         errorType: typeof error
       });
     } catch (logError) {
