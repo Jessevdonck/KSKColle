@@ -24,7 +24,7 @@ type Round = {
   games: Game[]
   ronde_datum?: string | null
   startuur?: string
-  type?: string
+  type: "REGULAR" | "MAKEUP"
   label?: string | null
   is_sevilla_imported?: boolean
 }
@@ -98,7 +98,7 @@ export default function TournamentDetails() {
           const found = rounds.find((x) => x.ronde_nummer === i)
           newTimeline.push({
             kind: "round",
-            round: found ?? { round_id: existingRound.round_id, ronde_nummer: i, games: existingRound.games || [] },
+            round: found ?? { round_id: existingRound.round_id, ronde_nummer: i, games: existingRound.games || [], type: "REGULAR" },
           })
         } else {
           // Non-generated round - create placeholder
@@ -254,7 +254,7 @@ export default function TournamentDetails() {
                 tournamentId={tournamentId}
                 tournamentName={tournament.naam}
                 isHerfst={tournament.naam.toLowerCase().includes('herfst')}
-                participations={tournament.participations}
+                participations={tournament.participations.map(p => ({ user_id: p.user.user_id }))}
                 onGamePostponed={goToRound}
               />
             </div>
