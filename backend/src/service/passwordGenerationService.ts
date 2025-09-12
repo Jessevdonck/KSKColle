@@ -247,12 +247,24 @@ export const createUserWithGeneratedPassword = async (data: CreateUserWithPasswo
     const password = generateSecurePassword();
     const passwordHash = await hashPassword(password);
 
-    // Bepaal rollen
-    const roleList = ['user']; // Everyone gets user role
-    if (data.userData.is_admin) roleList.push('admin');
-    if (data.userData.roles) {
-      if (data.userData.roles.includes('bestuurslid')) roleList.push('bestuurslid');
-      if (data.userData.roles.includes('exlid')) roleList.push('exlid');
+    // Process roles according to the new logic
+    let finalRoles: string[] = [];
+    
+    if (!data.userData.roles || data.userData.roles.length === 0) {
+      // If no roles are selected, default to "user"
+      finalRoles = ["user"];
+    } else if (data.userData.roles.includes("exlid")) {
+      // If "exlid" is selected, only "exlid" role (no other roles)
+      finalRoles = ["exlid"];
+    } else {
+      // If other roles are selected, add them to the array (including "user" if not already present)
+      finalRoles = [...data.userData.roles];
+      if (data.userData.is_admin) {
+        finalRoles.push('admin');
+      }
+      if (!finalRoles.includes("user")) {
+        finalRoles.push("user");
+      }
     }
 
     // Maak gebruiker aan
@@ -262,7 +274,7 @@ export const createUserWithGeneratedPassword = async (data: CreateUserWithPasswo
         ...userDataWithoutBirthdate,
         ...(geboortedatum && { geboortedatum }),
         password_hash: passwordHash,
-        roles: JSON.stringify(roleList),
+        roles: JSON.stringify(finalRoles),
         schaakrating_elo: data.userData.schaakrating_elo ?? 0,
         lid_sinds: data.userData.lid_sinds ?? new Date(),
         adres_land: data.userData.adres_land ?? 'Belgium',

@@ -1,8 +1,9 @@
 import Image from 'next/image'
 import { User } from '../../../data/types'
-import { Mail, Phone, Smartphone, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Mail, Phone, Smartphone, TrendingUp, TrendingDown, Minus, Lock } from 'lucide-react'
 import AvatarUpload from '../../components/AvatarUpload'
 import { useAuth } from '../../contexts/auth'
+import { canViewSensitiveInfo } from '../../../lib/roleUtils'
 import { useState } from 'react'
 
 export default function PlayerHeader({ player }: { player: User }) {
@@ -69,24 +70,35 @@ export default function PlayerHeader({ player }: { player: User }) {
               
               {/* Contact Information */}
               <div className="mt-4 space-y-2">
-                <div className="flex items-center text-gray-600">
-                  <Mail className="h-4 w-4 mr-2 text-mainAccent" />
-                  <span className="text-sm">
-                    {player.email ?? "Onbekend"}
-                  </span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <Smartphone className="h-4 w-4 mr-2 text-mainAccent" />
-                  <span className="text-sm">
-                    {player.tel_nummer && String(player.tel_nummer).trim() !== "" ? String(player.tel_nummer).trim() : "Onbekend"}
-                  </span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <Phone className="h-4 w-4 mr-2 text-mainAccent" />
-                  <span className="text-sm">
-                    {player.vast_nummer && String(player.vast_nummer).trim() !== "" ? String(player.vast_nummer).trim() : "Onbekend"}
-                  </span>
-                </div>
+                {canViewSensitiveInfo(currentUser) ? (
+                  <>
+                    <div className="flex items-center text-gray-600">
+                      <Mail className="h-4 w-4 mr-2 text-mainAccent" />
+                      <span className="text-sm">
+                        {player.email ?? "Onbekend"}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <Smartphone className="h-4 w-4 mr-2 text-mainAccent" />
+                      <span className="text-sm">
+                        {player.tel_nummer && String(player.tel_nummer).trim() !== "" ? String(player.tel_nummer).trim() : "Onbekend"}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <Phone className="h-4 w-4 mr-2 text-mainAccent" />
+                      <span className="text-sm">
+                        {player.vast_nummer && String(player.vast_nummer).trim() !== "" ? String(player.vast_nummer).trim() : "Onbekend"}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center text-gray-500">
+                    <Lock className="h-4 w-4 mr-2 text-gray-400" />
+                    <span className="text-sm italic">
+                      Contactgegevens zijn alleen zichtbaar voor leden
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

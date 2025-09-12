@@ -91,9 +91,27 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
     setError(null);
 
     try {
+      // Process roles according to the new logic
+      let finalRoles: string[] = [];
+      
+      if (!data.roles || data.roles.length === 0) {
+        // If no roles are selected, default to "user"
+        finalRoles = ["user"];
+      } else if (data.roles.includes("exlid")) {
+        // If "exlid" is selected, only "exlid" role (no other roles)
+        finalRoles = ["exlid"];
+      } else {
+        // If other roles are selected, add them to the array (including "user" if not already present)
+        finalRoles = [...data.roles];
+        if (!finalRoles.includes("user")) {
+          finalRoles.push("user");
+        }
+      }
+
       // Clean up data - remove undefined values and empty strings for optional fields
       const cleanData = {
         ...data,
+        roles: finalRoles,
         schaakrating_elo: data.schaakrating_elo || undefined,
         fide_id: data.fide_id || undefined,
         vast_nummer: data.vast_nummer || undefined,
@@ -325,6 +343,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
             <Checkbox
               id="is_admin"
               checked={watch("roles").includes("admin")}
+              disabled={watch("roles").includes("exlid")}
               onCheckedChange={(checked) => {
                 const currentRoles = getValues("roles")
                 if (checked) {
@@ -338,7 +357,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
               }}
               data-cy="create_user_is_admin_checkbox"
             />
-            <Label htmlFor="is_admin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <Label htmlFor="is_admin" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
               <Shield className="h-3 w-3" />
               Admin Gebruiker
             </Label>
@@ -348,6 +367,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
             <Checkbox
               id="is_bestuurslid"
               checked={watch("roles").includes("bestuurslid")}
+              disabled={watch("roles").includes("exlid")}
               onCheckedChange={(checked) => {
                 const currentRoles = getValues("roles")
                 if (checked) {
@@ -361,7 +381,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
               }}
               data-cy="create_user_is_bestuurslid_checkbox"
             />
-            <Label htmlFor="is_bestuurslid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <Label htmlFor="is_bestuurslid" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
               <Building className="h-3 w-3" />
               Bestuurslid
             </Label>
@@ -372,14 +392,12 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
               id="is_exlid"
               checked={watch("roles").includes("exlid")}
               onCheckedChange={(checked) => {
-                const currentRoles = getValues("roles")
                 if (checked) {
-                  setValue("roles", [...currentRoles, "exlid"])
+                  // If exlid is checked, clear all other roles
+                  setValue("roles", ["exlid"])
                 } else {
-                  setValue(
-                    "roles",
-                    currentRoles.filter((role) => role !== "exlid"),
-                  )
+                  // If exlid is unchecked, remove it from roles
+                  setValue("roles", [])
                 }
               }}
               data-cy="create_user_is_exlid_checkbox"

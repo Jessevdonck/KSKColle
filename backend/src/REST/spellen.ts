@@ -147,6 +147,7 @@ removeSpel.validationScheme = {
  * @api {get} /spel/speler/:id Get all spellen by player ID
  * @apiName GetSpellenByPlayerId
  * @apiGroup Spel
+ * @apiPermission authenticated
  * @apiParam {Number} id The ID of the player.
  * 
  * @apiSuccess {Object[]} items List of spellen for the given player.
@@ -175,6 +176,36 @@ getSpellenByPlayerId.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /spel/speler/:id/public Get all public spellen by player ID
+ * @apiName GetPublicSpellenByPlayerId
+ * @apiGroup Spel
+ * @apiParam {Number} id The ID of the player.
+ * 
+ * @apiSuccess {Object[]} items List of public spellen for the given player.
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (404) NotFound No spellen found for the given player.
+ */
+const getPublicSpellenByPlayerId = async (ctx: KoaContext<GetAllSpellenResponse, IdParams>) => {
+  const playerId = Number(ctx.params.id);
+  const spellen = await spellenService.getSpellenByPlayerId(playerId);
+
+  if (!spellen || spellen.length === 0) {
+    ctx.status = 404;
+    return;
+  }
+
+  ctx.body = {
+    items: spellen,
+  };
+};
+
+getPublicSpellenByPlayerId.validationScheme = {
+  params: {
+    id: Joi.number().integer().positive(),
+  },
+};
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/spel',
@@ -185,6 +216,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/', requireAuthentication, validate(getAllSpellen.validationScheme), getAllSpellen);
   router.get('/:id', requireAuthentication, validate(getSpelById.validationScheme), getSpelById);
   router.get('/speler/:id', requireAuthentication, validate(getSpellenByPlayerId.validationScheme),getSpellenByPlayerId);
+  router.get('/speler/:id/public', validate(getPublicSpellenByPlayerId.validationScheme), getPublicSpellenByPlayerId);
   router.post('/', requireAuthentication, requireAdmin, validate(createSpel.validationScheme), createSpel);
   router.put('/:id', requireAuthentication, requireAdmin, validate(updateSpel.validationScheme), updateSpel);
   router.delete('/:id', requireAuthentication, requireAdmin, validate(removeSpel.validationScheme), removeSpel);

@@ -439,6 +439,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 <Checkbox
                   id="isAdmin"
                   checked={watch("roles").includes("admin")}
+                  disabled={watch("roles").includes("exlid")}
                   onCheckedChange={(checked) => {
                     const currentRoles = getValues("roles")
                     const updatedRoles = parseRoles(currentRoles)
@@ -453,7 +454,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                   }}
                   className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
                 />
-                <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Label htmlFor="isAdmin" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
                   <Shield className="h-3 w-3" />
                   Is Admin
                 </Label>
@@ -463,6 +464,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                 <Checkbox
                   id="isBestuurslid"
                   checked={watch("roles").includes("bestuurslid")}
+                  disabled={watch("roles").includes("exlid")}
                   onCheckedChange={(checked) => {
                     const currentRoles = getValues("roles")
                     const updatedRoles = parseRoles(currentRoles)
@@ -477,7 +479,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                   }}
                   className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
                 />
-                <Label htmlFor="isBestuurslid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Label htmlFor="isBestuurslid" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
                   <Building className="h-3 w-3" />
                   Bestuurslid
                 </Label>
@@ -488,15 +490,14 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                   id="isExlid"
                   checked={watch("roles").includes("exlid")}
                   onCheckedChange={(checked) => {
-                    const currentRoles = getValues("roles")
-                    const updatedRoles = parseRoles(currentRoles)
                     if (checked) {
-                      setValue("roles", [...updatedRoles, "exlid"])
+                      // If exlid is checked, clear all other roles
+                      setValue("roles", ["exlid"])
                     } else {
-                      setValue(
-                        "roles",
-                        updatedRoles.filter((role) => role !== "exlid"),
-                      )
+                      // If exlid is unchecked, remove it from roles
+                      const currentRoles = getValues("roles")
+                      const updatedRoles = parseRoles(currentRoles)
+                      setValue("roles", updatedRoles.filter((role) => role !== "exlid"))
                     }
                   }}
                   className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"

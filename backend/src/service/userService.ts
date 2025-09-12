@@ -135,18 +135,29 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
     const trimmedPassword = password.trim();
     const passwordHash = await hashPassword(trimmedPassword);
     
-    // Build role list based on selected roles
-    const roleList = ['user']; // Everyone gets user role
-    if (roles.includes('admin')) roleList.push('admin');
-    if (roles.includes('bestuurslid')) roleList.push('bestuurslid');
-    if (roles.includes('exlid')) roleList.push('exlid');
+    // Process roles according to the new logic
+    let finalRoles: string[] = [];
+    
+    if (!roles || roles.length === 0) {
+      // If no roles are selected, default to "user"
+      finalRoles = ["user"];
+    } else if (roles.includes("exlid")) {
+      // If "exlid" is selected, only "exlid" role (no other roles)
+      finalRoles = ["exlid"];
+    } else {
+      // If other roles are selected, add them to the array (including "user" if not already present)
+      finalRoles = [...roles];
+      if (!finalRoles.includes("user")) {
+        finalRoles.push("user");
+      }
+    }
 
     const createdUser = await prisma.user.create({
       data: {
         ...userDataWithoutPassword,
         schaakrating_elo: user.schaakrating_elo ?? 0,
         password_hash: passwordHash,
-        roles: JSON.stringify(roleList),
+        roles: JSON.stringify(finalRoles),
       },
     });
     
@@ -171,19 +182,28 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
   try {
     const { roles, ...userDataWithoutPassword } = changes;
     
-    // Build role list based on selected roles
-    const roleList = ['user']; // Everyone gets user role
-    if (roles) {
-      if (roles.includes('admin')) roleList.push('admin');
-      if (roles.includes('bestuurslid')) roleList.push('bestuurslid');
-      if (roles.includes('exlid')) roleList.push('exlid');
+    // Process roles according to the new logic
+    let finalRoles: string[] = [];
+    
+    if (!roles || roles.length === 0) {
+      // If no roles are selected, default to "user"
+      finalRoles = ["user"];
+    } else if (roles.includes("exlid")) {
+      // If "exlid" is selected, only "exlid" role (no other roles)
+      finalRoles = ["exlid"];
+    } else {
+      // If other roles are selected, add them to the array (including "user" if not already present)
+      finalRoles = [...roles];
+      if (!finalRoles.includes("user")) {
+        finalRoles.push("user");
+      }
     }
 
     const user = await prisma.user.update({
       where: { user_id },
       data: {
         ...userDataWithoutPassword,
-        roles: JSON.stringify(roleList),
+        roles: JSON.stringify(finalRoles),
       },
     });
 

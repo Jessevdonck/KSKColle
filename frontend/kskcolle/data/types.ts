@@ -25,6 +25,7 @@ export interface User {
   adres_land: string;   
   vast_nummer?: string;
   avatar_url?: string;
+  roles?: string[];
 }
 
 export interface PasswordResetRequest {

@@ -256,6 +256,7 @@ updatePassword.validationScheme = {
  * @api {get} /users/by-name Get user by first name and last name
  * @apiName GetUserByNaam
  * @apiGroup User
+ * @apiPermission authenticated
  * 
  * @apiQuery {String} voornaam First name of the user.
  * @apiQuery {String} achternaam Last name of the user.
@@ -287,6 +288,61 @@ const getUserByNaam = async (ctx: KoaContext<GetUserByNaamResponse>) => {
   }
 };
 getUserByNaam.validationScheme = {
+  query: {
+    voornaam: Joi.string(),
+    achternaam: Joi.string(),
+  },
+};
+
+/**
+ * @api {get} /users/by-name/public Get public user by first name and last name
+ * @apiName GetPublicUserByNaam
+ * @apiGroup User
+ * 
+ * @apiQuery {String} voornaam First name of the user.
+ * @apiQuery {String} achternaam Last name of the user.
+ * 
+ * @apiSuccess {Object} user Public user object with matching name (no sensitive info).
+ * @apiError (400) BadRequest Invalid query parameters provided.
+ * @apiError (404) NotFound No user found with the given name.
+ * @apiError (500) InternalServerError Server error.
+ */
+const getPublicUserByNaam = async (ctx: KoaContext<GetUserByNaamResponse>) => {
+  const voornaam = decodeURIComponent(ctx.query.voornaam as string);
+  const achternaam = decodeURIComponent(ctx.query.achternaam as string);
+
+  if (!voornaam || !achternaam) {
+    ctx.status = 400;
+    return;
+  }
+
+  try {
+    const user = await userService.getUserByNaam(voornaam, achternaam);
+    if (user) {
+      // Return only public information
+      const publicUser = {
+        user_id: user.user_id,
+        voornaam: user.voornaam,
+        achternaam: user.achternaam,
+        schaakrating_elo: user.schaakrating_elo,
+        schaakrating_difference: user.schaakrating_difference,
+        schaakrating_max: user.schaakrating_max,
+        fide_id: user.fide_id,
+        is_youth: user.is_youth,
+        lid_sinds: user.lid_sinds,
+        avatar_url: user.avatar_url,
+        roles: user.roles
+      };
+      ctx.body = publicUser;
+    } else {
+      ctx.status = 404;
+    }
+  } catch (error) {
+    console.error('Error in getPublicUserByNaam:', error);
+    ctx.status = 500;
+  }
+};
+getPublicUserByNaam.validationScheme = {
   query: {
     voornaam: Joi.string(),
     achternaam: Joi.string(),
@@ -345,6 +401,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/publicUsers', validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
   router.post('/', requireAuthentication, makeRequireRole('admin'), authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), getUserByNaam);
+  router.get('/by-name/public', validate(getPublicUserByNaam.validationScheme), getPublicUserByNaam);
   router.get('/:id', requireAuthentication, validate(getUserById.validationScheme), checkUserId, getUserById);
   router.put('/:id', requireAuthentication, makeRequireRole('admin'), validate(updateUser.validationScheme), checkUserIdAdmin, updateUser);
   router.put('/:id/password', requireAuthentication, validate(updatePassword.validationScheme), checkUserId, updatePassword);
