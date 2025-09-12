@@ -117,18 +117,18 @@ export const getUsersWithLidgeldStatus = async () => {
  * Check if user has valid membership (either lidgeld or bondslidgeld paid and not expired)
  */
 export const isUserMember = (user: {
-  lidgeld_betaald: boolean;
+  lidgeld_betaald: boolean | null | undefined;
   lidgeld_periode_eind?: Date | null;
-  bondslidgeld_betaald: boolean;
+  bondslidgeld_betaald: boolean | null | undefined;
   bondslidgeld_periode_eind?: Date | null;
 }): boolean => {
   const now = new Date();
   
-  const lidgeldValid = user.lidgeld_betaald && 
+  const lidgeldValid = user.lidgeld_betaald === true && 
     user.lidgeld_periode_eind && 
     user.lidgeld_periode_eind > now;
     
-  const bondslidgeldValid = user.bondslidgeld_betaald && 
+  const bondslidgeldValid = user.bondslidgeld_betaald === true && 
     user.bondslidgeld_periode_eind && 
     user.bondslidgeld_periode_eind > now;
     
@@ -139,9 +139,9 @@ export const isUserMember = (user: {
  * Get membership status for a user
  */
 export const getMembershipStatus = (user: {
-  lidgeld_betaald: boolean;
+  lidgeld_betaald: boolean | null | undefined;
   lidgeld_periode_eind?: Date | null;
-  bondslidgeld_betaald: boolean;
+  bondslidgeld_betaald: boolean | null | undefined;
   bondslidgeld_periode_eind?: Date | null;
 }): {
   isMember: boolean;
@@ -151,11 +151,11 @@ export const getMembershipStatus = (user: {
 } => {
   const now = new Date();
   
-  const lidgeldValid = user.lidgeld_betaald && 
+  const lidgeldValid = user.lidgeld_betaald === true && 
     user.lidgeld_periode_eind && 
     user.lidgeld_periode_eind > now;
     
-  const bondslidgeldValid = user.bondslidgeld_betaald && 
+  const bondslidgeldValid = user.bondslidgeld_betaald === true && 
     user.bondslidgeld_periode_eind && 
     user.bondslidgeld_periode_eind > now;
     
