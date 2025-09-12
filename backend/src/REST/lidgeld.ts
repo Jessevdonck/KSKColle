@@ -50,7 +50,7 @@ getLidgeldStatus.validationScheme = null;
  * @apiError (403) Forbidden You don't have access to this resource.
  * @apiError (404) NotFound User not found.
  */
-const updateLidgeldStatus = async (ctx: KoaContext<void, IdParams, any>) => {
+const updateLidgeldStatus = async (ctx: KoaContext<{ message: string }, IdParams, any>) => {
   try {
     const userId = Number(ctx.params.id);
     const data = ctx.request.body;
