@@ -124,13 +124,13 @@ export const isUserMember = (user: {
 }): boolean => {
   const now = new Date();
   
-  const lidgeldValid = user.lidgeld_betaald === true && 
+  const lidgeldValid = Boolean(user.lidgeld_betaald === true && 
     user.lidgeld_periode_eind && 
-    user.lidgeld_periode_eind > now;
+    user.lidgeld_periode_eind > now);
     
-  const bondslidgeldValid = user.bondslidgeld_betaald === true && 
+  const bondslidgeldValid = Boolean(user.bondslidgeld_betaald === true && 
     user.bondslidgeld_periode_eind && 
-    user.bondslidgeld_periode_eind > now;
+    user.bondslidgeld_periode_eind > now);
     
   return lidgeldValid || bondslidgeldValid;
 };
@@ -151,13 +151,13 @@ export const getMembershipStatus = (user: {
 } => {
   const now = new Date();
   
-  const lidgeldValid = user.lidgeld_betaald === true && 
+  const lidgeldValid = Boolean(user.lidgeld_betaald === true && 
     user.lidgeld_periode_eind && 
-    user.lidgeld_periode_eind > now;
+    user.lidgeld_periode_eind > now);
     
-  const bondslidgeldValid = user.bondslidgeld_betaald === true && 
+  const bondslidgeldValid = Boolean(user.bondslidgeld_betaald === true && 
     user.bondslidgeld_periode_eind && 
-    user.bondslidgeld_periode_eind > now;
+    user.bondslidgeld_periode_eind > now);
     
   const isMember = lidgeldValid || bondslidgeldValid;
   
