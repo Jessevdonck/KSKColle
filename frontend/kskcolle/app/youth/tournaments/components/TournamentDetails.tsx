@@ -18,9 +18,14 @@ type Game = {
 }
 
 type Round = {
-  round_id: number
+  round_id: number | null
   ronde_nummer: number
   games: Game[]
+  ronde_datum?: string | null
+  startuur?: string
+  type: "REGULAR" | "MAKEUP"
+  label?: string | null
+  is_sevilla_imported?: boolean
 }
 
 type MakeupDay = {
@@ -91,7 +96,7 @@ export default function TournamentDetails() {
         const found = rounds.find((x) => x.ronde_nummer === r)
         newTimeline.push({
           kind: "round",
-          round: found ?? { round_id: 0, ronde_nummer: r, games: [] },
+          round: found ?? { round_id: 0, ronde_nummer: r, games: [], type: "REGULAR" },
         })
 
         // Makeup days after round r
@@ -141,7 +146,10 @@ export default function TournamentDetails() {
   }
 
   const currentEntry = timeline[currentIndex]
-  const rounds: Round[] = tournament?.rounds || []
+  const rounds: Round[] = (tournament?.rounds || []).map(round => ({
+    ...round,
+    type: round.type || "REGULAR" as "REGULAR" | "MAKEUP"
+  }))
 
   // Loading state
   if (tournamentLoading) {
