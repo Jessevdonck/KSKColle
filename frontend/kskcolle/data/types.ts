@@ -71,6 +71,7 @@ export interface CreateUserRequest {
   adres_postcode?: string;
   adres_gemeente?: string;
   adres_land?: string;
+  roles?: string[];
 }
 
 export interface CalendarEvent {
