@@ -66,7 +66,7 @@ export function GameCard({ game, playerId }: GameCardProps) {
 }
 
 function getGameResult(game: GameWithRoundAndTournament, playerId: number): string {
-  if (!game.result) return 'N/A'
+  if (!game.result) return 'Moet nog gespeeld worden'
   if (game.result === '½-½') return '½-½'
   if (
     (game.result === '1-0' && game.speler1_id === playerId) ||
@@ -85,6 +85,8 @@ function getResultColor(result: string): string {
       return 'text-red-600'
     case '½-½':
       return 'text-yellow-600'
+    case 'Moet nog gespeeld worden':
+      return 'text-blue-600'
     default:
       return 'text-muted-foreground'
   }
