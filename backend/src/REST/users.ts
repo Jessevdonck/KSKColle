@@ -2,6 +2,20 @@ import Router from '@koa/router';
 import * as userService from '../service/userService';
 import * as passwordGenerationService from '../service/passwordGenerationService';
 import type { User, GetUserByIdResponse, UpdateUserResponse, UpdateUserRequest, GetUserRequest, GetAllUserResponse, PublicUser,GetAllPublicUserResponse, GetUserByNaamResponse, LoginResponse, RegisterUserRequest, UpdatePasswordRequest, UpdatePasswordResponse } from '../types/user';
+
+// Type for public user information (without sensitive data)
+type PublicUserInfo = {
+  user_id: number;
+  voornaam: string;
+  achternaam: string;
+  schaakrating_elo: number;
+  rating_difference?: number | null;
+  max_rating?: number | null;
+  fide_id?: number | null;
+  lid_sinds: Date;
+  avatar_url?: string | null;
+  roles: any;
+};
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 import Joi from 'joi';
@@ -307,7 +321,7 @@ getUserByNaam.validationScheme = {
  * @apiError (404) NotFound No user found with the given name.
  * @apiError (500) InternalServerError Server error.
  */
-const getPublicUserByNaam = async (ctx: KoaContext<GetUserByNaamResponse>) => {
+const getPublicUserByNaam = async (ctx: KoaContext<{ user: PublicUserInfo }>) => {
   const voornaam = decodeURIComponent(ctx.query.voornaam as string);
   const achternaam = decodeURIComponent(ctx.query.achternaam as string);
 
