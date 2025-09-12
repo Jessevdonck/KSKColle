@@ -115,6 +115,16 @@ export default function Navbar() {
                   <span>Reglementen</span>
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <a href="https://www.demercatel.be/oost-vlaamseinterclub/" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                  <span>Oost-Vlaamse Interclub</span>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <a href="https://interclub.web.app/" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                  <span>Interclub</span>
+                </a>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -163,6 +173,11 @@ export default function Navbar() {
                     <span>Sponsoring OVJK 2025</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <a href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                    <span>Vlaams Jeugdschaakcriterium</span>
+                  </a>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -207,8 +222,18 @@ export default function Navbar() {
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <a href="https://blog.frbe-kbsb-ksb.be/nl/kalender/" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                    <span>KBSB Toernooien</span>
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
                   <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="flex items-center">
                     <span>FIDE</span>
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:cursor-pointer">
+                  <a href="https://www.vlaamseschaakfederatie.be/" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                    <span>VSF</span>
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -324,6 +349,24 @@ export default function Navbar() {
                   >
                     Reglementen
                   </Link>
+                  <a
+                    href="https://www.demercatel.be/oost-vlaamseinterclub/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Oost-Vlaamse Interclub
+                  </a>
+                  <a
+                    href="https://interclub.web.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Interclub
+                  </a>
                 </div>
               )}
             </div>
@@ -389,6 +432,15 @@ export default function Navbar() {
                   >
                     Sponsoring OVJK 2025
                   </Link>
+                  <a
+                    href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Vlaams Jeugdschaakcriterium
+                  </a>
                 </div>
               )}
             </div>
@@ -454,6 +506,15 @@ export default function Navbar() {
                     KBSB
                   </a>
                   <a
+                    href="https://blog.frbe-kbsb-ksb.be/nl/kalender/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    KBSB Toernooien
+                  </a>
+                  <a
                     href="https://www.fide.com/"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -461,6 +522,15 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     FIDE
+                  </a>
+                  <a
+                    href="https://www.vlaamseschaakfederatie.be/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    VSF
                   </a>
                   <a
                     href="https://www.schaakligaoostvlaanderen.be/"
