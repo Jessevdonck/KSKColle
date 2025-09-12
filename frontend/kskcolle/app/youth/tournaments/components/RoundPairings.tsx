@@ -112,12 +112,12 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
                 <td className="p-3 text-center">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      game.result && game.result !== "not_played"
+                      game.result && game.result !== "not_played" && game.result !== "..."
                         ? "bg-green-100 text-green-800 border border-green-200"
                         : "bg-gray-100 text-gray-600 border border-gray-200"
                     }`}
                   >
-                    {game.result && game.result !== "not_played" ? game.result : "Nog te spelen"}
+                    {game.result && game.result !== "not_played" && game.result !== "..." ? game.result : "Nog te spelen"}
                   </span>
                 </td>
               </tr>

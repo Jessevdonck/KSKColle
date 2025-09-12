@@ -396,7 +396,7 @@ function MakeupPairings({ round, games, onGameUndone }: { round: any; games: Gam
 
 
   const getByeText = (result: string | null) => {
-    if (!result) return "Bye"
+    if (!result || result === "...") return "Nog te spelen"
     
     // Check if it's an absent with message result (ABS-0.5, ABS-1, etc.)
     if (result.startsWith("ABS-")) {
@@ -504,12 +504,12 @@ function MakeupPairings({ round, games, onGameUndone }: { round: any; games: Gam
                     <div className="flex items-center justify-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          g.result && g.result !== "not_played"
+                          g.result && g.result !== "not_played" && g.result !== "..."
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-gray-100 text-gray-600 border border-gray-200"
                         }`}
                       >
-                        {g.result && g.result !== "not_played" ? g.result : "Nog te spelen"}
+                        {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "Nog te spelen"}
                       </span>
                       <button
                         onClick={() => handleUndoPostpone(g.game_id)}

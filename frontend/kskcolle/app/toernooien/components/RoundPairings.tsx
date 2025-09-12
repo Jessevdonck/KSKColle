@@ -21,7 +21,7 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
   }
 
   const getByeText = (result: string | null) => {
-    if (!result) return "Bye"
+    if (!result || result === "...") return "Nog te spelen"
     
     // Check if it's an absent with message result (ABS-0.5, ABS-1, etc.)
     if (result.startsWith("ABS-")) {
@@ -141,14 +141,14 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       game.uitgestelde_datum && !game.result
                         ? "bg-amber-100 text-amber-800 border border-amber-200"
-                        : game.result && game.result !== "not_played"
+                        : game.result && game.result !== "not_played" && game.result !== "..."
                         ? "bg-green-100 text-green-800 border border-green-200"
                         : "bg-gray-100 text-gray-600 border border-gray-200"
                     }`}
                   >
                     {game.uitgestelde_datum && !game.result
                       ? "Uitgesteld"
-                      : game.result && game.result !== "not_played"
+                      : game.result && game.result !== "not_played" && game.result !== "..."
                       ? game.result
                       : "Nog te spelen"}
                   </span>

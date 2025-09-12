@@ -32,6 +32,12 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
   const [postponing, setPostponing] = useState<number | null>(null)
   const [selectedMD, setSelectedMD] = useState<number | "">("")
 
+  // Check if a game is actually played (not just placeholder values)
+  const isGamePlayed = (result: string | null) => {
+    if (!result) return false
+    return result !== "..." && result !== "not_played" && result !== "null"
+  }
+
   const handleResultChange = async (gameId: number, result: string) => {
     await saveGame({ id: gameId, result })
     onUpdateGame()
@@ -61,6 +67,7 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
       case "0-0":
         return <Minus className="h-3 w-3 text-blue-500" />
       case "not_played":
+      case "...":
       case null:
         return <XCircle className="h-3 w-3 text-gray-400" />
       default:
@@ -81,6 +88,7 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
       case "0-0":
         return "bg-blue-100 text-blue-800 border-blue-200"
       case "not_played":
+      case "...":
       case null:
         return "bg-gray-100 text-gray-600 border-gray-200"
       default:
@@ -171,7 +179,7 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
               </div>
 
               {/* Postpone Button */}
-              {!game.uitgestelde_datum && (
+              {!game.uitgestelde_datum && !isGamePlayed(game.result) && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -188,7 +196,7 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
           {/* Result Status */}
           <div className="mt-2 flex justify-start sm:justify-end">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getResultColor(game.result)}`}>
-            {game.result === "not_played" || !game.result ? "Nog te spelen" : 
+            {game.result === "not_played" || game.result === "..." || !game.result ? "Nog te spelen" : 
              game.result === "1-0FF" ? "Zwart forfait" :
              game.result === "0-1FF" ? "Wit forfait" :
              game.result === "0-0" ? "Scheidsrechterlijke beslissing" :

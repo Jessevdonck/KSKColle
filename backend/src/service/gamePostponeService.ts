@@ -102,7 +102,13 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
       uitgestelde_datum: game.uitgestelde_datum 
     });
     
-    if (game.result) {
+    // Game is gespeeld als er een geldig resultaat is (niet null, "...", of "not_played")
+    const isPlayed = game.result && 
+                     game.result !== "..." && 
+                     game.result !== "not_played" &&
+                     game.result !== "null";
+    
+    if (isPlayed) {
       throw ServiceError.validationFailed('Deze partij is al gespeeld en kan niet meer uitgesteld worden');
     }
 
@@ -561,12 +567,22 @@ export async function getPostponableGames(user_id: number, tournament_id: number
         round: {
           tournament_id: tournament_id
         },
-        OR: [
-          { speler1_id: user_id },
-          { speler2_id: user_id }
-        ],
-        result: null, // Alleen ongespeelde games
-        uitgestelde_datum: null // Alleen niet-uitgestelde games
+        AND: [
+          {
+            OR: [
+              { speler1_id: user_id },
+              { speler2_id: user_id }
+            ]
+          },
+          {
+            OR: [
+              { result: null }, // Geen resultaat
+              { result: "..." }, // Sevilla placeholder voor ongespeelde games
+              { result: "not_played" } // Andere placeholder waarden
+            ]
+          },
+          { uitgestelde_datum: null } // Alleen niet-uitgestelde games
+        ]
       },
       include: {
         speler1: true,
