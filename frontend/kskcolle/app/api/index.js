@@ -224,3 +224,14 @@ export const getAvailableMakeupRounds = async (tournamentId, isHerfst) => {
   const { data } = await axios.get(`${baseUrl}/tournamentRounds/available-makeup-rounds?tournament_id=${tournamentId}&is_herfst=${isHerfst}`);
   return data.rounds;
 };
+
+// Lidgeld functions
+export const getLidgeldStatus = async () => {
+  const { data } = await axios.get(`${baseUrl}/lidgeld`);
+  return data.users;
+};
+
+export const updateLidgeldStatus = async (userId, data) => {
+  const response = await axios.put(`${baseUrl}/lidgeld/${userId}`, data);
+  return response.data;
+};

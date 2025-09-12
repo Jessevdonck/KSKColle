@@ -9,12 +9,17 @@ import TournamentsManagement from "../Tournaments/TournamentsManagement"
 import CalendarManagement from "../Calendar/CalendarManagement"
 import SevillaImportPage from "../SevillaImport/page"
 import ColorSettings from "../Settings/ColorSettings"
-import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload, Palette } from "lucide-react"
+import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload, Palette, Euro } from "lucide-react"
 import { getAll } from "../../api/index"
+import { useAuth } from "../../contexts/auth"
+import { isAdmin } from "@/lib/roleUtils"
+import { isBoardMember } from "@/lib/roleUtils"
+import Link from "next/link"
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [isClient, setIsClient] = useState(false)
+  const { user: currentUser } = useAuth()
 
   // 1) Haal gebruikers op
   const { data: users = [] } = useSWR("users", () => getAll("users"))
@@ -23,6 +28,9 @@ const AdminPage = () => {
   // 3) Haal calendar events op 
   const { data: events = [] } = useSWR("calendar", () => getAll("calendar"));
 
+  // Check if user has admin or bestuurslid role
+  const hasAccess = currentUser && (isAdmin(currentUser) || isBoardMember(currentUser))
+
   const today = new Date()
   const upcomingEventsCount = events.filter((ev: { date: string }) => {
     // ev.date is bv "2025-06-17T00:00:00.000Z"
@@ -30,20 +38,41 @@ const AdminPage = () => {
   }).length
 
   const tabs = [
-    { value: "dashboard", label: "Dashboard", icon: BarChart3 },
-    { value: "users", label: "Leden", icon: Users },
-    { value: "tournaments", label: "Toernooien", icon: Trophy },
-    { value: "calendar", label: "Kalender", icon: CalendarDays },
-    { value: "sevilla", label: "Sevilla Import", icon: Upload },
-    { value: "settings", label: "Instellingen", icon: Palette },
-  ]
+    { value: "dashboard", label: "Dashboard", icon: BarChart3, adminOnly: false },
+    { value: "users", label: "Leden", icon: Users, adminOnly: true },
+    { value: "lidgeld", label: "Lidgeld", icon: Euro, adminOnly: false },
+    { value: "tournaments", label: "Toernooien", icon: Trophy, adminOnly: true },
+    { value: "calendar", label: "Kalender", icon: CalendarDays, adminOnly: true },
+    { value: "sevilla", label: "Sevilla Import", icon: Upload, adminOnly: true },
+    { value: "settings", label: "Instellingen", icon: Palette, adminOnly: true },
+  ].filter(tab => {
+    // Bestuursleden zien alleen dashboard en lidgeld
+    if (currentUser && isBoardMember(currentUser) && !isAdmin(currentUser)) {
+      return !tab.adminOnly
+    }
+    // Admins zien alles
+    return !tab.adminOnly || (currentUser && isAdmin(currentUser))
+  })
+
+  // Debug logging
+  console.log('AdminPage Debug:', {
+    currentUser,
+    roles: currentUser?.roles,
+    rolesType: typeof currentUser?.roles,
+    isAdmin: currentUser ? isAdmin(currentUser) : false,
+    isBoardMember: currentUser ? isBoardMember(currentUser) : false,
+    hasAccess,
+    availableTabs: tabs.map(t => t.value),
+    token: typeof window !== "undefined" ? localStorage.getItem("jwtToken") : null
+  })
 
   useEffect(() => {
     setIsClient(true)
 
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1)
-      if (["dashboard", "users", "tournaments", "calendar", "sevilla"].includes(hash)) {
+      const availableTabs = tabs.map(tab => tab.value)
+      if (availableTabs.includes(hash)) {
         setActiveTab(hash)
       }
     }
@@ -69,6 +98,29 @@ const AdminPage = () => {
         <div className="bg-white rounded-xl shadow-lg p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Dashboard wordt geladen...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <Shield className="h-8 w-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Toegang geweigerd</h2>
+          <p className="text-gray-600">Je hebt geen toegang tot het admin dashboard.</p>
+          <div className="mt-4 p-4 bg-gray-100 rounded text-left text-sm">
+            <p><strong>Debug info:</strong></p>
+            <p>Current user: {currentUser ? 'Logged in' : 'Not logged in'}</p>
+            <p>Roles: {currentUser?.roles ? JSON.stringify(currentUser.roles) : 'No roles'}</p>
+            <p>Roles type: {typeof currentUser?.roles}</p>
+            <p>Is Admin: {currentUser ? isAdmin(currentUser) : 'N/A'}</p>
+            <p>Is Board Member: {currentUser ? isBoardMember(currentUser) : 'N/A'}</p>
+            <p>Token exists: {typeof window !== "undefined" ? (localStorage.getItem("jwtToken") ? 'Yes' : 'No') : 'N/A'}</p>
+          </div>
         </div>
       </div>
     )
@@ -107,7 +159,7 @@ const AdminPage = () => {
             <div className="p-6">
               {/* Desktop Navigation */}
               <div className="hidden lg:block">
-                <TabsList className="grid w-full grid-cols-6 gap-2 bg-neutral-100 p-2 rounded-lg">
+                <TabsList className={`grid w-full grid-cols-${tabs.length} gap-2 bg-neutral-100 p-2 rounded-lg`}>
                   {tabs.map((tab) => {
                     const Icon = tab.icon
                     return (
@@ -221,6 +273,20 @@ const AdminPage = () => {
           {/* Andere tabs */}
           <TabsContent value="users" className="mt-0">
             <UsersManagement />
+          </TabsContent>
+          <TabsContent value="lidgeld" className="mt-0">
+            <Link href="/admin/lidgeld">
+              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Euro className="h-8 w-8 text-mainAccent" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Lidgeld Beheer</h3>
+                <p className="text-gray-600 mb-4">Beheer lidgeld en bondslidgeld betalingen</p>
+                <button className="bg-mainAccent text-white px-6 py-2 rounded-lg hover:bg-mainAccentDark transition-colors">
+                  Open Lidgeld Beheer
+                </button>
+              </div>
+            </Link>
           </TabsContent>
           <TabsContent value="tournaments" className="mt-0">
             <TournamentsManagement />

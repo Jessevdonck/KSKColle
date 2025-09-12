@@ -38,6 +38,8 @@ export default function ProfileDropdown() {
 
   const roles = parseRoles(user?.roles);
   const isAdmin = roles.includes('admin');
+  const isBoardMember = roles.includes('bestuurslid');
+  const hasAdminAccess = isAdmin || isBoardMember;
 
   return (
     <DropdownMenu>
@@ -63,7 +65,7 @@ export default function ProfileDropdown() {
           <User className="mr-2 h-4 w-4" />
           <span>Profiel bekijken</span>
         </DropdownMenuItem>
-        {isAdmin && (
+        {hasAdminAccess && (
           <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/admin')}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Adminpaneel</span>

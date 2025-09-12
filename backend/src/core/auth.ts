@@ -18,10 +18,12 @@ export const requireAuthentication = async (ctx: KoaContext, next: Next) => {
   return next(); 
 };
 
-export const makeRequireRole = (role: string) => async (ctx: KoaContext, next: Next) => {
+export const makeRequireRole = (role: string | string[]) => async (ctx: KoaContext, next: Next) => {
   const { roles = [] } = ctx.state.session; 
 
-  if (!roles.includes(role)) {
+  const requiredRoles = Array.isArray(role) ? role : [role];
+  
+  if (!requiredRoles.some(r => roles.includes(r))) {
     ctx.throw(403, 'You are not allowed to view this part of the application', { code: 'FORBIDDEN' });
   }
 

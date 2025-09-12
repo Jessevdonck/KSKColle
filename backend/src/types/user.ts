@@ -25,12 +25,19 @@ export type User = {
   adres_gemeente?: string | null;
   adres_land?: string | null;
   avatar_url?: string | null;
+  // Lidgeld status
+  lidgeld_betaald: boolean;
+  lidgeld_periode_start?: Date | null;
+  lidgeld_periode_eind?: Date | null;
+  bondslidgeld_betaald: boolean;
+  bondslidgeld_periode_start?: Date | null;
+  bondslidgeld_periode_eind?: Date | null;
 };
 
-export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles" | "avatar_url"> {}
+export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles" | "avatar_url" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind"> {}
 
 
-export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password" | "roles" | "adres_straat" | "adres_nummer" | "adres_bus" | "adres_postcode" | "adres_gemeente" | "adres_land">> {}
+export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "tel_nummer" | "vast_nummer" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password" | "roles" | "adres_straat" | "adres_nummer" | "adres_bus" | "adres_postcode" | "adres_gemeente" | "adres_land" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind">> {}
 
 export type UserCreateInput = {
   voornaam: string;
@@ -52,7 +59,14 @@ export type UserCreateInput = {
   adres_bus: string;          
   adres_postcode: string;      
   adres_gemeente: string;       
-  adres_land: string;  
+  adres_land: string;
+  // Lidgeld status
+  lidgeld_betaald?: boolean;
+  lidgeld_periode_start?: Date | null;
+  lidgeld_periode_eind?: Date | null;
+  bondslidgeld_betaald?: boolean;
+  bondslidgeld_periode_start?: Date | null;
+  bondslidgeld_periode_eind?: Date | null;
 };
 
 export interface LoginRequest {

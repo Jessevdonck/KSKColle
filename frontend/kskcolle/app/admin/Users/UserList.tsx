@@ -6,11 +6,61 @@ import { Button } from "@/components/ui/button"
 import type { User } from "@/data/types"
 import EditForm from "./components/forms/EditForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search } from "lucide-react"
+import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search, Euro, CheckCircle, XCircle, Clock } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { format } from "date-fns"
+import { nl } from "date-fns/locale"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+}
+
+// Helper function to determine membership status
+const getMembershipStatus = (user: User) => {
+  const now = new Date()
+  const lidgeldValid = user.lidgeld_betaald && 
+    user.lidgeld_periode_eind && 
+    new Date(user.lidgeld_periode_eind) > now
+  const bondslidgeldValid = user.bondslidgeld_betaald && 
+    user.bondslidgeld_periode_eind && 
+    new Date(user.bondslidgeld_periode_eind) > now
+  const isMember = lidgeldValid || bondslidgeldValid
+
+  const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind]
+    .filter(Boolean)
+    .sort((a, b) => new Date(b!).getTime() - new Date(a!).getTime())[0]
+
+  return {
+    isMember,
+    lidgeldValid,
+    bondslidgeldValid,
+    expiresAt: expiresAt ? new Date(expiresAt) : null
+  }
+}
+
+// Helper function to get status color and text
+const getStatusInfo = (user: User) => {
+  const status = getMembershipStatus(user)
+  if (status.isMember) {
+    return {
+      color: 'bg-green-100 text-green-800',
+      text: 'Lid',
+      icon: CheckCircle
+    }
+  }
+  if (user.lidgeld_betaald || user.bondslidgeld_betaald) {
+    return {
+      color: 'bg-red-100 text-red-800',
+      text: 'Verlopen',
+      icon: XCircle
+    }
+  }
+  return {
+    color: 'bg-gray-100 text-gray-800',
+    text: 'Geen lid',
+    icon: Clock
+  }
 }
 
 type UserListProps = {
@@ -118,6 +168,12 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                     </div>
                   </th>
                   <th className="p-3 text-left font-semibold text-textColor text-sm">FIDE ID</th>
+                  <th className="p-3 text-center font-semibold text-textColor text-sm">
+                    <div className="flex items-center gap-2">
+                      <Euro className="h-3 w-3" />
+                      Lidgeld
+                    </div>
+                  </th>
                   <th className="p-3 text-center font-semibold text-textColor text-sm">Status</th>
                   <th className="p-3 text-center font-semibold text-textColor text-sm">Acties</th>
                 </tr>
@@ -149,6 +205,18 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                       </div>
                     </td>
                     <td className="p-3 text-sm">{user.fide_id ?? "N/A"}</td>
+                    <td className="p-3 text-center">
+                      {(() => {
+                        const statusInfo = getStatusInfo(user)
+                        const StatusIcon = statusInfo.icon
+                        return (
+                          <Badge className={`${statusInfo.color} flex items-center gap-1 w-fit mx-auto`}>
+                            <StatusIcon className="h-3 w-3" />
+                            {statusInfo.text}
+                          </Badge>
+                        )
+                      })()}
+                    </td>
                     <td className="p-3 text-center">
                       <div className="flex justify-center gap-1">
                         {user.is_admin && (
@@ -233,11 +301,20 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                   </div>
                   <div>
                     <div className="flex items-center gap-1 text-gray-500 mb-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>Geboortedatum</span>
+                      <Euro className="h-3 w-3" />
+                      <span>Lidgeld</span>
                     </div>
-                    <div className="text-gray-700 text-sm">
-                      {user.geboortedatum ? new Date(user.geboortedatum).toLocaleDateString("nl-NL") : '-'}
+                    <div className="text-sm">
+                      {(() => {
+                        const statusInfo = getStatusInfo(user)
+                        const StatusIcon = statusInfo.icon
+                        return (
+                          <Badge className={`${statusInfo.color} flex items-center gap-1 w-fit`}>
+                            <StatusIcon className="h-3 w-3" />
+                            {statusInfo.text}
+                          </Badge>
+                        )
+                      })()}
                     </div>
                   </div>
                 </div>

@@ -24,6 +24,12 @@ const makeExposedUser = ({
   lid_sinds,
   roles,
   avatar_url,
+  lidgeld_betaald,
+  lidgeld_periode_start,
+  lidgeld_periode_eind,
+  bondslidgeld_betaald,
+  bondslidgeld_periode_start,
+  bondslidgeld_periode_eind,
   }: User): PublicUser => ({
     user_id, 
     voornaam, 
@@ -38,7 +44,13 @@ const makeExposedUser = ({
     rating_difference,
     lid_sinds,
     roles: typeof roles === 'string' ? JSON.parse(roles) : roles,
-    avatar_url
+    avatar_url,
+    lidgeld_betaald,
+    lidgeld_periode_start,
+    lidgeld_periode_eind,
+    bondslidgeld_betaald,
+    bondslidgeld_periode_start,
+    bondslidgeld_periode_eind,
   } as PublicUser)
 
 export const getAllUsers = async (): Promise<User[]> => {

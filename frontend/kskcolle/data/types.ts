@@ -26,6 +26,13 @@ export interface User {
   vast_nummer?: string;
   avatar_url?: string;
   roles?: string[];
+  // Lidgeld status
+  lidgeld_betaald: boolean;
+  lidgeld_periode_start?: Date | null;
+  lidgeld_periode_eind?: Date | null;
+  bondslidgeld_betaald: boolean;
+  bondslidgeld_periode_start?: Date | null;
+  bondslidgeld_periode_eind?: Date | null;
 }
 
 export interface PasswordResetRequest {

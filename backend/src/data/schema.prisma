@@ -41,6 +41,14 @@ model User {
   adres_gemeente    String?
   adres_land        String?           @default("Belgium")
   avatar_url        String?           @db.VarChar(500)
+  
+  // Lidgeld status
+  lidgeld_betaald   Boolean          @default(false)
+  lidgeld_periode_start DateTime?
+  lidgeld_periode_eind DateTime?
+  bondslidgeld_betaald Boolean       @default(false)
+  bondslidgeld_periode_start DateTime?
+  bondslidgeld_periode_eind DateTime?
 
   participations     Participation[]    
   speler1Games       Game[]          @relation("Speler1")
