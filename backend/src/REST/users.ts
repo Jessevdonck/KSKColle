@@ -319,16 +319,15 @@ const getPublicUserByNaam = async (ctx: KoaContext<GetUserByNaamResponse>) => {
   try {
     const user = await userService.getUserByNaam(voornaam, achternaam);
     if (user) {
-      // Return only public information
+      // Return only public information (no sensitive data like email, phone)
       const publicUser = {
         user_id: user.user_id,
         voornaam: user.voornaam,
         achternaam: user.achternaam,
         schaakrating_elo: user.schaakrating_elo,
-        schaakrating_difference: user.schaakrating_difference,
-        schaakrating_max: user.schaakrating_max,
+        rating_difference: user.rating_difference,
+        max_rating: user.max_rating,
         fide_id: user.fide_id,
-        is_youth: user.is_youth,
         lid_sinds: user.lid_sinds,
         avatar_url: user.avatar_url,
         roles: user.roles
