@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createUserWithPassword } from '../api';
 import { CreateUserRequest } from '../../data/types';
-import { Calendar, UserPlus, CheckCircle, AlertCircle, User, Mail, Trophy, Shield, MapPin } from 'lucide-react';
+import { Calendar, UserPlus, CheckCircle, AlertCircle, User, Mail, Trophy, Shield, MapPin, Building } from 'lucide-react';
 
 const validationRules = {
   voornaam: {
@@ -63,7 +63,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<CreateUserRequest>({
+  const { register, handleSubmit, formState: { errors }, watch, setValue, getValues } = useForm<CreateUserRequest>({
     defaultValues: {
       voornaam: '',
       achternaam: '',
@@ -82,6 +82,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       adres_postcode: '',
       adres_gemeente: '',
       adres_land: 'Belgium',
+      roles: [],
     },
   });
 
@@ -319,16 +320,78 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
           <Shield className="h-5 w-5" />
           Account Rechten
         </h3>
-        <div className="flex items-center space-x-3">
-          <Checkbox
-            id="is_admin"
-            {...register('is_admin')}
-            data-cy="create_user_is_admin_checkbox"
-          />
-          <Label htmlFor="is_admin" className="text-sm font-medium text-gray-700">Admin Gebruiker</Label>
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="is_admin"
+              checked={watch("roles").includes("admin")}
+              onCheckedChange={(checked) => {
+                const currentRoles = getValues("roles")
+                if (checked) {
+                  setValue("roles", [...currentRoles, "admin"])
+                } else {
+                  setValue(
+                    "roles",
+                    currentRoles.filter((role) => role !== "admin"),
+                  )
+                }
+              }}
+              data-cy="create_user_is_admin_checkbox"
+            />
+            <Label htmlFor="is_admin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Shield className="h-3 w-3" />
+              Admin Gebruiker
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="is_bestuurslid"
+              checked={watch("roles").includes("bestuurslid")}
+              onCheckedChange={(checked) => {
+                const currentRoles = getValues("roles")
+                if (checked) {
+                  setValue("roles", [...currentRoles, "bestuurslid"])
+                } else {
+                  setValue(
+                    "roles",
+                    currentRoles.filter((role) => role !== "bestuurslid"),
+                  )
+                }
+              }}
+              data-cy="create_user_is_bestuurslid_checkbox"
+            />
+            <Label htmlFor="is_bestuurslid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Building className="h-3 w-3" />
+              Bestuurslid
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="is_exlid"
+              checked={watch("roles").includes("exlid")}
+              onCheckedChange={(checked) => {
+                const currentRoles = getValues("roles")
+                if (checked) {
+                  setValue("roles", [...currentRoles, "exlid"])
+                } else {
+                  setValue(
+                    "roles",
+                    currentRoles.filter((role) => role !== "exlid"),
+                  )
+                }
+              }}
+              data-cy="create_user_is_exlid_checkbox"
+            />
+            <Label htmlFor="is_exlid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <User className="h-3 w-3" />
+              Ex-lid
+            </Label>
+          </div>
         </div>
-        <p className="text-xs text-gray-600 mt-2">
-          Admin gebruikers hebben toegang tot alle beheerfuncties van de applicatie.
+        <p className="text-xs text-gray-600 mt-3">
+          Selecteer de gewenste rollen voor deze gebruiker. Admin gebruikers hebben toegang tot alle beheerfuncties.
         </p>
       </div>
 

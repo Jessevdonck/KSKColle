@@ -33,6 +33,7 @@ interface CreateUserRequest {
   adres_postcode?: string;
   adres_gemeente?: string;
   adres_land?: string;
+  roles?: string[];
 }
 
 /**
@@ -141,6 +142,7 @@ createUser.validationScheme = {
     adres_postcode: Joi.string().optional(),
     adres_gemeente: Joi.string().optional(),
     adres_land: Joi.string().optional(),
+    roles: Joi.array().items(Joi.string().valid('admin', 'bestuurslid', 'exlid')).optional(),
   },
 };
 

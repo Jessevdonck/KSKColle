@@ -7,7 +7,7 @@ import { parseRoles } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, User, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox, LandPlot, Phone } from "lucide-react"
+import { CheckCircle2, User, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox, LandPlot, Phone, Building } from "lucide-react"
 import useSWRMutation from "swr/mutation"
 import { save } from "../../../../api/index"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -142,10 +142,10 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       adres_land: values.adres_land?.trim() || undefined,
     }
 
+
     try {
       await saveUser(formattedValues, {
         onSuccess: () => {
-          reset()
           setSuccessMessage("Speler correct gewijzigd")
           setTimeout(() => {
             setSuccessMessage(null)
@@ -434,7 +434,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
         {/* Admin Rights */}
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
           <div className="grid grid-cols-1 gap-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="flex items-center space-x-3">
                 <Checkbox
                   id="isAdmin"
@@ -458,6 +458,57 @@ export default function EditForm({ user, onClose }: EditFormProps) {
                   Is Admin
                 </Label>
               </div>
+              
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isBestuurslid"
+                  checked={watch("roles").includes("bestuurslid")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    const updatedRoles = parseRoles(currentRoles)
+                    if (checked) {
+                      setValue("roles", [...updatedRoles, "bestuurslid"])
+                    } else {
+                      setValue(
+                        "roles",
+                        updatedRoles.filter((role) => role !== "bestuurslid"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isBestuurslid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Building className="h-3 w-3" />
+                  Bestuurslid
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isExlid"
+                  checked={watch("roles").includes("exlid")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    const updatedRoles = parseRoles(currentRoles)
+                    if (checked) {
+                      setValue("roles", [...updatedRoles, "exlid"])
+                    } else {
+                      setValue(
+                        "roles",
+                        updatedRoles.filter((role) => role !== "exlid"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isExlid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <User className="h-3 w-3" />
+                  Ex-lid
+                </Label>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4">
               <div className="flex items-center space-x-3">
                 <Checkbox
                   id="isYouth"

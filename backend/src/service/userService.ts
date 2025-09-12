@@ -135,7 +135,11 @@ export const register = async (user: RegisterUserRequest): Promise<string> => {
     const trimmedPassword = password.trim();
     const passwordHash = await hashPassword(trimmedPassword);
     
-    const roleList = roles.includes('admin') ? ['user', 'admin'] : ['user'];
+    // Build role list based on selected roles
+    const roleList = ['user']; // Everyone gets user role
+    if (roles.includes('admin')) roleList.push('admin');
+    if (roles.includes('bestuurslid')) roleList.push('bestuurslid');
+    if (roles.includes('exlid')) roleList.push('exlid');
 
     const createdUser = await prisma.user.create({
       data: {
@@ -167,7 +171,13 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
   try {
     const { roles, ...userDataWithoutPassword } = changes;
     
-    const roleList = roles && roles.includes('admin') ? ['user', 'admin'] : ['user'];
+    // Build role list based on selected roles
+    const roleList = ['user']; // Everyone gets user role
+    if (roles) {
+      if (roles.includes('admin')) roleList.push('admin');
+      if (roles.includes('bestuurslid')) roleList.push('bestuurslid');
+      if (roles.includes('exlid')) roleList.push('exlid');
+    }
 
     const user = await prisma.user.update({
       where: { user_id },

@@ -32,6 +32,7 @@ interface CreateUserWithPasswordData {
     adres_postcode?: string;
     adres_gemeente?: string;
     adres_land?: string;
+    roles?: string[];
   };
   adminUserId: number;
 }
@@ -247,7 +248,12 @@ export const createUserWithGeneratedPassword = async (data: CreateUserWithPasswo
     const passwordHash = await hashPassword(password);
 
     // Bepaal rollen
-    const roles = data.userData.is_admin ? ['user', 'admin'] : ['user'];
+    const roleList = ['user']; // Everyone gets user role
+    if (data.userData.is_admin) roleList.push('admin');
+    if (data.userData.roles) {
+      if (data.userData.roles.includes('bestuurslid')) roleList.push('bestuurslid');
+      if (data.userData.roles.includes('exlid')) roleList.push('exlid');
+    }
 
     // Maak gebruiker aan
     const { geboortedatum, ...userDataWithoutBirthdate } = data.userData;
@@ -256,7 +262,7 @@ export const createUserWithGeneratedPassword = async (data: CreateUserWithPasswo
         ...userDataWithoutBirthdate,
         ...(geboortedatum && { geboortedatum }),
         password_hash: passwordHash,
-        roles: JSON.stringify(roles),
+        roles: JSON.stringify(roleList),
         schaakrating_elo: data.userData.schaakrating_elo ?? 0,
         lid_sinds: data.userData.lid_sinds ?? new Date(),
         adres_land: data.userData.adres_land ?? 'Belgium',

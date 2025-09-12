@@ -476,7 +476,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
             <Shield className="h-4 w-4" />
             Beveiliging & Rechten
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+          <div className="space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="flex items-center gap-2 text-blue-800 text-sm">
                 <Key className="h-4 w-4" />
@@ -486,28 +486,79 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
                 Er wordt automatisch een veilig wachtwoord gegenereerd en naar het opgegeven emailadres gestuurd.
               </p>
             </div>
-            <div className="flex items-center space-x-3 mt-4">
-              <Checkbox
-                id="isAdmin"
-                data-cy="admin"
-                checked={watch("roles").includes("admin")}
-                onCheckedChange={(checked) => {
-                  const currentRoles = getValues("roles")
-                  if (checked) {
-                    setValue("roles", [...currentRoles, "admin"])
-                  } else {
-                    setValue(
-                      "roles",
-                      currentRoles.filter((role) => role !== "admin"),
-                    )
-                  }
-                }}
-                className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
-              />
-              <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Shield className="h-3 w-3" />
-                Is Admin
-              </Label>
+            
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isAdmin"
+                  data-cy="admin"
+                  checked={watch("roles").includes("admin")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    if (checked) {
+                      setValue("roles", [...currentRoles, "admin"])
+                    } else {
+                      setValue(
+                        "roles",
+                        currentRoles.filter((role) => role !== "admin"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isAdmin" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Shield className="h-3 w-3" />
+                  Is Admin
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isBestuurslid"
+                  data-cy="bestuurslid"
+                  checked={watch("roles").includes("bestuurslid")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    if (checked) {
+                      setValue("roles", [...currentRoles, "bestuurslid"])
+                    } else {
+                      setValue(
+                        "roles",
+                        currentRoles.filter((role) => role !== "bestuurslid"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isBestuurslid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Building className="h-3 w-3" />
+                  Bestuurslid
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isExlid"
+                  data-cy="exlid"
+                  checked={watch("roles").includes("exlid")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    if (checked) {
+                      setValue("roles", [...currentRoles, "exlid"])
+                    } else {
+                      setValue(
+                        "roles",
+                        currentRoles.filter((role) => role !== "exlid"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isExlid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <User className="h-3 w-3" />
+                  Ex-lid
+                </Label>
+              </div>
             </div>
           </div>
         </div>
