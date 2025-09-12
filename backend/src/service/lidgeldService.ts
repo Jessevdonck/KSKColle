@@ -147,7 +147,7 @@ export const getMembershipStatus = (user: {
   isMember: boolean;
   lidgeldValid: boolean;
   bondslidgeldValid: boolean;
-  expiresAt?: Date;
+  expiresAt?: Date | undefined;
 } => {
   const now = new Date();
   
