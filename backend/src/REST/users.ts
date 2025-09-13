@@ -48,6 +48,44 @@ const getAllUsers = async (ctx: KoaContext<GetAllUserResponse>): Promise<User[]>
 getAllUsers.validationScheme = null;
 
 /**
+ * @api {get} /users/paginated Get paginated users
+ * @apiName GetPaginatedUsers
+ * @apiGroup User
+ * @apiPermission admin
+ * 
+ * @apiParam {Number} [page=1] Page number
+ * @apiParam {Number} [limit=50] Number of users per page
+ * 
+ * @apiSuccess {Object[]} items List of users for current page.
+ * @apiSuccess {Number} total Total number of users
+ * @apiSuccess {Number} totalPages Total number of pages
+ * @apiSuccess {Number} currentPage Current page number
+ * @apiError (400) BadRequest Invalid data provided.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ */
+const getPaginatedUsers = async (ctx: KoaContext): Promise<void> => {
+  const page = parseInt(ctx.query.page as string) || 1;
+  const limit = Math.min(parseInt(ctx.query.limit as string) || 50, 100); // Max 100 per page
+  
+  const { users, total, totalPages } = await userService.getUsersPaginated(page, limit);
+  
+  ctx.body = {
+    items: users,
+    total,
+    totalPages,
+    currentPage: page,
+    limit
+  };
+};
+getPaginatedUsers.validationScheme = {
+  query: {
+    page: Joi.number().integer().min(1).optional(),
+    limit: Joi.number().integer().min(1).max(100).optional(),
+  }
+};
+
+/**
  * @api {get} /users/publicUsers Get all public users
  * @apiName GetAllPublicUsers
  * @apiGroup User
@@ -411,6 +449,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   });
 
   router.get('/', requireAuthentication, makeRequireRole('admin'), validate(getAllUsers.validationScheme), getAllUsers);
+  router.get('/paginated', requireAuthentication, makeRequireRole('admin'), validate(getPaginatedUsers.validationScheme), getPaginatedUsers);
   router.get('/publicUsers', validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
   router.post('/', requireAuthentication, makeRequireRole('admin'), authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), getUserByNaam);

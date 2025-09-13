@@ -61,6 +61,27 @@ export const getAllUsers = async (): Promise<User[]> => {
   }
 };
 
+export const getUsersPaginated = async (page: number = 1, limit: number = 50): Promise<{ users: User[], total: number, totalPages: number }> => {
+  try {
+    const skip = (page - 1) * limit;
+    
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        skip,
+        take: limit,
+        orderBy: { achternaam: 'asc' }
+      }),
+      prisma.user.count()
+    ]);
+    
+    const totalPages = Math.ceil(total / limit);
+    
+    return { users, total, totalPages };
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
 export const getAllPublicUsers = async (): Promise<PublicUser[]> => {
   try {
     const users = await prisma.user.findMany();

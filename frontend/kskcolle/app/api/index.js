@@ -25,6 +25,14 @@ export async function getAll(url, params = {}) {
   return data.items;
 }
 
+export async function getPaginated(url, params = {}) {
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = queryString ? `${baseUrl}/${url}?${queryString}` : `${baseUrl}/${url}`;
+  const { data } = await axios.get(fullUrl); 
+
+  return data;
+}
+
 export const deleteById = async (url, { arg: id }) => {
   try
   {

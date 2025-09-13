@@ -73,9 +73,15 @@ type UserListProps = {
   onDelete: (userId: number) => Promise<void>
   isDeleting?: boolean
   onRefresh?: () => void
+  pagination?: {
+    currentPage: number
+    totalPages: number
+    total: number
+    onPageChange: (page: number) => void
+  }
 }
 
-export default function UserList({ users, onDelete, isDeleting = false }: UserListProps) {
+export default function UserList({ users, onDelete, isDeleting = false, pagination }: UserListProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -125,7 +131,9 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
             <Users className="h-5 w-5" />
             Spelers Overzicht
           </h2>
-          <p className="text-white/80 mt-1 text-sm">{users.length} spelers geregistreerd</p>
+          <p className="text-white/80 mt-1 text-sm">
+            {pagination ? `${users.length} van ${pagination.total} spelers` : `${users.length} spelers geregistreerd`}
+          </p>
         </div>
 
         <div className="p-4">
@@ -347,6 +355,64 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
           </div>
         </div>
       </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Pagina {pagination.currentPage} van {pagination.totalPages} 
+              ({pagination.total} totaal spelers)
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+                disabled={pagination.currentPage === 1}
+              >
+                Vorige
+              </Button>
+              
+              {/* Page numbers */}
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                const pageNum = Math.max(1, Math.min(
+                  pagination.totalPages - 4 + i,
+                  Math.max(1, pagination.currentPage - 2 + i)
+                ))
+                
+                if (i > 0 && pageNum !== Math.max(1, Math.min(
+                  pagination.totalPages - 4 + i - 1,
+                  Math.max(1, pagination.currentPage - 2 + i - 1)
+                )) + 1) {
+                  return null
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pagination.currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => pagination.onPageChange(pageNum)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                )
+              })}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+                disabled={pagination.currentPage === pagination.totalPages}
+              >
+                Volgende
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

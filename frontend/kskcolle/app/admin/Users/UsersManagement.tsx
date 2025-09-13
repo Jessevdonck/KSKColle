@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
-import { getAll, deleteById } from "../../api/index"
+import { getAll, getPaginated, deleteById } from "../../api/index"
 import type { User } from "@/data/types"
 import AddOrEditUser from "./components/AddOrEditUser"
 import UserList from "./UserList"
@@ -13,9 +13,14 @@ import { Users, Settings } from "lucide-react"
 
 export default function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(50)
   const { toast } = useToast()
 
-  const { data: users, error, mutate } = useSWR<User[]>("users", getAll)
+  const { data: usersData, error, mutate } = useSWR(
+    `users/paginated?page=${currentPage}&limit=${pageSize}`, 
+    (url) => getPaginated(url)
+  )
   
   const refreshUsers = () => {
     mutate()
@@ -25,7 +30,14 @@ export default function UsersManagement() {
   const handleDeleteUser = async (userId: number) => {
     try {
       await deleteUser(userId)
-      mutate((currentUsers) => currentUsers?.filter((user) => user.user_id !== userId), false)
+      mutate((currentData) => {
+        if (!currentData) return currentData
+        return {
+          ...currentData,
+          items: currentData.items.filter((user) => user.user_id !== userId),
+          total: currentData.total - 1
+        }
+      }, false)
       toast({ title: "Success", description: "Speler succesvol verwijderd" })
     } catch (error) {
       console.error("Error deleting user:", error)
@@ -45,7 +57,7 @@ export default function UsersManagement() {
     )
   }
 
-  if (!users) {
+  if (!usersData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
@@ -70,7 +82,7 @@ export default function UsersManagement() {
               <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
-                  <span>{users.length} geregistreerde spelers</span>
+                  <span>{usersData.total} geregistreerde spelers</span>
                 </div>
               </div>
             </div>
@@ -82,7 +94,19 @@ export default function UsersManagement() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           <AddOrEditUser onRefresh={refreshUsers} />
-          <UserList users={users} onEdit={setSelectedUser} onDelete={handleDeleteUser} isDeleting={isDeleting} onRefresh={refreshUsers} />
+          <UserList 
+            users={usersData.items} 
+            onEdit={setSelectedUser} 
+            onDelete={handleDeleteUser} 
+            isDeleting={isDeleting} 
+            onRefresh={refreshUsers}
+            pagination={{
+              currentPage,
+              totalPages: usersData.totalPages,
+              total: usersData.total,
+              onPageChange: setCurrentPage
+            }}
+          />
         </div>
       </div>
 
