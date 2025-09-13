@@ -386,7 +386,7 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
 /**
  * Bepaal het juiste ronde nummer voor een inhaaldag
  */
-function determineMakeupRoundNumber(existingRounds: any[], after_round_number: number): number {
+function determineMakeupRoundNumber(_existingRounds: any[], after_round_number: number): number {
   // Gebruik offset van 1000 + round_after om conflicten met reguliere rondes te vermijden
   return after_round_number + 1000;
 }
