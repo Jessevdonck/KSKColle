@@ -116,7 +116,7 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <a href="https://www.demercatel.be/oost-vlaamseinterclub/" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                <a href="https://www.schaakligaoostvlaanderen.be/ovic" target="_blank" rel="noopener noreferrer" className="flex items-center">
                   <span>Oost-Vlaamse Interclub</span>
                 </a>
               </DropdownMenuItem>
