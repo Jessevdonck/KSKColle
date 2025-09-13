@@ -8,9 +8,10 @@ import HerfstcompetitieReglement from "./components/HerfstcompetitieReglement"
 import LentecompetitieReglement from "./components/LentecompetitieReglement"
 import BlitzkampioenschapReglement from "./components/BlitzkampioenschapReglement"
 import ZomertoernooiReglement from "./components/ZomertoernooiReglement"
+import FIDEReglement from "./components/FIDEReglement"
 
 export default function ReglementPage() {
-  const [activeTab, setActiveTab] = useState<'intern' | 'herfst' | 'lente' | 'blitz' | 'zomer'>('intern')
+  const [activeTab, setActiveTab] = useState<'intern' | 'herfst' | 'lente' | 'blitz' | 'zomer' | 'fide'>('intern')
 
   const getReglementContent = () => {
     switch (activeTab) {
@@ -24,6 +25,8 @@ export default function ReglementPage() {
         return <BlitzkampioenschapReglement />
       case 'zomer':
         return <ZomertoernooiReglement />
+      case 'fide':
+        return <FIDEReglement />
       default:
         return <InternReglement />
     }
@@ -41,6 +44,8 @@ export default function ReglementPage() {
         return 'Blitzkampioenschap Reglement'
       case 'zomer':
         return 'Zomertoernooi Reglement'
+      case 'fide':
+        return 'FIDE Reglement 2025'
       default:
         return 'Intern Reglement'
     }
@@ -56,10 +61,10 @@ export default function ReglementPage() {
 
         {/* Tabs */}
         <div className="max-w-4xl mx-auto mb-6">
-          <div className="flex space-x-1 bg-gray-200 p-1 rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1 bg-gray-200 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('intern')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'intern'
                   ? 'bg-white text-mainAccent shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -69,7 +74,7 @@ export default function ReglementPage() {
             </button>
             <button
               onClick={() => setActiveTab('herfst')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'herfst'
                   ? 'bg-white text-mainAccent shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -79,7 +84,7 @@ export default function ReglementPage() {
             </button>
             <button
               onClick={() => setActiveTab('lente')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'lente'
                   ? 'bg-white text-mainAccent shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -89,7 +94,7 @@ export default function ReglementPage() {
             </button>
             <button
               onClick={() => setActiveTab('blitz')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'blitz'
                   ? 'bg-white text-mainAccent shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -99,13 +104,23 @@ export default function ReglementPage() {
             </button>
             <button
               onClick={() => setActiveTab('zomer')}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'zomer'
                   ? 'bg-white text-mainAccent shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Zomertoernooi
+            </button>
+            <button
+              onClick={() => setActiveTab('fide')}
+              className={`py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'fide'
+                  ? 'bg-white text-mainAccent shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              FIDE Reglement
             </button>
           </div>
         </div>
