@@ -43,6 +43,9 @@ getLidgeldStatus.validationScheme = null;
  * @apiBody {Boolean} [bondslidgeld_betaald] Whether bondslidgeld is paid.
  * @apiBody {Date} [bondslidgeld_periode_start] Start date of bondslidgeld period.
  * @apiBody {Date} [bondslidgeld_periode_eind] End date of bondslidgeld period.
+ * @apiBody {Boolean} [jeugdlidgeld_betaald] Whether jeugdlidgeld is paid.
+ * @apiBody {Date} [jeugdlidgeld_periode_start] Start date of jeugdlidgeld period.
+ * @apiBody {Date} [jeugdlidgeld_periode_eind] End date of jeugdlidgeld period.
  * 
  * @apiSuccess (200) Success Lidgeld status updated successfully.
  * @apiError (400) BadRequest Invalid data provided.
@@ -75,6 +78,9 @@ updateLidgeldStatus.validationScheme = {
     bondslidgeld_betaald: Joi.boolean().optional(),
     bondslidgeld_periode_start: Joi.date().allow(null).optional(),
     bondslidgeld_periode_eind: Joi.date().allow(null).optional(),
+    jeugdlidgeld_betaald: Joi.boolean().optional(),
+    jeugdlidgeld_periode_start: Joi.date().allow(null).optional(),
+    jeugdlidgeld_periode_eind: Joi.date().allow(null).optional(),
   },
 };
 

@@ -49,6 +49,9 @@ model User {
   bondslidgeld_betaald Boolean       @default(false)
   bondslidgeld_periode_start DateTime?
   bondslidgeld_periode_eind DateTime?
+  jeugdlidgeld_betaald Boolean       @default(false)
+  jeugdlidgeld_periode_start DateTime?
+  jeugdlidgeld_periode_eind DateTime?
 
   participations     Participation[]    
   speler1Games       Game[]          @relation("Speler1")

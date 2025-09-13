@@ -19,12 +19,16 @@ interface LidgeldUser {
   achternaam: string
   email: string
   tel_nummer: string
+  is_youth: boolean
   lidgeld_betaald: boolean
   lidgeld_periode_start?: string | null
   lidgeld_periode_eind?: string | null
   bondslidgeld_betaald: boolean
   bondslidgeld_periode_start?: string | null
   bondslidgeld_periode_eind?: string | null
+  jeugdlidgeld_betaald: boolean
+  jeugdlidgeld_periode_start?: string | null
+  jeugdlidgeld_periode_eind?: string | null
   roles: string[]
 }
 
@@ -72,9 +76,12 @@ export default function LidgeldManagement() {
     const bondslidgeldValid = user.bondslidgeld_betaald && 
       user.bondslidgeld_periode_eind && 
       new Date(user.bondslidgeld_periode_eind) > now
-    const isMember = lidgeldValid || bondslidgeldValid
+    const jeugdlidgeldValid = user.jeugdlidgeld_betaald && 
+      user.jeugdlidgeld_periode_eind && 
+      new Date(user.jeugdlidgeld_periode_eind) > now
+    const isMember = lidgeldValid || bondslidgeldValid || jeugdlidgeldValid
 
-    const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind]
+    const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind, user.jeugdlidgeld_periode_eind]
       .filter(Boolean)
       .sort((a, b) => new Date(b!).getTime() - new Date(a!).getTime())[0]
 
@@ -82,6 +89,7 @@ export default function LidgeldManagement() {
       isMember,
       lidgeldValid,
       bondslidgeldValid,
+      jeugdlidgeldValid,
       expiresAt: expiresAt ? new Date(expiresAt) : null
     }
   }
@@ -215,7 +223,7 @@ export default function LidgeldManagement() {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className={`grid gap-4 ${user.is_youth ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
                     <div>
                       <h4 className="font-medium text-gray-900 mb-2">Lidgeld</h4>
                       <div className="space-y-1 text-sm">
@@ -254,6 +262,27 @@ export default function LidgeldManagement() {
                         )}
                       </div>
                     </div>
+                    {user.is_youth && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Jeugdlidgeld</h4>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Checkbox checked={user.jeugdlidgeld_betaald} disabled />
+                            <span>Betaald</span>
+                          </div>
+                          {user.jeugdlidgeld_periode_start && (
+                            <p className="text-gray-600">
+                              Van: {format(new Date(user.jeugdlidgeld_periode_start), 'dd MMM yyyy', { locale: nl })}
+                            </p>
+                          )}
+                          {user.jeugdlidgeld_periode_eind && (
+                            <p className="text-gray-600">
+                              Tot: {format(new Date(user.jeugdlidgeld_periode_eind), 'dd MMM yyyy', { locale: nl })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -295,6 +324,9 @@ function LidgeldEditModal({ user, onClose, onSave }: {
     bondslidgeld_betaald: user.bondslidgeld_betaald,
     bondslidgeld_periode_start: user.bondslidgeld_periode_start ? format(new Date(user.bondslidgeld_periode_start), 'yyyy-MM-dd') : '',
     bondslidgeld_periode_eind: user.bondslidgeld_periode_eind ? format(new Date(user.bondslidgeld_periode_eind), 'yyyy-MM-dd') : '',
+    jeugdlidgeld_betaald: user.jeugdlidgeld_betaald,
+    jeugdlidgeld_periode_start: user.jeugdlidgeld_periode_start ? format(new Date(user.jeugdlidgeld_periode_start), 'yyyy-MM-dd') : '',
+    jeugdlidgeld_periode_eind: user.jeugdlidgeld_periode_eind ? format(new Date(user.jeugdlidgeld_periode_eind), 'yyyy-MM-dd') : '',
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -319,6 +351,8 @@ function LidgeldEditModal({ user, onClose, onSave }: {
       lidgeld_periode_eind: formData.lidgeld_betaald ? august31.toISOString() : (formData.lidgeld_periode_eind ? new Date(formData.lidgeld_periode_eind).toISOString() : null),
       bondslidgeld_periode_start: formData.bondslidgeld_betaald ? today.toISOString() : (formData.bondslidgeld_periode_start ? new Date(formData.bondslidgeld_periode_start).toISOString() : null),
       bondslidgeld_periode_eind: formData.bondslidgeld_betaald ? august31.toISOString() : (formData.bondslidgeld_periode_eind ? new Date(formData.bondslidgeld_periode_eind).toISOString() : null),
+      jeugdlidgeld_periode_start: formData.jeugdlidgeld_betaald ? today.toISOString() : (formData.jeugdlidgeld_periode_start ? new Date(formData.jeugdlidgeld_periode_start).toISOString() : null),
+      jeugdlidgeld_periode_eind: formData.jeugdlidgeld_betaald ? august31.toISOString() : (formData.jeugdlidgeld_periode_eind ? new Date(formData.jeugdlidgeld_periode_eind).toISOString() : null),
     }
     onSave(user.user_id, data)
   }
@@ -330,7 +364,7 @@ function LidgeldEditModal({ user, onClose, onSave }: {
           <h2 className="text-xl font-bold mb-4">Lidgeld bewerken - {user.voornaam} {user.achternaam}</h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={`grid gap-6 ${user.is_youth ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
               {/* Lidgeld */}
               <div className="space-y-4">
                 <h3 className="font-medium text-gray-900">Lidgeld</h3>
@@ -428,6 +462,57 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                   />
                 </div>
               </div>
+
+              {/* Jeugdlidgeld - alleen voor jeugdleden */}
+              {user.is_youth && (
+                <div className="space-y-4">
+                  <h3 className="font-medium text-gray-900">Jeugdlidgeld</h3>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="jeugdlidgeld_betaald"
+                      checked={formData.jeugdlidgeld_betaald}
+                      onCheckedChange={(checked) => {
+                        const today = new Date()
+                        const currentYear = today.getFullYear()
+                        const currentMonth = today.getMonth() // 0-indexed, so August is 7
+                        const currentDay = today.getDate()
+                        
+                        // If we're past August 31st this year, use next year's August 31st
+                        const yearForAugust31 = (currentMonth > 7 || (currentMonth === 7 && currentDay > 31)) 
+                          ? currentYear + 1 
+                          : currentYear
+                        
+                        const august31 = new Date(yearForAugust31, 7, 31)
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          jeugdlidgeld_betaald: !!checked,
+                          jeugdlidgeld_periode_start: checked ? format(today, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_start,
+                          jeugdlidgeld_periode_eind: checked ? format(august31, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_eind
+                        }))
+                      }}
+                    />
+                    <Label htmlFor="jeugdlidgeld_betaald">Betaald</Label>
+                  </div>
+                  <div>
+                    <Label htmlFor="jeugdlidgeld_start" className="text-sm font-medium text-gray-700">Start datum</Label>
+                    <Input
+                      id="jeugdlidgeld_start"
+                      type="date"
+                      value={formData.jeugdlidgeld_periode_start}
+                      onChange={(e) => setFormData(prev => ({ ...prev, jeugdlidgeld_periode_start: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="jeugdlidgeld_eind" className="text-sm font-medium text-gray-700">Eind datum</Label>
+                    <Input
+                      id="jeugdlidgeld_eind"
+                      type="date"
+                      value={formData.jeugdlidgeld_periode_eind}
+                      onChange={(e) => setFormData(prev => ({ ...prev, jeugdlidgeld_periode_eind: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end space-x-3">

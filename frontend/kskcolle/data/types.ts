@@ -33,6 +33,9 @@ export interface User {
   bondslidgeld_betaald: boolean;
   bondslidgeld_periode_start?: Date | null;
   bondslidgeld_periode_eind?: Date | null;
+  jeugdlidgeld_betaald: boolean;
+  jeugdlidgeld_periode_start?: Date | null;
+  jeugdlidgeld_periode_eind?: Date | null;
 }
 
 export interface PasswordResetRequest {

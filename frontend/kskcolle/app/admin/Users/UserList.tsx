@@ -25,9 +25,12 @@ const getMembershipStatus = (user: User) => {
   const bondslidgeldValid = user.bondslidgeld_betaald && 
     user.bondslidgeld_periode_eind && 
     new Date(user.bondslidgeld_periode_eind) > now
-  const isMember = lidgeldValid || bondslidgeldValid
+  const jeugdlidgeldValid = user.jeugdlidgeld_betaald && 
+    user.jeugdlidgeld_periode_eind && 
+    new Date(user.jeugdlidgeld_periode_eind) > now
+  const isMember = lidgeldValid || bondslidgeldValid || jeugdlidgeldValid
 
-  const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind]
+  const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind, user.jeugdlidgeld_periode_eind]
     .filter(Boolean)
     .sort((a, b) => new Date(b!).getTime() - new Date(a!).getTime())[0]
 
@@ -35,6 +38,7 @@ const getMembershipStatus = (user: User) => {
     isMember,
     lidgeldValid,
     bondslidgeldValid,
+    jeugdlidgeldValid,
     expiresAt: expiresAt ? new Date(expiresAt) : null
   }
 }
@@ -49,7 +53,7 @@ const getStatusInfo = (user: User) => {
       icon: CheckCircle
     }
   }
-  if (user.lidgeld_betaald || user.bondslidgeld_betaald) {
+  if (user.lidgeld_betaald || user.bondslidgeld_betaald || user.jeugdlidgeld_betaald) {
     return {
       color: 'bg-red-100 text-red-800',
       text: 'Verlopen',

@@ -11,6 +11,9 @@ export interface LidgeldUpdateData {
   bondslidgeld_betaald?: boolean;
   bondslidgeld_periode_start?: Date | null;
   bondslidgeld_periode_eind?: Date | null;
+  jeugdlidgeld_betaald?: boolean;
+  jeugdlidgeld_periode_start?: Date | null;
+  jeugdlidgeld_periode_eind?: Date | null;
 }
 
 /**
@@ -54,6 +57,15 @@ export const updateLidgeldStatus = async (
       }
     }
     
+    if (data.jeugdlidgeld_betaald !== undefined) {
+      updateData.jeugdlidgeld_betaald = data.jeugdlidgeld_betaald;
+      // If marking as paid, set start to today and end to August 31st
+      if (data.jeugdlidgeld_betaald === true) {
+        updateData.jeugdlidgeld_periode_start = data.jeugdlidgeld_periode_start || today;
+        updateData.jeugdlidgeld_periode_eind = data.jeugdlidgeld_periode_eind || august31;
+      }
+    }
+    
     // Update date fields if provided
     if (data.lidgeld_periode_start !== undefined) {
       updateData.lidgeld_periode_start = data.lidgeld_periode_start;
@@ -66,6 +78,12 @@ export const updateLidgeldStatus = async (
     }
     if (data.bondslidgeld_periode_eind !== undefined) {
       updateData.bondslidgeld_periode_eind = data.bondslidgeld_periode_eind;
+    }
+    if (data.jeugdlidgeld_periode_start !== undefined) {
+      updateData.jeugdlidgeld_periode_start = data.jeugdlidgeld_periode_start;
+    }
+    if (data.jeugdlidgeld_periode_eind !== undefined) {
+      updateData.jeugdlidgeld_periode_eind = data.jeugdlidgeld_periode_eind;
     }
 
     await prisma.user.update({
@@ -92,12 +110,16 @@ export const getUsersWithLidgeldStatus = async () => {
         achternaam: true,
         email: true,
         tel_nummer: true,
+        is_youth: true,
         lidgeld_betaald: true,
         lidgeld_periode_start: true,
         lidgeld_periode_eind: true,
         bondslidgeld_betaald: true,
         bondslidgeld_periode_start: true,
         bondslidgeld_periode_eind: true,
+        jeugdlidgeld_betaald: true,
+        jeugdlidgeld_periode_start: true,
+        jeugdlidgeld_periode_eind: true,
         roles: true
       },
       orderBy: [
@@ -121,6 +143,8 @@ export const isUserMember = (user: {
   lidgeld_periode_eind?: Date | null;
   bondslidgeld_betaald: boolean | null | undefined;
   bondslidgeld_periode_eind?: Date | null;
+  jeugdlidgeld_betaald?: boolean | null | undefined;
+  jeugdlidgeld_periode_eind?: Date | null;
 }): boolean => {
   const now = new Date();
   
@@ -132,7 +156,11 @@ export const isUserMember = (user: {
     user.bondslidgeld_periode_eind && 
     user.bondslidgeld_periode_eind > now);
     
-  return lidgeldValid || bondslidgeldValid;
+  const jeugdlidgeldValid = Boolean(user.jeugdlidgeld_betaald === true && 
+    user.jeugdlidgeld_periode_eind && 
+    user.jeugdlidgeld_periode_eind > now);
+    
+  return lidgeldValid || bondslidgeldValid || jeugdlidgeldValid;
 };
 
 /**
@@ -143,10 +171,13 @@ export const getMembershipStatus = (user: {
   lidgeld_periode_eind?: Date | null;
   bondslidgeld_betaald: boolean | null | undefined;
   bondslidgeld_periode_eind?: Date | null;
+  jeugdlidgeld_betaald?: boolean | null | undefined;
+  jeugdlidgeld_periode_eind?: Date | null;
 }): {
   isMember: boolean;
   lidgeldValid: boolean;
   bondslidgeldValid: boolean;
+  jeugdlidgeldValid: boolean;
   expiresAt?: Date | undefined;
 } => {
   const now = new Date();
@@ -159,10 +190,14 @@ export const getMembershipStatus = (user: {
     user.bondslidgeld_periode_eind && 
     user.bondslidgeld_periode_eind > now);
     
-  const isMember = lidgeldValid || bondslidgeldValid;
+  const jeugdlidgeldValid = Boolean(user.jeugdlidgeld_betaald === true && 
+    user.jeugdlidgeld_periode_eind && 
+    user.jeugdlidgeld_periode_eind > now);
+    
+  const isMember = lidgeldValid || bondslidgeldValid || jeugdlidgeldValid;
   
   // Get the latest expiration date
-  const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind]
+  const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind, user.jeugdlidgeld_periode_eind]
     .filter(Boolean)
     .sort((a, b) => (b as Date).getTime() - (a as Date).getTime())[0] as Date | undefined;
     
@@ -170,6 +205,7 @@ export const getMembershipStatus = (user: {
     isMember,
     lidgeldValid,
     bondslidgeldValid,
+    jeugdlidgeldValid,
     expiresAt
   };
 };
