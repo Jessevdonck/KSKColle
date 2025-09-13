@@ -122,8 +122,8 @@ export default function RoundManagement({ tournament }: Props) {
     timeline.push({ kind: "round", roundNumber: i, roundData: T.rounds.find((r) => r.ronde_nummer === i) })
     // Oude makeup days
     makeupDays.filter((md) => md.round_after === i).forEach((md) => timeline.push({ kind: "makeup", makeup: md }))
-    // Nieuwe makeup rounds
-    allRounds.filter((r) => r.ronde_nummer === i && r.type === 'MAKEUP').forEach((round) => timeline.push({ kind: "makeupRound", round }))
+    // Nieuwe makeup rounds - zoek op basis van round_after (ronde_nummer - 1000)
+    allRounds.filter((r) => r.type === 'MAKEUP' && (r.ronde_nummer - 1000) === i).forEach((round) => timeline.push({ kind: "makeupRound", round }))
   }
 
   // check of officieel alles klaar is

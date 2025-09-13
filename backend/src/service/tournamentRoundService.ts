@@ -387,15 +387,8 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
  * Bepaal het juiste ronde nummer voor een inhaaldag
  */
 function determineMakeupRoundNumber(existingRounds: any[], after_round_number: number): number {
-  // Zoek de laatste ronde die voor of op after_round_number komt
-  const roundsUpToAfter = existingRounds.filter(r => r.ronde_nummer <= after_round_number);
-  
-  if (roundsUpToAfter.length === 0) {
-    return after_round_number + 1;
-  }
-
-  const lastRoundNumber = Math.max(...roundsUpToAfter.map(r => r.ronde_nummer));
-  return lastRoundNumber + 1;
+  // Gebruik offset van 1000 + round_after om conflicten met reguliere rondes te vermijden
+  return after_round_number + 1000;
 }
 
 /**

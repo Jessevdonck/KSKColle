@@ -117,9 +117,9 @@ export default function TournamentDetails() {
           })
         }
 
-        // Add makeup rounds that belong to this round (ronde_nummer - 1)
+        // Add makeup rounds that belong to this round (ronde_nummer - 1000)
         const makeupRoundsForThisRound = sortedRounds.filter(r => 
-          r.type === 'MAKEUP' && r.ronde_nummer === i
+          r.type === 'MAKEUP' && (r.ronde_nummer - 1000) === i
         )
         
         for (const makeupRound of makeupRoundsForThisRound) {
