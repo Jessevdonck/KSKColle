@@ -76,7 +76,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   }
 
   const getPositionStyle = (position: number) => {
-    const base = "flex items-center justify-center w-8 h-8 rounded-full font-bold transition-all"
+    const base = "flex items-center justify-center w-6 h-6 rounded-full font-bold transition-all"
     switch (position) {
       case 1:
         return `${base} bg-gradient-to-br from-yellow-400 to-yellow-500 text-white shadow-md`
@@ -206,49 +206,45 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
   return (
     <>
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {playerScores.map((player, idx) => {
           const position = idx + 1
           const isTop = position <= 3
           return (
             <div
               key={player.user_id}
-              className={`rounded-lg border transition-all hover:shadow-sm cursor-pointer ${
+              className={`rounded border transition-all hover:shadow-sm cursor-pointer ${
                 isTop
                   ? "bg-gradient-to-r from-mainAccent/5 to-mainAccentDark/5 border-mainAccent/20 shadow-sm"
                   : "bg-white border-neutral-200 hover:border-mainAccent/30"
               }`}
               onClick={() => setSelectedPlayer(player)}
             >
-              <div className="p-2 flex items-center gap-2">
+              <div className="px-2 py-1 flex items-center gap-1.5">
                 {/* Position */}
                 <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
 
-                {/* Player Info */}
-                <div className="flex-1 min-w-0">
+                {/* Player Info - All on one line */}
+                <div className="flex-1 min-w-0 flex items-center gap-2">
                   <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors truncate text-xs">
                     {player.voornaam} {player.achternaam}
                   </div>
                   <div className="text-xs text-gray-600 flex items-center gap-1">
-                    <span className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      {player.gamesPlayed}
-                    </span>
+                    <User className="h-3 w-3" />
+                    {player.gamesPlayed}
                   </div>
                 </div>
 
-                {/* Score & Tie-break */}
-                <div className="text-right">
-                  <div className={`text-lg font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                {/* Score & Tie-break - Compact */}
+                <div className="text-right flex items-center gap-2">
+                  <div className={`text-sm font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
                     {player.score}
                   </div>
                   <div className="text-xs text-gray-500">
                     {tournament.type === "SWISS" ? (
-                      <>Bh-W: {player.tieBreak.toFixed(2)}</>
+                      <span>Bh: {player.tieBreak.toFixed(1)}</span>
                     ) : (
-                      <>
-                        SB<sup>2</sup>: {player.tieBreak.toFixed(2)}
-                      </>
+                      <span>SB: {player.tieBreak.toFixed(1)}</span>
                     )}
                   </div>
                 </div>
