@@ -215,6 +215,14 @@ export const undoPostponeGame = async (url, { arg: { game_id } }) => {
   return data;
 };
 
+// Absence reporting function
+export const reportAbsence = async (url, { arg: { tournament_id } }) => {
+  const { data } = await axios.post(`${baseUrl}/absence`, { 
+    tournament_id
+  });
+  return data;
+};
+
 export const getPostponableGames = async (tournamentId) => {
   const { data } = await axios.get(`${baseUrl}/tournamentRounds/postponable-games?tournament_id=${tournamentId}`);
   return data.games;

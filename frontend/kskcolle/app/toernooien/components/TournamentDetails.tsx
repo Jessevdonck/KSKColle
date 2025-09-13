@@ -4,11 +4,12 @@ import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
-import { getById, getAll, getAllTournamentRounds, undoPostponeGame } from "../../api/index"
+import { getById, getAll, getAllTournamentRounds, undoPostponeGame, reportAbsence } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
-import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX } from "lucide-react"
 import { useState, useEffect } from "react"
 import PostponeGameButton from './PostponeGameButton'
+import { Button } from '@/components/ui/button'
 
 type Game = {
   game_id: number
@@ -52,6 +53,7 @@ export default function TournamentDetails() {
   const [timeline, setTimeline] = useState<
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] })[]
   >([])
+  const [reportingAbsence, setReportingAbsence] = useState(false)
 
   // 1) Tournament data fetching
   const {
@@ -220,6 +222,35 @@ export default function TournamentDetails() {
     )
   }
 
+  const handleReportAbsence = async () => {
+    if (!tournament) return
+    
+    // Bevestigingsbericht
+    const confirmed = window.confirm(
+      `Weet je zeker dat je je wilt afmelden voor de volgende ronde?\n\n` +
+      `Dit betekent dat je niet uitgeloot wordt voor de volgende reguliere ronde van "${tournament.naam}".\n\n` +
+      `De toernooileiders krijgen een email met deze melding.`
+    )
+    
+    if (!confirmed) return
+    
+    setReportingAbsence(true)
+    try {
+      const result = await reportAbsence('', { 
+        arg: { 
+          tournament_id: tournament.tournament_id
+        } 
+      })
+      alert(result.message)
+    } catch (error: any) {
+      console.error('Failed to report absence:', error)
+      const errorMessage = error?.response?.data?.message || error?.message || 'Kon afwezigheid niet melden'
+      alert(`Fout bij afwezigheid melden: ${errorMessage}`)
+    } finally {
+      setReportingAbsence(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
@@ -248,8 +279,8 @@ export default function TournamentDetails() {
               </div>
             </div>
             
-            {/* Postpone Game Button */}
-            <div className="w-48">
+            {/* Action Buttons */}
+            <div className="flex gap-2">
               <PostponeGameButton 
                 tournamentId={tournamentId}
                 tournamentName={tournament.naam}
@@ -257,6 +288,15 @@ export default function TournamentDetails() {
                 participations={tournament.participations.map(p => ({ user_id: p.user.user_id }))}
                 onGamePostponed={goToRound}
               />
+              <Button
+                onClick={handleReportAbsence}
+                disabled={reportingAbsence}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <UserX className="h-4 w-4 mr-2" />
+                {reportingAbsence ? 'Melden...' : 'Afwezig Melden'}
+              </Button>
             </div>
           </div>
         </div>

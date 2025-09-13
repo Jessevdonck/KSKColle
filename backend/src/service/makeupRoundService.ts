@@ -46,9 +46,10 @@ export async function createMakeupRound(
       throw ServiceError.validationFailed(`Ronde ${round_after} niet gevonden in toernooi`);
     }
 
-    // 3. Bepaal het ronde nummer voor de inhaaldag
-    // Gebruik offset van 1000 + round_after om conflicten met reguliere rondes te vermijden
-    const nextRoundNumber = round_after + 1000;
+    // 3. Bepaal het volgende ronde nummer
+    // Tel alle rondes (regulier + inhaaldagen) tot en met round_after
+    const roundsUpToAfter = tournament.rounds.filter(r => r.ronde_nummer <= round_after);
+    const nextRoundNumber = Math.max(...roundsUpToAfter.map(r => r.ronde_nummer)) + 1;
 
     // 4. Maak de inhaaldag ronde aan
     const makeupRound = await prisma.round.create({
