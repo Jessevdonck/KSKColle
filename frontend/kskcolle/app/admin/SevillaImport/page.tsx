@@ -16,7 +16,6 @@ export default function SevillaImportPage() {
   const [tournamentName, setTournamentName] = useState('');
   const [jsonContent, setJsonContent] = useState('');
   const [importMode, setImportMode] = useState<'full' | 'incremental'>('full');
-  const [totalRounds, setTotalRounds] = useState<number>(0);
   const [validationResult, setValidationResult] = useState<{
     valid: boolean;
     message: string;
@@ -39,7 +38,7 @@ export default function SevillaImportPage() {
 
   const { isMutating: isImporting, trigger: importTournamentData } = useSWRMutation(
     'sevilla/import',
-    async (url, { arg }: { arg: { sevillaData: any; tournamentName?: string; incremental?: boolean; totalRounds?: number } }) => {
+    async (url, { arg }: { arg: { sevillaData: any; tournamentName?: string; incremental?: boolean } }) => {
       const response = await api.axios.post(`/${url}`, arg);
       return response.data;
     }
@@ -158,7 +157,6 @@ export default function SevillaImportPage() {
         sevillaData,
         tournamentName: tournamentName || undefined,
         incremental: importMode === 'incremental',
-        totalRounds: totalRounds > 0 ? totalRounds : undefined,
       });
       
       setImportResult({
@@ -246,23 +244,6 @@ export default function SevillaImportPage() {
                 onChange={(e) => setTournamentName(e.target.value)}
                 className="mt-1"
               />
-            </div>
-
-            <div>
-              <Label htmlFor="total-rounds">Totaal Aantal Rondes (Optioneel)</Label>
-              <Input
-                id="total-rounds"
-                type="number"
-                min="1"
-                max="20"
-                placeholder="Bijv. 7 voor een toernooi met 7 rondes"
-                value={totalRounds || ''}
-                onChange={(e) => setTotalRounds(parseInt(e.target.value) || 0)}
-                className="mt-1"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Vul dit in om lege rondes aan te maken voor rondes die nog niet in het Sevilla bestand staan.
-              </p>
             </div>
           </CardContent>
         </Card>

@@ -62,7 +62,7 @@ const getStatusInfo = (user: User) => {
   }
   return {
     color: 'bg-gray-100 text-gray-800',
-    text: 'Geen lid',
+    text: 'Ex-Lid',
     icon: Clock
   }
 }

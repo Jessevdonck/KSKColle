@@ -2,7 +2,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
-import { getById, generatePairings, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, updateRound, postponeGameToMakeupRound } from "../../../api/index"
+import { getById, generatePairings, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, postponeGameToMakeupRound } from "../../../api/index"
 import type { Toernooi, MakeupDay, Round } from "@/data/types"
 import RoundSection from "./RoundSection"
 import MakeupSection from "./MakeupSection"
@@ -52,7 +52,6 @@ export default function RoundManagement({ tournament }: Props) {
   const { trigger: deleteMakeupRoundMutation, isMutating: deletingMakeupRound } = useSWRMutation("tournamentRounds", deleteMakeupRound)
   const { trigger: addGameMutation, isMutating: addingGame } = useSWRMutation("tournamentRounds", addGameToMakeupRound)
   const { trigger: updateDateMutation, isMutating: updatingDate } = useSWRMutation("tournamentRounds", updateMakeupRoundDate)
-  const { trigger: updateRoundMutation, isMutating: updatingRound } = useSWRMutation("rondes", updateRound)
   const { trigger: postponeGameMutation, isMutating: postponingGameMutation } = useSWRMutation("tournamentRounds", postponeGameToMakeupRound)
 
   // Form-state voor nieuwe inhaaldag (oude systeem)
@@ -266,22 +265,11 @@ export default function RoundManagement({ tournament }: Props) {
 
   const handleSaveRoundDate = async (roundId: number) => {
     try {
-      if (isSevillaTournament) {
-        // Use the general round update API for Sevilla tournaments
-        await updateRoundMutation({
-          tournament_id: T.tournament_id,
-          round_id: roundId,
-          ronde_datum: editDate,
-          startuur: editStartuur,
-        })
-      } else {
-        // Use the makeup round update API for regular tournaments
-        await updateDateMutation({
-          round_id: roundId,
-          date: editDate,
-          startuur: editStartuur,
-        })
-      }
+      await updateDateMutation({
+        round_id: roundId,
+        date: editDate,
+        startuur: editStartuur,
+      })
       
       refetchRounds()
       setEditingRoundDate(null)
@@ -666,11 +654,11 @@ export default function RoundManagement({ tournament }: Props) {
                             />
                             <Button
                               onClick={() => handleSaveRoundDate(round.round_id)}
-                              disabled={updatingDate || updatingRound}
+                              disabled={updatingDate}
                               size="sm"
                               className="bg-white/30 hover:bg-white/40 text-white border border-white/50"
                             >
-                              {(updatingDate || updatingRound) ? "..." : "Opslaan"}
+                              {updatingDate ? "..." : "Opslaan"}
                             </Button>
                             <Button
                               onClick={() => setEditingRoundDate(null)}
@@ -684,7 +672,7 @@ export default function RoundManagement({ tournament }: Props) {
                         ) : (
                           <div className="flex items-center gap-2">
                             <p>Speeldatum: {format(new Date(round.ronde_datum), 'dd/MM/yyyy')} om {round.startuur}</p>
-                            {(round.type === 'MAKEUP' || (isSevillaTournament && round.type === 'REGULAR')) && (
+                            {round.type === 'MAKEUP' && (
                               <Button
                                 onClick={() => handleEditRoundDate(round)}
                                 size="sm"

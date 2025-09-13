@@ -1,14 +1,10 @@
 import Link from "next/link"
-import { ChevronRight, User, Calendar, Clock } from "lucide-react"
-import { format, parseISO } from "date-fns"
-import { nl } from "date-fns/locale"
+import { ChevronRight, User } from "lucide-react"
 
 interface RoundPairingsProps {
   round: {
     round_id: number
     ronde_nummer: number
-    ronde_datum?: string | null
-    startuur?: string
     games?: Array<{
       game_id: number
       speler1: { user_id: number; voornaam: string; achternaam: string }
@@ -66,26 +62,12 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
   return (
     <div>
       <div className="mb-4">
-        <div className="flex flex-wrap items-center gap-4 mb-2">
-          <h3 className="text-xl font-bold text-textColor flex items-center gap-2">
-            <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-              {round.ronde_nummer}
-            </div>
-            Ronde {round.ronde_nummer}
-          </h3>
-          {round.ronde_datum && (
-            <div className="flex items-center gap-1 text-sm text-gray-600">
-              <Calendar className="h-4 w-4" />
-              <span>{format(parseISO(round.ronde_datum), 'dd MMMM yyyy', { locale: nl })}</span>
-            </div>
-          )}
-          {round.startuur && (
-            <div className="flex items-center gap-1 text-sm text-gray-600">
-              <Clock className="h-4 w-4" />
-              <span>{round.startuur}</span>
-            </div>
-          )}
-        </div>
+        <h3 className="text-xl font-bold text-textColor mb-2 flex items-center gap-2">
+          <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+            {round.ronde_nummer}
+          </div>
+          Ronde {round.ronde_nummer}
+        </h3>
         <p className="text-gray-600 text-sm">
           {round.games.length} partijen
           {!round.round_id && <span className="text-gray-500 ml-2">(Nog niet gegenereerd)</span>}
