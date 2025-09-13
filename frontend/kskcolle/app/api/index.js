@@ -132,6 +132,12 @@ export const updateMakeupRoundDate = async (roundId, { arg }) => {
   return data;
 };
 
+// Update any round (including Sevilla imported rounds)
+export const updateRound = async (tournamentId, roundId, { arg }) => {
+  const { data } = await axios.put(`${baseUrl}/rondes/${tournamentId}/rondes/${roundId}`, arg);
+  return data;
+};
+
 export const postponeGameToMakeupRound = async (url, { arg }) => {
   const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone-game`, arg);
   return data;

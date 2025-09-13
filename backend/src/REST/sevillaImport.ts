@@ -11,10 +11,11 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
   // Import Sevilla tournament
   router.post('/sevilla/import', requireAuthentication, requireAdmin, async (ctx) => {
   try {
-    const { sevillaData, tournamentName, incremental } = ctx.request.body as { 
+    const { sevillaData, tournamentName, incremental, totalRounds } = ctx.request.body as { 
       sevillaData: any; 
       tournamentName?: string; 
       incremental?: boolean;
+      totalRounds?: number;
     };
 
     if (!sevillaData) {
@@ -32,7 +33,7 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
     }
 
     // Import tournament (incremental or full)
-    const tournamentId = await sevillaImporter.importTournament(sevillaData, tournamentName, incremental || false);
+    const tournamentId = await sevillaImporter.importTournament(sevillaData, tournamentName, incremental || false, totalRounds);
 
     ctx.status = 201;
     ctx.body = {
