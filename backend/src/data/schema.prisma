@@ -21,8 +21,8 @@ model User {
   user_id            Int             @id @default(autoincrement())
   voornaam           String
   achternaam         String
-  email              String          @unique(map: "idx_user_email_unique") @db.VarChar(255)
-  tel_nummer         String
+  email              String?          @unique(map: "idx_user_email_unique") @db.VarChar(255)
+  tel_nummer         String?
   vast_nummer        String? 
   geboortedatum      DateTime?
   schaakrating_elo   Int             @default(0)              

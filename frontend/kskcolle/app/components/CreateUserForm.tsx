@@ -18,13 +18,7 @@ const validationRules = {
   achternaam: {
     required: 'Achternaam is vereist',
   },
-  email: {
-    required: 'Email is vereist',
-    pattern: {
-      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-      message: 'Ongeldig emailadres',
-    },
-  },
+
   geboortedatum: {
     validate: (value: string) => {
       if (!value) return true; // Optional
@@ -34,9 +28,7 @@ const validationRules = {
       return true;
     },
   },
-  tel_nummer: {
-    required: 'Telefoonnummer is vereist',
-  },
+
   schaakrating_elo: {
     min: {
       value: 0,
@@ -112,14 +104,16 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       const cleanData = {
         ...data,
         roles: finalRoles,
+        email: data.email?.trim() || undefined,
+        tel_nummer: data.tel_nummer?.trim() || undefined,
         schaakrating_elo: data.schaakrating_elo || undefined,
         fide_id: data.fide_id || undefined,
-        vast_nummer: data.vast_nummer || undefined,
-        adres_straat: data.adres_straat || undefined,
-        adres_nummer: data.adres_nummer || undefined,
-        adres_bus: data.adres_bus || undefined,
-        adres_postcode: data.adres_postcode || undefined,
-        adres_gemeente: data.adres_gemeente || undefined,
+        vast_nummer: data.vast_nummer?.trim() || undefined,
+        adres_straat: data.adres_straat?.trim() || undefined,
+        adres_nummer: data.adres_nummer?.trim() || undefined,
+        adres_bus: data.adres_bus?.trim() || undefined,
+        adres_postcode: data.adres_postcode?.trim() || undefined,
+        adres_gemeente: data.adres_gemeente?.trim() || undefined,
       };
 
       const response = await createUserWithPassword('user-management', { arg: cleanData });
@@ -234,24 +228,32 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email *</Label>
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email (optioneel)</Label>
             <Input
               id="email"
               type="email"
-              {...register('email', validationRules.email)}
+              {...register('email', {
+                validate: (value) => {
+                  if (!value || value.trim() === '') return true;
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  return emailRegex.test(value) || 'Voer een geldig emailadres in';
+                }
+              })}
               data-cy="create_user_email_input"
               className="text-sm"
+              placeholder="Optioneel"
             />
             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tel_nummer" className="text-sm font-medium text-gray-700">Telefoonnummer *</Label>
+            <Label htmlFor="tel_nummer" className="text-sm font-medium text-gray-700">Telefoonnummer (optioneel)</Label>
             <Input
               id="tel_nummer"
-              {...register('tel_nummer', validationRules.tel_nummer)}
+              {...register('tel_nummer')}
               data-cy="create_user_tel_nummer_input"
               className="text-sm"
+              placeholder="Optioneel"
             />
             {errors.tel_nummer && <p className="text-sm text-red-500">{errors.tel_nummer.message}</p>}
           </div>

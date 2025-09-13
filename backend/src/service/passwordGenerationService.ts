@@ -234,13 +234,15 @@ export const generateNewPassword = async (data: GeneratePasswordData): Promise<v
  */
 export const createUserWithGeneratedPassword = async (data: CreateUserWithPasswordData): Promise<number> => {
   try {
-    // Controleer of email al bestaat
-    const existingUser = await prisma.user.findUnique({
-      where: { email: data.userData.email },
-    });
+    // Controleer of email al bestaat (alleen als email is opgegeven)
+    if (data.userData.email && data.userData.email.trim() !== '') {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: data.userData.email },
+      });
 
-    if (existingUser) {
-      throw ServiceError.conflict('Een gebruiker met dit emailadres bestaat al');
+      if (existingUser) {
+        throw ServiceError.conflict('Een gebruiker met dit emailadres bestaat al');
+      }
     }
 
     // Genereer wachtwoord
@@ -281,8 +283,10 @@ export const createUserWithGeneratedPassword = async (data: CreateUserWithPasswo
       },
     });
 
-    // Stuur email met wachtwoord
-    await sendPasswordEmail(newUser.user_id, password, true);
+    // Stuur email met wachtwoord (alleen als email is opgegeven)
+    if (data.userData.email && data.userData.email.trim() !== '') {
+      await sendPasswordEmail(newUser.user_id, password, true);
+    }
 
     logger.info('User created with generated password', { 
       userId: newUser.user_id, 

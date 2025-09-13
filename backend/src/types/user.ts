@@ -43,8 +43,8 @@ export type UserCreateInput = {
   voornaam: string;
   achternaam: string;
   geboortedatum?: Date | null;
-  email: string;
-  tel_nummer: string;
+  email?: string;
+  tel_nummer?: string;
   vast_nummer?: string;
   schaakrating_elo: number;
   max_rating?: number | null;
@@ -54,12 +54,12 @@ export type UserCreateInput = {
   lid_sinds: Date;
   password: string;
   roles: string[];
-  adres_straat: string;      
-  adres_nummer: string;   
-  adres_bus: string;          
-  adres_postcode: string;      
-  adres_gemeente: string;       
-  adres_land: string;
+  adres_straat?: string;      
+  adres_nummer?: string;   
+  adres_bus?: string;          
+  adres_postcode?: string;      
+  adres_gemeente?: string;       
+  adres_land?: string;
   // Lidgeld status
   lidgeld_betaald?: boolean;
   lidgeld_periode_start?: Date | null;
