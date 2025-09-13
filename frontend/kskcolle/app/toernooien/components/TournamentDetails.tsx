@@ -10,6 +10,7 @@ import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX } from "lu
 import { useState, useEffect } from "react"
 import PostponeGameButton from './PostponeGameButton'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '../../contexts/auth'
 
 type Game = {
   game_id: number
@@ -54,6 +55,7 @@ export default function TournamentDetails() {
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] })[]
   >([])
   const [reportingAbsence, setReportingAbsence] = useState(false)
+  const { user: currentUser } = useAuth()
 
   // 1) Tournament data fetching
   const {
@@ -68,6 +70,10 @@ export default function TournamentDetails() {
       revalidateOnReconnect: false,
     },
   )
+
+  // Check if current user is participating in the tournament
+  const isParticipating = currentUser && tournament && 
+    tournament.participations.some(p => p.user.user_id === currentUser.user_id)
 
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<any[]>(
@@ -288,15 +294,17 @@ export default function TournamentDetails() {
                 participations={tournament.participations.map(p => ({ user_id: p.user.user_id }))}
                 onGamePostponed={goToRound}
               />
-              <Button
-                onClick={handleReportAbsence}
-                disabled={reportingAbsence}
-                variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50"
-              >
-                <UserX className="h-4 w-4 mr-2" />
-                {reportingAbsence ? 'Melden...' : 'Afwezig Melden'}
-              </Button>
+              {isParticipating && (
+                <Button
+                  onClick={handleReportAbsence}
+                  disabled={reportingAbsence}
+                  variant="outline"
+                  className="border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  <UserX className="h-4 w-4 mr-2" />
+                  {reportingAbsence ? 'Melden...' : 'Afwezig Melden'}
+                </Button>
+              )}
             </div>
           </div>
         </div>
