@@ -5,8 +5,8 @@ export type User = {
   user_id: number;
   voornaam: string;
   achternaam: string;
-  email: string;
-  tel_nummer: string;
+  email: string | null;
+  tel_nummer: string | null;
   vast_nummer?: string | null;
   geboortedatum?: Date | null;
   schaakrating_elo: number;
@@ -86,8 +86,8 @@ export interface RegisterUserRequest {
   voornaam: string;
   achternaam: string;
   geboortedatum?: Date | null;
-  email: string;
-  tel_nummer: string;
+  email?: string;
+  tel_nummer?: string;
   vast_nummer?: string;
   schaakrating_elo?: number;
   max_rating?: number | null;

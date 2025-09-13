@@ -66,7 +66,7 @@ export const requestPasswordReset = async (data: RequestPasswordResetData): Prom
     const resetUrl = `${process.env.FRONTEND_URL || 'kskcolle.be'}/reset-password?token=${token}`;
     
     await emailService.sendPasswordResetEmail({
-      to: user.email,
+      to: user.email || "",
       resetToken: token,
       userName: `${user.voornaam} ${user.achternaam}`,
       resetUrl,

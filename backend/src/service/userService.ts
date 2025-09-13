@@ -30,7 +30,7 @@ const makeExposedUser = ({
   bondslidgeld_betaald,
   bondslidgeld_periode_start,
   bondslidgeld_periode_eind,
-  }: User): PublicUser => ({
+  }: any): PublicUser => ({
     user_id, 
     voornaam, 
     achternaam, 

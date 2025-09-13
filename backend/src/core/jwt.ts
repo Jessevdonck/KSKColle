@@ -7,7 +7,6 @@ import type {
 } from 'jsonwebtoken'; 
 import jwt from 'jsonwebtoken'; 
 import util from 'node:util'; 
-import type { User } from '../types/user';
 
 // 👇 1
 const JWT_AUDIENCE = config.get<string>('auth.jwt.audience');
@@ -28,7 +27,7 @@ const asyncJwtVerify = util.promisify<
 >(jwt.verify);
 
 // 👇 5
-export const generateJWT = async (user: User): Promise<string> => {
+export const generateJWT = async (user: any): Promise<string> => {
   const tokenData = { roles: user.roles };
 
   const signOptions = {

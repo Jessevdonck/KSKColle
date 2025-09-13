@@ -17,9 +17,9 @@ interface CreateUserWithPasswordData {
   userData: {
     voornaam: string;
     achternaam: string;
-    email: string;
+    email?: string;
     geboortedatum?: Date | null;
-    tel_nummer: string;
+    tel_nummer?: string;
     vast_nummer?: string;
     schaakrating_elo?: number;
     is_admin?: boolean;
@@ -173,7 +173,7 @@ Deze email is automatisch gegenereerd. Reageer niet op deze email.
     `;
 
     await emailService.sendCustomEmail({
-      to: user.email,
+      to: user.email || "",
       subject: subject,
       html: htmlContent,
       text: textContent,

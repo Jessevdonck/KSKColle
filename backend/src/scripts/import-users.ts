@@ -280,7 +280,7 @@ async function main() {
       const mapped = mapRaw(rows[i], i);
       if (!mapped) { skip++; continue; }
       const { user, plainPassword } = await upsertUser(mapped);
-      creds.push({ email: user.email, password: plainPassword });
+      creds.push({ email: user.email || "", password: plainPassword });
       ok++;
       if (i % 25 === 0) console.log(`... rij ${i + 1} verwerkt`);
     } catch (e: any) {
