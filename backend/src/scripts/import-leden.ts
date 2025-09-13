@@ -2,7 +2,17 @@
  * Run: npx ts-node scripts/import-leden.ts
  * 
  * Importeert leden uit leden.xls zonder emails te versturen
- * Niels Ongena en Jesse Vaerendonck krijgen admin rol
+ * 
+ * Rollen mapping (vanuit Excel kolom "Rol"):
+ * - "oud-lid" → rol: "exlid"
+ * - "lid" → rol: "user" 
+ * - "bestuurslid" → rollen: ["user", "bestuurslid"]
+ * - "admin" → rollen: ["user", "admin"]
+ * 
+ * Speciale regels:
+ * - jvaerendonck@gmail.com krijgt altijd admin rol (ook al staat er "lid")
+ * - Jeugdleden (< 18 jaar) krijgen altijd rol "user" en is_youth = true
+ * - Niels Ongena en Jesse Vaerendonck krijgen admin rol
  */
 import { PrismaClient } from "@prisma/client";
 import * as XLSX from "xlsx";
@@ -38,17 +48,58 @@ const COLS = {
 } as const;
 
 /** Admin gebruikers die speciale rechten krijgen (op basis van email) */
-const ADMIN_EMAILS = ["niels.ongena@hotmail.be", "jvaerendonck@gmail.com"];
+
+/** Functie om rollen te bepalen op basis van Excel kolom "Rol" */
+function determineRoles(rolRaw: any, email: string | undefined): string[] {
+  const rol = String(rolRaw ?? "").trim().toLowerCase();
+  
+  // Specifieke admin uitzondering voor jvaerendonck@gmail.com
+  if (email && email.toLowerCase() === "jvaerendonck@gmail.com") {
+    return ["user", "admin"];
+  }
+  
+  // Bepaal basis rol op basis van Excel kolom "Rol"
+  let baseRole: string;
+  switch (rol) {
+    case "oud-lid":
+      baseRole = "exlid";
+      break;
+    case "lid":
+      baseRole = "user";
+      break;
+    case "bestuurslid":
+      baseRole = "bestuurslid";
+      break;
+    case "admin":
+      baseRole = "admin";
+      break;
+    case "jeugdlid":
+      baseRole = "user"; // Jeugdleden krijgen altijd user rol
+      break;
+    default:
+      // Default rol als kolom leeg is of onbekende waarde
+      baseRole = "user";
+  }
+  
+  // Voor admin en bestuurslid: voeg user rol toe
+  if (baseRole === "admin") {
+    return ["user", "admin"];
+  } else if (baseRole === "bestuurslid") {
+    return ["user", "bestuurslid"];
+  } else {
+    return [baseRole];
+  }
+}
 
 /** Staat "Naam" als "Achternaam Voornaam"? */
 const NAME_IS_LASTNAME_THEN_FIRSTNAME = true;
 
 /** Defaults */
-const DEFAULT_ROLE_ARRAY = ["user"];
-const ADMIN_ROLE_ARRAY = ["user", "admin"];
 const TEMP_PASSWORD_LENGTH = 10;
+/** Date input formats - DD-MM-YYYY is het hoofdfomat */
 const DATE_INPUT_FORMATS = [
-  "DD/MM/YYYY","D/M/YYYY","YYYY-MM-DD","DD-MM-YYYY","D-M-YYYY",
+  "DD-MM-YYYY","D-M-YYYY","DD/MM/YYYY","D/M/YYYY","YYYY-MM-DD",
+  "DD-MM-YYYY HH:mm","DD-MM-YYYY HH:mm:ss",
   "DD/MM/YYYY HH:mm","DD/MM/YYYY HH:mm:ss",
   "YYYY-MM-DD HH:mm","YYYY-MM-DD HH:mm:ss",
   "M/D/YYYY","MM/DD/YYYY","M/D/YYYY HH:mm:ss"
@@ -65,7 +116,9 @@ function parseDateExcelOrString(v: any): Date | null {
   if (v == null || v === "") return null;
 
   // 1) Als het al een Date is (door cellDates:true) -> direct gebruiken
-  if (v instanceof Date && !isNaN(v.getTime())) return v;
+  if (v instanceof Date && !isNaN(v.getTime())) {
+    return v;
+  }
 
   // 2) Excel-serieel getal
   if (typeof v === "number") {
@@ -73,19 +126,28 @@ function parseDateExcelOrString(v: any): Date | null {
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
     const ms = Math.round(v * 86400000);
     const d = new Date(excelEpoch.getTime() + ms);
-    return isNaN(d.getTime()) ? null : d;
+    if (!isNaN(d.getTime())) {
+      return d;
+    }
   }
 
   // 3) Strings (met en zonder tijd)
   const s = String(v).trim().replace(/\s+/g, " ");
+  
   for (const fmt of DATE_INPUT_FORMATS) {
     const m = dayjs.utc(s, fmt, true);
-    if (m.isValid()) return m.toDate();
+    if (m.isValid()) {
+      return m.toDate();
+    }
   }
 
   // 4) Laatste poging: native parse
   const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
+  if (!isNaN(d.getTime())) {
+    return d;
+  }
+
+  return null;
 }
 
 function randomPassword(len = TEMP_PASSWORD_LENGTH): string {
@@ -141,20 +203,18 @@ function parseAddress(adresRaw: any): { straat?: string; nummer?: string; bus?: 
 }
 
 /** Bepaal of gebruiker admin rechten moet krijgen */
-function shouldBeAdmin(email: string): boolean {
-  return ADMIN_EMAILS.includes(email.toLowerCase());
-}
 
 /** Validatie van de gemapte rij */
 const RowSchema = z.object({
   voornaam: z.string().min(1),
   achternaam: z.string().min(1),
-  email: z.string().email(),
+  email: z.string().email().optional().or(z.literal(undefined)),
   tel_nummer: z.string().min(1),
   vast_nummer: z.string().optional(),
   geboortedatum: z.date(),
   lid_sinds: z.date(),
   schaakrating_elo: z.number(),
+  is_youth: z.boolean(),
   adres_straat: z.string().optional(),
   adres_nummer: z.string().optional(),
   adres_bus: z.string().optional(),
@@ -179,12 +239,8 @@ function mapRaw(raw: any, rowIndex: number): ValidRow | null {
   // Naam
   const { voornaam, achternaam } = splitName(raw[COLS.naam]);
 
-  // Email: als ontbreekt of ongeldig → skip
-  const email = String(raw[COLS.email] ?? "").trim();
-  if (!email) {
-    console.warn(`Rij ${rowIndex + 2}: geen e-mail → overgeslagen.`);
-    return null;
-  }
+  // Email: nu optioneel, maar moet uniek zijn als aanwezig
+  const email = String(raw[COLS.email] ?? "").trim() || undefined;
 
   // Telefoons
   const gsm = String(raw[COLS.gsm] ?? "").trim();
@@ -192,9 +248,18 @@ function mapRaw(raw: any, rowIndex: number): ValidRow | null {
   const tel_nummer = gsm || telefoon || "0000000000";
   const vast_nummer = telefoon || undefined;
 
-  // Geboortedatum
-  const dGeb = parseDateExcelOrString(raw[COLS.geboortedatum]);
-  const geboortedatum = dGeb || new Date(Date.UTC(1970, 0, 1));
+  // Geboortedatum uit "Geb.Dat" kolom (DD-MM-YYYY formaat)
+  let geboortedatum: Date | null = null;
+  
+  if (raw[COLS.geboortedatum]) {
+    geboortedatum = parseDateExcelOrString(raw[COLS.geboortedatum]);
+  }
+  
+  // Fallback naar een realistische datum als parsing mislukt
+  if (!geboortedatum) {
+    geboortedatum = new Date(Date.UTC(1980, 5, 15)); // 15 juni 1980 als fallback
+    console.warn(`Rij ${rowIndex + 2}: Geen geldige geboortedatum gevonden voor ${voornaam} ${achternaam} (${raw[COLS.geboortedatum]}) - gebruikt fallback datum`);
+  }
 
   // Lid sinds (uit kolom "Start" = jaar)
   const startJaar = parseIntSafe(raw[COLS.start]);
@@ -209,8 +274,12 @@ function mapRaw(raw: any, rowIndex: number): ValidRow | null {
   const elioRating = parseIntSafe(raw[COLS.elio]);
   const schaakrating_elo = elioRating || 0; // Default to 0 if no rating
 
-  // Bepaal rollen
-  const roles = shouldBeAdmin(email) ? ADMIN_ROLE_ARRAY : DEFAULT_ROLE_ARRAY;
+  // Bepaal of jeugdlid op basis van Excel kolom "Rol"
+  const rol = String(raw[COLS.rol] ?? "").trim().toLowerCase();
+  const isYouth = rol === "jeugdlid";
+
+  // Bepaal rollen op basis van Excel kolom "Rol"
+  const roles = determineRoles(raw[COLS.rol], email);
 
   // Valideer + return
   const candidate = {
@@ -222,6 +291,7 @@ function mapRaw(raw: any, rowIndex: number): ValidRow | null {
     geboortedatum,
     lid_sinds,
     schaakrating_elo,
+    is_youth: isYouth,
     adres_straat: straat,
     adres_nummer: nummer,
     adres_bus: bus,
@@ -246,13 +316,14 @@ async function upsertUser(row: ValidRow) {
   const data = {
     voornaam: row.voornaam,
     achternaam: row.achternaam,
-    email: row.email,
+    email: row.email || null,
     tel_nummer: row.tel_nummer,
     geboortedatum: row.geboortedatum,
     lid_sinds: row.lid_sinds,
     password_hash,
     roles: JSON.stringify(row.roles), // Convert array to JSON string
     schaakrating_elo: row.schaakrating_elo, // ELIO rating from Excel
+    is_youth: row.is_youth, // Jeugdlid status
     adres_land: "Belgium", // Default country
     ...(row.vast_nummer ? { vast_nummer: row.vast_nummer } : {}),
     ...(row.adres_straat ? { adres_straat: row.adres_straat } : {}),
@@ -262,11 +333,36 @@ async function upsertUser(row: ValidRow) {
     ...(row.adres_gemeente ? { adres_gemeente: row.adres_gemeente } : {}),
   } as const;
 
-  const user = await prisma.user.upsert({
-    where: { email: row.email },
-    create: data,
-    update: data,
-  });
+  let user;
+  if (row.email) {
+    // Gebruiker heeft email - gebruik email als unique identifier
+    user = await prisma.user.upsert({
+      where: { email: row.email },
+      create: data,
+      update: data,
+    });
+  } else {
+    // Gebruiker heeft geen email - zoek op naam en geboortedatum
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        voornaam: row.voornaam,
+        achternaam: row.achternaam,
+        geboortedatum: row.geboortedatum,
+        email: null,
+      },
+    });
+
+    if (existingUser) {
+      user = await prisma.user.update({
+        where: { user_id: existingUser.user_id },
+        data: data,
+      });
+    } else {
+      user = await prisma.user.create({
+        data: data,
+      });
+    }
+  }
 
   return { user, plainPassword, isAdmin: row.roles.includes("admin") };
 }
@@ -279,8 +375,8 @@ async function main() {
   const rows = readRows();
   console.log(`Gevonden ${rows.length} rijen in Excel bestand`);
 
-  const creds: Array<{ email: string; password: string; isAdmin: boolean }> = [];
-  let ok = 0, skip = 0, fail = 0, adminCount = 0;
+  const creds: Array<{ email: string | null; password: string; isAdmin: boolean; roles: string[] }> = [];
+  let ok = 0, skip = 0, fail = 0, adminCount = 0, youthCount = 0, exlidCount = 0, bestuurslidCount = 0;
 
   for (let i = 0; i < rows.length; i++) {
     try {
@@ -291,12 +387,22 @@ async function main() {
       }
       
       const { user, plainPassword, isAdmin } = await upsertUser(mapped);
-      creds.push({ email: user.email, password: plainPassword, isAdmin });
+      creds.push({ email: user.email, password: plainPassword, isAdmin, roles: mapped.roles });
       ok++;
       
+      // Tel verschillende rollen
       if (isAdmin) {
         adminCount++;
         console.log(`✓ Admin gebruiker aangemaakt: ${user.voornaam} ${user.achternaam} (${user.email})`);
+      }
+      if (mapped.is_youth) {
+        youthCount++;
+      }
+      if (mapped.roles.includes("exlid")) {
+        exlidCount++;
+      }
+      if (mapped.roles.includes("bestuurslid")) {
+        bestuurslidCount++;
       }
       
       if (i % 50 === 0) console.log(`... rij ${i + 1} verwerkt`);
@@ -311,8 +417,8 @@ async function main() {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   
   const csvContent = [
-    "email,password,is_admin",
-    ...creds.map(c => `${c.email},${c.password},${c.isAdmin}`)
+    "email,password,is_admin,roles",
+    ...creds.map(c => `${c.email},${c.password},${c.isAdmin},"${c.roles.join(',')}"`)
   ].join("\n");
   
   fs.writeFileSync(out, csvContent, "utf8");
@@ -322,6 +428,9 @@ async function main() {
   console.log(`✗ Overgeslagen: ${skip} gebruikers (geen email)`);
   console.log(`✗ Gefaald: ${fail} gebruikers`);
   console.log(`👑 Admin gebruikers: ${adminCount}`);
+  console.log(`🧒 Jeugdleden: ${youthCount}`);
+  console.log(`👴 Ex-leden: ${exlidCount}`);
+  console.log(`🏛️  Bestuursleden: ${bestuurslidCount}`);
   console.log(`📄 Wachtwoorden opgeslagen in: ${out}`);
   console.log("\n⚠️  BELANGRIJK: Geen emails zijn verstuurd!");
   console.log("   De wachtwoorden staan in het CSV bestand.");

@@ -91,7 +91,7 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
     const searchLower = searchTerm.toLowerCase()
     return (
       `${user.voornaam} ${user.achternaam}`.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
+      (user.email?.toLowerCase().includes(searchLower) ?? false) ||
       (user.fide_id?.toString().includes(searchLower) ?? false) ||
       user.schaakrating_elo.toString().includes(searchLower)
     )
@@ -277,7 +277,7 @@ export default function UserList({ users, onDelete, isDeleting = false }: UserLi
                       <h3 className="font-semibold text-textColor text-sm">{`${user.voornaam} ${user.achternaam}`}</h3>
                       <div className="flex items-center gap-2 text-xs text-gray-600">
                         <Mail className="h-3 w-3" />
-                        <span>{user.email}</span>
+                        <span>{user.email || 'Geen email'}</span>
                       </div>
                     </div>
                   </div>

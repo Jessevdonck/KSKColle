@@ -1,10 +1,29 @@
+/* scripts/update-leden.ts
+ * Run: npx ts-node scripts/update-leden.ts
+ * 
+ * Update bestaande leden uit leden.xls zonder wachtwoorden te wijzigen
+ * 
+ * Rollen mapping (vanuit Excel kolom "Rol"):
+ * - "oud-lid" → rol: "exlid"
+ * - "lid" → rol: "user" 
+ * - "bestuurslid" → rollen: ["user", "bestuurslid"]
+ * - "admin" → rollen: ["user", "admin"]
+ * 
+ * Speciale regels:
+ * - jvaerendonck@gmail.com krijgt altijd admin rol (ook al staat er "lid")
+ * - Jeugdleden (< 18 jaar) krijgen altijd rol "user" en is_youth = true
+ * 
+ * Update alleen velden die verschillen van de database
+ */
 import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
 import * as path from 'path';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(customParseFormat);
+dayjs.extend(utc);
 const prisma = new PrismaClient();
 
 /** === 1) BESTAND & SHEET === */
@@ -24,14 +43,58 @@ const COLS = {
   email: "E-mail",
   lid_sinds_jaar: "Start",
   rating: "ELIO",
+  rol: "Rol",
 } as const;
 
 /** Staat "Naam" als "Achternaam Voornaam"? */
 const NAME_IS_LASTNAME_THEN_FIRSTNAME = true;
 
-/** Date input formats */
+/** Functie om rollen te bepalen op basis van Excel kolom "Rol" */
+function determineRoles(rolRaw: any, email: string | undefined): string[] {
+  const rol = String(rolRaw ?? "").trim().toLowerCase();
+  
+  // Specifieke admin uitzondering voor jvaerendonck@gmail.com
+  if (email && email.toLowerCase() === "jvaerendonck@gmail.com") {
+    return ["user", "admin"];
+  }
+  
+  // Bepaal basis rol op basis van Excel kolom "Rol"
+  let baseRole: string;
+  switch (rol) {
+    case "oud-lid":
+      baseRole = "exlid";
+      break;
+    case "lid":
+      baseRole = "user";
+      break;
+    case "bestuurslid":
+      baseRole = "bestuurslid";
+      break;
+    case "admin":
+      baseRole = "admin";
+      break;
+    case "jeugdlid":
+      baseRole = "user"; // Jeugdleden krijgen altijd user rol
+      break;
+    default:
+      // Default rol als kolom leeg is of onbekende waarde
+      baseRole = "user";
+  }
+  
+  // Voor admin en bestuurslid: voeg user rol toe
+  if (baseRole === "admin") {
+    return ["user", "admin"];
+  } else if (baseRole === "bestuurslid") {
+    return ["user", "bestuurslid"];
+  } else {
+    return [baseRole];
+  }
+}
+
+/** Date input formats - DD-MM-YYYY is het hoofdfomat */
 const DATE_INPUT_FORMATS = [
-  "DD/MM/YYYY","D/M/YYYY","YYYY-MM-DD","DD-MM-YYYY","D-M-YYYY",
+  "DD-MM-YYYY","D-M-YYYY","DD/MM/YYYY","D/M/YYYY","YYYY-MM-DD",
+  "DD-MM-YYYY HH:mm","DD-MM-YYYY HH:mm:ss",
   "DD/MM/YYYY HH:mm","DD/MM/YYYY HH:mm:ss",
   "YYYY-MM-DD HH:mm","YYYY-MM-DD HH:mm:ss",
   "M/D/YYYY","MM/DD/YYYY","M/D/YYYY HH:mm:ss"
@@ -46,21 +109,39 @@ function parseIntSafe(v: any): number | null {
 
 function parseDateExcelOrString(v: any): Date | null {
   if (v == null || v === "") return null;
-  
-  if (typeof v === "number") {
-    const excelEpoch = new Date(1900, 0, 1);
-    const days = v - 2;
-    return new Date(excelEpoch.getTime() + days * 24 * 60 * 60 * 1000);
+
+  // 1) Als het al een Date is (door cellDates:true) -> direct gebruiken
+  if (v instanceof Date && !isNaN(v.getTime())) {
+    return v;
   }
-  
-  const s = String(v).trim();
-  if (!s) return null;
+
+  // 2) Excel-serieel getal
+  if (typeof v === "number") {
+    // Excel 1900-system
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    const ms = Math.round(v * 86400000);
+    const d = new Date(excelEpoch.getTime() + ms);
+    if (!isNaN(d.getTime())) {
+      return d;
+    }
+  }
+
+  // 3) Strings (met en zonder tijd)
+  const s = String(v).trim().replace(/\s+/g, " ");
   
   for (const fmt of DATE_INPUT_FORMATS) {
-    const parsed = dayjs(s, fmt, true);
-    if (parsed.isValid()) return parsed.toDate();
+    const m = dayjs.utc(s, fmt, true);
+    if (m.isValid()) {
+      return m.toDate();
+    }
   }
-  
+
+  // 4) Laatste poging: native parse
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    return d;
+  }
+
   return null;
 }
 
@@ -114,24 +195,26 @@ function mapRaw(raw: any, rowIndex: number): any | null {
   // Parse name into first and last name
   const { voornaam, achternaam } = splitName(raw[COLS.naam]);
 
-  const email = String(raw[COLS.email] ?? "").trim();
-  if (!email) {
-    console.warn(`Rij ${rowIndex + 2}: geen e-mail → overgeslagen.`);
-    return null;
-  }
+  // Email: nu optioneel, maar moet uniek zijn als aanwezig
+  const email = String(raw[COLS.email] ?? "").trim() || undefined;
 
   const gsm = String(raw[COLS.gsm] ?? "").trim();
   const tel = String(raw[COLS.tel] ?? "").trim();
   const tel_nummer = gsm || tel || "0000000000";
   const vast_nummer = tel || undefined;
 
-  const dGeb = parseDateExcelOrString(raw[COLS.geboortedatum]);
-  let geboortedatum = dGeb;
-  if (!geboortedatum) {
-    const jaar = parseIntSafe(raw[COLS.geboortjaar]);
-    if (jaar) geboortedatum = new Date(Date.UTC(jaar, 0, 1));
+  // Geboortedatum uit "Geb.Dat" kolom (DD-MM-YYYY formaat)
+  let geboortedatum: Date | null = null;
+  
+  if (raw[COLS.geboortedatum]) {
+    geboortedatum = parseDateExcelOrString(raw[COLS.geboortedatum]);
   }
-  if (!geboortedatum) geboortedatum = new Date(Date.UTC(1970, 0, 1));
+  
+  // Fallback naar een realistische datum als parsing mislukt
+  if (!geboortedatum) {
+    geboortedatum = new Date(Date.UTC(1980, 5, 15)); // 15 juni 1980 als fallback
+    console.warn(`Rij ${rowIndex + 2}: Geen geldige geboortedatum gevonden voor ${voornaam} ${achternaam} (${raw[COLS.geboortedatum]}) - gebruikt fallback datum`);
+  }
 
   const sindsJaar = parseIntSafe(raw[COLS.lid_sinds_jaar]);
   const lid_sinds = sindsJaar ? new Date(Date.UTC(sindsJaar, 0, 1)) : new Date();
@@ -141,6 +224,13 @@ function mapRaw(raw: any, rowIndex: number): any | null {
   const adres_gemeente = String(raw[COLS.gemeente] ?? "").trim() || undefined;
 
   const rating = parseIntSafe(raw[COLS.rating]);
+  
+  // Bepaal of jeugdlid op basis van Excel kolom "Rol"
+  const rol = String(raw[COLS.rol] ?? "").trim().toLowerCase();
+  const isYouth = rol === "jeugdlid";
+
+  // Bepaal rollen op basis van Excel kolom "Rol"
+  const roles = determineRoles(raw[COLS.rol], email);
   
   // Debug: toon rating parsing
   if (rating) {
@@ -161,17 +251,35 @@ function mapRaw(raw: any, rowIndex: number): any | null {
     adres_postcode,
     adres_gemeente,
     rating,
+    is_youth: isYouth,
+    roles,
   };
 }
 
 /** Update existing user - only update fields that are different */
 async function updateUser(row: any): Promise<{ updated: boolean; user: any }> {
-  const existingUser = await prisma.user.findUnique({
-    where: { email: row.email }
-  });
+  let existingUser;
+  
+  if (row.email) {
+    // Gebruiker heeft email - zoek op email
+    existingUser = await prisma.user.findUnique({
+      where: { email: row.email }
+    });
+  } else {
+    // Gebruiker heeft geen email - zoek op naam en geboortedatum
+    existingUser = await prisma.user.findFirst({
+      where: {
+        voornaam: row.voornaam,
+        achternaam: row.achternaam,
+        geboortedatum: row.geboortedatum,
+        email: null,
+      },
+    });
+  }
 
   if (!existingUser) {
-    console.log(`❌ Gebruiker niet gevonden: ${row.email} - overgeslagen`);
+    const identifier = row.email || `${row.voornaam} ${row.achternaam}`;
+    console.log(`❌ Gebruiker niet gevonden: ${identifier} - overgeslagen`);
     return { updated: false, user: null };
   }
 
@@ -242,6 +350,23 @@ async function updateUser(row: any): Promise<{ updated: boolean; user: any }> {
     hasChanges = true;
   }
 
+  // Check roles update
+  const currentRoles = existingUser.roles ? 
+    (typeof existingUser.roles === 'string' ? JSON.parse(existingUser.roles) : existingUser.roles) : [];
+  const rolesEqual = JSON.stringify(currentRoles.sort()) === JSON.stringify(row.roles.sort());
+  if (!rolesEqual) {
+    console.log(`👤 Rollen update voor ${row.email}: [${currentRoles.join(', ')}] → [${row.roles.join(', ')}]`);
+    updates.roles = JSON.stringify(row.roles);
+    hasChanges = true;
+  }
+
+  // Check is_youth update
+  if (row.is_youth !== existingUser.is_youth) {
+    console.log(`🧒 Jeugdlid status update voor ${row.email}: ${existingUser.is_youth} → ${row.is_youth}`);
+    updates.is_youth = row.is_youth;
+    hasChanges = true;
+  }
+
   if (!hasChanges) {
     console.log(`⏭️  Geen wijzigingen voor ${row.email} - overgeslagen`);
     return { updated: false, user: existingUser };
@@ -264,6 +389,7 @@ async function main() {
   try {
     const rows = readRows();
     let updated = 0, skipped = 0, notFound = 0, errors = 0;
+    let rolesUpdated = 0, youthStatusUpdated = 0;
 
     console.log(`📊 ${rows.length} rijen gevonden in Excel bestand`);
 
@@ -278,6 +404,14 @@ async function main() {
         const result = await updateUser(mapped);
         if (result.updated) {
           updated++;
+          
+          // Tel specifieke updates
+          if (result.user && result.user.roles !== JSON.stringify(mapped.roles)) {
+            rolesUpdated++;
+          }
+          if (result.user && result.user.is_youth !== mapped.is_youth) {
+            youthStatusUpdated++;
+          }
         } else if (result.user === null) {
           notFound++;
         } else {
@@ -297,6 +431,8 @@ async function main() {
     console.log(`⏭️  Geen wijzigingen: ${skipped}`);
     console.log(`❌ Niet gevonden: ${notFound}`);
     console.log(`💥 Fouten: ${errors}`);
+    console.log(`👤 Rollen updates: ${rolesUpdated}`);
+    console.log(`🧒 Jeugdlid status updates: ${youthStatusUpdated}`);
 
   } catch (error) {
     console.error("💥 Fout bij het lezen van Excel bestand:", error);

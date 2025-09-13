@@ -7,7 +7,7 @@ export interface User {
   voornaam: string;
   achternaam: string;
   geboortedatum?: Date | null;
-  email: string;
+  email: string | null;
   tel_nummer: string;
   schaakrating_elo: number;
   schaakrating_difference?: number;
@@ -67,7 +67,7 @@ export interface CreateUserResponse {
 export interface CreateUserRequest {
   voornaam: string;
   achternaam: string;
-  email: string;
+  email?: string;
   geboortedatum?: string;
   tel_nummer: string;
   vast_nummer?: string;

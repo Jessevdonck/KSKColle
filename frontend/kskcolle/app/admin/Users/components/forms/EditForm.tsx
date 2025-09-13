@@ -100,7 +100,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       voornaam: user.voornaam,
       achternaam: user.achternaam,
       geboortedatum: user.geboortedatum ? toDateInputString(user.geboortedatum) : "",
-      email: user.email,
+      email: user.email || "",
       tel_nummer: user.tel_nummer,
       vast_nummer: user.vast_nummer,
       lid_sinds: toDateInputString(user.lid_sinds),

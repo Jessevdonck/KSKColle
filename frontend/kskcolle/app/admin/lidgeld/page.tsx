@@ -43,7 +43,7 @@ export default function LidgeldManagement() {
     const matchesSearch = 
       user.voornaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.achternaam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      (user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
 
     if (!matchesSearch) return false
 
@@ -205,7 +205,7 @@ export default function LidgeldManagement() {
                       </div>
                       <div>
                         <CardTitle className="text-lg">{user.voornaam} {user.achternaam}</CardTitle>
-                        <p className="text-sm text-gray-600">{user.email}</p>
+                        <p className="text-sm text-gray-600">{user.email || 'Geen email'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
