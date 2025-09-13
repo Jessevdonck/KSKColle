@@ -89,6 +89,11 @@ export default function Navbar() {
                   <span>Foto&apos;s</span>
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:cursor-pointer">
+                <Link href="/nationale-elo" className="flex items-center">
+                  <span>Nationale ELO</span>
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -308,6 +313,13 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Foto&apos;s
+                  </Link>
+                  <Link
+                    href="/nationale-elo"
+                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Nationale ELO
                   </Link>
                 </div>
               )}
