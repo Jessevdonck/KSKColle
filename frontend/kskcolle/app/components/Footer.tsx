@@ -40,8 +40,9 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-[#9bafa3] flex justify-center items-center">
+        <div className="pt-8 border-t border-[#9bafa3] flex flex-col items-center space-y-2">
           <p className="text-lg">&copy; {new Date().getFullYear()} KSK Colle. Alle rechten voorbehouden.</p>
+          <p className="text-sm text-gray-500">Gemaakt door Jesse Vaerendonck</p>
         </div>
       </div>
     </footer>
