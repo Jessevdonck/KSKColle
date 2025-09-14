@@ -111,7 +111,7 @@ export default function UsersManagement() {
       </div>
 
       {/* Edit Modal */}
-      {selectedUser && <EditForm user={selectedUser} onClose={() => setSelectedUser(null)} />}
+      {selectedUser && <EditForm user={selectedUser} onClose={() => setSelectedUser(null)} onRefresh={refreshUsers} />}
     </div>
   )
 }

@@ -82,7 +82,7 @@ type UserListProps = {
   }
 }
 
-export default function UserList({ users, onDelete, isDeleting = false, pagination }: UserListProps) {
+export default function UserList({ users, onDelete, isDeleting = false, pagination, onRefresh }: UserListProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [allUsers, setAllUsers] = useState<User[]>([])
@@ -458,7 +458,7 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
               Speler Bewerken
             </DialogTitle>
           </DialogHeader>
-          {editingUser && <EditForm user={editingUser} onClose={() => setEditingUser(null)} />}
+          {editingUser && <EditForm user={editingUser} onClose={() => setEditingUser(null)} onRefresh={onRefresh} />}
         </DialogContent>
       </Dialog>
     </>

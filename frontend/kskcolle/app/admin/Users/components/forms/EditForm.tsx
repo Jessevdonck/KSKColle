@@ -22,7 +22,7 @@ const validationRules = {
   },
   schaakrating_elo: {
     required: "Clubrating is vereist!",
-    min: { value: 100, message: "Minimale rating is 100" },
+    min: { value: 0, message: "Minimale rating is 0" },
     max: { value: 5000, message: "Maximale rating is 5000" },
   },
   email: {
@@ -80,9 +80,10 @@ const toDateInputString = (date: Date) => {
 interface EditFormProps {
   user
   onClose: () => void
+  onRefresh?: () => void
 }
 
-export default function EditForm({ user, onClose }: EditFormProps) {
+export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const { trigger: saveUser, isMutating } = useSWRMutation("users", save)
 
@@ -147,6 +148,7 @@ export default function EditForm({ user, onClose }: EditFormProps) {
       await saveUser(formattedValues, {
         onSuccess: () => {
           setSuccessMessage("Speler correct gewijzigd")
+          onRefresh?.() // Refresh the user list
           setTimeout(() => {
             setSuccessMessage(null)
             onClose()
