@@ -277,8 +277,33 @@ export const updatePassword = async (userId: number, currentPassword: string, ne
 
 export const removeUser = async (user_id: number): Promise<void> => {
   try {
-    await prisma.user.delete({
-      where: {user_id,},
+    // First, delete all related data to avoid foreign key constraint violations
+    await prisma.$transaction(async (tx) => {
+      // Delete games where user is speler1, speler2, or winnaar
+      await tx.game.deleteMany({
+        where: {
+          OR: [
+            { speler1_id: user_id },
+            { speler2_id: user_id },
+            { winnaar_id: user_id }
+          ]
+        }
+      });
+
+      // Delete participations
+      await tx.participation.deleteMany({
+        where: { user_id }
+      });
+
+      // Delete password reset tokens
+      await tx.passwordResetToken.deleteMany({
+        where: { user_id }
+      });
+
+      // Finally, delete the user
+      await tx.user.delete({
+        where: { user_id }
+      });
     });
   } catch (error) {
     throw handleDBError(error);

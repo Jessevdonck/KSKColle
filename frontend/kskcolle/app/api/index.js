@@ -38,7 +38,7 @@ export const deleteById = async (url, { arg: id }) => {
   {
     await axios.delete(`${baseUrl}/${url}/${id}`); 
   } catch(error){
-    return {success: false, message: error.message}
+    throw error; // Re-throw the error so it can be caught by the calling function
   }
 };
 
