@@ -110,7 +110,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-textColor">Email</h3>
-                    <p className="text-gray-600">info@kskcolle.be</p>
+                    <p className="text-gray-600">patrick.gillis3@telenet.be</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-500">
@@ -125,7 +125,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-textColor">Telefoon</h3>
-                    <p className="text-gray-600">+32 9 XXX XX XX</p>
+                    <p className="text-gray-600">0474 69 68 36</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-500">Bel ons voor dringende vragen of meer informatie!</p>
