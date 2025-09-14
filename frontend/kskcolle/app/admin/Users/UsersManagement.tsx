@@ -30,6 +30,7 @@ export default function UsersManagement() {
   const handleDeleteUser = async (userId: number) => {
     try {
       await deleteUser(userId)
+      // Update local cache immediately
       mutate((currentData) => {
         if (!currentData) return currentData
         return {
@@ -38,11 +39,21 @@ export default function UsersManagement() {
           total: currentData.total - 1
         }
       }, false)
+      // Also refresh from server to ensure consistency
+      setTimeout(() => {
+        mutate()
+      }, 100)
       toast({ title: "Success", description: "Speler succesvol verwijderd" })
     } catch (error) {
       console.error("Error deleting user:", error)
       toast({ title: "Error", description: "Kon speler niet verwijderen", variant: "destructive" })
     }
+  }
+
+  const handleUserDeleted = (userId: number) => {
+    // This callback is called after a user is successfully deleted
+    // It ensures the allUsers state in UserList is also updated
+    console.log(`User ${userId} deleted successfully`)
   }
 
   if (error) {
@@ -100,6 +111,7 @@ export default function UsersManagement() {
             onDelete={handleDeleteUser} 
             isDeleting={isDeleting} 
             onRefresh={refreshUsers}
+            onUserDeleted={handleUserDeleted}
             pagination={{
               currentPage,
               totalPages: usersData.totalPages,

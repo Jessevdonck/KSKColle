@@ -74,6 +74,7 @@ type UserListProps = {
   onDelete: (userId: number) => Promise<void>
   isDeleting?: boolean
   onRefresh?: () => void
+  onUserDeleted?: (userId: number) => void
   pagination?: {
     currentPage: number
     totalPages: number
@@ -82,7 +83,7 @@ type UserListProps = {
   }
 }
 
-export default function UserList({ users, onDelete, isDeleting = false, pagination, onRefresh }: UserListProps) {
+export default function UserList({ users, onDelete, isDeleting = false, pagination, onRefresh, onUserDeleted }: UserListProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [allUsers, setAllUsers] = useState<User[]>([])
@@ -107,7 +108,16 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
   const handleDelete = async (userId: number) => {
     const confirmed = window.confirm("Weet je zeker dat je deze speler wilt verwijderen?")
     if (!confirmed) return
-    await onDelete(userId)
+    
+    try {
+      await onDelete(userId)
+      // Update allUsers state if user was deleted
+      setAllUsers(prevUsers => prevUsers.filter(user => user.user_id !== userId))
+      // Notify parent component
+      onUserDeleted?.(userId)
+    } catch (error) {
+      // Error handling is done in the parent component
+    }
   }
 
   // Filter gebruikers op zoekterm - gebruik alle gebruikers als er wordt gezocht
