@@ -142,3 +142,5 @@ backend/src/data/imported_leden_passwords.csv
 backend/src/data/leden.xls
 
 CLOUDINARY_SETUP.md
+
+backend/src/scripts/analyze-lente.ts

@@ -3,6 +3,38 @@
 import { Crown, Medal, Trophy } from "lucide-react"
 import { useEffect, useState } from "react"
 import * as XLSX from 'xlsx'
+import Link from 'next/link'
+
+// Helper function to create URL-friendly names
+const createUrlFriendlyName = (voornaam: string, achternaam: string): string => {
+  return `${voornaam}_${achternaam}`.replace(/\s+/g, '_')
+}
+
+// Helper function to create clickable name links
+const createClickableName = (name: string) => {
+  if (!name || name.trim() === '' || name === '-') {
+    return <span className="text-gray-500">{name || '-'}</span>
+  }
+  
+  // Split name into first and last name
+  const nameParts = name.trim().split(' ')
+  if (nameParts.length < 2) {
+    return <span className="text-gray-700">{name}</span>
+  }
+  
+  const voornaam = nameParts[0]
+  const achternaam = nameParts.slice(1).join(' ')
+  const profileUrl = `/profile/${createUrlFriendlyName(voornaam, achternaam)}`
+  
+  return (
+    <Link 
+      href={profileUrl}
+      className="text-gray-900 hover:text-mainAccent hover:underline transition-colors cursor-pointer"
+    >
+      {name}
+    </Link>
+  )
+}
 
 interface Result {
   jaar: number
@@ -760,7 +792,7 @@ export default function ErelijstenPage() {
         <h1 className="text-2xl font-bold mb-2 flex items-center justify-center space-x-2 text-gray-800">
           <Trophy className="text-yellow-500" size={24} /> 
           <span>Erelijsten</span>
-        </h1>
+      </h1>
         <p className="text-gray-600 text-sm">Ontdek de geschiedenis van onze toernooien</p>
       </div>
 
@@ -847,7 +879,7 @@ export default function ErelijstenPage() {
                   {konijnResults.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.winnaar || "-"}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.winnaar || "-")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -868,10 +900,10 @@ export default function ErelijstenPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {megalijstResults.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.eerste || "-"}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.tweede || "-"}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.derde || "-"}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -915,7 +947,7 @@ export default function ErelijstenPage() {
                             const klasseData = r.klasses[klasseIndex]
                             return (
                               <tr key={index} className="even:bg-neutral-50">
-                                <td className="p-2 border font-medium">{r.speler}</td>
+                                <td className="p-2 border font-medium">{createClickableName(r.speler)}</td>
                                 <td className="p-2 border text-center">
                                   <span className="text-green-600 font-semibold">{klasseData.eerste}</span>
                                 </td>
@@ -956,7 +988,7 @@ export default function ErelijstenPage() {
                           .map((entry, entryIndex) => (
                             <tr key={entryIndex} className="even:bg-neutral-50">
                               <td className="p-2 border font-medium">{entry.jaar}</td>
-                              <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{entry.winnaar}</td>
+                                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(entry.winnaar)}</td>
                             </tr>
                           ))}
                       </tbody>
@@ -987,9 +1019,9 @@ export default function ErelijstenPage() {
                         {yearData.klasses.map((klasse, klasseIndex) => (
                           <tr key={klasseIndex} className={klasseIndex % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                             <td className="p-3 border-r border-gray-300 font-medium">{klasse.klasse}</td>
-                            <td className="p-3 border-r border-gray-300 text-center">{klasse.eerste || "-"}</td>
-                            <td className="p-3 border-r border-gray-300 text-center">{klasse.tweede || "-"}</td>
-                            <td className="p-3 text-center">{klasse.derde || "-"}</td>
+                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.eerste || "-")}</td>
+                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.tweede || "-")}</td>
+                            <td className="p-3 text-center">{createClickableName(klasse.derde || "-")}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1011,8 +1043,8 @@ export default function ErelijstenPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {results.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.eerste || "-"}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1036,13 +1068,13 @@ export default function ErelijstenPage() {
                   {results.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.eerste || "-"}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.tweede || "-"}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.derde || "-"}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.ratingprijs || "-"}</td>
-                    </tr>
-                  ))}
-                </tbody>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.ratingprijs || "-")}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
 
