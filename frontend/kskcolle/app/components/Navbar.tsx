@@ -59,19 +59,19 @@ export default function Navbar() {
           <span className="text-xl font-bold text-textColor">KSK Colle</span>
         </Link>
 
-        <div className="hidden xl:flex space-x-8">
+        <div className="hidden xl:flex space-x-6">
           {/* Home */}
-          <Link href="/" className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-            <Home size={20} />
+          <Link href="/" className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+            <Home size={14} />
             <span>Home</span>
           </Link>
 
           {/* About Us Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-              <Users size={20} />
+            <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+              <Users size={14} />
               <span>Over Ons</span>
-              <ChevronDown size={16} />
+              <ChevronDown size={14} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -99,10 +99,10 @@ export default function Navbar() {
 
           {/* Tournaments Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-              <Trophy size={20} />
+            <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+              <Trophy size={14} />
               <span>Toernooien</span>
-              <ChevronDown size={16} />
+              <ChevronDown size={14} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -134,18 +134,18 @@ export default function Navbar() {
           </DropdownMenu>
 
           {/* Kalender */}
-          <Link href="/calendar" className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-            <CalendarDays size={20} />
+          <Link href="/calendar" className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+            <CalendarDays size={14} />
             <span>Kalender</span>
           </Link>
 
 
           {/* Jeugd werking */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-                <PersonStanding size={20} />
+              <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+                <PersonStanding size={14} />
                 <span>Jeugd</span>
-                <ChevronDown size={16} />
+                <ChevronDown size={14} />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -187,17 +187,17 @@ export default function Navbar() {
             </DropdownMenu>
 
           {/* Spelers */}
-          <Link href="/spelers" className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-            <ChartColumnBig size={20} />
+          <Link href="/spelers" className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+            <ChartColumnBig size={14} />
             <span>Spelers</span>
           </Link>
 
           {/* Historiek Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-              <History size={20} />
+            <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+              <History size={14} />
               <span>Historiek</span>
-              <ChevronDown size={16} />
+              <ChevronDown size={14} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -215,10 +215,10 @@ export default function Navbar() {
 
           {/* External Links Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors">
-                <Globe size={20} />
+              <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
+                <Globe size={14} />
                 <span>Links</span>
-                <ChevronDown size={16} />
+                <ChevronDown size={14} />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -262,7 +262,7 @@ export default function Navbar() {
 
         <div className="hidden xl:flex items-center space-x-4">
           <Link href="/contact" className="text-textColor hover:text-mainAccent transition-colors">
-            <Mail size={20} />
+            <Mail size={18} />
           </Link>
           {isAuthed ? <ProfileDropdown /> : <LoginSheet />}
         </div>
@@ -273,50 +273,50 @@ export default function Navbar() {
         <div className="xl:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md">
           <div className="container mx-auto py-4 space-y-4">
             {/* Home */}
-            <NavItem href="/" icon={<Home size={20} />} text="Home" onClick={() => setIsMobileMenuOpen(false)} />
+            <NavItem href="/" icon={<Home size={18} />} text="Home" onClick={() => setIsMobileMenuOpen(false)} />
             
             {/* Contact */}
-            <NavItem href="/contact" icon={<Mail size={20} />} text="Contact" onClick={() => setIsMobileMenuOpen(false)} />
+            <NavItem href="/contact" icon={<Mail size={18} />} text="Contact" onClick={() => setIsMobileMenuOpen(false)} />
 
             {/* Mobile About Us Dropdown */}
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
-                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
               >
                 <div className="flex items-center space-x-2">
-                  <Users size={20} />
+                  <Users size={18} />
                   <span>Over Ons</span>
                 </div>
-                {isMobileAboutOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isMobileAboutOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
 
               {isMobileAboutOpen && (
                 <div className="ml-6 space-y-2">
                   <Link
                     href="/about"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Club Info
                   </Link>
                   <Link
                     href="/interviews"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Interviews
                   </Link>
                   <Link
                     href="/photos"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Foto&apos;s
                   </Link>
                   <Link
                     href="/nationale-elo"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Nationale ELO
@@ -329,43 +329,44 @@ export default function Navbar() {
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileTournamentOpen(!isMobileTournamentOpen)}
-                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
               >
                 <div className="flex items-center space-x-2">
-                  <Trophy size={20} />
+                  <Trophy size={18} />
                   <span>Toernooien</span>
                 </div>
-                {isMobileTournamentOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isMobileTournamentOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
 
               {isMobileTournamentOpen && (
                 <div className="ml-6 space-y-2">
                   <Link
                     href="/toernooien"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Huidige Toernooien
                   </Link>
                   <Link
                     href="/toernooien"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Rapidtoernooi
                   </Link>
                   <Link
                     href="/toernooien/reglement"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Reglementen
+                  
                   </Link>
                   <a
                     href="https://www.schaakligaoostvlaanderen.be/ovic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Oost-Vlaamse Interclub
@@ -374,7 +375,7 @@ export default function Navbar() {
                     href="https://interclub.web.app/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Interclub
@@ -384,62 +385,62 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Kalender */}
-            <NavItem href="/calendar" icon={<CalendarDays size={20} />} text="Kalender" onClick={() => setIsMobileMenuOpen(false)} />
+            <NavItem href="/calendar" icon={<CalendarDays size={18} />} text="Kalender" onClick={() => setIsMobileMenuOpen(false)} />
 
 
             {/* Mobile Youth Dropdown */}
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileYouthOpen(!isMobileYouthOpen)}
-                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
               >
                 <div className="flex items-center space-x-2">
-                  <PersonStanding size={20} />
+                  <PersonStanding size={18} />
                   <span>Jeugd</span>
                 </div>
-                {isMobileYouthOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isMobileYouthOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
 
               {isMobileYouthOpen && (
                 <div className="ml-6 space-y-2">
                   <Link
                     href="/youth/info"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Info
                   </Link>
                   <Link
                     href="/youth/calendar"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Kalender
                   </Link>
                   <Link
                     href="/youth/tournaments"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Jeugd Kampioenschap
                   </Link>
                   <Link
                     href="/youth/zomerkampen"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Zomerkampen
                   </Link>
                   <Link
                     href="/youth/info-ovjk-2025"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Info OVJK 2025
                   </Link>
                   <Link
                     href="/youth/sponsoring-ovjk-2025"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Sponsoring OVJK 2025
@@ -448,7 +449,7 @@ export default function Navbar() {
                     href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Vlaams Jeugdschaakcriterium
@@ -458,33 +459,33 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Spelers */}
-            <NavItem href="/spelers" icon={<ChartColumnBig size={20} />} text="Spelers" onClick={() => setIsMobileMenuOpen(false)} />
+            <NavItem href="/spelers" icon={<ChartColumnBig size={18} />} text="Spelers" onClick={() => setIsMobileMenuOpen(false)} />
 
             {/* Mobile Historiek Dropdown */}
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileHistoryOpen(!isMobileHistoryOpen)}
-                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
               >
                 <div className="flex items-center space-x-2">
-                  <History size={20} />
+                  <History size={18} />
                   <span>Historiek</span>
                 </div>
-                {isMobileHistoryOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isMobileHistoryOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
 
               {isMobileHistoryOpen && (
                 <div className="ml-6 space-y-2">
                   <Link
                     href="/erelijsten"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Erelijsten
                   </Link>
                   <Link
                     href="/historiek/documenten"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Historische Documenten
@@ -497,13 +498,13 @@ export default function Navbar() {
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileLinksOpen(!isMobileLinksOpen)}
-                className="flex items-center justify-between w-full font-semibold hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
               >
                 <div className="flex items-center space-x-2">
-                  <Globe size={20} />
+                  <Globe size={18} />
                   <span>Links</span>
                 </div>
-                {isMobileLinksOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isMobileLinksOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
 
               {isMobileLinksOpen && (
@@ -512,7 +513,7 @@ export default function Navbar() {
                     href="https://blog.frbe-kbsb-ksb.be/nl/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     KBSB
@@ -521,7 +522,7 @@ export default function Navbar() {
                     href="https://blog.frbe-kbsb-ksb.be/nl/kalender/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     KBSB Toernooien
@@ -530,7 +531,7 @@ export default function Navbar() {
                     href="https://www.fide.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     FIDE
@@ -539,7 +540,7 @@ export default function Navbar() {
                     href="https://www.vlaamseschaakfederatie.be/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     VSF
@@ -548,7 +549,7 @@ export default function Navbar() {
                     href="https://www.schaakligaoostvlaanderen.be/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-semibold hover:text-mainAccent transition-colors"
+                    className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Liga Oost-Vlaanderen
@@ -575,7 +576,7 @@ function NavItem({ href, icon, text, onClick }: NavItemProps) {
   return (
     <Link
       href={href}
-      className="flex items-center space-x-2 font-semibold hover:text-mainAccent transition-colors"
+      className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors"
       onClick={onClick}
     >
       {icon}
