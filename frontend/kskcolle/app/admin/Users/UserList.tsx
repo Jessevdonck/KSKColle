@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import type { User } from "@/data/types"
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
+import { getAll } from "../../api/index"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
@@ -84,6 +85,23 @@ type UserListProps = {
 export default function UserList({ users, onDelete, isDeleting = false, pagination }: UserListProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [allUsers, setAllUsers] = useState<User[]>([])
+  const [isLoadingAllUsers, setIsLoadingAllUsers] = useState(false)
+
+  // Fetch all users when searching
+  const fetchAllUsers = async () => {
+    if (searchTerm && allUsers.length === 0 && !isLoadingAllUsers) {
+      setIsLoadingAllUsers(true)
+      try {
+        const allUsersData = await getAll("users")
+        setAllUsers(allUsersData)
+      } catch (error) {
+        console.error("Error fetching all users:", error)
+      } finally {
+        setIsLoadingAllUsers(false)
+      }
+    }
+  }
 
   // Handler voor bevestiging bij verwijderen
   const handleDelete = async (userId: number) => {
@@ -92,16 +110,27 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
     await onDelete(userId)
   }
 
-  // Filter gebruikers op zoekterm
-  const filteredUsers = users.filter((user) => {
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      `${user.voornaam} ${user.achternaam}`.toLowerCase().includes(searchLower) ||
-      (user.email?.toLowerCase().includes(searchLower) ?? false) ||
-      (user.fide_id?.toString().includes(searchLower) ?? false) ||
-      user.schaakrating_elo.toString().includes(searchLower)
-    )
-  })
+  // Filter gebruikers op zoekterm - gebruik alle gebruikers als er wordt gezocht
+  const filteredUsers = searchTerm ? 
+    allUsers.filter((user) => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        `${user.voornaam} ${user.achternaam}`.toLowerCase().includes(searchLower) ||
+        (user.email?.toLowerCase().includes(searchLower) ?? false) ||
+        (user.fide_id?.toString().includes(searchLower) ?? false) ||
+        user.schaakrating_elo.toString().includes(searchLower)
+      )
+    }) : users
+
+  // Fetch all users when search term changes
+  React.useEffect(() => {
+    if (searchTerm) {
+      fetchAllUsers()
+    } else {
+      // Reset all users when search is cleared
+      setAllUsers([])
+    }
+  }, [searchTerm])
 
   if (!users.length) {
     return (
@@ -150,9 +179,16 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
               />
             </div>
             {searchTerm && (
-              <p className="text-xs text-gray-600 mt-2">
-                {filteredUsers.length} van {users.length} spelers gevonden
-              </p>
+              <div className="mt-2">
+                {isLoadingAllUsers ? (
+                  <p className="text-xs text-gray-600">Zoeken door alle spelers...</p>
+                ) : (
+                  <p className="text-xs text-gray-600">
+                    {filteredUsers.length} van {allUsers.length || users.length} spelers gevonden
+                    {allUsers.length > 0 && " (alle resultaten)"}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
@@ -356,8 +392,8 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
         </div>
       </div>
 
-      {/* Pagination */}
-      {pagination && pagination.totalPages > 1 && (
+      {/* Pagination - only show when not searching */}
+      {pagination && pagination.totalPages > 1 && !searchTerm && (
         <div className="bg-white rounded-lg shadow-md p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">

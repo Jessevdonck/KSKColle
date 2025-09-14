@@ -362,7 +362,7 @@ export default function Navbar() {
                     Reglementen
                   </Link>
                   <a
-                    href="https://www.demercatel.be/oost-vlaamseinterclub/"
+                    href="https://www.schaakligaoostvlaanderen.be/ovic"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block font-semibold hover:text-mainAccent transition-colors"
