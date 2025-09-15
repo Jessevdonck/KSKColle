@@ -6,7 +6,7 @@ import type { CalendarEvent } from "../../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Calendar, Clock, Info, Users, Tag } from "lucide-react"
+import { CalendarIcon, Clock, Info, Users, Tag } from "lucide-react"
 import Link from "next/link"
 import CalendarFilters from "../../../components/CalendarFilters"
 
@@ -29,9 +29,7 @@ const YouthPlannedActivities = () => {
   const categories = [
     { value: "Stap 1", label: "Stap 1", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
     { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-200" },
-    { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" },
-    { value: "Stap 3", label: "Stap 3", color: "bg-red-100 text-red-800 border-red-200" },
-    { value: "Stap 4", label: "Stap 4", color: "bg-red-100 text-red-800 border-red-200" }
+    { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" }
   ]
 
   // Filter events based on selected filters
@@ -202,7 +200,7 @@ const YouthPlannedActivities = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
+                  <CalendarIcon className="h-5 w-5" />
                   Jeugd Activiteiten
                 </h2>
               </div>
@@ -212,7 +210,9 @@ const YouthPlannedActivities = () => {
           {/* Events List */}
           {sortedEvents.length === 0 ? (
             <div className="p-12 text-center">
-              <div className="text-gray-400 text-6xl mb-4">📅</div>
+              <div className="bg-mainAccent/10 p-6 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <CalendarIcon className="h-12 w-12 text-mainAccent" />
+              </div>
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
                 {events?.length === 0 ? "Geen jeugd activiteiten" : "Geen resultaten gevonden"}
               </h3>
@@ -230,7 +230,7 @@ const YouthPlannedActivities = () => {
                   {/* Month Header */}
                   <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                      <CalendarIcon className="h-4 w-4" />
                       {monthName}
                     </h2>
                     <p className="text-white/80 mt-0.5 text-xs">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
@@ -243,7 +243,7 @@ const YouthPlannedActivities = () => {
                       <tr>
                         <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/5 border-r border-mainAccent/10">
                           <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
+                            <CalendarIcon className="h-3 w-3" />
                             Datum & Tijd
                           </div>
                         </th>
