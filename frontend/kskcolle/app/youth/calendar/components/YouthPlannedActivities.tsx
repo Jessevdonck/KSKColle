@@ -19,11 +19,9 @@ const YouthPlannedActivities = () => {
 
   // Available filter options for youth
   const eventTypes = [
-    { value: "Interclub", label: "Interclub", color: "bg-blue-100 text-blue-800 border-blue-200" },
+    { value: "Les", label: "Les", color: "bg-blue-100 text-blue-800 border-blue-200" },
     { value: "Toernooi", label: "Toernooi", color: "bg-green-100 text-green-800 border-green-200" },
-    { value: "Oost-Vlaamse Interclub", label: "Oost-Vlaamse Interclub", color: "bg-purple-100 text-purple-800 border-purple-200" },
-    { value: "Vergadering", label: "Vergadering", color: "bg-orange-100 text-orange-800 border-orange-200" },
-    { value: "Activiteit", label: "Activiteit", color: "bg-gray-100 text-gray-800 border-gray-200" }
+    { value: "Geen Les", label: "Geen Les", color: "bg-red-100 text-red-800 border-red-200" }
   ]
 
   const categories = [
@@ -83,11 +81,9 @@ const YouthPlannedActivities = () => {
 
   const getEventTypeColor = (type: string) => {
     const colors = {
-      "Interclub": "bg-blue-100 text-blue-800 border-blue-200",
+      "Les": "bg-blue-100 text-blue-800 border-blue-200",
       "Toernooi": "bg-green-100 text-green-800 border-green-200",
-      "Oost-Vlaamse Interclub": "bg-purple-100 text-purple-800 border-purple-200",
-      "Vergadering": "bg-orange-100 text-orange-800 border-orange-200",
-      "Activiteit": "bg-gray-100 text-gray-800 border-gray-200",
+      "Geen Les": "bg-red-100 text-red-800 border-red-200",
     }
     return colors[type as keyof typeof colors] || "bg-gray-100 text-gray-800 border-gray-200"
   }
@@ -196,7 +192,7 @@ const YouthPlannedActivities = () => {
 
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Stats */}
-          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
+          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3 rounded-t-xl">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -224,9 +220,9 @@ const YouthPlannedActivities = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {monthEntries.map(([monthKey, { monthName, events: monthEvents }]) => (
-                <div key={monthKey} className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="space-y-0">
+              {monthEntries.map(([monthKey, { monthName, events: monthEvents }], index) => (
+                <div key={monthKey} className={`bg-white shadow-md overflow-hidden ${index === 0 ? 'rounded-t-lg' : ''} ${index === monthEntries.length - 1 ? 'rounded-b-lg' : ''}`}>
                   {/* Month Header */}
                   <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -256,7 +252,7 @@ const YouthPlannedActivities = () => {
                         <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/6 border-r border-mainAccent/10">Categorie</th>
                         <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/6 border-r border-mainAccent/10">Lesgevers</th>
                         <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/4 border-r border-mainAccent/10">Beschrijving</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/5">Type</th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/4">Type</th>
                       </tr>
                     </thead>
                       <tbody>
