@@ -75,7 +75,7 @@ export default function PlayerTable({ users }: PlayerTableProps) {
       <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <Trophy className="h-5 w-5" />
-          Ranglijst
+          Ranglijst Clubrating
         </h2>
         <p className="text-white/80 mt-1 text-sm">Klik op een kolomtitel om te sorteren</p>
       </div>

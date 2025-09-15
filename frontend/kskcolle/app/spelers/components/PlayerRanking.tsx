@@ -45,7 +45,7 @@ export default function PlayerRanking() {
               <Users className="h-6 w-6 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-textColor">Spelers Ranglijst</h1>
+              <h1 className="text-2xl font-bold text-textColor">Spelers Ranglijst Clubrating</h1>
               <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
@@ -53,7 +53,7 @@ export default function PlayerRanking() {
                 </div>
                 <div className="flex items-center gap-1">
                   <Trophy className="h-3 w-3" />
-                  <span>Gesorteerd op ELO rating</span>
+                  <span>Gesorteerd op ELIO rating</span>
                 </div>
               </div>
             </div>
