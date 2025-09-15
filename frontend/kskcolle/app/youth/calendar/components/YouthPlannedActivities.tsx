@@ -15,6 +15,7 @@ const YouthPlannedActivities = () => {
   
   // Filter states
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
+  const [selectedSteps, setSelectedSteps] = useState<string[]>([])
 
   // Available filter options for youth
   const eventTypes = [
@@ -23,21 +24,47 @@ const YouthPlannedActivities = () => {
     { value: "Geen Les", label: "Geen Les", color: "bg-red-100 text-red-800 border-red-200" }
   ]
 
+  // Available steps for youth
+  const stepsCategories = [
+    { value: "Stap 1", label: "Stap 1", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+    { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-200" },
+    { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" }
+  ]
+
+  // Helper function to parse categories
+  const parseCategories = (categoryJson: string | string[] | undefined): string[] => {
+    if (!categoryJson) return []
+    if (Array.isArray(categoryJson)) return categoryJson
+    try {
+      return JSON.parse(categoryJson)
+    } catch {
+      return [categoryJson]
+    }
+  }
+
   // Filter events based on selected filters
   const filteredEvents = useMemo(() => {
     if (!events) return []
     
     return events.filter(event => {
-      // Check type filter only
-      return selectedTypes.length === 0 || selectedTypes.includes(event.type)
+      // Check type filter
+      const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
+      
+      // Check steps filter
+      const eventSteps = parseCategories(event.category)
+      const stepsMatch = selectedSteps.length === 0 || 
+        selectedSteps.some(step => eventSteps.includes(step))
+      
+      return typeMatch && stepsMatch
     })
-  }, [events, selectedTypes])
+  }, [events, selectedTypes, selectedSteps])
 
   const handleClearAll = () => {
     setSelectedTypes([])
+    setSelectedSteps([])
   }
 
-  const hasActiveFilters = selectedTypes.length > 0
+  const hasActiveFilters = selectedTypes.length > 0 || selectedSteps.length > 0
 
   if (error) {
     return (
@@ -78,16 +105,6 @@ const YouthPlannedActivities = () => {
       "Stap 3+4": "bg-red-100 text-red-800 border-red-200",
     }
     return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800 border-gray-200"
-  }
-
-  const parseCategories = (categoryJson: string | string[] | undefined): string[] => {
-    if (!categoryJson) return []
-    if (Array.isArray(categoryJson)) return categoryJson
-    try {
-      return JSON.parse(categoryJson)
-    } catch {
-      return [categoryJson]
-    }
   }
 
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
@@ -157,11 +174,11 @@ const YouthPlannedActivities = () => {
         <div className="mb-4">
           <CalendarFilters
             eventTypes={eventTypes}
-            categories={[]}
+            categories={stepsCategories}
             selectedTypes={selectedTypes}
-            selectedCategories={[]}
+            selectedCategories={selectedSteps}
             onTypesChange={setSelectedTypes}
-            onCategoriesChange={() => {}}
+            onCategoriesChange={setSelectedSteps}
             onClearAll={handleClearAll}
             isYouth={true}
           />
