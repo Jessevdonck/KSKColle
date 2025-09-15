@@ -1,10 +1,12 @@
 import Link from "next/link"
-import { ChevronRight, User } from "lucide-react"
+import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 
 interface RoundPairingsProps {
   round: {
     round_id: number
     ronde_nummer: number
+    ronde_datum?: string | null
+    startuur?: string
     games?: Array<{
       game_id: number
       speler1: { user_id: number; voornaam: string; achternaam: string }
@@ -51,7 +53,28 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
           </div>
           Ronde {round.ronde_nummer}
         </h3>
-        <p className="text-gray-600 text-sm">{round.games.length} partijen</p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-600">
+          <p>{round.games.length} partijen</p>
+          {round.ronde_datum && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>{new Date(round.ronde_datum).toLocaleDateString('nl-NL', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</span>
+              </div>
+              {round.startuur && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>{round.startuur}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
@@ -112,12 +135,12 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
                 <td className="p-3 text-center">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      game.result && game.result !== "not_played" && game.result !== "..."
+                      game.result && game.result !== "not_played"
                         ? "bg-green-100 text-green-800 border border-green-200"
                         : "bg-gray-100 text-gray-600 border border-gray-200"
                     }`}
                   >
-                    {game.result && game.result !== "not_played" && game.result !== "..." ? game.result : "Nog te spelen"}
+                    {game.result && game.result !== "not_played" ? game.result : "Nog te spelen"}
                   </span>
                 </td>
               </tr>

@@ -106,7 +106,14 @@ export default function TournamentDetails() {
           const found = rounds.find((x) => x.ronde_nummer === i)
           newTimeline.push({
             kind: "round",
-            round: found ?? { round_id: existingRound.round_id, ronde_nummer: i, games: existingRound.games || [], type: "REGULAR" },
+            round: found ?? { 
+              round_id: existingRound.round_id, 
+              ronde_nummer: i, 
+              games: existingRound.games || [], 
+              ronde_datum: existingRound.ronde_datum,
+              startuur: existingRound.startuur,
+              type: "REGULAR" 
+            },
           })
         } else {
           // Non-generated round - create placeholder

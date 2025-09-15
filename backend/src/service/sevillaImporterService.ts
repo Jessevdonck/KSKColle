@@ -338,10 +338,13 @@ export class SevillaImporterService {
         mainGroup.Ranking.forEach(ranking => {
           if (ranking.Date) {
             // Parse date from format "18/09/2025"
-            const [day, month, year] = ranking.Date.split('/');
-            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            roundDates.set(ranking.Round, date);
-            console.log(`Parsed round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
+            const dateParts = ranking.Date.split('/');
+            if (dateParts.length === 3) {
+              const [day, month, year] = dateParts;
+              const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+              roundDates.set(ranking.Round, date);
+              console.log(`Parsed round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
+            }
           }
         });
       }

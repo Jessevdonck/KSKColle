@@ -5,6 +5,8 @@ interface RoundPairingsProps {
   round: {
     round_id: number
     ronde_nummer: number
+    ronde_datum?: string | null
+    startuur?: string
     games?: Array<{
       game_id: number
       speler1: { user_id: number; voornaam: string; achternaam: string }
