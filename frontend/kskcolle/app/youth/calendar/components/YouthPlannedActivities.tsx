@@ -237,22 +237,22 @@ const YouthPlannedActivities = () => {
                   <table className="w-full border-collapse">
                     <thead className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b-2 border-mainAccent/20">
                       <tr>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/5 border-r border-mainAccent/10">
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor" style={{width: '20%'}}>
                           <div className="flex items-center gap-1">
                             <CalendarIcon className="h-3 w-3" />
                             Datum & Tijd
                           </div>
                         </th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/5 border-r border-mainAccent/10">
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '20%'}}>
                           <div className="flex items-center gap-1">
                             <Info className="h-3 w-3" />
                             Activiteit
                           </div>
                         </th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/6 border-r border-mainAccent/10">Categorie</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/6 border-r border-mainAccent/10">Lesgevers</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/4 border-r border-mainAccent/10">Beschrijving</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor w-1/4">Type</th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '16.66%'}}>Categorie</th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '16.67%'}}>Lesgevers</th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '21.67%'}}>Beschrijving</th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor" style={{width: '25%'}}>Type</th>
                       </tr>
                     </thead>
                       <tbody>

@@ -259,9 +259,12 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   <User className="h-5 w-5 text-mainAccent" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-textColor">
+                  <Link
+                    href={`/profile/${createUrlFriendlyName(selectedPlayer.voornaam, selectedPlayer.achternaam)}`}
+                    className="text-lg font-semibold text-textColor hover:text-mainAccent transition-colors"
+                  >
                     {selectedPlayer.voornaam} {selectedPlayer.achternaam}
-                  </h2>
+                  </Link>
                   <p className="text-sm text-gray-600">Toernooi geschiedenis</p>
                 </div>
               </div>
@@ -307,7 +310,18 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                         R{game.round}
                       </div>
                       <div>
-                        <div className="font-medium text-sm text-textColor">{game.opponent || "Bye"}</div>
+                        {game.opponent && game.opponent !== "Abs with msg" && game.opponent !== "Tegenstander onbekend" ? (
+                          <Link
+                            href={`/profile/${createUrlFriendlyName(game.opponent.split(' ')[0], game.opponent.split(' ').slice(1).join(' '))}`}
+                            className="font-medium text-sm text-textColor hover:text-mainAccent transition-colors"
+                          >
+                            {game.opponent}
+                          </Link>
+                        ) : (
+                          <div className="font-medium text-sm text-textColor">
+                            {game.opponent || "Bye"}
+                          </div>
+                        )}
                         {game.color && (
                           <div className="text-xs text-gray-500">{game.color === "white" ? "Wit" : "Zwart"}</div>
                         )}
