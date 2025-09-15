@@ -10,7 +10,7 @@ const Header = () => {
           </div>
           <h1 className="text-3xl font-bold text-textColor mb-3">Over KSK Colle</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Ontdek de rijke geschiedenis en passie van onze schaakclub, van Edgard Colle tot vandaag
+            Ontdek hier wie we zijn en wat we doen!
           </p>
           <div className="flex items-center justify-center gap-4 mt-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">
