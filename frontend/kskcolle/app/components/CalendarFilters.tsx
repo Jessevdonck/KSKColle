@@ -127,11 +127,11 @@ export default function CalendarFilters({
                     selectedTypes.includes(type.value) ? 'bg-mainAccent/5' : ''
                   }`}
                 >
-                  <div className={`w-2.5 h-2.5 rounded border ${
+                  <div className={`rounded border ${
                     selectedTypes.includes(type.value) 
                       ? 'bg-mainAccent border-mainAccent' 
                       : 'border-gray-300'
-                  }`} />
+                  }`} style={{width: '10px', height: '10px'}} />
                   <span className={`truncate ${selectedTypes.includes(type.value) ? 'font-medium' : ''}`}>
                     {type.label}
                   </span>
@@ -165,11 +165,11 @@ export default function CalendarFilters({
                     selectedCategories.includes(category.value) ? 'bg-mainAccent/5' : ''
                   }`}
                 >
-                  <div className={`w-2.5 h-2.5 rounded border ${
+                  <div className={`rounded border ${
                     selectedCategories.includes(category.value) 
                       ? 'bg-mainAccent border-mainAccent' 
                       : 'border-gray-300'
-                  }`} />
+                  }`} style={{width: '10px', height: '10px'}} />
                   <span className={`truncate ${selectedCategories.includes(category.value) ? 'font-medium' : ''}`}>
                     {category.label}
                   </span>
