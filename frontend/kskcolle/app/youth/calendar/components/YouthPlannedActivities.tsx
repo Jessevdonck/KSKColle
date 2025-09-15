@@ -237,7 +237,7 @@ const YouthPlannedActivities = () => {
                   <table className="w-full border-collapse">
                     <thead className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b-2 border-mainAccent/20">
                       <tr>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor" style={{width: '20%'}}>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '20%'}}>
                           <div className="flex items-center gap-1">
                             <CalendarIcon className="h-3 w-3" />
                             Datum & Tijd
