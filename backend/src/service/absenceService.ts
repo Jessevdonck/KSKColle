@@ -81,7 +81,7 @@ Deze speler meldt zich af voor ronde ${nextRoundNumber} en wenst niet uitgeloot 
       'niels.ongena@hotmail.be'
     ]
 
-    // Stuur email naar alle toernooileiders
+    // Stuur email naar alle toernooileider
     await Promise.all(
       tournamentLeaders.map(email => 
         emailService.sendCustomEmail({
