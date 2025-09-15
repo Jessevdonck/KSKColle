@@ -36,14 +36,19 @@ const YouthPlannedActivities = () => {
     
     return events.filter(event => {
       const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
-      const categoryMatch = selectedCategories.length === 0 || 
-        (event.category && selectedCategories.some(cat => {
-          const eventCategories = parseCategories(event.category)
+      
+      let categoryMatch = false
+      if (selectedCategories.length === 0) {
+        categoryMatch = true
+      } else if (event.category) {
+        const eventCategories = parseCategories(event.category)
+        categoryMatch = selectedCategories.some(cat => {
           return eventCategories.some(eventCat => 
             eventCat.toLowerCase().includes(cat.toLowerCase()) || 
             cat.toLowerCase().includes(eventCat.toLowerCase())
           )
-        }))
+        })
+      }
       
       return typeMatch && categoryMatch
     })
