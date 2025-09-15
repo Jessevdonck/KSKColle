@@ -15,7 +15,6 @@ const YouthPlannedActivities = () => {
   
   // Filter states
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
-  const [selectedSteps, setSelectedSteps] = useState<string[]>([])
 
   // Available filter options for youth
   const eventTypes = [
@@ -24,36 +23,21 @@ const YouthPlannedActivities = () => {
     { value: "Geen Les", label: "Geen Les", color: "bg-red-100 text-red-800 border-red-200" }
   ]
 
-  // Available steps for youth
-  const stepsCategories = [
-    { value: "Stap 1", label: "Stap 1", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-    { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-200" },
-    { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" }
-  ]
-
   // Filter events based on selected filters
   const filteredEvents = useMemo(() => {
     if (!events) return []
     
     return events.filter(event => {
-      // Check type filter
-      const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
-      
-      // Check steps filter
-      const eventSteps = parseCategories(event.category)
-      const stepsMatch = selectedSteps.length === 0 || 
-        selectedSteps.some(step => eventSteps.includes(step))
-      
-      return typeMatch && stepsMatch
+      // Check type filter only
+      return selectedTypes.length === 0 || selectedTypes.includes(event.type)
     })
-  }, [events, selectedTypes, selectedSteps])
+  }, [events, selectedTypes])
 
   const handleClearAll = () => {
     setSelectedTypes([])
-    setSelectedSteps([])
   }
 
-  const hasActiveFilters = selectedTypes.length > 0 || selectedSteps.length > 0
+  const hasActiveFilters = selectedTypes.length > 0
 
   if (error) {
     return (
@@ -173,11 +157,11 @@ const YouthPlannedActivities = () => {
         <div className="mb-4">
           <CalendarFilters
             eventTypes={eventTypes}
-            categories={stepsCategories}
+            categories={[]}
             selectedTypes={selectedTypes}
-            selectedCategories={selectedSteps}
+            selectedCategories={[]}
             onTypesChange={setSelectedTypes}
-            onCategoriesChange={setSelectedSteps}
+            onCategoriesChange={() => {}}
             onClearAll={handleClearAll}
             isYouth={true}
           />
