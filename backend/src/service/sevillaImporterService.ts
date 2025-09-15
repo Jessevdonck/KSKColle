@@ -340,10 +340,15 @@ export class SevillaImporterService {
             // Parse date from format "18/09/2025"
             const dateParts = ranking.Date.split('/');
             if (dateParts.length === 3) {
-              const [day, month, year] = dateParts;
-              const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-              roundDates.set(ranking.Round, date);
-              console.log(`Parsed round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
+              const day = dateParts[0];
+              const month = dateParts[1];
+              const year = dateParts[2];
+              
+              if (day && month && year) {
+                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                roundDates.set(ranking.Round, date);
+                console.log(`Parsed round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
+              }
             }
           }
         });
