@@ -35,24 +35,29 @@ const YouthPlannedActivities = () => {
     if (!events) return []
     
     return events.filter(event => {
+      // Check type filter
       const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
       
-      let categoryMatch = false
-      if (selectedCategories.length === 0) {
-        categoryMatch = true
-      } else if (event.category) {
-        const eventCategories = parseCategories(event.category)
-        categoryMatch = selectedCategories.some(cat => {
-          return eventCategories.some(eventCat => 
-            eventCat.toLowerCase().includes(cat.toLowerCase()) || 
-            cat.toLowerCase().includes(eventCat.toLowerCase())
-          )
-        })
-      }
+      // Check category filter
+      const categoryMatch = selectedCategories.length === 0 || checkCategoryMatch(event.category, selectedCategories)
       
       return typeMatch && categoryMatch
     })
   }, [events, selectedTypes, selectedCategories])
+
+  // Helper function to check category match
+  const checkCategoryMatch = (eventCategory: string | string[] | undefined, selectedCats: string[]): boolean => {
+    if (!eventCategory) return false
+    
+    const eventCats = parseCategories(eventCategory)
+    return selectedCats.some(selectedCat => {
+      return eventCats.some(eventCat => {
+        const eventCatLower = eventCat.toLowerCase()
+        const selectedCatLower = selectedCat.toLowerCase()
+        return eventCatLower.includes(selectedCatLower) || selectedCatLower.includes(eventCatLower)
+      })
+    })
+  }
 
   const handleClearAll = () => {
     setSelectedTypes([])
