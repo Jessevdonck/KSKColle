@@ -53,7 +53,6 @@ export default function UsersManagement() {
   const handleUserDeleted = (userId: number) => {
     // This callback is called after a user is successfully deleted
     // It ensures the allUsers state in UserList is also updated
-    console.log(`User ${userId} deleted successfully`)
   }
 
   if (error) {

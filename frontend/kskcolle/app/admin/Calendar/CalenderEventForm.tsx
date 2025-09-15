@@ -72,7 +72,6 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
         instructors: data.instructors || "",
         begeleider: data.begeleider || "",
       }
-      console.log(payload)
       await save("calendar", { arg: payload })
       mutate()
       form.reset()

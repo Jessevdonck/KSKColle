@@ -126,9 +126,7 @@ export default function ErelijstenPage() {
     const testFileAccess = async () => {
       try {
         const response = await fetch('/data/erelijsten/herfst.xlsx')
-        console.log('File access test:', response.status, response.ok)
       } catch (error) {
-        console.error('File access error:', error)
       }
     }
     testFileAccess()
@@ -139,11 +137,9 @@ export default function ErelijstenPage() {
     try {
       const tournament = EXCEL_FILES.find(t => t.name === tournamentName)
       if (!tournament) {
-        console.error('Tournament not found:', tournamentName)
         return
       }
 
-      console.log('Loading tournament:', tournament.file, 'Format:', tournament.format)
       const response = await fetch(`/data/erelijsten/${tournament.file}`)
       
       if (!response.ok) {
@@ -153,19 +149,16 @@ export default function ErelijstenPage() {
       const arrayBuffer = await response.arrayBuffer()
       const workbook = XLSX.read(arrayBuffer, { type: 'array' })
       
-      console.log('Workbook sheets:', workbook.SheetNames)
       const sheetName = workbook.SheetNames[0]
       const worksheet = workbook.Sheets[sheetName]
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
       
-      console.log('Raw data:', jsonData.slice(0, 10)) // Log first 10 rows
       
       setCurrentFormat(tournament.format as 'simple' | 'klasses' | 'zomer' | 'quiz' | 'konijn' | 'megalijst' | 'ranking' | 'records')
       
       if (tournament.format === 'quiz') {
         // Process quiz format
         const processedQuizResults = processQuizData(jsonData)
-        console.log('Processed quiz results:', processedQuizResults)
         setQuizResults(processedQuizResults)
         setResults([]) // Clear simple results
         setKlasseResults([]) // Clear klasse results
@@ -177,7 +170,6 @@ export default function ErelijstenPage() {
       } else if (tournament.format === 'konijn') {
         // Process konijn format
         const processedKonijnResults = processKonijnData(jsonData)
-        console.log('Processed konijn results:', processedKonijnResults)
         setKonijnResults(processedKonijnResults)
         setResults([]) // Clear simple results
         setKlasseResults([]) // Clear klasse results
@@ -189,7 +181,6 @@ export default function ErelijstenPage() {
       } else if (tournament.format === 'megalijst') {
         // Process megalijst format
         const processedMegalijstResults = processMegalijstData(jsonData)
-        console.log('Processed megalijst results:', processedMegalijstResults)
         setMegalijstResults(processedMegalijstResults)
         setResults([]) // Clear simple results
         setKlasseResults([]) // Clear klasse results
@@ -201,7 +192,6 @@ export default function ErelijstenPage() {
       } else if (tournament.format === 'ranking') {
         // Process ranking format
         const processedRankingResults = processRankingData(jsonData)
-        console.log('Processed ranking results:', processedRankingResults)
         setRankingResults(processedRankingResults)
         setResults([]) // Clear simple results
         setKlasseResults([]) // Clear klasse results
@@ -213,7 +203,6 @@ export default function ErelijstenPage() {
       } else if (tournament.format === 'records') {
         // Process records format
         const processedRecordResults = processRecordsData(jsonData)
-        console.log('Processed records results:', processedRecordResults)
         setRecordResults(processedRecordResults)
         setResults([]) // Clear simple results
         setKlasseResults([]) // Clear klasse results
@@ -230,14 +219,12 @@ export default function ErelijstenPage() {
         } else {
           processedKlasseResults = processKlasseData(jsonData)
         }
-        console.log('Processed klasse results:', processedKlasseResults)
         setKlasseResults(processedKlasseResults)
         setRawData([]) // Clear raw data
         setResults([]) // Clear simple results
       } else if (tournament.format === 'zomer') {
         // Process zomer format
         const processedZomerResults = processZomerData(jsonData)
-        console.log('Processed zomer results:', processedZomerResults)
         setResults(processedZomerResults)
         setKlasseResults([]) // Clear klasse results
         setRawData([]) // Clear raw data
@@ -267,7 +254,6 @@ export default function ErelijstenPage() {
           })
         }
         
-        console.log('Processed results:', processedResults)
         setResults(processedResults)
         setKlasseResults([]) // Clear klasse results
       }
@@ -281,7 +267,6 @@ export default function ErelijstenPage() {
   }
 
   const processKlasseData = (jsonData: any[]): KlasseResult[] => {
-    console.log('Processing klasse data with correct structure:', jsonData)
     
     const results: KlasseResult[] = []
     const klasseNames = ['1ste Klasse', '2de Klasse', '3de Klasse', '4de Klasse', '5de Klasse']
@@ -294,7 +279,6 @@ export default function ErelijstenPage() {
       // Check if this is a year row (has a year in first column)
       const jaar = row[0]
       if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100) {
-        console.log(`Processing year ${jaar}`)
         
         // This is a year row, collect the next 2 rows for this year
         const yearData: any[] = []
@@ -312,7 +296,6 @@ export default function ErelijstenPage() {
           yearData.push(jsonData[i + 2])
         }
         
-        console.log(`Year ${jaar} has ${yearData.length} data rows:`, yearData)
         
         // Process the data for this year
         const klasses: any[] = []
@@ -363,13 +346,10 @@ export default function ErelijstenPage() {
       }
     }
     
-    console.log('Final processed results:', results)
     return results
   }
 
   const processZomerData = (jsonData: any[]): Result[] => {
-    console.log('Processing zomer data, total rows:', jsonData.length)
-    console.log('First 10 rows:', jsonData.slice(0, 10))
     
     const results: Result[] = []
     
@@ -377,11 +357,9 @@ export default function ErelijstenPage() {
     for (let i = 1; i < jsonData.length; i++) {
       const row = jsonData[i]
       if (!row || row.length === 0) {
-        console.log(`Skipping empty row ${i}`)
         continue
       }
       
-      console.log(`Processing row ${i}:`, row)
       
       // Check specific column pairs based on the actual data structure
       // First set: columns 0+1 (1960-2000)
@@ -389,7 +367,6 @@ export default function ErelijstenPage() {
         const jaar = row[0]
         const winnaar = row[1]
         
-        console.log(`  First set (0+1): jaar=${jaar} (${typeof jaar}), winnaar=${winnaar} (${typeof winnaar})`)
         
         if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100 && winnaar && winnaar !== '') {
           results.push({
@@ -399,7 +376,6 @@ export default function ErelijstenPage() {
             derde: '',
             ratingprijs: ''
           })
-          console.log(`  -> FOUND FIRST SET: ${jaar} - ${winnaar}`)
         }
       }
       
@@ -408,7 +384,6 @@ export default function ErelijstenPage() {
         const jaar = row[3]
         const winnaar = row[4]
         
-        console.log(`  Second set (3+4): jaar=${jaar} (${typeof jaar}), winnaar=${winnaar} (${typeof winnaar})`)
         
         if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100 && winnaar && winnaar !== '') {
           results.push({
@@ -418,9 +393,7 @@ export default function ErelijstenPage() {
             derde: '',
             ratingprijs: ''
           })
-          console.log(`  -> FOUND SECOND SET: ${jaar} - ${winnaar}`)
         } else {
-          console.log(`  -> SKIPPED SECOND SET: jaar=${jaar} (valid: ${typeof jaar === 'number' && jaar > 1900 && jaar < 2100}), winnaar=${winnaar} (valid: ${winnaar && winnaar !== ''})`)
         }
       }
     }
@@ -428,12 +401,10 @@ export default function ErelijstenPage() {
     // Sort by year (oldest first, newest last)
     results.sort((a, b) => a.jaar - b.jaar)
     
-    console.log('Final zomer results:', results)
     return results
   }
 
   const processSnelschaakData = (jsonData: any[]): KlasseResult[] => {
-    console.log('Processing snelschaak data:', jsonData)
     
     const results: KlasseResult[] = []
     const klasseNames = ['1ste Klasse', '2de Klasse', '3de Klasse', '4de Klasse', '5de Klasse']
@@ -446,7 +417,6 @@ export default function ErelijstenPage() {
       // Check if this row has a year in the first column
       const jaar = row[0]
       if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100) {
-        console.log(`Processing snelschaak year ${jaar}:`, row)
         
         const klasses: any[] = []
         
@@ -461,7 +431,6 @@ export default function ErelijstenPage() {
           const klasseColIndex = klasseColumns[k]
           const winnaar = row[klasseColIndex]
           
-          console.log(`  Checking ${klasseNames[k]} (kolom ${klasseColIndex}): "${winnaar}" (type: ${typeof winnaar})`)
           
           if (winnaar && winnaar !== '') {
             klasses.push({
@@ -470,9 +439,7 @@ export default function ErelijstenPage() {
               tweede: '',
               derde: ''
             })
-            console.log(`  -> FOUND: ${klasseNames[k]}: ${winnaar}`)
           } else {
-            console.log(`  -> SKIPPED: ${klasseNames[k]} (empty or null)`)
           }
         }
         
@@ -488,12 +455,10 @@ export default function ErelijstenPage() {
     // Sort by year (oldest first, newest last)
     results.sort((a, b) => a.jaar - b.jaar)
     
-    console.log('Final snelschaak results:', results)
     return results
   }
 
   const processQuizData = (jsonData: any[]): QuizResult[] => {
-    console.log('Processing quiz data:', jsonData)
     
     const results: QuizResult[] = []
     
@@ -508,7 +473,6 @@ export default function ErelijstenPage() {
         const ploeg = row[1] || ''
         const leden = row[2] || ''
         
-        console.log(`Processing quiz year ${jaar}: ploeg="${ploeg}", leden="${leden}"`)
         
         if (ploeg || leden) {
           results.push({
@@ -523,12 +487,10 @@ export default function ErelijstenPage() {
     // Sort by year (oldest first, newest last)
     results.sort((a, b) => a.jaar - b.jaar)
     
-    console.log('Final quiz results:', results)
     return results
   }
 
   const processKonijnData = (jsonData: any[]): KonijnResult[] => {
-    console.log('Processing konijn data:', jsonData)
     
     const results: KonijnResult[] = []
     
@@ -542,7 +504,6 @@ export default function ErelijstenPage() {
       if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100) {
         const winnaar = row[1] || ''
         
-        console.log(`Processing konijn year ${jaar}: winnaar="${winnaar}"`)
         
         if (winnaar) {
           results.push({
@@ -556,12 +517,10 @@ export default function ErelijstenPage() {
     // Sort by year (oldest first, newest last)
     results.sort((a, b) => a.jaar - b.jaar)
     
-    console.log('Final konijn results:', results)
     return results
   }
 
   const processMegalijstData = (jsonData: any[]): Result[] => {
-    console.log('Processing megalijst data:', jsonData)
     
     const results: Result[] = []
     
@@ -579,7 +538,6 @@ export default function ErelijstenPage() {
         const tweede = row[4] || '' // Kolom 4: Tweede Plaats  
         const derde = row[6] || ''  // Kolom 6: Derde Plaats
         
-        console.log(`Processing megalijst year ${jaar}: eerste="${eerste}", tweede="${tweede}", derde="${derde}"`)
         
         if (eerste || tweede || derde) {
           results.push({
@@ -595,12 +553,10 @@ export default function ErelijstenPage() {
     // Sort by year (oldest first, newest last)
     results.sort((a, b) => a.jaar - b.jaar)
     
-    console.log('Final megalijst results:', results)
     return results
   }
 
   const processRankingData = (jsonData: any[]): RankingResult[] => {
-    console.log('Processing ranking data:', jsonData)
     
     const results: RankingResult[] = []
     const klasseNames = ['Eerste Klasse', 'Tweede Klasse', 'Derde Klasse', 'Vierde Klasse', 'Vijfde Klasse']
@@ -620,18 +576,14 @@ export default function ErelijstenPage() {
     ]
     
     // Debug: let's check what's in the fifth class columns
-    console.log('Debugging Vijfde Klasse columns:')
     for (let debugRow = 0; debugRow < Math.min(10, jsonData.length); debugRow++) {
       const debugRowData = jsonData[debugRow]
-      console.log(`Row ${debugRow}: V(21)="${debugRowData[21]}", W(22)="${debugRowData[22]}", X(23)="${debugRowData[23]}", Y(24)="${debugRowData[24]}"`)
     }
     
     for (let k = 0; k < 5; k++) {
       const config = klasseConfigs[k]
       const klasse = config.name
-      console.log(`Processing ${klasse}...`)
       
-      console.log(`  ${klasse}: spelerCol=${config.spelerCol}, eersteCol=${config.eersteCol}, tweedeCol=${config.tweedeCol}, derdeCol=${config.derdeCol}`)
       
       // Skip header row and process data rows
       for (let i = 1; i < jsonData.length; i++) {
@@ -646,7 +598,6 @@ export default function ErelijstenPage() {
           const tweede = row[config.tweedeCol] || 0 // Aantal 2de plaatsen
           const derde = row[config.derdeCol] || 0  // Aantal 3de plaatsen
           
-          console.log(`  ${speler}: eerste=${eerste}, tweede=${tweede}, derde=${derde}`)
           
           // Find existing speler or create new one
           let spelerIndex = results.findIndex(r => r.speler === speler)

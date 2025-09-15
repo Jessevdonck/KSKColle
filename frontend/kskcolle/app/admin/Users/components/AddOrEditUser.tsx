@@ -46,7 +46,6 @@ export default function AddOrEditUser({ onRefresh }: AddOrEditUserProps) {
         ) : (
           <CreateUserForm
             onSuccess={(userId) => {
-              console.log('Gebruiker aangemaakt met ID:', userId)
               setShowForm(false)
               onRefresh?.() // Refresh de user list
             }}

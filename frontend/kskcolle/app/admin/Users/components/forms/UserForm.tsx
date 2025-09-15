@@ -129,7 +129,6 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
   const onSubmit = async (values: FormData) => {
     if (!isValid) return
 
-    console.log(values)
     const formattedValues = {
       ...values,
       geboortedatum: values.geboortedatum ? new Date(values.geboortedatum).toISOString() : null,

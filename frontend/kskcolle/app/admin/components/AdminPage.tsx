@@ -54,17 +54,6 @@ const AdminPage = () => {
     return !tab.adminOnly || (currentUser && isAdmin(currentUser))
   })
 
-  // Debug logging
-  console.log('AdminPage Debug:', {
-    currentUser,
-    roles: currentUser?.roles,
-    rolesType: typeof currentUser?.roles,
-    isAdmin: currentUser ? isAdmin(currentUser) : false,
-    isBoardMember: currentUser ? isBoardMember(currentUser) : false,
-    hasAccess,
-    availableTabs: tabs.map(t => t.value),
-    token: typeof window !== "undefined" ? localStorage.getItem("jwtToken") : null
-  })
 
   useEffect(() => {
     setIsClient(true)

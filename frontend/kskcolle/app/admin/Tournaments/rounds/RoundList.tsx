@@ -55,10 +55,8 @@ export default function RoundList({
   }
 
   const handleSubmitMakeup = async () => {
-  console.log("HET START", { addingForRound, date });
 
   if (addingForRound === null || !date) {
-    console.log("Niet geldig:", { addingForRound, date });
     return;
   }
 
@@ -67,7 +65,6 @@ export default function RoundList({
     round_after: addingForRound,
     date,
   };
-  console.log('Payload naar POST /api/makeupDay:', payload);
 
   await createMakeupDay({ arg: payload });
 };

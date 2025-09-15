@@ -26,8 +26,7 @@ export default function Interviews() {
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-3">Interviews met Clubleden</h2>
         <p className="text-base text-gray-600 max-w-2xl mx-auto">
-          Ontdek de verhalen achter onze clubleden. Van ervaren schakers tot bestuurders, iedereen heeft een uniek
-          verhaal te vertellen over hun schaakpassie.
+        Ontdek de verhalen achter onze clubleden. Van ervaren schakers tot bestuurders, ontdek hier de verhalen die schuilen achter onze clubleden.
         </p>
       </div>
 

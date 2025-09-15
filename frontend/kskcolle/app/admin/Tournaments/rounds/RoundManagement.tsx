@@ -208,8 +208,6 @@ export default function RoundManagement({ tournament }: Props) {
   // handler voor verwijderen inhaaldag ronde
   const handleDeleteMakeupRound = async (roundId: number) => {
     try {
-      console.log('handleDeleteMakeupRound called with roundId:', roundId);
-      console.log('calling deleteMakeupRoundMutation with:', { roundId });
       
       await deleteMakeupRoundMutation({
         roundId
