@@ -176,7 +176,7 @@ export class SevillaImporterService {
         const playerMap = await this.importPlayers(playersWithGames, tournament.tournament_id, incremental);
         
         // Import rounds and games
-        await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap, incremental);
+        await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap, incremental, sevillaData);
       } else {
         console.log('No history section found, using ranking section');
         // Fallback to ranking section if no history
@@ -327,11 +327,28 @@ export class SevillaImporterService {
 
 
 
-  private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>, incremental: boolean = false) {
+  private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>, incremental: boolean = false, sevillaData?: SevillaTournament) {
     console.log(`=== importRoundsAndGames called with ${players.length} players (incremental: ${incremental}) ===`);
     
-    // Bepaal startdatum voor het toernooi (elke ronde is 1 week later)
-    const tournamentStartDate = new Date('2024-09-15'); // Aanpasbare startdatum
+    // Parse round dates from Sevilla data if available
+    const roundDates = new Map<number, Date>();
+    if (sevillaData) {
+      const mainGroup = sevillaData.GroupReport.find(g => g.ID === 1);
+      if (mainGroup) {
+        mainGroup.Ranking.forEach(ranking => {
+          if (ranking.Date) {
+            // Parse date from format "18/09/2025"
+            const [day, month, year] = ranking.Date.split('/');
+            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            roundDates.set(ranking.Round, date);
+            console.log(`Parsed round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
+          }
+        });
+      }
+    }
+    
+    // Fallback startdatum als er geen Sevilla data is
+    const tournamentStartDate = new Date('2024-09-15');
     
     // Debug: show first few players
     console.log(`First 3 players:`, players.slice(0, 3).map(p => ({ name: p.Name, hasGame: !!p.Game, gameLength: p.Game?.length || 0 })));
@@ -372,9 +389,17 @@ export class SevillaImporterService {
     for (const roundNumber of sortedRounds) {
       let round;
       
-      // Bereken de datum voor deze ronde (startdatum + (ronde-1) weken)
-      const roundDate = new Date(tournamentStartDate);
-      roundDate.setDate(roundDate.getDate() + (roundNumber - 1) * 7);
+      // Gebruik de echte datum uit Sevilla data of fallback naar berekende datum
+      let roundDate: Date;
+      if (roundDates.has(roundNumber)) {
+        roundDate = roundDates.get(roundNumber)!;
+        console.log(`Using Sevilla date for round ${roundNumber}: ${roundDate.toISOString()}`);
+      } else {
+        // Fallback: bereken de datum (startdatum + (ronde-1) weken)
+        roundDate = new Date(tournamentStartDate);
+        roundDate.setDate(roundDate.getDate() + (roundNumber - 1) * 7);
+        console.log(`Using calculated date for round ${roundNumber}: ${roundDate.toISOString()}`);
+      }
       
       if (incremental) {
         // Check if round exists

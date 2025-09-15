@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronRight, User } from "lucide-react"
+import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 
 interface RoundPairingsProps {
   round: {
@@ -68,10 +68,31 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
           </div>
           Ronde {round.ronde_nummer}
         </h3>
-        <p className="text-gray-600 text-sm">
-          {round.games.length} partijen
-          {!round.round_id && <span className="text-gray-500 ml-2">(Nog niet gegenereerd)</span>}
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-600">
+          <p>
+            {round.games.length} partijen
+            {!round.round_id && <span className="text-gray-500 ml-2">(Nog niet gegenereerd)</span>}
+          </p>
+          {round.ronde_datum && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>{new Date(round.ronde_datum).toLocaleDateString('nl-NL', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</span>
+              </div>
+              {round.startuur && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>{round.startuur}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {round.games.length > 0 ? (
