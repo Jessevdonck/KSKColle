@@ -128,7 +128,7 @@ createUser.validationScheme = {
     voornaam: Joi.string().required(),
     achternaam: Joi.string().required(),
     email: Joi.string().email().allow('').optional(),
-    geboortedatum: Joi.string().isoDate().allow('').optional(),
+    geboortedatum: Joi.string().isoDate().allow('', null).optional(),
     tel_nummer: Joi.string().allow('').optional(),
     vast_nummer: Joi.string().allow('').optional(),
     schaakrating_elo: Joi.number().integer().min(0).optional(),

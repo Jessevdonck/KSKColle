@@ -160,7 +160,7 @@ registerUser.validationScheme = {
   body: {
     voornaam: Joi.string(),
     achternaam: Joi.string(),
-    geboortedatum: Joi.date().optional(),
+    geboortedatum: Joi.string().isoDate().allow('', null).optional(),
     email: Joi.string().email(),
     tel_nummer: Joi.string(),
     vast_nummer: Joi.string().allow("").optional(),
@@ -249,9 +249,9 @@ updateUser.validationScheme = {
   body: {
     voornaam: Joi.string().optional(),
     achternaam: Joi.string().optional(),
-    geboortedatum: Joi.date().optional(),
-    email: Joi.string().email().optional(),
-    tel_nummer: Joi.string().optional(),
+    geboortedatum: Joi.string().isoDate().allow('', null).optional(),
+    email: Joi.string().email().allow('').optional(),
+    tel_nummer: Joi.string().allow('', null).optional(),
     vast_nummer: Joi.string().allow("", null).optional(),
     lid_sinds: Joi.date().optional(),
     schaakrating_elo: Joi.number().integer().min(0).optional(),

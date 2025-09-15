@@ -26,10 +26,10 @@ const validationRules = {
     max: { value: 5000, message: "Maximale rating is 5000" },
   },
   email: {
-    required: "Email is required!",
+    required: false,
   },
   tel_nummer: {
-    required: "Telefoonnummer is required!",
+    required: false,
   },
 
   adres_straat: {
@@ -102,7 +102,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
       achternaam: user.achternaam,
       geboortedatum: user.geboortedatum ? toDateInputString(user.geboortedatum) : "",
       email: user.email || "",
-      tel_nummer: user.tel_nummer,
+      tel_nummer: user.tel_nummer || "",
       vast_nummer: user.vast_nummer,
       lid_sinds: toDateInputString(user.lid_sinds),
       schaakrating_elo: user.schaakrating_elo,
@@ -126,11 +126,15 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
     const formattedValues = {
       ...values,
       id: user.user_id,
-      geboortedatum: values.geboortedatum ? new Date(values.geboortedatum).toISOString() : null,
+      geboortedatum: values.geboortedatum && values.geboortedatum.trim() ? (() => {
+        const date = new Date(values.geboortedatum);
+        return isNaN(date.getTime()) ? null : date.toISOString();
+      })() : null,
       lid_sinds: values.lid_sinds ? new Date(values.lid_sinds).toISOString() : null,
       schaakrating_elo: Number(values.schaakrating_elo),
       fide_id: values.fide_id ? Number(values.fide_id) : undefined,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : undefined,
+      tel_nummer: values.tel_nummer?.trim() || undefined,
       vast_nummer: values.vast_nummer?.trim() || undefined,
       is_youth: values.is_youth || false,
       roles: parseRoles(values.roles),

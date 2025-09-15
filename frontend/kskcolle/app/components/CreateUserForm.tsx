@@ -109,6 +109,10 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
         schaakrating_elo: data.schaakrating_elo || undefined,
         fide_id: data.fide_id || undefined,
         vast_nummer: data.vast_nummer?.trim() || undefined,
+        geboortedatum: data.geboortedatum && data.geboortedatum.trim() ? (() => {
+          const date = new Date(data.geboortedatum);
+          return isNaN(date.getTime()) ? undefined : date;
+        })() : undefined,
         adres_straat: data.adres_straat?.trim() || undefined,
         adres_nummer: data.adres_nummer?.trim() || undefined,
         adres_bus: data.adres_bus?.trim() || undefined,
