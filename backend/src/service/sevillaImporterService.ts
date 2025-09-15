@@ -419,8 +419,42 @@ export class SevillaImporterService {
         });
         
         if (existingRound) {
-          console.log(`Round ${roundNumber} exists, updating games...`);
+          console.log(`Round ${roundNumber} exists, checking for updates...`);
           round = existingRound;
+          
+          // Check if round date needs to be updated
+          const existingDate = existingRound.ronde_datum ? new Date(existingRound.ronde_datum) : null;
+          const needsDateUpdate = !existingDate || 
+            (roundDates.has(roundNumber) && 
+             Math.abs(existingDate.getTime() - roundDate.getTime()) > 24 * 60 * 60 * 1000); // More than 1 day difference
+          
+          // Check if startuur needs to be set (default to 20:00 if not set)
+          const needsStartuurUpdate = !existingRound.startuur;
+          const defaultStartuur = '20:00';
+          
+          if (needsDateUpdate || needsStartuurUpdate) {
+            const updateData: any = {};
+            
+            if (needsDateUpdate) {
+              updateData.ronde_datum = roundDate;
+              console.log(`Updating round ${roundNumber} date from ${existingDate?.toISOString()} to ${roundDate.toISOString()}`);
+            }
+            
+            if (needsStartuurUpdate) {
+              updateData.startuur = defaultStartuur;
+              console.log(`Setting round ${roundNumber} startuur to ${defaultStartuur}`);
+            }
+            
+            await prisma.round.update({
+              where: { round_id: existingRound.round_id },
+              data: updateData
+            });
+            
+            if (needsDateUpdate) console.log(`Updated round ${roundNumber} date`);
+            if (needsStartuurUpdate) console.log(`Updated round ${roundNumber} startuur`);
+          } else {
+            console.log(`Round ${roundNumber} date and startuur are up to date`);
+          }
           
           // Only delete games that are not postponed (don't have uitgestelde_datum)
           await prisma.game.deleteMany({
@@ -439,6 +473,7 @@ export class SevillaImporterService {
               tournament_id: tournamentId,
               ronde_nummer: correctRoundNumber,
               ronde_datum: roundDate, // Use calculated date
+              startuur: '20:00', // Default start time
               type: 'REGULAR', // Sevilla rounds are always regular rounds
               is_sevilla_imported: true, // Mark as Sevilla imported
             },
@@ -452,6 +487,7 @@ export class SevillaImporterService {
             tournament_id: tournamentId,
             ronde_nummer: roundNumber,
             ronde_datum: roundDate, // Use calculated date
+            startuur: '20:00', // Default start time
             type: 'REGULAR', // Sevilla rounds are always regular rounds
             is_sevilla_imported: true, // Mark as Sevilla imported
           },
