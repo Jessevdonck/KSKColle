@@ -340,9 +340,9 @@ export class SevillaImporterService {
             // Parse date from format "18/09/2025"
             const dateParts = ranking.Date.split('/');
             if (dateParts.length === 3) {
-              const day = dateParts[0];
-              const month = dateParts[1];
-              const year = dateParts[2];
+              const day = dateParts[0] as string;
+              const month = dateParts[1] as string;
+              const year = dateParts[2] as string;
               
               if (day && month && year) {
                 const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
