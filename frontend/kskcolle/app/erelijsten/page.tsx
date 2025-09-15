@@ -96,7 +96,7 @@ const EXCEL_FILES = [
   { name: 'Zomertoernooi', file: 'zomer.xlsx', format: 'zomer' },
   { name: 'Snelschaak', file: 'snelschaak.xlsx', format: 'klasses' },
   { name: 'Quiz', file: 'quiz.xlsx', format: 'quiz' },
-  { name: 'Konijn', file: 'konijn.xlsx', format: 'konijn' },
+  { name: 'Konijnenschaak', file: 'konijn.xlsx', format: 'konijn' },
   { name: 'Megalijst', file: 'Megalijst.xlsx', format: 'megalijst' },
   { name: 'Ranking', file: 'Ranking.xlsx', format: 'ranking' },
   { name: 'Records', file: 'Records.xlsx', format: 'records' }
