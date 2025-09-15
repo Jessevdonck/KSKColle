@@ -15,7 +15,7 @@ const YouthPlannedActivities = () => {
   
   // Filter states
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedSteps, setSelectedSteps] = useState<string[]>([])
 
   // Available filter options for youth
   const eventTypes = [
@@ -24,7 +24,8 @@ const YouthPlannedActivities = () => {
     { value: "Geen Les", label: "Geen Les", color: "bg-red-100 text-red-800 border-red-200" }
   ]
 
-  const categories = [
+  // Available steps for youth
+  const stepsCategories = [
     { value: "Stap 1", label: "Stap 1", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
     { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-200" },
     { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" }
@@ -38,33 +39,21 @@ const YouthPlannedActivities = () => {
       // Check type filter
       const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(event.type)
       
-      // Check category filter
-      const categoryMatch = selectedCategories.length === 0 || checkCategoryMatch(event.category, selectedCategories)
+      // Check steps filter
+      const eventSteps = parseCategories(event.category)
+      const stepsMatch = selectedSteps.length === 0 || 
+        selectedSteps.some(step => eventSteps.includes(step))
       
-      return typeMatch && categoryMatch
+      return typeMatch && stepsMatch
     })
-  }, [events, selectedTypes, selectedCategories])
-
-  // Helper function to check category match
-  const checkCategoryMatch = (eventCategory: string | string[] | undefined, selectedCats: string[]): boolean => {
-    if (!eventCategory) return false
-    
-    const eventCats = parseCategories(eventCategory)
-    return selectedCats.some(selectedCat => {
-      return eventCats.some(eventCat => {
-        const eventCatLower = eventCat.toLowerCase()
-        const selectedCatLower = selectedCat.toLowerCase()
-        return eventCatLower.includes(selectedCatLower) || selectedCatLower.includes(eventCatLower)
-      })
-    })
-  }
+  }, [events, selectedTypes, selectedSteps])
 
   const handleClearAll = () => {
     setSelectedTypes([])
-    setSelectedCategories([])
+    setSelectedSteps([])
   }
 
-  const hasActiveFilters = selectedTypes.length > 0 || selectedCategories.length > 0
+  const hasActiveFilters = selectedTypes.length > 0 || selectedSteps.length > 0
 
   if (error) {
     return (
@@ -184,11 +173,11 @@ const YouthPlannedActivities = () => {
         <div className="mb-4">
           <CalendarFilters
             eventTypes={eventTypes}
-            categories={categories}
+            categories={stepsCategories}
             selectedTypes={selectedTypes}
-            selectedCategories={selectedCategories}
+            selectedCategories={selectedSteps}
             onTypesChange={setSelectedTypes}
-            onCategoriesChange={setSelectedCategories}
+            onCategoriesChange={setSelectedSteps}
             onClearAll={handleClearAll}
             isYouth={true}
           />

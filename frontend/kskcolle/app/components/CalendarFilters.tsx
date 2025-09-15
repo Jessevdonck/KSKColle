@@ -141,43 +141,45 @@ export default function CalendarFilters({
           )}
         </div>
 
-        {/* Categories Dropdown */}
-        <div className="relative flex-1" ref={categoriesDropdownRef}>
-          <button
-            onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
-            className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-textColor bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <span className="truncate">
-              {selectedCategories.length === 0 
-                ? `${isYouth ? "Stappen" : "Categorieën"}` 
-                : `${selectedCategories.length}`
-              }
-            </span>
-            <ChevronDown className={`h-3 w-3 transition-transform flex-shrink-0 ml-2 ${showCategoriesDropdown ? 'rotate-180' : ''}`} />
-          </button>
-          {showCategoriesDropdown && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-              {categories.map((category) => (
-                <button
-                  key={category.value}
-                  onClick={() => handleCategoryToggle(category.value)}
-                  className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 flex items-center gap-2 ${
-                    selectedCategories.includes(category.value) ? 'bg-mainAccent/5' : ''
-                  }`}
-                >
-                  <div className={`rounded border ${
-                    selectedCategories.includes(category.value) 
-                      ? 'bg-mainAccent border-mainAccent' 
-                      : 'border-gray-300'
-                  }`} style={{width: '10px', height: '10px'}} />
-                  <span className={`truncate ${selectedCategories.includes(category.value) ? 'font-medium' : ''}`}>
-                    {category.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Categories Dropdown - Only show if categories exist */}
+        {categories.length > 0 && (
+          <div className="relative flex-1" ref={categoriesDropdownRef}>
+            <button
+              onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
+              className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-textColor bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <span className="truncate">
+                {selectedCategories.length === 0 
+                  ? `${isYouth ? "Stappen" : "Categorieën"}` 
+                  : `${selectedCategories.length}`
+                }
+              </span>
+              <ChevronDown className={`h-3 w-3 transition-transform flex-shrink-0 ml-2 ${showCategoriesDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            {showCategoriesDropdown && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                {categories.map((category) => (
+                  <button
+                    key={category.value}
+                    onClick={() => handleCategoryToggle(category.value)}
+                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 flex items-center gap-2 ${
+                      selectedCategories.includes(category.value) ? 'bg-mainAccent/5' : ''
+                    }`}
+                  >
+                    <div className={`rounded border ${
+                      selectedCategories.includes(category.value) 
+                        ? 'bg-mainAccent border-mainAccent' 
+                        : 'border-gray-300'
+                    }`} style={{width: '10px', height: '10px'}} />
+                    <span className={`truncate ${selectedCategories.includes(category.value) ? 'font-medium' : ''}`}>
+                      {category.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Active Filters Display */}
@@ -202,7 +204,7 @@ export default function CalendarFilters({
                 </Badge>
               )
             })}
-            {selectedCategories.map((category) => {
+            {categories.length > 0 && selectedCategories.map((category) => {
               const categoryOption = categories.find(c => c.value === category)
               return (
                 <Badge
