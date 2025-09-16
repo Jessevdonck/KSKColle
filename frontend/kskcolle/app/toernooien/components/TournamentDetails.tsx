@@ -148,7 +148,7 @@ export default function TournamentDetails() {
         kind: entry.kind,
         ronde_nummer: entry.kind === 'round' ? entry.round.ronde_nummer : entry.day.ronde_nummer,
         label: entry.kind === 'round' ? entry.round.label : entry.day.label,
-        games_count: entry.games?.length || 0
+        games_count: entry.kind === 'round' ? (entry.round.games?.length || 0) : (entry.games?.length || 0)
       })))
       
       setTimeline(newTimeline)
