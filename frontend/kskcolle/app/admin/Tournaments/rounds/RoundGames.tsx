@@ -80,10 +80,8 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
 
   const handleUndoPostpone = async (gameId: number) => {
     try {
-      await undoPostpone('', { 
-        arg: { 
-          game_id: gameId
-        } 
+      await undoPostpone({ 
+        game_id: gameId
       })
       onUpdateGame()
     } catch (error) {
