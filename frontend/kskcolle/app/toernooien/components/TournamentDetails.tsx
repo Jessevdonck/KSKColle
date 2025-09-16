@@ -142,9 +142,13 @@ export default function TournamentDetails() {
           })
         }
 
-        // Add makeup rounds that belong to this round (ronde_nummer - 1000)
+        // Add makeup rounds that belong to this round
+        // Check both ronde_nummer - 1000 (new system) and direct ronde_nummer (your system)
         const makeupRoundsForThisRound = sortedRounds.filter(r => 
-          r.type === 'MAKEUP' && (r.ronde_nummer - 1000) === i
+          r.type === 'MAKEUP' && (
+            (r.ronde_nummer - 1000) === i || // New system
+            r.ronde_nummer === i // Direct system (your case)
+          )
         )
         
         for (const makeupRound of makeupRoundsForThisRound) {
@@ -169,6 +173,21 @@ export default function TournamentDetails() {
               makeupDayCounter++
             })
         }
+      }
+
+      // Add all remaining makeup rounds that don't belong to specific rounds
+      // This handles cases where makeup rounds have ronde_nummer > tournament.rondes
+      const remainingMakeupRounds = sortedRounds.filter(r => 
+        r.type === 'MAKEUP' && r.ronde_nummer > tournament.rondes
+      )
+      
+      for (const makeupRound of remainingMakeupRounds) {
+        newTimeline.push({
+          kind: "makeup",
+          day: { ...makeupRound, makeupDayNumber: makeupDayCounter },
+          games: makeupRound.games || []
+        })
+        makeupDayCounter++
       }
 
       setTimeline(newTimeline)
