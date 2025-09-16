@@ -28,11 +28,11 @@ export interface Participation {
  * Sort games by current tournament score (highest first)
  * Falls back to rating for first round or when scores are equal
  */
-export function sortGamesByScore(
-  games: GameWithScore[],
+export function sortGamesByScore<T extends GameWithScore>(
+  games: T[],
   participations: Participation[],
   roundNumber: number
-): GameWithScore[] {
+): T[] {
   // Create a map of user_id to participation data
   const participationMap = new Map<number, Participation>();
   participations.forEach(p => {
