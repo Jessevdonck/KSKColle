@@ -85,6 +85,16 @@ export default function TournamentDetails() {
     },
   )
 
+  // 3) Makeup days fetching (legacy system)
+  const { data: makeupDays = [], error: makeupError } = useSWR<any[]>(
+    tournamentId ? `makeupDay?tournament_id=${tournamentId}` : null,
+    () => getAll(`makeupDay?tournament_id=${tournamentId}`),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  )
+
   // Build timeline when data is available
   useEffect(() => {
     if (tournament && allRounds) {
@@ -145,13 +155,27 @@ export default function TournamentDetails() {
           })
           makeupDayCounter++
         }
+
+        // Add legacy makeup days after round i
+        if (makeupDays) {
+          makeupDays
+            .filter((md) => md.round_after === i)
+            .forEach((md) => {
+              // All games postponed to this specific makeup day
+              const games: Game[] = rounds
+                .flatMap((x) => x.games)
+                .filter((g) => g.uitgestelde_datum && isSameDay(parseISO(g.uitgestelde_datum), parseISO(md.date)))
+              newTimeline.push({ kind: "makeup", day: { ...md, makeupDayNumber: makeupDayCounter }, games })
+              makeupDayCounter++
+            })
+        }
       }
 
       setTimeline(newTimeline)
     }
-  }, [tournament, allRounds])
+  }, [tournament, allRounds, makeupDays])
 
-  // Set default round (last round with results + 1)
+  // Set default round (last round with results + 1, or first makeup day if available)
   useEffect(() => {
     if (timeline.length > 0) {
       let defaultIndex = 0
@@ -166,6 +190,15 @@ export default function TournamentDetails() {
             defaultIndex = Math.min(i + 1, timeline.length - 1)
             break
           }
+        }
+      }
+
+      // If we're at a regular round, check if there's a makeup day right after it
+      if (defaultIndex < timeline.length - 1) {
+        const nextEntry = timeline[defaultIndex + 1]
+        if (nextEntry.kind === "makeup") {
+          // Show the makeup day instead of the next round
+          defaultIndex = defaultIndex + 1
         }
       }
 
