@@ -151,11 +151,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
               </tr>
             </thead>
             <tbody>
-              {round.games.sort((a, b) => {
-                // For main tournaments, we'll use a simple sort by user_id for now
-                // since we don't have access to current scores in this component
-                return a.speler1.user_id - b.speler1.user_id;
-              }).map((game, index) => (
+              {round.games.map((game, index) => (
               <tr
                 key={game.game_id}
                 className={`border-b border-neutral-100 ${

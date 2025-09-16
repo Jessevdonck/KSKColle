@@ -112,20 +112,9 @@ export default function RoundGames({ games, makeupDays, participations, roundNum
     )
   }
 
-  // Sort games - for Sevilla tournaments, keep original order
-  const sortedGames = isSevillaImported 
-    ? games // Keep original Sevilla order
-    : participations && roundNumber 
-      ? sortGamesByScore(games, participations, roundNumber)
-      : [...games].sort((a, b) => {
-          const ratingA = a.speler1.schaakrating_elo || 0;
-          const ratingB = b.speler1.schaakrating_elo || 0;
-          return ratingB - ratingA; // Highest rating first
-        });
-
   return (
     <div className="space-y-3">
-      {sortedGames.map((game) => (
+      {games.map((game) => (
         <div
           key={game.game_id}
           className={`border rounded-lg p-3 transition-colors ${

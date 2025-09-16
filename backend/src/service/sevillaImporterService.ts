@@ -509,9 +509,6 @@ export class SevillaImporterService {
             }
           });
           console.log(`Deleted non-postponed games for round ${roundNumber}`);
-          
-          // Ensure postponed games maintain their status
-          await this.preservePostponedGames(existingRound.round_id);
         } else {
           // Create new round - determine the correct round number considering makeup days
           const correctRoundNumber = await this.determineCorrectRoundNumber(tournamentId, roundNumber, existingRounds);
@@ -548,138 +545,6 @@ export class SevillaImporterService {
       
       // Import absent players with scores for this round
       await this.importAbsentPlayers(players, round.round_id, roundNumber, playerMap);
-    }
-  }
-
-  /**
-   * Behoud de status van uitgestelde games tijdens incrementele import
-   */
-  private async preservePostponedGames(roundId: number): Promise<void> {
-    try {
-      // Haal de ronde op om tournament_id te krijgen
-      const round = await prisma.round.findUnique({
-        where: { round_id: roundId },
-        select: { tournament_id: true }
-      });
-
-      if (!round) return;
-
-      // Haal alle uitgestelde games op voor deze ronde
-      const postponedGames = await prisma.game.findMany({
-        where: {
-          round_id: roundId,
-          uitgestelde_datum: { not: null }
-        }
-      });
-
-      console.log(`Found ${postponedGames.length} postponed games to preserve`);
-
-      for (const game of postponedGames) {
-        // Skip games without uitgestelde_datum
-        if (!game.uitgestelde_datum) continue;
-        
-        // Controleer of er een inhaaldag ronde bestaat voor deze datum
-        const makeupRound = await prisma.round.findFirst({
-          where: {
-            tournament_id: round.tournament_id,
-            type: 'MAKEUP',
-            ronde_datum: game.uitgestelde_datum
-          }
-        });
-
-        if (makeupRound) {
-          // Controleer of er al een game bestaat in de inhaaldag ronde
-          const existingMakeupGame = await prisma.game.findFirst({
-            where: {
-              round_id: makeupRound.round_id,
-              speler1_id: game.speler1_id,
-              speler2_id: game.speler2_id
-            }
-          });
-
-          if (!existingMakeupGame) {
-            // Maak een game aan in de inhaaldag ronde (zonder resultaat)
-            await prisma.game.create({
-              data: {
-                round_id: makeupRound.round_id,
-                speler1_id: game.speler1_id,
-                speler2_id: game.speler2_id,
-                winnaar_id: null,
-                result: null
-              }
-            });
-            console.log(`Created placeholder game in makeup round for postponed game ${game.game_id}`);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error preserving postponed games:', error);
-    }
-  }
-
-  /**
-   * Synchroniseer een uitgestelde game naar de inhaaldag ronde
-   */
-  private async syncPostponedGameToMakeupRound(originalGameId: number, result: string, winnaarId: number | null): Promise<void> {
-    try {
-      // Haal de originele game op
-      const originalGame = await prisma.game.findUnique({
-        where: { game_id: originalGameId },
-        include: { round: true }
-      });
-
-      if (!originalGame || !originalGame.uitgestelde_datum) {
-        return; // Geen uitgestelde game
-      }
-
-      // Zoek de inhaaldag ronde voor deze datum
-      const makeupRound = await prisma.round.findFirst({
-        where: {
-          tournament_id: originalGame.round.tournament_id,
-          type: 'MAKEUP',
-          ronde_datum: originalGame.uitgestelde_datum
-        }
-      });
-
-      if (!makeupRound) {
-        console.log(`No makeup round found for date ${originalGame.uitgestelde_datum}`);
-        return;
-      }
-
-      // Zoek of er al een game bestaat in de inhaaldag ronde
-      const existingMakeupGame = await prisma.game.findFirst({
-        where: {
-          round_id: makeupRound.round_id,
-          speler1_id: originalGame.speler1_id,
-          speler2_id: originalGame.speler2_id
-        }
-      });
-
-      if (existingMakeupGame) {
-        // Update de bestaande inhaaldag game
-        await prisma.game.update({
-          where: { game_id: existingMakeupGame.game_id },
-          data: {
-            winnaar_id: winnaarId,
-            result: result
-          }
-        });
-        console.log(`Updated makeup round game ${existingMakeupGame.game_id} with result ${result}`);
-      } else {
-        // Maak een nieuwe game aan in de inhaaldag ronde
-        await prisma.game.create({
-          data: {
-            round_id: makeupRound.round_id,
-            speler1_id: originalGame.speler1_id,
-            speler2_id: originalGame.speler2_id,
-            winnaar_id: winnaarId,
-            result: result
-          }
-        });
-        console.log(`Created new makeup round game with result ${result}`);
-      }
-    } catch (error) {
-      console.error('Error syncing postponed game to makeup round:', error);
     }
   }
 
@@ -797,21 +662,14 @@ export class SevillaImporterService {
 
       if (existingGame) {
         console.log(`Game already exists, updating result: ${existingGame.game_id}`);
-        // Update the existing game with the new result, but preserve uitgestelde_datum
+        // Update the existing game with the new result
         await prisma.game.update({
           where: { game_id: existingGame.game_id },
           data: {
             winnaar_id: winnaarId,
             result: result,
-            // Don't update uitgestelde_datum - preserve it if it exists
           }
         });
-        
-        // If this game was postponed and now has a result, sync it to the makeup round
-        if (existingGame.uitgestelde_datum && result && result !== '0-0' && result !== '...') {
-          await this.syncPostponedGameToMakeupRound(existingGame.game_id, result, winnaarId);
-        }
-        
         continue;
       }
 
