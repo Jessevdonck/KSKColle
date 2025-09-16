@@ -550,7 +550,12 @@ export default function RoundManagement({ tournament }: Props) {
                   roundData={e.roundData}
                   tournamentId={T.tournament_id}
                   tournamentName={T.naam}
-                  makeupRounds={makeupRounds}
+                  makeupRounds={makeupRounds.map(r => ({
+                    round_id: r.round_id,
+                    ronde_datum: r.ronde_datum.toISOString().split('T')[0], // Convert Date to string
+                    startuur: r.startuur,
+                    label: r.label
+                  }))}
                   participations={T.participations}
                   isSevillaImported={e.roundData?.is_sevilla_imported || false}
                   onGenerate={() =>
