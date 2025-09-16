@@ -9,6 +9,7 @@ import { save } from "../../../api/index"
 import { format } from "date-fns"
 import type { Game, MakeupDay } from "@/data/types"
 import { Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
+import { sortGamesByScore } from "@/lib/gameSorting"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
@@ -24,10 +25,16 @@ interface Props {
   games: Game[]
   tournamentId: number
   makeupDays: MakeupDay[]
+  participations?: Array<{
+    user_id: number
+    score: number
+    tie_break: number
+  }>
+  roundNumber?: number
   onUpdateGame(): void
 }
 
-export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
+export default function RoundGames({ games, makeupDays, participations, roundNumber, onUpdateGame }: Props) {
   const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
   const [postponing, setPostponing] = useState<number | null>(null)
   const [selectedMD, setSelectedMD] = useState<number | "">("")
@@ -104,8 +111,14 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
     )
   }
 
-  // Sort games by game_id to maintain original pairing order
-  const sortedGames = [...games].sort((a, b) => a.game_id - b.game_id);
+  // Sort games by score (for rounds > 1) or rating (for round 1)
+  const sortedGames = participations && roundNumber 
+    ? sortGamesByScore(games, participations, roundNumber)
+    : [...games].sort((a, b) => {
+        const ratingA = a.speler1.schaakrating_elo || 0;
+        const ratingB = b.speler1.schaakrating_elo || 0;
+        return ratingB - ratingA; // Highest rating first
+      });
 
   return (
     <div className="space-y-3">

@@ -575,6 +575,9 @@ export class SevillaImporterService {
       console.log(`Found ${postponedGames.length} postponed games to preserve`);
 
       for (const game of postponedGames) {
+        // Skip games without uitgestelde_datum
+        if (!game.uitgestelde_datum) continue;
+        
         // Controleer of er een inhaaldag ronde bestaat voor deze datum
         const makeupRound = await prisma.round.findFirst({
           where: {

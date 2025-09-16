@@ -552,6 +552,7 @@ export default function RoundManagement({ tournament }: Props) {
                   tournamentId={T.tournament_id}
                   tournamentName={T.naam}
                   makeupDays={makeupDays}
+                  participations={T.participations}
                   onGenerate={() =>
                     genPair({
                       tournamentId: T.tournament_id,
@@ -892,7 +893,29 @@ export default function RoundManagement({ tournament }: Props) {
                   {/* Bestaande games */}
                   {round.games.length > 0 ? (
                     <div className="space-y-2">
-                      {round.games.sort((a, b) => a.game_id - b.game_id).map((game, index) => (
+                      {round.games.sort((a, b) => {
+                        // Use score-based sorting if participations are available
+                        if (T.participations && round.ronde_nummer > 1) {
+                          const participationA = T.participations.find(p => p.user_id === a.speler1.user_id);
+                          const participationB = T.participations.find(p => p.user_id === b.speler1.user_id);
+                          
+                          if (participationA && participationB) {
+                            // Primary sort: by score (highest first)
+                            if (participationA.score !== participationB.score) {
+                              return participationB.score - participationA.score;
+                            }
+                            // Secondary sort: by tie_break (highest first)
+                            if (participationA.tie_break !== participationB.tie_break) {
+                              return participationB.tie_break - participationA.tie_break;
+                            }
+                          }
+                        }
+                        
+                        // Fallback to rating for first round or when no participation data
+                        const ratingA = a.speler1.schaakrating_elo || 0;
+                        const ratingB = b.speler1.schaakrating_elo || 0;
+                        return ratingB - ratingA; // Highest rating first
+                      }).map((game, index) => (
                         <div 
                           key={index} 
                           className={`flex items-center justify-between p-3 rounded-lg transition-colors ${

@@ -17,6 +17,11 @@ interface Props {
   tournamentId: number
   tournamentName: string
   makeupDays: MakeupDay[]
+  participations?: Array<{
+    user_id: number
+    score: number
+    tie_break: number
+  }>
   onGenerate(): void
   canGenerate: boolean
   onUpdate(): void
@@ -29,6 +34,7 @@ export default function RoundSection({
   tournamentId,
   tournamentName,
   makeupDays,
+  participations,
   onGenerate,
   canGenerate,
   onUpdate,
@@ -225,7 +231,14 @@ export default function RoundSection({
             </p>
           </div>
         ) : (
-          <RoundGames games={games} tournamentId={tournamentId} makeupDays={makeupDays} onUpdateGame={onUpdate} />
+          <RoundGames 
+            games={games} 
+            tournamentId={tournamentId} 
+            makeupDays={makeupDays} 
+            participations={participations}
+            roundNumber={roundNumber}
+            onUpdateGame={onUpdate} 
+          />
         )}
       </div>
     </div>
