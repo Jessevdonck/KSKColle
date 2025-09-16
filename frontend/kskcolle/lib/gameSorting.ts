@@ -15,6 +15,7 @@ export interface GameWithScore {
   round?: {
     ronde_nummer: number;
   };
+  uitgestelde_datum?: Date | null;
 }
 
 export interface Participation {
