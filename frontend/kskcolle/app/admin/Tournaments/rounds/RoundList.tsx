@@ -75,9 +75,8 @@ export default function RoundList({
       {Array.from({ length: totalRounds }, (_, i) => i + 1).map((roundNumber) => {
         // vind de ronde-data
         const roundData = rounds.find(r => r.ronde_nummer === roundNumber)
-        // pak enkel de games die NIET zijn uitgesteld
-        const games: Game[] = roundData?.games
-          .filter(g => !g.uitgestelde_datum) ?? []
+        // pak alle games (inclusief uitgestelde games)
+        const games: Game[] = roundData?.games ?? []
 
         return (
           <div key={roundNumber} className="mb-4 w-full max-w-2xl mx-auto">

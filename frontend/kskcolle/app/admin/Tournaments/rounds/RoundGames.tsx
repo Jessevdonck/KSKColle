@@ -109,12 +109,23 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
       {games.map((game) => (
         <div
           key={game.game_id}
-          className="border border-neutral-200 rounded-lg p-3 hover:border-mainAccent/30 transition-colors"
+          className={`border rounded-lg p-3 transition-colors ${
+            game.uitgestelde_datum 
+              ? 'border-amber-200 bg-amber-50 hover:border-amber-300' 
+              : 'border-neutral-200 hover:border-mainAccent/30'
+          }`}
         >
           {/* Main game row - responsive flex layout */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             {/* Players - takes full width on mobile, flex-1 on desktop */}
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              {/* Postponed indicator */}
+              {game.uitgestelde_datum && (
+                <div className="flex items-center gap-1 text-amber-600 text-xs font-medium">
+                  <Clock className="h-3 w-3" />
+                  <span>Uitgesteld</span>
+                </div>
+              )}
               <Link
                 href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
                 className="group flex items-center gap-2 flex-1 min-w-0 hover:text-mainAccent transition-colors"
@@ -178,7 +189,7 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
                 </Select>
               </div>
 
-              {/* Postpone Button */}
+              {/* Postpone Button - only show for non-postponed, non-played games */}
               {!game.uitgestelde_datum && !isGamePlayed(game.result) && (
                 <Button
                   size="sm"
@@ -189,6 +200,13 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
                   <Clock className="h-3 w-3 mr-2 sm:mr-0" />
                   <span className="sm:hidden">Uitstellen</span>
                 </Button>
+              )}
+              
+              {/* Postponed game info */}
+              {game.uitgestelde_datum && (
+                <div className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
+                  Uitgesteld naar {new Date(game.uitgestelde_datum).toLocaleDateString('nl-NL')}
+                </div>
               )}
             </div>
           </div>

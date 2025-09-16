@@ -133,7 +133,7 @@ export default function RoundSection({
     onUpdate()
   }
 
-  const games = roundData?.games.filter((g) => !g.uitgestelde_datum) ?? []
+  const games = roundData?.games ?? []
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
