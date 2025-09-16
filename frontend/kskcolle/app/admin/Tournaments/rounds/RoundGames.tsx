@@ -9,7 +9,7 @@ import { save } from "../../../api/index"
 import { format } from "date-fns"
 import type { Game, MakeupDay } from "@/data/types"
 import { Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
-import { sortGamesByScore } from "@/lib/gameSorting"
+import { sortGamesByScore, sortGamesByPairingOrder } from "@/lib/gameSorting"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
@@ -112,9 +112,12 @@ export default function RoundGames({ games, makeupDays, participations, roundNum
     )
   }
 
+  // Sort games to maintain consistent pairing order
+  const sortedGames = sortGamesByPairingOrder(games, isSevillaImported);
+
   return (
     <div className="space-y-3">
-      {games.map((game) => (
+      {sortedGames.map((game) => (
         <div
           key={game.game_id}
           className={`border rounded-lg p-3 transition-colors ${

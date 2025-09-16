@@ -25,6 +25,44 @@ export interface Participation {
 }
 
 /**
+ * Sort games to maintain consistent pairing order
+ * This function tries to preserve the original pairing order by using
+ * a combination of rating and user_id for consistent sorting
+ */
+export function sortGamesByPairingOrder<T extends GameWithScore>(
+  games: T[],
+  isSevillaImported?: boolean
+): T[] {
+  return [...games].sort((a, b) => {
+    // For Sevilla tournaments, try to maintain original order by using
+    // a combination of rating and user_id for consistent sorting
+    if (isSevillaImported) {
+      // Primary sort: by rating (highest first)
+      const ratingA = a.speler1.schaakrating_elo || 0;
+      const ratingB = b.speler1.schaakrating_elo || 0;
+      
+      if (ratingA !== ratingB) {
+        return ratingB - ratingA;
+      }
+      
+      // Secondary sort: by user_id (for consistent ordering)
+      return a.speler1.user_id - b.speler1.user_id;
+    }
+    
+    // For non-Sevilla tournaments, use rating-based sorting
+    const ratingA = a.speler1.schaakrating_elo || 0;
+    const ratingB = b.speler1.schaakrating_elo || 0;
+    
+    if (ratingA !== ratingB) {
+      return ratingB - ratingA;
+    }
+    
+    // Fallback to user_id for consistent ordering
+    return a.speler1.user_id - b.speler1.user_id;
+  });
+}
+
+/**
  * Sort games by current tournament score (highest first)
  * Falls back to rating for first round or when scores are equal
  */
