@@ -131,8 +131,6 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
           </thead>
           <tbody>
         {(() => {
-          console.log('👶 Youth page - tournament.is_sevilla_imported:', tournament?.is_sevilla_imported);
-          console.log('👶 Youth page - round.games count:', round.games.length);
           return tournament?.is_sevilla_imported 
             ? sortSevillaGamesWithPostponed(round.games)
             : round.games;
