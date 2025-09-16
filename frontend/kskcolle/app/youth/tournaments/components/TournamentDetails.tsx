@@ -187,8 +187,8 @@ export default function TournamentDetails() {
 
         if (entry.kind === "round" && entry.round.ronde_datum) {
           roundDate = new Date(entry.round.ronde_datum)
-        } else if (entry.kind === "makeup" && entry.day.ronde_datum) {
-          roundDate = new Date(entry.day.ronde_datum)
+        } else if (entry.kind === "makeup" && entry.day.date) {
+          roundDate = new Date(entry.day.date)
         }
 
         if (roundDate) {
