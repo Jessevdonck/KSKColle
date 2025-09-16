@@ -110,79 +110,47 @@ export default function TournamentDetails() {
 
       let makeupDayCounter = 1
 
-      // Create all planned rounds (1 to tournament.rondes) and insert makeup rounds after their corresponding round
-      for (let i = 1; i <= tournament.rondes; i++) {
-        const existingRound = sortedRounds.find(r => r.ronde_nummer === i && r.type === 'REGULAR')
-        if (existingRound) {
-          // Existing regular round
-          const found = rounds.find((x) => x.ronde_nummer === i)
+      // Add all rounds (both REGULAR and MAKEUP) to timeline in chronological order
+      console.log('🔍 Available rounds:', sortedRounds.map(r => ({
+        ronde_nummer: r.ronde_nummer,
+        type: r.type,
+        label: r.label,
+        games_count: r.games?.length || 0
+      })))
+      
+      for (const round of sortedRounds) {
+        if (round.type === 'REGULAR') {
+          // Regular round
+          const found = rounds.find((x) => x.ronde_nummer === round.ronde_nummer)
           newTimeline.push({
             kind: "round",
             round: found ?? { 
-              round_id: existingRound.round_id, 
-              ronde_nummer: i, 
-              games: existingRound.games || [], 
-              ronde_datum: existingRound.ronde_datum,
-              startuur: existingRound.startuur,
+              round_id: round.round_id, 
+              ronde_nummer: round.ronde_nummer, 
+              games: round.games || [], 
+              ronde_datum: round.ronde_datum,
+              startuur: round.startuur,
               type: "REGULAR" 
             },
           })
-        } else {
-          // Non-generated round - create placeholder
-          newTimeline.push({
-            kind: "round",
-            round: { 
-              round_id: null, 
-              ronde_nummer: i, 
-              games: [],
-              ronde_datum: null,
-              startuur: '20:00',
-              type: 'REGULAR',
-              label: null,
-              is_sevilla_imported: false
-            },
-          })
-        }
-
-        // Add makeup rounds that belong to this round
-        // Check both ronde_nummer - 1000 (new system) and direct ronde_nummer (your system)
-        const makeupRoundsForThisRound = sortedRounds.filter(r => 
-          r.type === 'MAKEUP' && (
-            (r.ronde_nummer - 1000) === i || // New system
-            r.ronde_nummer === i // Direct system (your case)
-          )
-        )
-        
-        for (const makeupRound of makeupRoundsForThisRound) {
+        } else if (round.type === 'MAKEUP') {
+          // Makeup round
           newTimeline.push({
             kind: "makeup",
-            day: { ...makeupRound, makeupDayNumber: makeupDayCounter },
-            games: makeupRound.games || []
+            day: { ...round, makeupDayNumber: makeupDayCounter },
+            games: round.games || []
           })
           makeupDayCounter++
         }
-
-        // Legacy makeup days removed - only using new system now
       }
 
-      // Add all remaining makeup rounds that don't belong to specific rounds
-      // This handles cases where makeup rounds have ronde_nummer > tournament.rondes
-      // But exclude those that were already added in the loop above
-      const remainingMakeupRounds = sortedRounds.filter(r => 
-        r.type === 'MAKEUP' && 
-        r.ronde_nummer > tournament.rondes &&
-        !(r.ronde_nummer - 1000 <= tournament.rondes) // Exclude those already added
-      )
+      console.log('🔍 Final timeline:', newTimeline.map(entry => ({
+        kind: entry.kind,
+        ronde_nummer: entry.kind === 'round' ? entry.round.ronde_nummer : entry.day.ronde_nummer,
+        label: entry.kind === 'round' ? entry.round.label : entry.day.label,
+        games_count: entry.games?.length || 0
+      })))
       
-      for (const makeupRound of remainingMakeupRounds) {
-        newTimeline.push({
-          kind: "makeup",
-          day: { ...makeupRound, makeupDayNumber: makeupDayCounter },
-          games: makeupRound.games || []
-        })
-        makeupDayCounter++
-      }
-
       setTimeline(newTimeline)
     }
   }, [tournament, allRounds])
