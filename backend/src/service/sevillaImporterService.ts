@@ -338,8 +338,14 @@ export class SevillaImporterService {
         // Look through all ranking entries to find round dates
         mainGroup.Ranking.forEach(ranking => {
           if (ranking.Date && ranking.Round) {
-            // Parse date from format "18/09/2025"
-            const dateParts = ranking.Date.split('/');
+            // Parse date from format "18/09/2025" or "18-9-2025"
+            let dateParts: string[] = [];
+            if (ranking.Date.includes('/')) {
+              dateParts = ranking.Date.split('/');
+            } else if (ranking.Date.includes('-')) {
+              dateParts = ranking.Date.split('-');
+            }
+            
             if (dateParts.length === 3) {
               const day = dateParts[0] as string;
               const month = dateParts[1] as string;
@@ -359,7 +365,14 @@ export class SevillaImporterService {
         if (mainGroup.History) {
           mainGroup.History.forEach(history => {
             if (history.Date && history.Round) {
-              const dateParts = history.Date.split('/');
+              // Parse date from format "18/09/2025" or "18-9-2025"
+              let dateParts: string[] = [];
+              if (history.Date.includes('/')) {
+                dateParts = history.Date.split('/');
+              } else if (history.Date.includes('-')) {
+                dateParts = history.Date.split('-');
+              }
+              
               if (dateParts.length === 3) {
                 const day = dateParts[0] as string;
                 const month = dateParts[1] as string;
