@@ -662,14 +662,54 @@ export class SevillaImporterService {
 
       if (existingGame) {
         console.log(`Game already exists, updating result: ${existingGame.game_id}`);
-        // Update the existing game with the new result
-        await prisma.game.update({
-          where: { game_id: existingGame.game_id },
-          data: {
-            winnaar_id: winnaarId,
-            result: result,
-          }
+        
+        // Check if there's a postponed game with the same players in this tournament
+        const round = await prisma.round.findUnique({
+          where: { round_id: roundId },
+          select: { tournament_id: true }
         });
+        
+        if (round) {
+          const postponedGame = await prisma.game.findFirst({
+            where: {
+              tournament: { tournament_id: round.tournament_id },
+              speler1_id: whitePlayerId || playerUserId,
+              speler2_id: blackPlayerId || opponentUserId,
+              uitgestelde_datum: { not: null }
+            }
+          });
+          
+          if (postponedGame) {
+            console.log(`Found postponed game ${postponedGame.game_id}, preserving uitgestelde_datum`);
+            // Update the existing game but preserve the uitgestelde_datum
+            await prisma.game.update({
+              where: { game_id: existingGame.game_id },
+              data: {
+                winnaar_id: winnaarId,
+                result: result,
+                uitgestelde_datum: postponedGame.uitgestelde_datum, // Preserve the postponement date
+              }
+            });
+          } else {
+            // No postponed game found, update normally
+            await prisma.game.update({
+              where: { game_id: existingGame.game_id },
+              data: {
+                winnaar_id: winnaarId,
+                result: result,
+              }
+            });
+          }
+        } else {
+          // Fallback: update normally if round not found
+          await prisma.game.update({
+            where: { game_id: existingGame.game_id },
+            data: {
+              winnaar_id: winnaarId,
+              result: result,
+            }
+          });
+        }
         continue;
       }
 
