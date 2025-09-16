@@ -152,10 +152,9 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
             </thead>
             <tbody>
               {(() => {
-                console.log('🌐 Public page - tournament.is_sevilla_imported:', tournament?.is_sevilla_imported);
-                console.log('🌐 Public page - round.games count:', round.games.length);
-                return tournament?.is_sevilla_imported 
-                  ? sortSevillaGamesWithPostponed(round.games)
+                const tournamentWithSevilla = tournament as any;
+                return tournamentWithSevilla?.is_sevilla_imported 
+                  ? sortSevillaGamesWithPostponed(round.games as any)
                   : round.games;
               })().map((game, index) => (
               <tr
