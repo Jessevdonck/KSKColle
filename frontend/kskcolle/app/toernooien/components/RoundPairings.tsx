@@ -1,6 +1,15 @@
 import Link from "next/link"
 import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 
+interface PlayerScore {
+  user_id: number
+  voornaam: string
+  achternaam: string
+  score: number
+  gamesPlayed: number
+  tieBreak: number
+}
+
 interface RoundPairingsProps {
   round: {
     round_id: number
@@ -15,11 +24,42 @@ interface RoundPairingsProps {
       uitgestelde_datum?: string
     }>
   }
+  tournament?: {
+    tournament_id: number
+    naam: string
+    rondes: number
+    type: "SWISS" | "ROUND_ROBIN"
+    participations: Array<{
+      user: {
+        user_id: number
+        voornaam: string
+        achternaam: string
+      }
+    }>
+  }
+  allRounds?: Array<{
+    round_id: number
+    ronde_nummer: number
+    type: 'REGULAR' | 'MAKEUP'
+    games: Array<{
+      game_id: number
+      speler1: { user_id: number; voornaam: string; achternaam: string }
+      speler2: { user_id: number; voornaam: string; achternaam: string } | null
+      result: string | null
+    }>
+  }>
 }
 
-export default function RoundPairings({ round }: RoundPairingsProps) {
+export default function RoundPairings({ round, tournament, allRounds }: RoundPairingsProps) {
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+  }
+
+  // Calculate player scores if tournament data is available
+  const playerScores = tournament && allRounds ? calculateStandings(tournament, allRounds) : []
+  const getPlayerScore = (userId: number) => {
+    const player = playerScores.find(p => p.user_id === userId)
+    return player ? player.score : 0
   }
 
   const getByeText = (result: string | null) => {
@@ -130,7 +170,14 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
                     <div className="w-6 h-6 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
                       W
                     </div>
-                    {`${game.speler1.voornaam} ${game.speler1.achternaam}`}
+                    <div className="flex items-center gap-2">
+                      <span>{`${game.speler1.voornaam} ${game.speler1.achternaam}`}</span>
+                      {playerScores.length > 0 && (
+                        <span className="text-xs text-gray-500 font-normal">
+                          ({getPlayerScore(game.speler1.user_id)} pt)
+                        </span>
+                      )}
+                    </div>
                   </Link>
                 </td>
 
@@ -147,7 +194,14 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
                       <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
                         Z
                       </div>
-                      {`${game.speler2.voornaam} ${game.speler2.achternaam}`}
+                      <div className="flex items-center gap-2">
+                        <span>{`${game.speler2.voornaam} ${game.speler2.achternaam}`}</span>
+                        {playerScores.length > 0 && (
+                          <span className="text-xs text-gray-500 font-normal">
+                            ({getPlayerScore(game.speler2.user_id)} pt)
+                          </span>
+                        )}
+                      </div>
                     </Link>
                   ) : (
                     <div className="flex items-center gap-2 text-gray-500 italic text-sm">
@@ -191,4 +245,93 @@ export default function RoundPairings({ round }: RoundPairingsProps) {
       )}
     </div>
   )
+}
+
+function calculateStandings(tournament: RoundPairingsProps["tournament"], rounds: RoundPairingsProps["allRounds"]): PlayerScore[] {
+  if (!tournament || !rounds) return []
+
+  // 1) init
+  const scoreMap: Record<number, number> = {}
+  const gamesPlayed: Record<number, number> = {}
+  const buchholzList: Record<number, number[]> = {}
+  const sbMap: Record<number, number> = {}
+
+  // deelnemers
+  tournament.participations.forEach(({ user }) => {
+    scoreMap[user.user_id] = 0
+    gamesPlayed[user.user_id] = 0
+    buchholzList[user.user_id] = []
+    sbMap[user.user_id] = 0
+  })
+
+  // 2) score & gamesPlayed
+  rounds.forEach(({ games, type: roundType }) => {
+    // First, process all games with results
+    games.forEach(({ speler1, speler2, result }) => {
+      const p1 = speler1.user_id
+      const p2 = speler2?.user_id ?? null
+
+      if (result) {
+        gamesPlayed[p1]++
+        if (p2) gamesPlayed[p2]++
+
+        if (result === "1-0") {
+          scoreMap[p1] += 1
+        } else if (result === "0-1" && p2) {
+          scoreMap[p2] += 1
+        } else if (result === "½-½" || result === "1/2-1/2") {
+          scoreMap[p1] += 0.5
+          if (p2) scoreMap[p2] += 0.5
+        } else if (result === "0.5-0") {
+          // Absent with message - player gets 0.5 points
+          scoreMap[p1] += 0.5
+        } else if (result && result.startsWith("ABS-")) {
+          // Absent with message from Sevilla import - extract score
+          const absScore = parseFloat(result.substring(4)) || 0
+          scoreMap[p1] += absScore
+        }
+      }
+    })
+  })
+
+  // 3) buchholz & sonneborn-berger
+  rounds.forEach(({ games, type: roundType }) => {
+    games.forEach(({ speler1, speler2, result }) => {
+      const p1 = speler1.user_id
+      const p2 = speler2?.user_id ?? null
+
+      if (result && p2) {
+        const p1Score = scoreMap[p1]
+        const p2Score = scoreMap[p2]
+
+        // Buchholz: sum of opponents' scores
+        buchholzList[p1].push(p2Score)
+        buchholzList[p2].push(p1Score)
+
+        // Sonneborn-Berger: sum of (opponent's score * result)
+        const p1Result = result === "1-0" ? 1 : result === "0-1" ? 0 : 0.5
+        const p2Result = result === "1-0" ? 0 : result === "0-1" ? 1 : 0.5
+
+        sbMap[p1] += p2Score * p1Result
+        sbMap[p2] += p1Score * p2Result
+      }
+    })
+  })
+
+  // 4) final standings
+  return tournament.participations
+    .map(({ user }) => ({
+      user_id: user.user_id,
+      voornaam: user.voornaam,
+      achternaam: user.achternaam,
+      score: scoreMap[user.user_id] || 0,
+      gamesPlayed: gamesPlayed[user.user_id] || 0,
+      tieBreak: sbMap[user.user_id] || 0,
+    }))
+    .sort((a, b) => {
+      // Primary: score (descending)
+      if (b.score !== a.score) return b.score - a.score
+      // Secondary: tiebreak (descending)
+      return b.tieBreak - a.tieBreak
+    })
 }

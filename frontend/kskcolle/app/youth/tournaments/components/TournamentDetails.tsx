@@ -283,7 +283,11 @@ export default function TournamentDetails() {
               <div className="p-6 min-h-[400px]">
                 {currentEntry ? (
                   currentEntry.kind === "round" ? (
-                    <RoundPairings round={currentEntry.round} />
+                    <RoundPairings 
+                      round={currentEntry.round} 
+                      tournament={tournament}
+                      allRounds={tournament?.rounds || []}
+                    />
                   ) : (
                     <MakeupPairings day={currentEntry.day} games={currentEntry.games} />
                   )
