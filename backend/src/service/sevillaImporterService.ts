@@ -694,6 +694,7 @@ export class SevillaImporterService {
                   winnaar_id: winnaarId,
                   result: result,
                   uitgestelde_datum: null, // Remove postponement since game is now played
+                  board_position: existingGame.board_position, // Preserve board position
                 }
               });
               
@@ -708,6 +709,7 @@ export class SevillaImporterService {
                   winnaar_id: winnaarId,
                   result: result,
                   uitgestelde_datum: postponedGame.uitgestelde_datum, // Preserve the postponement date
+                  board_position: existingGame.board_position, // Preserve board position
                 }
               });
             }
@@ -718,6 +720,7 @@ export class SevillaImporterService {
               data: {
                 winnaar_id: winnaarId,
                 result: result,
+                board_position: existingGame.board_position, // Preserve board position
               }
             });
           }
@@ -728,6 +731,7 @@ export class SevillaImporterService {
             data: {
               winnaar_id: winnaarId,
               result: result,
+              board_position: existingGame.board_position, // Preserve board position
             }
           });
         }
@@ -742,6 +746,7 @@ export class SevillaImporterService {
           speler2_id: blackPlayerId || opponentUserId, // Use black player as speler2, fallback to original logic
           winnaar_id: winnaarId,
           result: result,
+          board_position: gamesInRound.size + 1, // Track the board position
         },
       });
       
@@ -824,6 +829,7 @@ export class SevillaImporterService {
               speler2_id: null, // No opponent for absent player
               winnaar_id: winnaarId,
               result: result,
+              board_position: 999, // High number for absent players to put them at the end
             },
           });
           

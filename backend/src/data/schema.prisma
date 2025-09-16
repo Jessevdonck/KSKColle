@@ -105,6 +105,8 @@ model Game {
   winnaar_id        Int?               
   result             String?
   uitgestelde_datum   DateTime?
+  board_position     Int?            // Original board position for Sevilla tournaments
+  original_game_id   Int?            // Reference to original game when postponed
 
   round              Round             @relation("RoundGames", fields: [round_id], references: [round_id], onDelete: Cascade) 
   speler1           User              @relation("Speler1", fields: [speler1_id], references: [user_id])

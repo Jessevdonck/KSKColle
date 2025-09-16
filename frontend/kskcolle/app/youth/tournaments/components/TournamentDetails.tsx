@@ -4,9 +4,9 @@ import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
-import { getById, getAll, getAllTournamentRounds } from "../../../api/index"
+import { getById, getAll, getAllTournamentRounds, undoPostponeGame } from "../../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
-import { Calendar, Trophy, Users, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useState, useEffect } from "react"
 
 type Game = {
@@ -49,6 +49,7 @@ type Tournament = {
     }
   }>
   rounds: Round[]
+  is_sevilla_imported?: boolean
 }
 
 export default function TournamentDetails() {
@@ -68,8 +69,9 @@ export default function TournamentDetails() {
     tournamentId ? `tournament/${tournamentId}` : null,
     () => getById(`tournament/${tournamentId}`),
     {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 0, // Disable deduplication to force fresh data
     },
   )
 
@@ -381,6 +383,31 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
 
+  // Check if current user is involved in a game
+  const isUserInvolvedInGame = (game: any) => {
+    if (!currentUser) return false
+    return game.speler1?.user_id === currentUser.user_id || 
+           game.speler2?.user_id === currentUser.user_id
+  }
+
+  const handleUndoPostpone = async (gameId: number) => {
+    if (!confirm('Weet je zeker dat je het uitstel ongedaan wilt maken? De game wordt teruggeplaatst naar de originele ronde.')) {
+      return;
+    }
+
+    try {
+      const result = await undoPostponeGame('', { arg: { game_id: gameId } });
+      alert(result.message);
+      
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Failed to undo postpone game:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Kon uitstel niet ongedaan maken';
+      alert(`Fout: ${errorMessage}`);
+    }
+  }
+
   return (
     <div>
       <div className="mb-4">
@@ -456,15 +483,26 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
                     )}
                   </td>
                   <td className="p-3 text-center">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        g.result && g.result !== "not_played"
-                          ? "bg-green-100 text-green-800 border border-green-200"
-                          : "bg-gray-100 text-gray-600 border border-gray-200"
-                      }`}
-                    >
-                      {g.result && g.result !== "not_played" ? g.result : "Nog te spelen"}
-                    </span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          g.result && g.result !== "not_played"
+                            ? "bg-green-100 text-green-800 border border-green-200"
+                            : "bg-gray-100 text-gray-600 border border-gray-200"
+                        }`}
+                      >
+                        {g.result && g.result !== "not_played" ? g.result : "Nog te spelen"}
+                      </span>
+                      {isUserInvolvedInGame(g) && (
+                        <button
+                          onClick={() => handleUndoPostpone(g.game_id)}
+                          className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+                          title="Uitstel ongedaan maken"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

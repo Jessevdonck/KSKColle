@@ -120,6 +120,8 @@ export interface Game {
   winnaar_id: number | null;
   result: string | null;
   uitgestelde_datum: Date | null;
+  board_position?: number | null;
+  original_game_id?: number | null;
   speler1: User;
   speler2: User | null;
   round: Round;
@@ -175,6 +177,8 @@ export interface GameWithRoundAndTournament {
   winnaar_id: number | null;
   result: string | null;
   uitgestelde_datum: Date | null;
+  board_position?: number | null;
+  original_game_id?: number | null;
   speler1_naam: string;
   speler2_naam: string | null;
   round: {

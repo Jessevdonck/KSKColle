@@ -14,7 +14,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar, Plus, Trophy, CheckCircle, Clock, Users, Gamepad2 } from "lucide-react"
-import { sortGamesByPairingOrder } from "@/lib/gameSorting"
+import { sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from "@/lib/gameSorting"
 
 const getByeText = (result: string | null) => {
   if (!result) return "Bye"
@@ -888,7 +888,9 @@ export default function RoundManagement({ tournament }: Props) {
                   {/* Bestaande games */}
                   {round.games.length > 0 ? (
                     <div className="space-y-2">
-                      {sortGamesByPairingOrder(round.games, round.is_sevilla_imported).map((game, index) => (
+                      {(round.is_sevilla_imported 
+                        ? sortSevillaGamesWithPostponed(round.games)
+                        : sortGamesByPairingOrder(round.games, round.is_sevilla_imported)).map((game, index) => (
                         <div 
                           key={index} 
                           className={`flex items-center justify-between p-3 rounded-lg transition-colors ${

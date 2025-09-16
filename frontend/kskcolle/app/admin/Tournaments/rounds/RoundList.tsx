@@ -10,7 +10,7 @@ import { postMakeupDay } from '../../../api/index'
 import { format } from 'date-fns'
 import RoundGames from './RoundGames'
 import type { Round, MakeupDay, Game } from '@/data/types'
-import { sortGamesByPairingOrder } from '@/lib/gameSorting'
+import { sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from '@/lib/gameSorting'
 
 interface RoundListProps {
   rounds: Round[]
@@ -137,7 +137,9 @@ export default function RoundList({
 
             {/* Render de games voor deze ronde */}
             <RoundGames
-              games={sortGamesByPairingOrder(games, roundData?.is_sevilla_imported)}
+              games={roundData?.is_sevilla_imported 
+                ? sortSevillaGamesWithPostponed(games)
+                : sortGamesByPairingOrder(games, roundData?.is_sevilla_imported)}
               tournamentId={tournament_id}
               makeupRounds={makeupRounds}
               onUpdateGame={onUpdateGame}

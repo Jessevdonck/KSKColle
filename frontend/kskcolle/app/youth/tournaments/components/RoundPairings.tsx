@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ChevronRight, User, Calendar, Clock } from "lucide-react"
-import { sortGamesByScore } from '@/lib/gameSorting'
+import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from '@/lib/gameSorting'
 
 interface PlayerScore {
   user_id: number
@@ -29,6 +29,7 @@ interface RoundPairingsProps {
     naam: string
     rondes: number
     type: "SWISS" | "ROUND_ROBIN"
+    is_sevilla_imported?: boolean
     participations: Array<{
       user: {
         user_id: number
@@ -129,7 +130,13 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
             </tr>
           </thead>
           <tbody>
-            {round.games.map((game, index) => (
+        {(() => {
+          console.log('👶 Youth page - tournament.is_sevilla_imported:', tournament?.is_sevilla_imported);
+          console.log('👶 Youth page - round.games count:', round.games.length);
+          return tournament?.is_sevilla_imported 
+            ? sortSevillaGamesWithPostponed(round.games)
+            : round.games;
+        })().map((game, index) => (
               <tr
                 key={game.game_id}
                 className={`border-b border-neutral-100 ${

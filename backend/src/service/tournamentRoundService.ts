@@ -190,7 +190,8 @@ export async function postponeGameToMakeupRound(
         speler2_id: originalGame.speler2_id,
         winnaar_id: null,
         result: null, // Nieuwe game zonder resultaat
-        uitgestelde_datum: null // Nieuwe game is niet uitgesteld
+        uitgestelde_datum: null, // Nieuwe game is niet uitgesteld
+        original_game_id: game_id // Verwijs naar de originele game
       },
       include: {
         speler1: true,

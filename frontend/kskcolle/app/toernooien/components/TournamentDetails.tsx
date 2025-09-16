@@ -45,6 +45,7 @@ type Tournament = {
     }
   }>
   rounds: Round[]
+  is_sevilla_imported?: boolean
 }
 
 export default function TournamentDetails() {
@@ -66,8 +67,9 @@ export default function TournamentDetails() {
     tournamentId ? `tournament/${tournamentId}` : null,
     () => getById(`tournament/${tournamentId}`),
     {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      dedupingInterval: 0, // Disable deduplication to force fresh data
     },
   )
 

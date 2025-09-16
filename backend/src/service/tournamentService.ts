@@ -19,13 +19,42 @@ export const getAllTournaments = async (
       where.is_youth = is_youth;          // true -> jeugd, false -> niet-jeugd
     }
 
-    return prisma.tournament.findMany({
+    const tournaments = await prisma.tournament.findMany({
       where,
       include: {
         participations: { include: { user: true } },
-        rounds: { include: { games: { include: { speler1: true, speler2: true, winnaar: true } } } },
+        rounds: { 
+          include: { 
+            games: { 
+              select: {
+                game_id: true,
+                round_id: true,
+                speler1_id: true,
+                speler2_id: true,
+                winnaar_id: true,
+                result: true,
+                uitgestelde_datum: true,
+                board_position: true,
+                original_game_id: true,
+                speler1: true,
+                speler2: true,
+                winnaar: true,
+              },
+            } 
+          } 
+        },
       },
     });
+
+    // Add is_sevilla_imported flag to rounds and tournament for frontend sorting
+    return tournaments.map(tournament => ({
+      ...tournament,
+      is_sevilla_imported: tournament.rounds.some(round => round.type === 'REGULAR' && !round.label), // Check if any round is Sevilla imported
+      rounds: tournament.rounds.map(round => ({
+        ...round,
+        is_sevilla_imported: round.type === 'REGULAR' && !round.label, // Sevilla rondes hebben geen label
+      }))
+    }));
   } catch (error) {
     throw handleDBError(error);
   }
@@ -47,7 +76,16 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
         rounds: {
           include: {
             games: {
-              include: {
+              select: {
+                game_id: true,
+                round_id: true,
+                speler1_id: true,
+                speler2_id: true,
+                winnaar_id: true,
+                result: true,
+                uitgestelde_datum: true,
+                board_position: true,
+                original_game_id: true,
                 speler1: true,
                 speler2: true,
                 winnaar: true,
@@ -62,7 +100,25 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
       throw ServiceError.notFound('No tournament with this id exists');
     }
 
-    return tournament;
+    // Add is_sevilla_imported flag to rounds and tournament for frontend sorting
+    const tournamentWithSevillaFlag = {
+      ...tournament,
+      is_sevilla_imported: tournament.rounds.some(round => round.type === 'REGULAR' && !round.label), // Check if any round is Sevilla imported
+      rounds: tournament.rounds.map(round => ({
+        ...round,
+        is_sevilla_imported: round.type === 'REGULAR' && !round.label, // Sevilla rondes hebben geen label
+      }))
+    };
+
+    console.log('🔍 Backend - Tournament rounds with Sevilla flags:', tournamentWithSevillaFlag.rounds.map(r => ({
+      round_id: r.round_id,
+      ronde_nummer: r.ronde_nummer,
+      type: r.type,
+      label: r.label,
+      is_sevilla_imported: r.is_sevilla_imported
+    })));
+
+    return tournamentWithSevillaFlag;
   } catch (error) {
     throw handleDBError(error);
   }

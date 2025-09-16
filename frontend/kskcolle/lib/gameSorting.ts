@@ -16,6 +16,7 @@ export interface GameWithScore {
     ronde_nummer: number;
   };
   uitgestelde_datum?: Date | null;
+  board_position?: number | null;
 }
 
 export interface Participation {
@@ -33,20 +34,13 @@ export function sortGamesByPairingOrder<T extends GameWithScore>(
   games: T[],
   isSevillaImported?: boolean
 ): T[] {
+  console.log('🔄 sortGamesByPairingOrder called - isSevillaImported:', isSevillaImported);
+  
   return [...games].sort((a, b) => {
-    // For Sevilla tournaments, try to maintain original order by using
-    // a combination of rating and user_id for consistent sorting
+    // For Sevilla tournaments, maintain original board order by using game_id
+    // This preserves the order in which games were imported from Sevilla
     if (isSevillaImported) {
-      // Primary sort: by rating (highest first)
-      const ratingA = a.speler1.schaakrating_elo || 0;
-      const ratingB = b.speler1.schaakrating_elo || 0;
-      
-      if (ratingA !== ratingB) {
-        return ratingB - ratingA;
-      }
-      
-      // Secondary sort: by user_id (for consistent ordering)
-      return a.speler1.user_id - b.speler1.user_id;
+      return a.game_id - b.game_id;
     }
     
     // For non-Sevilla tournaments, use rating-based sorting
@@ -60,6 +54,57 @@ export function sortGamesByPairingOrder<T extends GameWithScore>(
     // Fallback to user_id for consistent ordering
     return a.speler1.user_id - b.speler1.user_id;
   });
+}
+
+/**
+ * Sort games for Sevilla tournaments while preserving original board positions
+ * This function maintains the original board order for postponed games
+ */
+export function sortSevillaGamesWithPostponed<T extends GameWithScore>(
+  games: T[]
+): T[] {
+  // For Sevilla tournaments, we need to maintain the original pairing order
+  // Use board_position if available, otherwise fall back to rating-based sorting
+  
+  console.log('🔍 Sorting Sevilla games:', games.map(g => ({
+    game_id: g.game_id,
+    board_position: g.board_position,
+    speler1: g.speler1.voornaam + ' ' + g.speler1.achternaam,
+    uitgestelde_datum: g.uitgestelde_datum,
+    result: g.result
+  })));
+  
+  const sortedGames = [...games].sort((a, b) => {
+    // For Sevilla tournaments, always sort by board_position if available
+    // This preserves the original board order from Sevilla import
+    
+    const aBoardPos = a.board_position ?? 999; // Default to high number if no board_position
+    const bBoardPos = b.board_position ?? 999; // Default to high number if no board_position
+    
+    console.log(`🔍 Comparing: ${a.speler1.voornaam} (board: ${a.board_position}, game_id: ${a.game_id}) vs ${b.speler1.voornaam} (board: ${b.board_position}, game_id: ${b.game_id})`);
+    
+    // Sort by board_position (lower numbers first)
+    if (aBoardPos !== bBoardPos) {
+      const result = aBoardPos - bBoardPos;
+      console.log(`  → Board position sort: ${aBoardPos} - ${bBoardPos} = ${result}`);
+      return result;
+    }
+    
+    // If board_position is the same, sort by game_id as tiebreaker
+    const result = a.game_id - b.game_id;
+    console.log(`  → Game ID tiebreaker: ${a.game_id} - ${b.game_id} = ${result}`);
+    return result;
+  });
+  
+  console.log('✅ Sorted Sevilla games:', sortedGames.map(g => ({
+    game_id: g.game_id,
+    board_position: g.board_position,
+    speler1: g.speler1.voornaam + ' ' + g.speler1.achternaam,
+    uitgestelde_datum: g.uitgestelde_datum,
+    result: g.result
+  })));
+  
+  return sortedGames;
 }
 
 /**

@@ -5,11 +5,11 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import useSWRMutation from "swr/mutation"
-import { save, postponeGame } from "../../../api/index"
+import { save, postponeGame, undoPostponeGame } from "../../../api/index"
 import { format } from "date-fns"
 import type { Game, MakeupDay } from "@/data/types"
-import { Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
-import { sortGamesByScore, sortGamesByPairingOrder } from "@/lib/gameSorting"
+import { Clock, ChevronRight, CheckCircle, XCircle, Minus, X } from "lucide-react"
+import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from "@/lib/gameSorting"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
@@ -42,6 +42,7 @@ interface Props {
 
 export default function RoundGames({ games, makeupRounds = [], participations, roundNumber, isSevillaImported, onUpdateGame }: Props) {
   const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
+  const { trigger: undoPostpone, isMutating: isUndoing } = useSWRMutation("undo-postpone", undoPostponeGame)
   const [postponing, setPostponing] = useState<number | null>(null)
   const [selectedMD, setSelectedMD] = useState<number | "">("")
 
@@ -74,6 +75,20 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
         console.error('Failed to postpone game:', error)
         alert('Kon game niet uitstellen')
       }
+    }
+  }
+
+  const handleUndoPostpone = async (gameId: number) => {
+    try {
+      await undoPostpone('', { 
+        arg: { 
+          game_id: gameId
+        } 
+      })
+      onUpdateGame()
+    } catch (error) {
+      console.error('Failed to undo postpone game:', error)
+      alert('Kon uitstel niet ongedaan maken')
     }
   }
 
@@ -132,7 +147,12 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
   }
 
   // Sort games to maintain consistent pairing order
-  const sortedGames = sortGamesByPairingOrder(games, isSevillaImported);
+  console.log('🎯 RoundGames - isSevillaImported:', isSevillaImported);
+  console.log('🎯 RoundGames - games count:', games.length);
+  
+  const sortedGames = isSevillaImported 
+    ? sortSevillaGamesWithPostponed(games)
+    : sortGamesByPairingOrder(games, isSevillaImported);
 
   return (
     <div className="space-y-3">
@@ -234,8 +254,20 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
               
               {/* Postponed game info */}
               {game.uitgestelde_datum && (
-                <div className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
-                  Uitgesteld naar {new Date(game.uitgestelde_datum).toLocaleDateString('nl-NL')}
+                <div className="flex items-center gap-2">
+                  <div className="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded">
+                    Uitgesteld naar {new Date(game.uitgestelde_datum).toLocaleDateString('nl-NL')}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleUndoPostpone(game.game_id)}
+                    disabled={isUndoing}
+                    className="border-red-200 text-red-600 hover:bg-red-50 text-xs bg-transparent p-1 h-6 w-6"
+                    title="Uitstel ongedaan maken"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
               )}
             </div>

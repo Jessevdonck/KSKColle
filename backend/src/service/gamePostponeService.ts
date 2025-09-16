@@ -718,21 +718,34 @@ export async function undoPostponeGame(data: UndoPostponeGameData): Promise<Undo
       throw ServiceError.validationFailed('Deze game staat niet in een inhaaldag');
     }
 
-    // 4. Zoek de originele game die "uitgesteld" is
-    const originalGame = await prisma.game.findFirst({
-      where: {
-        speler1_id: game.speler1_id,
-        speler2_id: game.speler2_id,
-        result: 'uitgesteld',
-        round: {
-          tournament_id: game.round.tournament_id,
-          type: 'REGULAR'
+    // 4. Zoek de originele game via original_game_id
+    let originalGame;
+    
+    if ((game as any).original_game_id) {
+      // Nieuwe methode: gebruik original_game_id
+      originalGame = await prisma.game.findUnique({
+        where: { game_id: (game as any).original_game_id },
+        include: {
+          round: true
         }
-      },
-      include: {
-        round: true
-      }
-    });
+      });
+    } else {
+      // Fallback: zoek via spelers (oude methode)
+      originalGame = await prisma.game.findFirst({
+        where: {
+          speler1_id: game.speler1_id,
+          speler2_id: game.speler2_id,
+          result: 'uitgesteld',
+          round: {
+            tournament_id: game.round.tournament_id,
+            type: 'REGULAR'
+          }
+        },
+        include: {
+          round: true
+        }
+      });
+    }
 
     if (!originalGame) {
       throw ServiceError.notFound('Originele uitgestelde game niet gevonden');
