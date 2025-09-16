@@ -217,14 +217,14 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                 <td className="px-2 py-1 text-center">
                   <span
                     className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                      game.uitgestelde_datum && !game.result
+                      game.uitgestelde_datum
                         ? "bg-amber-100 text-amber-800 border border-amber-200"
                         : game.result && game.result !== "not_played" && game.result !== "..."
                         ? "bg-green-100 text-green-800 border border-green-200"
                         : "bg-gray-100 text-gray-600 border border-gray-200"
                     }`}
                   >
-                    {game.uitgestelde_datum && !game.result
+                    {game.uitgestelde_datum
                       ? "Uitgesteld"
                       : game.result && game.result !== "not_played" && game.result !== "..."
                       ? game.result

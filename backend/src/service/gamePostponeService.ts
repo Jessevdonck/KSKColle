@@ -519,7 +519,7 @@ async function sendPostponeNotification(opponent: any, game: any, newRound: any,
     });
 
     // Stuur ook een kopie naar de admin emails
-    const adminEmails = ['jvaerendonck@gmail.com', 'niels.ongena@hotmail.be'];
+    const adminEmails = ['niels.ongena@hotmail.be', 'jvaerendonck@gmail.com'];
     
     for (const adminEmail of adminEmails) {
       try {

@@ -4,7 +4,7 @@ import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
-import { getById, getAll } from "../../../api/index"
+import { getById, getAll, getAllTournamentRounds } from "../../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -73,10 +73,10 @@ export default function TournamentDetails() {
     },
   )
 
-  // 2) Makeup days fetching
-  const { data: makeupDays = [], error: makeupError } = useSWR<MakeupDay[]>(
-    tournamentId ? `makeupDay?tournament_id=${tournamentId}` : null,
-    () => getAll(`makeupDay?tournament_id=${tournamentId}`),
+  // 2) All tournament rounds fetching (includes makeup days)
+  const { data: allRounds = [], error: roundsError } = useSWR<Round[]>(
+    tournamentId ? `tournamentRounds?tournament_id=${tournamentId}` : null,
+    () => getAllTournamentRounds(tournamentId),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -85,35 +85,89 @@ export default function TournamentDetails() {
 
   // Build timeline when data is available
   useEffect(() => {
-    if (tournament && makeupDays) {
+    if (tournament && allRounds) {
       const rounds: Round[] = tournament.rounds || []
 
-      type Entry = { kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] }
+      type Entry = { kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] }
       const newTimeline: Entry[] = []
 
-      for (let r = 1; r <= tournament.rondes; r++) {
-        // Official round (stub if not generated yet)
-        const found = rounds.find((x) => x.ronde_nummer === r)
-        newTimeline.push({
-          kind: "round",
-          round: found ?? { round_id: 0, ronde_nummer: r, games: [], type: "REGULAR" },
-        })
+      // Sort all rounds by ronde_nummer
+      const sortedRounds = [...allRounds].sort((a, b) => a.ronde_nummer - b.ronde_nummer)
 
-        // Makeup days after round r
-        makeupDays
-          .filter((md) => md.round_after === r)
-          .forEach((md) => {
-            // All games postponed to this specific makeup day
-            const games: Game[] = rounds
-              .flatMap((x) => x.games)
-              .filter((g) => g.uitgestelde_datum && isSameDay(parseISO(g.uitgestelde_datum), parseISO(md.date)))
-            newTimeline.push({ kind: "makeup", day: md, games })
+      let makeupDayCounter = 1
+
+      // Create all planned rounds (1 to tournament.rondes) and insert makeup rounds after their corresponding round
+      for (let i = 1; i <= tournament.rondes; i++) {
+        const existingRound = sortedRounds.find(r => r.ronde_nummer === i && r.type === 'REGULAR')
+        if (existingRound) {
+          // Existing regular round
+          const found = rounds.find((x) => x.ronde_nummer === i)
+          newTimeline.push({
+            kind: "round",
+            round: found ?? { 
+              round_id: existingRound.round_id, 
+              ronde_nummer: i, 
+              games: existingRound.games || [], 
+              ronde_datum: existingRound.ronde_datum,
+              startuur: existingRound.startuur,
+              type: "REGULAR" 
+            },
           })
+        } else {
+          // Non-generated round - create placeholder
+          newTimeline.push({
+            kind: "round",
+            round: { 
+              round_id: null, 
+              ronde_nummer: i, 
+              games: [],
+              ronde_datum: null,
+              startuur: '20:00',
+              type: 'REGULAR',
+              label: null,
+              is_sevilla_imported: false
+            },
+          })
+        }
+
+        // Add makeup rounds that belong to this round
+        const makeupRoundsForThisRound = sortedRounds.filter(r => 
+          r.type === 'MAKEUP' && (
+            (r.ronde_nummer - 1000) === i || // New system
+            r.ronde_nummer === i // Direct system
+          )
+        )
+        
+        for (const makeupRound of makeupRoundsForThisRound) {
+          newTimeline.push({
+            kind: "makeup",
+            day: { ...makeupRound, makeupDayNumber: makeupDayCounter },
+            games: makeupRound.games || []
+          })
+          makeupDayCounter++
+        }
+      }
+
+      // Add all remaining makeup rounds that don't belong to specific rounds
+      // But exclude those that were already added in the loop above
+      const remainingMakeupRounds = sortedRounds.filter(r => 
+        r.type === 'MAKEUP' && 
+        r.ronde_nummer > tournament.rondes &&
+        !(r.ronde_nummer - 1000 <= tournament.rondes) // Exclude those already added
+      )
+      
+      for (const makeupRound of remainingMakeupRounds) {
+        newTimeline.push({
+          kind: "makeup",
+          day: { ...makeupRound, makeupDayNumber: makeupDayCounter },
+          games: makeupRound.games || []
+        })
+        makeupDayCounter++
       }
 
       setTimeline(newTimeline)
     }
-  }, [tournament, makeupDays])
+  }, [tournament, allRounds])
 
   // Set default round (last round with results + 1)
   useEffect(() => {

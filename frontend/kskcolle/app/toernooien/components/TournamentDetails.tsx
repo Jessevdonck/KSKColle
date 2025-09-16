@@ -85,15 +85,15 @@ export default function TournamentDetails() {
     },
   )
 
-  // 3) Makeup days fetching (legacy system)
-  const { data: makeupDays = [], error: makeupError } = useSWR<any[]>(
-    tournamentId ? `makeupDay?tournament_id=${tournamentId}` : null,
-    () => getAll(`makeupDay?tournament_id=${tournamentId}`),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  )
+  // 3) Makeup days fetching (legacy system) - not used anymore
+  // const { data: makeupDays = [], error: makeupError } = useSWR<any[]>(
+  //   tournamentId ? `makeupDay?tournament_id=${tournamentId}` : null,
+  //   () => getAll(`makeupDay?tournament_id=${tournamentId}`),
+  //   {
+  //     revalidateOnFocus: false,
+  //     revalidateOnReconnect: false,
+  //   },
+  // )
 
   // Build timeline when data is available
   useEffect(() => {
@@ -160,25 +160,16 @@ export default function TournamentDetails() {
           makeupDayCounter++
         }
 
-        // Add legacy makeup days after round i
-        if (makeupDays) {
-          makeupDays
-            .filter((md) => md.round_after === i)
-            .forEach((md) => {
-              // All games postponed to this specific makeup day
-              const games: Game[] = rounds
-                .flatMap((x) => x.games)
-                .filter((g) => g.uitgestelde_datum && isSameDay(parseISO(g.uitgestelde_datum), parseISO(md.date)))
-              newTimeline.push({ kind: "makeup", day: { ...md, makeupDayNumber: makeupDayCounter }, games })
-              makeupDayCounter++
-            })
-        }
+        // Legacy makeup days removed - only using new system now
       }
 
       // Add all remaining makeup rounds that don't belong to specific rounds
       // This handles cases where makeup rounds have ronde_nummer > tournament.rondes
+      // But exclude those that were already added in the loop above
       const remainingMakeupRounds = sortedRounds.filter(r => 
-        r.type === 'MAKEUP' && r.ronde_nummer > tournament.rondes
+        r.type === 'MAKEUP' && 
+        r.ronde_nummer > tournament.rondes &&
+        !(r.ronde_nummer - 1000 <= tournament.rondes) // Exclude those already added
       )
       
       for (const makeupRound of remainingMakeupRounds) {
@@ -192,7 +183,7 @@ export default function TournamentDetails() {
 
       setTimeline(newTimeline)
     }
-  }, [tournament, allRounds, makeupDays])
+  }, [tournament, allRounds])
 
   // Set default round (last round with results + 1, or first makeup day if available)
   useEffect(() => {

@@ -16,7 +16,12 @@ interface Props {
   roundData?: Round & { calendar_event_id?: number }
   tournamentId: number
   tournamentName: string
-  makeupDays: MakeupDay[]
+  makeupRounds?: Array<{
+    round_id: number
+    ronde_datum: string
+    startuur: string
+    label: string | null
+  }>
   participations?: Array<{
     user_id: number
     score: number
@@ -34,7 +39,7 @@ export default function RoundSection({
   roundData,
   tournamentId,
   tournamentName,
-  makeupDays,
+  makeupRounds = [],
   participations,
   isSevillaImported,
   onGenerate,
@@ -236,7 +241,7 @@ export default function RoundSection({
           <RoundGames 
             games={games} 
             tournamentId={tournamentId} 
-            makeupDays={makeupDays} 
+            makeupRounds={makeupRounds} 
             participations={participations}
             roundNumber={roundNumber}
             isSevillaImported={isSevillaImported}

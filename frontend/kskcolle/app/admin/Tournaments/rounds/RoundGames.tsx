@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import useSWRMutation from "swr/mutation"
-import { save } from "../../../api/index"
+import { save, postponeGame } from "../../../api/index"
 import { format } from "date-fns"
 import type { Game, MakeupDay } from "@/data/types"
 import { Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
@@ -24,7 +24,12 @@ const getByeText = (result: string | null) => {
 interface Props {
   games: Game[]
   tournamentId: number
-  makeupDays: MakeupDay[]
+  makeupRounds?: Array<{
+    round_id: number
+    ronde_datum: string
+    startuur: string
+    label: string | null
+  }>
   participations?: Array<{
     user_id: number
     score: number
@@ -35,7 +40,7 @@ interface Props {
   onUpdateGame(): void
 }
 
-export default function RoundGames({ games, makeupDays, participations, roundNumber, isSevillaImported, onUpdateGame }: Props) {
+export default function RoundGames({ games, makeupRounds = [], participations, roundNumber, isSevillaImported, onUpdateGame }: Props) {
   const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
   const [postponing, setPostponing] = useState<number | null>(null)
   const [selectedMD, setSelectedMD] = useState<number | "">("")
@@ -53,12 +58,22 @@ export default function RoundGames({ games, makeupDays, participations, roundNum
 
   const handlePostpone = async () => {
     if (postponing && selectedMD) {
-      const md = makeupDays.find((m) => m.id === selectedMD)!
-      // zet uitgestelde datum in game
-      await saveGame({ id: postponing, uitgestelde_datum: md.date })
-      setPostponing(null)
-      setSelectedMD("")
-      onUpdateGame()
+      const makeupRound = makeupRounds.find((r) => r.round_id === selectedMD)!
+      // Use the new postpone API
+      try {
+        await postponeGame('', {
+          arg: {
+            game_id: postponing,
+            makeup_round_id: selectedMD
+          }
+        })
+        setPostponing(null)
+        setSelectedMD("")
+        onUpdateGame()
+      } catch (error) {
+        console.error('Failed to postpone game:', error)
+        alert('Kon game niet uitstellen')
+      }
     }
   }
 
@@ -83,7 +98,11 @@ export default function RoundGames({ games, makeupDays, participations, roundNum
     }
   }
 
-  const getResultColor = (result: string | null) => {
+  const getResultColor = (result: string | null, uitgestelde_datum?: Date | null) => {
+    if (uitgestelde_datum) {
+      return "bg-amber-100 text-amber-800 border-amber-200"
+    }
+    
     switch (result) {
       case "1-0":
       case "0-1":
@@ -224,8 +243,9 @@ export default function RoundGames({ games, makeupDays, participations, roundNum
 
           {/* Result Status */}
           <div className="mt-2 flex justify-start sm:justify-end">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getResultColor(game.result)}`}>
-            {game.result === "not_played" || game.result === "..." || !game.result ? "Nog te spelen" : 
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getResultColor(game.result, game.uitgestelde_datum)}`}>
+            {game.uitgestelde_datum ? "Uitgesteld" :
+             game.result === "not_played" || game.result === "..." || !game.result ? "Nog te spelen" : 
              game.result === "1-0FF" ? "Zwart forfait" :
              game.result === "0-1FF" ? "Wit forfait" :
              game.result === "0-0" ? "Scheidsrechterlijke beslissing" :
@@ -249,9 +269,9 @@ export default function RoundGames({ games, makeupDays, participations, roundNum
                     <SelectValue placeholder="Kies inhaaldag" />
                   </SelectTrigger>
                   <SelectContent>
-                    {makeupDays.map((md) => (
-                      <SelectItem key={md.id} value={md.id.toString()}>
-                        {md.label || format(new Date(md.date), "dd-MM-yyyy")}
+                    {makeupRounds.map((round) => (
+                      <SelectItem key={round.round_id} value={round.round_id.toString()}>
+                        {round.label || format(new Date(round.ronde_datum), "dd-MM-yyyy")}
                       </SelectItem>
                     ))}
                   </SelectContent>

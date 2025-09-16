@@ -20,8 +20,12 @@ interface RoundListProps {
   canGeneratePairings: (roundNumber: number) => boolean
   nextRoundForPairings: number | null
   onUpdateGame: () => void
-  makeupDays: MakeupDay[]
-  onMakeupDaysChange: () => void
+  makeupRounds?: Array<{
+    round_id: number
+    ronde_datum: string
+    startuur: string
+    label: string | null
+  }>
 }
 
 export default function RoundList({
@@ -32,8 +36,7 @@ export default function RoundList({
   canGeneratePairings,
   nextRoundForPairings,
   onUpdateGame,
-  makeupDays,
-  onMakeupDaysChange,
+  makeupRounds = [],
 }: RoundListProps) {
   const [addingForRound, setAddingForRound] = useState<number | null>(null)
   const [date, setDate] = useState<string>('')
@@ -124,11 +127,11 @@ export default function RoundList({
             )}
 
             {/* toon bestaande inhaaldagen onder deze ronde */}
-            {makeupDays
-              .filter(md => md.round_after === roundNumber)
-              .map(md => (
-                <div key={md.id} className="mt-2 text-sm text-gray-600">
-                  Inhaaldag: {md.label ?? ''} — {format(new Date(md.date), 'yyyy-MM-dd')}
+            {makeupRounds
+              .filter(round => (round.round_id - 1000) === roundNumber)
+              .map(round => (
+                <div key={round.round_id} className="mt-2 text-sm text-gray-600">
+                  Inhaaldag: {round.label ?? ''} — {format(new Date(round.ronde_datum), 'yyyy-MM-dd')}
                 </div>
               ))}
 
@@ -136,7 +139,7 @@ export default function RoundList({
             <RoundGames
               games={sortGamesByPairingOrder(games, roundData?.is_sevilla_imported)}
               tournamentId={tournament_id}
-              makeupDays={makeupDays}
+              makeupRounds={makeupRounds}
               onUpdateGame={onUpdateGame}
             />
           </div>

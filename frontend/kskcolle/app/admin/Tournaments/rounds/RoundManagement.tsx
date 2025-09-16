@@ -34,11 +34,11 @@ export default function RoundManagement({ tournament }: Props) {
     getById(`tournament/${tournament.tournament_id}`),
   )
 
-  // 2) Fetch alle inhaaldagen (oude systeem)
-  const { data: makeupDays = [], mutate: refetchMD } = useSWR<MakeupDay[]>(
-    ["makeupDay", tournament.tournament_id],
-    () => getAll(`makeupDay?tournament_id=${tournament.tournament_id}`),
-  )
+  // 2) Fetch alle inhaaldagen (oude systeem) - niet meer gebruikt
+  // const { data: makeupDays = [], mutate: refetchMD } = useSWR<MakeupDay[]>(
+  //   ["makeupDay", tournament.tournament_id],
+  //   () => getAll(`makeupDay?tournament_id=${tournament.tournament_id}`),
+  // )
 
   // 3) Fetch alle rondes (nieuwe systeem voor inhaaldagen als rondes)
   const { data: allRounds = [], mutate: refetchRounds } = useSWR<Round[]>(
@@ -128,15 +128,13 @@ export default function RoundManagement({ tournament }: Props) {
     return pending.every((g) => g.result && g.result !== "not_played")
   }
 
-  // timeline bouwen (oude systeem voor niet-Sevilla toernooien)
-  type Entry = { kind: "round"; roundNumber: number; roundData?: Round } | { kind: "makeup"; makeup: MakeupDay } | { kind: "makeupRound"; round: Round }
+  // timeline bouwen (alleen nieuwe systeem)
+  type Entry = { kind: "round"; roundNumber: number; roundData?: Round } | { kind: "makeupRound"; round: Round }
 
   const timeline: Entry[] = []
   for (let i = 1; i <= T.rondes; i++) {
     timeline.push({ kind: "round", roundNumber: i, roundData: T.rounds.find((r) => r.ronde_nummer === i) })
-    // Oude makeup days
-    makeupDays.filter((md) => md.round_after === i).forEach((md) => timeline.push({ kind: "makeup", makeup: md }))
-    // Nieuwe makeup rounds - zoek op basis van round_after (ronde_nummer - 1000)
+    // Alleen nieuwe makeup rounds - zoek op basis van round_after (ronde_nummer - 1000)
     allRounds.filter((r) => r.type === 'MAKEUP' && (r.ronde_nummer - 1000) === i).forEach((round) => timeline.push({ kind: "makeupRound", round }))
   }
 
@@ -360,16 +358,16 @@ export default function RoundManagement({ tournament }: Props) {
               <div className="text-sm text-blue-600">Gegenereerde Rondes</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{makeupDays.length}</div>
-              <div className="text-sm text-green-600">Inhaaldagen (Oud)</div>
+              <div className="text-2xl font-bold text-green-600">{makeupRounds.length}</div>
+              <div className="text-sm text-green-600">Inhaaldagen</div>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">{T.participations.length}</div>
               <div className="text-sm text-purple-600">Deelnemers</div>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">{makeupRounds.length}</div>
-              <div className="text-sm text-orange-600">Inhaaldag Rondes</div>
+              <div className="text-2xl font-bold text-orange-600">{T.rounds.filter(r => r.is_sevilla_imported).length}</div>
+              <div className="text-sm text-orange-600">Sevilla Rondes</div>
             </div>
           </div>
         </div>
@@ -552,7 +550,7 @@ export default function RoundManagement({ tournament }: Props) {
                   roundData={e.roundData}
                   tournamentId={T.tournament_id}
                   tournamentName={T.naam}
-                  makeupDays={makeupDays}
+                  makeupRounds={makeupRounds}
                   participations={T.participations}
                   isSevillaImported={e.roundData?.is_sevilla_imported || false}
                   onGenerate={() =>
@@ -564,16 +562,6 @@ export default function RoundManagement({ tournament }: Props) {
                   canGenerate={canGen(e.roundNumber)}
                   onUpdate={() => refetchT()}
                   isGenerating={generatingPairs}
-                />
-              )
-            } else if (e.kind === "makeup") {
-              return (
-                <MakeupSection
-                  key={`m${e.makeup.id}`}
-                  makeup={e.makeup}
-                  rounds={T.rounds}
-                  tournamentId={T.tournament_id}
-                  onUpdate={() => Promise.all([refetchT(), refetchMD()])}
                 />
               )
             } else if (e.kind === "makeupRound") {
@@ -933,7 +921,8 @@ export default function RoundManagement({ tournament }: Props) {
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="text-sm text-gray-600">
-                              {game.result ? (game.result.startsWith("ABS-") ? "Abs with msg" : game.result) : 'Nog niet gespeeld'}
+                              {game.uitgestelde_datum ? 'Uitgesteld' : 
+                               game.result ? (game.result.startsWith("ABS-") ? "Abs with msg" : game.result) : 'Nog niet gespeeld'}
                             </div>
                             {!bulkPostponeMode && round.type === 'REGULAR' && makeupRounds.length > 0 && (
                               <Button

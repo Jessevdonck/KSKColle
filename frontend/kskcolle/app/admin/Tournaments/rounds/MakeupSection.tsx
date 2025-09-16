@@ -129,7 +129,11 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
     }
   }
 
-  const getResultColor = (result: string | null) => {
+  const getResultColor = (result: string | null, uitgestelde_datum?: Date | null) => {
+    if (uitgestelde_datum) {
+      return "bg-amber-100 text-amber-800 border-amber-200"
+    }
+    
     switch (result) {
       case "1-0":
       case "0-1":
@@ -280,8 +284,9 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
 
                 {/* Result Status */}
                 <div className="mt-3 flex justify-end">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getResultColor(game.result)}`}>
-                    {game.result === "not_played" || !game.result ? "Nog te spelen" : game.result}
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getResultColor(game.result, game.uitgestelde_datum)}`}>
+                    {game.uitgestelde_datum ? "Uitgesteld" : 
+                     game.result === "not_played" || !game.result ? "Nog te spelen" : game.result}
                   </span>
                 </div>
               </div>

@@ -672,7 +672,7 @@ export class SevillaImporterService {
         if (round) {
           const postponedGame = await prisma.game.findFirst({
             where: {
-              tournament: { tournament_id: round.tournament_id },
+              round: { tournament_id: round.tournament_id },
               speler1_id: whitePlayerId || playerUserId,
               speler2_id: blackPlayerId || opponentUserId,
               uitgestelde_datum: { not: null }
@@ -680,16 +680,37 @@ export class SevillaImporterService {
           });
           
           if (postponedGame) {
-            console.log(`Found postponed game ${postponedGame.game_id}, preserving uitgestelde_datum`);
-            // Update the existing game but preserve the uitgestelde_datum
-            await prisma.game.update({
-              where: { game_id: existingGame.game_id },
-              data: {
-                winnaar_id: winnaarId,
-                result: result,
-                uitgestelde_datum: postponedGame.uitgestelde_datum, // Preserve the postponement date
-              }
-            });
+            console.log(`Found postponed game ${postponedGame.game_id}`);
+            
+            // Check if the game now has a real result (not "..." or "not_played")
+            const hasRealResult = result && result !== "..." && result !== "not_played" && result !== "0-0";
+            
+            if (hasRealResult) {
+              console.log(`Game now has result ${result}, removing uitgestelde_datum and syncing to makeup round`);
+              // Game now has a result, remove the postponement and sync to makeup round
+              await prisma.game.update({
+                where: { game_id: existingGame.game_id },
+                data: {
+                  winnaar_id: winnaarId,
+                  result: result,
+                  uitgestelde_datum: null, // Remove postponement since game is now played
+                }
+              });
+              
+              // Sync the result to the makeup round
+              await this.syncPostponedGameToMakeupRound(existingGame.game_id, result, winnaarId);
+            } else {
+              console.log(`Game still has no result, preserving uitgestelde_datum`);
+              // Game still has no result, preserve the postponement
+              await prisma.game.update({
+                where: { game_id: existingGame.game_id },
+                data: {
+                  winnaar_id: winnaarId,
+                  result: result,
+                  uitgestelde_datum: postponedGame.uitgestelde_datum, // Preserve the postponement date
+                }
+              });
+            }
           } else {
             // No postponed game found, update normally
             await prisma.game.update({
@@ -833,6 +854,66 @@ export class SevillaImporterService {
     } catch (error) {
       console.error('Error validating Sevilla data:', error);
       return false;
+    }
+  }
+
+  /**
+   * Sync a postponed game result to its corresponding makeup round
+   */
+  private async syncPostponedGameToMakeupRound(originalGameId: number, result: string, winnaarId: number | null): Promise<void> {
+    try {
+      // Get the original game details
+      const originalGame = await prisma.game.findUnique({
+        where: { game_id: originalGameId },
+        include: {
+          round: {
+            select: { tournament_id: true }
+          }
+        }
+      });
+
+      if (!originalGame || !originalGame.round) {
+        console.log(`Original game ${originalGameId} not found or has no round`);
+        return;
+      }
+
+      // Find the makeup round for this tournament
+      const makeupRound = await prisma.round.findFirst({
+        where: {
+          tournament_id: originalGame.round.tournament_id,
+          type: 'MAKEUP'
+        }
+      });
+
+      if (!makeupRound) {
+        console.log(`No makeup round found for tournament ${originalGame.round.tournament_id}`);
+        return;
+      }
+
+      // Find the corresponding game in the makeup round
+      const makeupGame = await prisma.game.findFirst({
+        where: {
+          round_id: makeupRound.round_id,
+          speler1_id: originalGame.speler1_id,
+          speler2_id: originalGame.speler2_id
+        }
+      });
+
+      if (makeupGame) {
+        console.log(`Syncing result ${result} to makeup game ${makeupGame.game_id}`);
+        // Update the makeup game with the result
+        await prisma.game.update({
+          where: { game_id: makeupGame.game_id },
+          data: {
+            winnaar_id: winnaarId,
+            result: result
+          }
+        });
+      } else {
+        console.log(`No makeup game found for original game ${originalGameId}`);
+      }
+    } catch (error) {
+      console.error('Error syncing postponed game to makeup round:', error);
     }
   }
 }
