@@ -436,7 +436,7 @@ export default function TournamentDetails() {
                       allRounds={allRounds}
                     />
                   ) : (
-                    <MakeupPairings round={currentEntry.day} games={currentEntry.games} onGameUndone={goToRound} />
+                    <MakeupPairings round={currentEntry.day} games={currentEntry.games} onGameUndone={goToRound} currentUser={currentUser} />
                   )
                 ) : (
                   <div className="text-center py-8">
@@ -469,9 +469,16 @@ export default function TournamentDetails() {
 }
 
 // Component to show a makeup day + associated games
-function MakeupPairings({ round, games, onGameUndone }: { round: any; games: Game[]; onGameUndone?: (originalRoundNumber: number) => void }) {
+function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: any; games: Game[]; onGameUndone?: (originalRoundNumber: number) => void; currentUser?: any }) {
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+  }
+
+  // Check if current user is involved in a game
+  const isUserInvolvedInGame = (game: any) => {
+    if (!currentUser) return false
+    return game.speler1?.user_id === currentUser.user_id || 
+           game.speler2?.user_id === currentUser.user_id
   }
 
   const handleUndoPostpone = async (gameId: number) => {
@@ -622,13 +629,15 @@ function MakeupPairings({ round, games, onGameUndone }: { round: any; games: Gam
                       >
                         {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "Nog te spelen"}
                       </span>
-                      <button
-                        onClick={() => handleUndoPostpone(g.game_id)}
-                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
-                        title="Uitstel ongedaan maken"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                      {isUserInvolvedInGame(g) && (
+                        <button
+                          onClick={() => handleUndoPostpone(g.game_id)}
+                          className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+                          title="Uitstel ongedaan maken"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

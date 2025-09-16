@@ -322,7 +322,7 @@ export default function TournamentDetails() {
 }
 
 // Component to show a makeup day + associated games
-function MakeupPairings({ day, games }: { day: MakeupDay; games: Game[] }) {
+function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Game[]; currentUser?: any }) {
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
