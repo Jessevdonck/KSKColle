@@ -171,22 +171,41 @@ export default function TournamentDetails() {
     }
   }, [tournament, allRounds])
 
-  // Set default round (last round with results + 1)
+  // Set default round (next upcoming round based on date)
   useEffect(() => {
     if (timeline.length > 0) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time to start of day
+      
       let defaultIndex = 0
+      let foundUpcoming = false
 
-      // Find the last round with results
-      for (let i = timeline.length - 1; i >= 0; i--) {
+      // Find the next upcoming round (today or future)
+      for (let i = 0; i < timeline.length; i++) {
         const entry = timeline[i]
-        if (entry.kind === "round" && entry.round.games && entry.round.games.length > 0) {
-          const hasResults = entry.round.games.some((game) => game.result !== null)
-          if (hasResults) {
-            // Take the next round if it exists
-            defaultIndex = Math.min(i + 1, timeline.length - 1)
+        let roundDate: Date | null = null
+
+        if (entry.kind === "round" && entry.round.ronde_datum) {
+          roundDate = new Date(entry.round.ronde_datum)
+        } else if (entry.kind === "makeup" && entry.day.ronde_datum) {
+          roundDate = new Date(entry.day.ronde_datum)
+        }
+
+        if (roundDate) {
+          roundDate.setHours(0, 0, 0, 0) // Reset time to start of day
+          
+          // If this round is today or in the future, select it
+          if (roundDate >= today) {
+            defaultIndex = i
+            foundUpcoming = true
             break
           }
         }
+      }
+
+      // If no upcoming round found, show the last round
+      if (!foundUpcoming) {
+        defaultIndex = timeline.length - 1
       }
 
       setCurrentIndex(defaultIndex)
