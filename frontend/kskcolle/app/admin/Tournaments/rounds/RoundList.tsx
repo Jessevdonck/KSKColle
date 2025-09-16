@@ -48,7 +48,7 @@ export default function RoundList({
       onSuccess: () => {
         setAddingForRound(null)
         setDate('')
-        onMakeupDaysChange()
+        onUpdateGame()
       }
     }
   )
