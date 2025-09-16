@@ -553,6 +553,7 @@ export default function RoundManagement({ tournament }: Props) {
                   tournamentName={T.naam}
                   makeupDays={makeupDays}
                   participations={T.participations}
+                  isSevillaImported={e.roundData?.is_sevilla_imported || false}
                   onGenerate={() =>
                     genPair({
                       tournamentId: T.tournament_id,

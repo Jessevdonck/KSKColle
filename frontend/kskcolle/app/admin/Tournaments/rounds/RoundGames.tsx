@@ -31,10 +31,11 @@ interface Props {
     tie_break: number
   }>
   roundNumber?: number
+  isSevillaImported?: boolean
   onUpdateGame(): void
 }
 
-export default function RoundGames({ games, makeupDays, participations, roundNumber, onUpdateGame }: Props) {
+export default function RoundGames({ games, makeupDays, participations, roundNumber, isSevillaImported, onUpdateGame }: Props) {
   const { trigger: saveGame, isMutating } = useSWRMutation("spel", save)
   const [postponing, setPostponing] = useState<number | null>(null)
   const [selectedMD, setSelectedMD] = useState<number | "">("")
@@ -111,14 +112,16 @@ export default function RoundGames({ games, makeupDays, participations, roundNum
     )
   }
 
-  // Sort games by score (for rounds > 1) or rating (for round 1)
-  const sortedGames = participations && roundNumber 
-    ? sortGamesByScore(games, participations, roundNumber)
-    : [...games].sort((a, b) => {
-        const ratingA = a.speler1.schaakrating_elo || 0;
-        const ratingB = b.speler1.schaakrating_elo || 0;
-        return ratingB - ratingA; // Highest rating first
-      });
+  // Sort games - for Sevilla tournaments, keep original order
+  const sortedGames = isSevillaImported 
+    ? games // Keep original Sevilla order
+    : participations && roundNumber 
+      ? sortGamesByScore(games, participations, roundNumber)
+      : [...games].sort((a, b) => {
+          const ratingA = a.speler1.schaakrating_elo || 0;
+          const ratingB = b.speler1.schaakrating_elo || 0;
+          return ratingB - ratingA; // Highest rating first
+        });
 
   return (
     <div className="space-y-3">

@@ -22,6 +22,7 @@ interface Props {
     score: number
     tie_break: number
   }>
+  isSevillaImported?: boolean
   onGenerate(): void
   canGenerate: boolean
   onUpdate(): void
@@ -35,6 +36,7 @@ export default function RoundSection({
   tournamentName,
   makeupDays,
   participations,
+  isSevillaImported,
   onGenerate,
   canGenerate,
   onUpdate,
@@ -237,6 +239,7 @@ export default function RoundSection({
             makeupDays={makeupDays} 
             participations={participations}
             roundNumber={roundNumber}
+            isSevillaImported={isSevillaImported}
             onUpdateGame={onUpdate} 
           />
         )}
