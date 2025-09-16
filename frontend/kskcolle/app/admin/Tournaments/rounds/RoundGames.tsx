@@ -104,9 +104,12 @@ export default function RoundGames({ games, makeupDays, onUpdateGame }: Props) {
     )
   }
 
+  // Sort games by game_id to maintain original pairing order
+  const sortedGames = [...games].sort((a, b) => a.game_id - b.game_id);
+
   return (
     <div className="space-y-3">
-      {games.map((game) => (
+      {sortedGames.map((game) => (
         <div
           key={game.game_id}
           className={`border rounded-lg p-3 transition-colors ${

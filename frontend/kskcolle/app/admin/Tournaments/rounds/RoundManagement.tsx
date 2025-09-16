@@ -892,7 +892,7 @@ export default function RoundManagement({ tournament }: Props) {
                   {/* Bestaande games */}
                   {round.games.length > 0 ? (
                     <div className="space-y-2">
-                      {round.games.map((game, index) => (
+                      {round.games.sort((a, b) => a.game_id - b.game_id).map((game, index) => (
                         <div 
                           key={index} 
                           className={`flex items-center justify-between p-3 rounded-lg transition-colors ${

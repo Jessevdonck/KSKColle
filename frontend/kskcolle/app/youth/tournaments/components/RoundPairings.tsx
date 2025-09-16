@@ -128,7 +128,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
             </tr>
           </thead>
           <tbody>
-            {round.games.map((game, index) => (
+            {round.games.sort((a, b) => a.game_id - b.game_id).map((game, index) => (
               <tr
                 key={game.game_id}
                 className={`border-b border-neutral-100 ${
