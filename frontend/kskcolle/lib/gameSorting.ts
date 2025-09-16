@@ -69,9 +69,9 @@ export function sortSevillaGamesWithPostponed<T extends GameWithScore>(
   console.log('🔍 Sorting Sevilla games:', games.map(g => ({
     game_id: g.game_id,
     board_position: g.board_position,
-    speler1: g.speler1.voornaam + ' ' + g.speler1.achternaam,
+    speler1: (g as any).speler1?.voornaam + ' ' + (g as any).speler1?.achternaam || 'Unknown',
     uitgestelde_datum: g.uitgestelde_datum,
-    result: g.result
+    result: (g as any).result
   })));
   
   const sortedGames = [...games].sort((a, b) => {
@@ -81,7 +81,7 @@ export function sortSevillaGamesWithPostponed<T extends GameWithScore>(
     const aBoardPos = a.board_position ?? 999; // Default to high number if no board_position
     const bBoardPos = b.board_position ?? 999; // Default to high number if no board_position
     
-    console.log(`🔍 Comparing: ${a.speler1.voornaam} (board: ${a.board_position}, game_id: ${a.game_id}) vs ${b.speler1.voornaam} (board: ${b.board_position}, game_id: ${b.game_id})`);
+    console.log(`🔍 Comparing: ${(a as any).speler1?.voornaam} (board: ${a.board_position}, game_id: ${a.game_id}) vs ${(b as any).speler1?.voornaam} (board: ${b.board_position}, game_id: ${b.game_id})`);
     
     // Sort by board_position (lower numbers first)
     if (aBoardPos !== bBoardPos) {
@@ -99,9 +99,9 @@ export function sortSevillaGamesWithPostponed<T extends GameWithScore>(
   console.log('✅ Sorted Sevilla games:', sortedGames.map(g => ({
     game_id: g.game_id,
     board_position: g.board_position,
-    speler1: g.speler1.voornaam + ' ' + g.speler1.achternaam,
+    speler1: (g as any).speler1?.voornaam + ' ' + (g as any).speler1?.achternaam || 'Unknown',
     uitgestelde_datum: g.uitgestelde_datum,
-    result: g.result
+    result: (g as any).result
   })));
   
   return sortedGames;
