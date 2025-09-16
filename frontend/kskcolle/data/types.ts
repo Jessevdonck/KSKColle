@@ -163,6 +163,8 @@ export type Participation = {
   user_id: number;
   tournament_id: number;
   user: User;
+  score: number;
+  tie_break: number;
 };
 
 export interface GameWithRoundAndTournament {
