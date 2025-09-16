@@ -334,9 +334,10 @@ export class SevillaImporterService {
     const roundDates = new Map<number, Date>();
     if (sevillaData) {
       const mainGroup = sevillaData.GroupReport.find(g => g.ID === 1);
-      if (mainGroup) {
+      if (mainGroup && mainGroup.Ranking) {
+        // Look through all ranking entries to find round dates
         mainGroup.Ranking.forEach(ranking => {
-          if (ranking.Date) {
+          if (ranking.Date && ranking.Round) {
             // Parse date from format "18/09/2025"
             const dateParts = ranking.Date.split('/');
             if (dateParts.length === 3) {
@@ -345,18 +346,49 @@ export class SevillaImporterService {
               const year = dateParts[2] as string;
               
               if (day && month && year) {
-                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                // Create date in local timezone to avoid timezone issues
+                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
                 roundDates.set(ranking.Round, date);
                 console.log(`Parsed round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
               }
             }
           }
         });
+        
+        // Also check History section for additional round dates
+        if (mainGroup.History) {
+          mainGroup.History.forEach(history => {
+            if (history.Date && history.Round) {
+              const dateParts = history.Date.split('/');
+              if (dateParts.length === 3) {
+                const day = dateParts[0] as string;
+                const month = dateParts[1] as string;
+                const year = dateParts[2] as string;
+                
+                if (day && month && year) {
+                  // Create date in local timezone to avoid timezone issues
+                  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
+                  // Only set if we don't already have this round date
+                  if (!roundDates.has(history.Round)) {
+                    roundDates.set(history.Round, date);
+                    console.log(`Parsed round ${history.Round} date from history: ${history.Date} -> ${date.toISOString()}`);
+                  }
+                }
+              }
+            }
+          });
+        }
       }
     }
     
-    // Fallback startdatum als er geen Sevilla data is
-    const tournamentStartDate = new Date('2024-09-15');
+    // Determine tournament start date from Sevilla data or use fallback
+    let tournamentStartDate = new Date('2024-09-15'); // Fallback
+    if (roundDates.size > 0) {
+      // Use the earliest round date as tournament start date
+      const earliestRound = Math.min(...Array.from(roundDates.keys()));
+      tournamentStartDate = roundDates.get(earliestRound) || new Date('2024-09-15');
+      console.log(`Using tournament start date from Sevilla data: ${tournamentStartDate.toISOString()}`);
+    }
     
     // Debug: show first few players
     console.log(`First 3 players:`, players.slice(0, 3).map(p => ({ name: p.Name, hasGame: !!p.Game, gameLength: p.Game?.length || 0 })));
@@ -426,7 +458,7 @@ export class SevillaImporterService {
           const existingDate = existingRound.ronde_datum ? new Date(existingRound.ronde_datum) : null;
           const needsDateUpdate = !existingDate || 
             (roundDates.has(roundNumber) && 
-             Math.abs(existingDate.getTime() - roundDate.getTime()) > 24 * 60 * 60 * 1000); // More than 1 day difference
+             Math.abs(existingDate.getTime() - roundDate.getTime()) > 0); // Any difference
           
           // Check if startuur needs to be set (default to 20:00 if not set)
           const needsStartuurUpdate = !existingRound.startuur;
