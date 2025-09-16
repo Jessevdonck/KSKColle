@@ -149,7 +149,7 @@ export async function postponeGameToMakeupRound(
     }
 
     // 2. Controleer of de game al gespeeld is
-    if (originalGame.result) {
+    if (originalGame.result && originalGame.result !== "..." && originalGame.result !== "not_played") {
       throw ServiceError.validationFailed('Deze partij is al gespeeld en kan niet meer uitgesteld worden');
     }
 
