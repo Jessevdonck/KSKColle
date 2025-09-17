@@ -3,7 +3,7 @@ import { User } from '../../../data/types'
 import { Mail, Phone, Smartphone, TrendingUp, TrendingDown, Minus, Lock } from 'lucide-react'
 import AvatarUpload from '../../components/AvatarUpload'
 import { useAuth } from '../../contexts/auth'
-import { canViewSensitiveInfo } from '../../../lib/roleUtils'
+import { canViewSensitiveInfo, canViewUserSensitiveInfo } from '../../../lib/roleUtils'
 import { useState } from 'react'
 
 export default function PlayerHeader({ player }: { player: User }) {
@@ -70,7 +70,7 @@ export default function PlayerHeader({ player }: { player: User }) {
               
               {/* Contact Information */}
               <div className="mt-4 space-y-2">
-                {canViewSensitiveInfo(currentUser) ? (
+                {canViewUserSensitiveInfo(currentUser, player) ? (
                   <>
                     <div className="flex items-center text-gray-600">
                       <Mail className="h-4 w-4 mr-2 text-mainAccent" />
@@ -95,7 +95,10 @@ export default function PlayerHeader({ player }: { player: User }) {
                   <div className="flex items-center text-gray-500">
                     <Lock className="h-4 w-4 mr-2 text-gray-400" />
                     <span className="text-sm italic">
-                      Contactgegevens zijn alleen zichtbaar voor leden
+                      {canViewSensitiveInfo(currentUser) 
+                        ? "Contactgegevens van ex-leden zijn niet zichtbaar" 
+                        : "Contactgegevens zijn alleen zichtbaar voor leden"
+                      }
                     </span>
                   </div>
                 )}

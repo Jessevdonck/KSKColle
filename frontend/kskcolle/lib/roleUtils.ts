@@ -25,6 +25,36 @@ export function canViewSensitiveInfo(user: User | null | undefined): boolean {
 }
 
 /**
+ * Check if a user can view sensitive information of another user
+ * Regular users can only see contact info of other regular users (not ex-lids)
+ * Admins and board members can see contact info of all users
+ * @param viewer - The user who wants to view the information
+ * @param targetUser - The user whose information is being viewed
+ * @returns true if viewer can view sensitive information of targetUser
+ */
+export function canViewUserSensitiveInfo(viewer: User | null | undefined, targetUser: User | null | undefined): boolean {
+  // If no viewer or target user, deny access
+  if (!viewer || !targetUser) {
+    return false
+  }
+
+  // Admins and board members can see all contact info
+  if (hasRole(viewer, ['admin', 'bestuurslid'])) {
+    return true
+  }
+
+  // Regular users can only see contact info of other regular users (not ex-lids)
+  if (hasRole(viewer, ['user'])) {
+    // Check if target user is an ex-lid
+    const isTargetExLid = hasRole(targetUser, ['exlid'])
+    return !isTargetExLid
+  }
+
+  // Default: deny access
+  return false
+}
+
+/**
  * Check if a user is an admin
  * @param user - The user object to check
  * @returns true if user is admin
