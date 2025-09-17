@@ -232,10 +232,30 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
       }
     }
 
+    // Clean up the data - convert empty strings to null for optional fields
+    const cleanedData = { ...userDataWithoutPassword };
+    
+    // Convert empty strings to null for optional fields
+    if (cleanedData.email === '') {
+      cleanedData.email = null;
+    }
+    if (cleanedData.tel_nummer === '') {
+      cleanedData.tel_nummer = null;
+    }
+    if (cleanedData.vast_nummer === '') {
+      cleanedData.vast_nummer = null;
+    }
+    if (cleanedData.fide_id === '') {
+      cleanedData.fide_id = null;
+    }
+    if (cleanedData.schaakrating_max === '') {
+      cleanedData.schaakrating_max = null;
+    }
+
     const user = await prisma.user.update({
       where: { user_id },
       data: {
-        ...userDataWithoutPassword,
+        ...cleanedData,
         roles: JSON.stringify(finalRoles),
       },
     });

@@ -40,7 +40,7 @@ const COLS = {
 const NAME_IS_LASTNAME_THEN_FIRSTNAME = true;
 
 /** Defaults */
-const DEFAULT_ROLE_ARRAY = ["USER"];
+const DEFAULT_ROLE_ARRAY = ["user"];
 const TEMP_PASSWORD_LENGTH = 10;
 const DATE_INPUT_FORMATS = [
   "DD/MM/YYYY","D/M/YYYY","YYYY-MM-DD","DD-MM-YYYY","D-M-YYYY",

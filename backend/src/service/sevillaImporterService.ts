@@ -254,7 +254,7 @@ export class SevillaImporterService {
             schaakrating_difference: sevillaPlayer.Rtg_W_We || 0,
             lid_sinds: new Date(),
             password_hash: "imported_user", // Placeholder for imported users
-            roles: JSON.stringify(['USER']),
+            roles: JSON.stringify(['user']),
           },
         });
         

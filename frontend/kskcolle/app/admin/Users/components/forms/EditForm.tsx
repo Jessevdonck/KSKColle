@@ -134,6 +134,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
       schaakrating_elo: Number(values.schaakrating_elo),
       fide_id: values.fide_id ? Number(values.fide_id) : undefined,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : undefined,
+      email: values.email?.trim() || undefined,
       tel_nummer: values.tel_nummer?.trim() || undefined,
       vast_nummer: values.vast_nummer?.trim() || undefined,
       is_youth: values.is_youth || false,
