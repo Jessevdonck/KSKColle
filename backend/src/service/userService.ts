@@ -233,7 +233,7 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
     }
 
     // Clean up the data - convert empty strings to null for optional fields
-    const cleanedData = { ...userDataWithoutPassword };
+    const cleanedData: any = { ...userDataWithoutPassword };
     
     // Convert empty strings to null for optional fields
     if (cleanedData.email === '') {
@@ -248,8 +248,8 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
     if (cleanedData.fide_id === '') {
       cleanedData.fide_id = null;
     }
-    if (cleanedData.schaakrating_max === '') {
-      cleanedData.schaakrating_max = null;
+    if (cleanedData.max_rating === '') {
+      cleanedData.max_rating = null;
     }
 
     const user = await prisma.user.update({
