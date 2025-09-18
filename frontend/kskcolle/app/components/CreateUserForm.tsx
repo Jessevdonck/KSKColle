@@ -82,6 +82,10 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
     setLoading(true);
     setError(null);
 
+    // Debug: log the form data
+    console.log('Form data before processing:', data);
+    console.log('is_youth value:', data.is_youth);
+
     try {
       // Process roles according to the new logic
       let finalRoles: string[] = [];
@@ -104,6 +108,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       const cleanData = {
         ...data,
         roles: finalRoles,
+        is_youth: Boolean(data.is_youth), // Ensure is_youth is properly set as boolean
         email: data.email?.trim() || undefined,
         tel_nummer: data.tel_nummer?.trim() || undefined,
         schaakrating_elo: data.schaakrating_elo || undefined,
@@ -119,6 +124,10 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
         adres_postcode: data.adres_postcode?.trim() || undefined,
         adres_gemeente: data.adres_gemeente?.trim() || undefined,
       };
+
+      // Debug: log the clean data being sent
+      console.log('Clean data being sent to API:', cleanData);
+      console.log('is_youth in clean data:', cleanData.is_youth);
 
       const response = await createUserWithPassword('user-management', { arg: cleanData });
       setSuccess(true);
@@ -324,17 +333,6 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
             {errors.fide_id && <p className="text-sm text-red-500">{errors.fide_id.message}</p>}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="is_youth" className="text-sm font-medium text-gray-700">Jeugdspeler</Label>
-            <div className="flex items-center space-x-2 mt-2">
-              <Checkbox
-                id="is_youth"
-                {...register('is_youth')}
-                data-cy="create_user_is_youth_checkbox"
-              />
-              <Label htmlFor="is_youth" className="text-sm">Ja</Label>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -345,6 +343,19 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
           Account Rechten
         </h3>
         <div className="space-y-3">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="is_youth"
+              checked={watch('is_youth')}
+              onCheckedChange={(checked) => setValue('is_youth', checked === true)}
+              data-cy="create_user_is_youth_checkbox"
+            />
+            <Label htmlFor="is_youth" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Trophy className="h-3 w-3" />
+              Jeugdspeler
+            </Label>
+          </div>
+          
           <div className="flex items-center space-x-3">
             <Checkbox
               id="is_admin"
