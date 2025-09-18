@@ -14,7 +14,7 @@ type Game = {
   result: string | null
   speler1: { user_id: number; voornaam: string; achternaam: string }
   speler2: { user_id: number; voornaam: string; achternaam: string } | null
-  uitgestelde_datum?: string
+  uitgestelde_datum?: Date
 }
 
 type Round = {
@@ -463,12 +463,18 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
                     <div className="flex items-center justify-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          g.result && g.result !== "not_played"
+                          g.uitgestelde_datum
+                            ? "bg-amber-100 text-amber-800 border border-amber-200"
+                            : g.result && g.result !== "not_played"
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-gray-100 text-gray-600 border border-gray-200"
                         }`}
                       >
-                        {g.result && g.result !== "not_played" ? g.result : "Nog te spelen"}
+                        {g.uitgestelde_datum
+                          ? "Uitgesteld"
+                          : g.result && g.result !== "not_played"
+                          ? g.result
+                          : "Nog te spelen"}
                       </span>
                       {isUserInvolvedInGame(g) && (
                         <button

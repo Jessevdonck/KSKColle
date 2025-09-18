@@ -7,12 +7,18 @@ import { getRoundForExport } from "../../../api/index"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import jsPDF from "jspdf"
+import { sortSevillaGamesWithPostponed, sortGamesByPairingOrder, GameWithScore } from "@/lib/gameSorting"
+
+interface GameWithScoreAndOriginal extends GameWithScore {
+  originalGame: any;
+}
 
 interface RoundExportProps {
   tournamentId: number
   roundId: number
   roundNumber: number
   tournamentName: string
+  isSevillaImported?: boolean
   className?: string
 }
 
@@ -21,6 +27,7 @@ export default function RoundExport({
   roundId, 
   roundNumber, 
   tournamentName,
+  isSevillaImported = false,
   className = ""
 }: RoundExportProps) {
   const [isExporting, setIsExporting] = useState(false)
@@ -31,6 +38,49 @@ export default function RoundExport({
       
       // Fetch round data
       const roundData = await getRoundForExport(tournamentId, roundId)
+      
+      // Sort games: move postponed games to bottom (above "Abs with msg" games)
+      const sortedGames = (() => {
+        if (isSevillaImported) {
+          // For Sevilla tournaments, use the special sorting
+          const gamesWithScore: GameWithScoreAndOriginal[] = roundData.games.map(game => ({
+            game_id: game.game_id,
+            speler1: {
+              user_id: game.speler1?.user_id || 0,
+              schaakrating_elo: game.speler1?.schaakrating_elo || 0
+            },
+            speler2: game.speler2 ? {
+              user_id: game.speler2.user_id,
+              schaakrating_elo: game.speler2.schaakrating_elo || 0
+            } : null,
+            uitgestelde_datum: game.uitgestelde_datum ? new Date(game.uitgestelde_datum) : null,
+            board_position: game.board_position || null,
+            originalGame: game
+          }));
+          
+          const sortedGamesWithScore = sortSevillaGamesWithPostponed(gamesWithScore);
+          return sortedGamesWithScore.map(g => g.originalGame);
+        } else {
+          // For regular tournaments, separate games by type
+          const regularGames = roundData.games.filter(game => 
+            !game.uitgestelde_datum && 
+            (!game.result || !game.result.startsWith("ABS-"))
+          );
+          const postponedGames = roundData.games.filter(game => game.uitgestelde_datum);
+          const absGames = roundData.games.filter(game => 
+            !game.uitgestelde_datum && 
+            game.result && 
+            game.result.startsWith("ABS-")
+          );
+          
+          // Sort each group by game_id to maintain their relative order
+          const sortedRegularGames = regularGames.sort((a, b) => a.game_id - b.game_id);
+          const sortedPostponedGames = postponedGames.sort((a, b) => a.game_id - b.game_id);
+          const sortedAbsGames = absGames.sort((a, b) => a.game_id - b.game_id);
+          
+          return [...sortedRegularGames, ...sortedPostponedGames, ...sortedAbsGames];
+        }
+      })();
       
       // Create PDF with smaller margins
       const pdf = new jsPDF()
@@ -55,7 +105,7 @@ export default function RoundExport({
       // Games table 
       let yPosition = 50
       
-      if (roundData.games.length > 0) {
+      if (sortedGames.length > 0) {
         // Table header
         pdf.setFontSize(12)
         pdf.text("Partijen", 15, yPosition)
@@ -74,7 +124,7 @@ export default function RoundExport({
         yPosition += 4
         
         // Games 
-        roundData.games.forEach((game, index) => {
+        sortedGames.forEach((game, index) => {
           // Check if we need a new page 
           if (yPosition > 280) {
             pdf.addPage()
@@ -87,7 +137,9 @@ export default function RoundExport({
           
           // Handle different result types
           let result = ""
-          if (game.result) {
+          if (game.uitgestelde_datum) {
+            result = "Uitgesteld"
+          } else if (game.result) {
             if (game.result.startsWith("ABS-")) {
               result = "Abs with msg"
             } else if (game.result === "1-0" || game.result === "0-1" || game.result === "1/2-1/2") {

@@ -218,6 +218,7 @@ export default function RoundSection({
               roundId={roundData.round_id}
               roundNumber={roundNumber}
               tournamentName={tournamentName}
+              isSevillaImported={isSevillaImported}
               className="bg-white/10 hover:bg-white/20 text-white border-white/30"
             />
           )}
