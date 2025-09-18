@@ -346,13 +346,13 @@ function LidgeldEditModal({ user, onClose, onSave }: {
     
     const data = {
       ...formData,
-      // Set start date to today if paid, end date to August 31st
-      lidgeld_periode_start: formData.lidgeld_betaald ? today.toISOString() : (formData.lidgeld_periode_start ? new Date(formData.lidgeld_periode_start).toISOString() : null),
-      lidgeld_periode_eind: formData.lidgeld_betaald ? august31.toISOString() : (formData.lidgeld_periode_eind ? new Date(formData.lidgeld_periode_eind).toISOString() : null),
-      bondslidgeld_periode_start: formData.bondslidgeld_betaald ? today.toISOString() : (formData.bondslidgeld_periode_start ? new Date(formData.bondslidgeld_periode_start).toISOString() : null),
-      bondslidgeld_periode_eind: formData.bondslidgeld_betaald ? august31.toISOString() : (formData.bondslidgeld_periode_eind ? new Date(formData.bondslidgeld_periode_eind).toISOString() : null),
-      jeugdlidgeld_periode_start: formData.jeugdlidgeld_betaald ? today.toISOString() : (formData.jeugdlidgeld_periode_start ? new Date(formData.jeugdlidgeld_periode_start).toISOString() : null),
-      jeugdlidgeld_periode_eind: formData.jeugdlidgeld_betaald ? august31.toISOString() : (formData.jeugdlidgeld_periode_eind ? new Date(formData.jeugdlidgeld_periode_eind).toISOString() : null),
+      // Use the form data for dates, only set to today if no date is provided and paid
+      lidgeld_periode_start: formData.lidgeld_periode_start ? new Date(formData.lidgeld_periode_start).toISOString() : (formData.lidgeld_betaald ? today.toISOString() : null),
+      lidgeld_periode_eind: formData.lidgeld_periode_eind ? new Date(formData.lidgeld_periode_eind).toISOString() : (formData.lidgeld_betaald ? august31.toISOString() : null),
+      bondslidgeld_periode_start: formData.bondslidgeld_periode_start ? new Date(formData.bondslidgeld_periode_start).toISOString() : (formData.bondslidgeld_betaald ? today.toISOString() : null),
+      bondslidgeld_periode_eind: formData.bondslidgeld_periode_eind ? new Date(formData.bondslidgeld_periode_eind).toISOString() : (formData.bondslidgeld_betaald ? august31.toISOString() : null),
+      jeugdlidgeld_periode_start: formData.jeugdlidgeld_periode_start ? new Date(formData.jeugdlidgeld_periode_start).toISOString() : (formData.jeugdlidgeld_betaald ? today.toISOString() : null),
+      jeugdlidgeld_periode_eind: formData.jeugdlidgeld_periode_eind ? new Date(formData.jeugdlidgeld_periode_eind).toISOString() : (formData.jeugdlidgeld_betaald ? august31.toISOString() : null),
     }
     onSave(user.user_id, data)
   }
@@ -387,8 +387,9 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                       setFormData(prev => ({ 
                         ...prev, 
                         lidgeld_betaald: !!checked,
-                        lidgeld_periode_start: checked ? format(today, 'yyyy-MM-dd') : prev.lidgeld_periode_start,
-                        lidgeld_periode_eind: checked ? format(august31, 'yyyy-MM-dd') : prev.lidgeld_periode_eind
+                        // Only set dates if they're not already filled in
+                        lidgeld_periode_start: checked && !prev.lidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.lidgeld_periode_start,
+                        lidgeld_periode_eind: checked && !prev.lidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.lidgeld_periode_eind
                       }))
                     }}
                   />
@@ -436,8 +437,9 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                       setFormData(prev => ({ 
                         ...prev, 
                         bondslidgeld_betaald: !!checked,
-                        bondslidgeld_periode_start: checked ? format(today, 'yyyy-MM-dd') : prev.bondslidgeld_periode_start,
-                        bondslidgeld_periode_eind: checked ? format(august31, 'yyyy-MM-dd') : prev.bondslidgeld_periode_eind
+                        // Only set dates if they're not already filled in
+                        bondslidgeld_periode_start: checked && !prev.bondslidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.bondslidgeld_periode_start,
+                        bondslidgeld_periode_eind: checked && !prev.bondslidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.bondslidgeld_periode_eind
                       }))
                     }}
                   />
@@ -486,8 +488,9 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                         setFormData(prev => ({ 
                           ...prev, 
                           jeugdlidgeld_betaald: !!checked,
-                          jeugdlidgeld_periode_start: checked ? format(today, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_start,
-                          jeugdlidgeld_periode_eind: checked ? format(august31, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_eind
+                          // Only set dates if they're not already filled in
+                          jeugdlidgeld_periode_start: checked && !prev.jeugdlidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_start,
+                          jeugdlidgeld_periode_eind: checked && !prev.jeugdlidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_eind
                         }))
                       }}
                     />
