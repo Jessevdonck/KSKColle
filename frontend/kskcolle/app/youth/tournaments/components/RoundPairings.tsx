@@ -9,6 +9,7 @@ interface PlayerScore {
   score: number
   gamesPlayed: number
   tieBreak: number
+  schaakrating_elo?: number
 }
 
 interface RoundPairingsProps {
@@ -19,8 +20,8 @@ interface RoundPairingsProps {
     startuur?: string
     games?: Array<{
       game_id: number
-      speler1: { user_id: number; voornaam: string; achternaam: string }
-      speler2: { user_id: number; voornaam: string; achternaam: string } | null
+      speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
+      speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
       result: string | null
       uitgestelde_datum?: Date | null
     }>
@@ -36,6 +37,7 @@ interface RoundPairingsProps {
         user_id: number
         voornaam: string
         achternaam: string
+        schaakrating_elo?: number
       }
     }>
   }
@@ -45,8 +47,8 @@ interface RoundPairingsProps {
     type: 'REGULAR' | 'MAKEUP'
     games: Array<{
       game_id: number
-      speler1: { user_id: number; voornaam: string; achternaam: string }
-      speler2: { user_id: number; voornaam: string; achternaam: string } | null
+      speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
+      speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
       result: string | null
       uitgestelde_datum?: Date | null
     }>
