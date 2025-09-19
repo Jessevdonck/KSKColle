@@ -9,7 +9,7 @@ interface ContactFormRequest {
   lastName: string;
   email: string;
   phoneNumber: string;
-  address: string;
+  address?: string;
   description: string;
 }
 
@@ -55,7 +55,7 @@ submitContactForm.validationScheme = {
     lastName: Joi.string().required().min(1).max(100),
     email: Joi.string().email().required(),
     phoneNumber: Joi.string().required().min(1).max(20),
-    address: Joi.string().required().min(1).max(500),
+    address: Joi.string().optional().allow('').max(500),
     description: Joi.string().required().min(1).max(2000),
   },
 };

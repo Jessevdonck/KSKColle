@@ -28,7 +28,7 @@ interface ContactFormData {
   lastName: string;
   email: string;
   phoneNumber: string;
-  address: string;
+  address?: string;
   description: string;
 }
 
@@ -113,7 +113,7 @@ class EmailService {
       });
 
       // Send to both email addresses
-      // const recipients = ['jvaerendonck@gmail.com'];
+      //const recipients = ['jvaerendonck@gmail.com'];
       const recipients = ['patrick.gillis3@telenet.be', 'niels.ongena@hotmail.be'];
       
       for (const recipient of recipients) {
@@ -275,10 +275,12 @@ Deze email is automatisch gegenereerd. Reageer niet op deze email.
               <div class="field-value">${data.phoneNumber}</div>
             </div>
             
+            ${data.address ? `
             <div class="field">
               <div class="field-label">Adres:</div>
               <div class="field-value">${data.address}</div>
             </div>
+            ` : ''}
             
             <div class="field">
               <div class="field-label">Bericht:</div>
@@ -305,8 +307,8 @@ Er is een nieuw contactformulier ingevuld op de website van KSK Colle.
 
 Naam: ${data.firstName} ${data.lastName}
 E-mail: ${data.email}
-Telefoonnummer: ${data.phoneNumber}
-Adres: ${data.address}
+Telefoonnummer: ${data.phoneNumber}${data.address ? `
+Adres: ${data.address}` : ''}
 
 Bericht:
 ${data.description}

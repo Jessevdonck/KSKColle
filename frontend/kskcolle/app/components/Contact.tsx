@@ -13,7 +13,6 @@ interface ContactFormData {
   lastName: string;
   email: string;
   phoneNumber: string;
-  address: string;
   description: string;
 }
 
@@ -24,7 +23,6 @@ const Contact = () => {
     lastName: '',
     email: '',
     phoneNumber: '',
-    address: '',
     description: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +61,6 @@ const Contact = () => {
           lastName: '',
           email: '',
           phoneNumber: '',
-          address: '',
           description: ''
         });
       } else {
@@ -229,23 +226,6 @@ const Contact = () => {
                     </div>
                   </div>
 
-                  {/* Address Field */}
-                  <div>
-                    <Label htmlFor="address" className="text-textColor font-medium flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      Adres<span className="text-mainAccent">*</span>
-                    </Label>
-                    <Input
-                      id="address"
-                      name="address"
-                      type="text"
-                      required
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="mt-2 border-neutral-300 focus:border-mainAccent focus:ring-mainAccent"
-                      placeholder="Je volledige adres"
-                    />
-                  </div>
 
                   {/* Message Field */}
                   <div>
