@@ -292,14 +292,14 @@ export default function TournamentDetails() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="bg-mainAccent/10 p-1.5 rounded-lg">
                 <Trophy className="h-5 w-5 text-mainAccent" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-textColor">{tournament.naam}</h1>
-                <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-600">
+                <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
                     <span>{tournament.participations?.length || 0} spelers</span>
@@ -316,7 +316,7 @@ export default function TournamentDetails() {
             </div>
             
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <PostponeGameButton 
                 tournamentId={tournamentId}
                 tournamentName={tournament.naam}
@@ -344,7 +344,7 @@ export default function TournamentDetails() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Rounds & Makeup Days with Navigation */}
-          <div className="xl:col-span-2">
+          <div className="xl:col-span-2 order-2 xl:order-1">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
                 <div className="flex items-center justify-between">
@@ -420,8 +420,8 @@ export default function TournamentDetails() {
           </div>
 
           {/* Standings */}
-          <div className="xl:col-span-1">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-4">
+          <div className="xl:col-span-1 order-1 xl:order-2">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden xl:sticky xl:top-4">
               <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Trophy className="h-4 w-4" />
@@ -524,98 +524,185 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
           <p className="text-gray-500 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-amber-200 to-orange-200">
-                <th className="p-3 text-center font-semibold text-amber-800 text-sm w-12">Bord</th>
-                <th className="p-3 text-left font-semibold text-amber-800 text-sm">Wit</th>
-                <th className="p-3 text-center font-semibold text-amber-800 w-8"></th>
-                <th className="p-3 text-left font-semibold text-amber-800 text-sm">Zwart</th>
-                <th className="p-3 text-center font-semibold text-amber-800 text-sm">Uitslag</th>
-              </tr>
-            </thead>
-            <tbody>
-              {games.map((g, idx) => (
-                <tr
-                  key={g.game_id}
-                  className={`border-b border-amber-100 ${
-                    idx % 2 === 0 ? "bg-white" : "bg-amber-50/50"
-                  } hover:bg-amber-100/50 transition-colors`}
-                >
-                  <td className="p-3 text-center">
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-amber-200 to-orange-200">
+                  <th className="p-3 text-center font-semibold text-amber-800 text-sm w-12">Bord</th>
+                  <th className="p-3 text-left font-semibold text-amber-800 text-sm">Wit</th>
+                  <th className="p-3 text-center font-semibold text-amber-800 w-8"></th>
+                  <th className="p-3 text-left font-semibold text-amber-800 text-sm">Zwart</th>
+                  <th className="p-3 text-center font-semibold text-amber-800 text-sm">Uitslag</th>
+                </tr>
+              </thead>
+              <tbody>
+                {games.map((g, idx) => (
+                  <tr
+                    key={g.game_id}
+                    className={`border-b border-amber-100 ${
+                      idx % 2 === 0 ? "bg-white" : "bg-amber-50/50"
+                    } hover:bg-amber-100/50 transition-colors`}
+                  >
+                    <td className="p-3 text-center">
+                      <div className="bg-amber-200 text-amber-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                        {idx + 1}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      {g.speler1 && g.speler1.voornaam && g.speler1.achternaam ? (
+                        <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
+                          <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
+                            W
+                          </div>
+                          <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
+                            {g.speler1.voornaam} {g.speler1.achternaam}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-amber-600 italic">
+                          <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
+                            ?
+                          </div>
+                          <span className="text-sm">Speler niet gevonden</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="text-amber-400 text-sm">vs</div>
+                    </td>
+                    <td className="p-3">
+                      {g.speler2 && g.speler2.voornaam && g.speler2.achternaam ? (
+                        <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
+                          <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
+                            Z
+                          </div>
+                          <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
+                            {g.speler2.voornaam} {g.speler2.achternaam}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-amber-600 italic">
+                          <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
+                            -
+                          </div>
+                          <span className="text-sm">{getByeText(g.result)}</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            g.result && g.result !== "not_played" && g.result !== "..."
+                              ? "bg-green-100 text-green-800 border border-green-200"
+                              : "bg-gray-100 text-gray-600 border border-gray-200"
+                          }`}
+                        >
+                          {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "Nog te spelen"}
+                        </span>
+                        {isUserInvolvedInGame(g) && (
+                          <button
+                            onClick={() => handleUndoPostpone(g.game_id)}
+                            className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+                            title="Uitstel ongedaan maken"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {games.map((g, idx) => (
+              <div
+                key={g.game_id}
+                className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 p-4"
+              >
+                {/* Header with Board Number and Result */}
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-amber-200">
+                  <div className="flex items-center gap-3">
                     <div className="bg-amber-200 text-amber-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                       {idx + 1}
                     </div>
-                  </td>
-                  <td className="p-3">
-                    {g.speler1 && g.speler1.voornaam && g.speler1.achternaam ? (
-                      <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
-                        <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
-                          W
-                        </div>
-                        <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
-                          {g.speler1.voornaam} {g.speler1.achternaam}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-amber-600 italic">
-                        <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
-                          ?
-                        </div>
-                        <span className="text-sm">Speler niet gevonden</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-3 text-center">
-                    <div className="text-amber-400 text-sm">vs</div>
-                  </td>
-                  <td className="p-3">
-                    {g.speler2 && g.speler2.voornaam && g.speler2.achternaam ? (
-                      <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
-                        <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
-                          Z
-                        </div>
-                        <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
-                          {g.speler2.voornaam} {g.speler2.achternaam}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-amber-600 italic">
-                        <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
-                          -
-                        </div>
-                        <span className="text-sm">{getByeText(g.result)}</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          g.result && g.result !== "not_played" && g.result !== "..."
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : "bg-gray-100 text-gray-600 border border-gray-200"
-                        }`}
+                    <div className="text-sm font-medium text-amber-700">Bord {idx + 1}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                        g.result && g.result !== "not_played" && g.result !== "..."
+                          ? "bg-green-100 text-green-800 border border-green-200"
+                          : "bg-gray-100 text-gray-600 border border-gray-200"
+                      }`}
+                    >
+                      {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "Nog te spelen"}
+                    </span>
+                    {isUserInvolvedInGame(g) && (
+                      <button
+                        onClick={() => handleUndoPostpone(g.game_id)}
+                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+                        title="Uitstel ongedaan maken"
                       >
-                        {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "Nog te spelen"}
-                      </span>
-                      {isUserInvolvedInGame(g) && (
-                        <button
-                          onClick={() => handleUndoPostpone(g.game_id)}
-                          className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
-                          title="Uitstel ongedaan maken"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Players */}
+                <div className="space-y-4">
+                  {/* White Player */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      W
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {g.speler1 && g.speler1.voornaam && g.speler1.achternaam ? (
+                        <div className="font-medium text-gray-800 text-sm">
+                          {g.speler1.voornaam} {g.speler1.achternaam}
+                        </div>
+                      ) : (
+                        <div className="text-amber-600 italic text-sm">
+                          Speler niet gevonden
+                        </div>
                       )}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+
+                  {/* VS Divider */}
+                  <div className="flex items-center justify-center">
+                    <div className="text-amber-400 text-sm font-medium">VS</div>
+                  </div>
+
+                  {/* Black Player */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                      Z
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {g.speler2 && g.speler2.voornaam && g.speler2.achternaam ? (
+                        <div className="font-medium text-gray-800 text-sm">
+                          {g.speler2.voornaam} {g.speler2.achternaam}
+                        </div>
+                      ) : (
+                        <div className="text-amber-600 italic text-sm">
+                          {getByeText(g.result)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

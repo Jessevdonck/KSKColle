@@ -140,108 +140,213 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
       </div>
 
       {round.games.length > 0 ? (
-        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
-                <th className="px-2 py-1 text-center font-semibold text-sm w-12">Bord</th>
-                <th className="px-2 py-1 text-left font-semibold text-sm">Wit</th>
-                <th className="px-2 py-1 text-center font-semibold w-8"></th>
-                <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
-                <th className="px-2 py-1 text-center font-semibold text-sm">Uitslag</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(() => {
-                const tournamentWithSevilla = tournament as any;
-                return tournamentWithSevilla?.is_sevilla_imported 
-                  ? sortSevillaGamesWithPostponed(round.games as any)
-                  : round.games;
-              })().map((game, index) => (
-              <tr
-                key={game.game_id}
-                className={`border-b border-neutral-100 ${
-                  index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
-                } hover:bg-mainAccent/5 transition-colors`}
-              >
-                <td className="px-2 py-1 text-center">
-                  <div className="bg-mainAccent/10 text-mainAccent rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                    {index + 1}
-                  </div>
-                </td>
-                <td className="px-2 py-1">
-                  <Link
-                    href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
-                    className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm"
-                  >
-                    <div className="w-6 h-6 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
-                      W
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
+                  <th className="px-2 py-1 text-center font-semibold text-sm w-12">Bord</th>
+                  <th className="px-2 py-1 text-left font-semibold text-sm">Wit</th>
+                  <th className="px-2 py-1 text-center font-semibold w-8"></th>
+                  <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
+                  <th className="px-2 py-1 text-center font-semibold text-sm">Uitslag</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const tournamentWithSevilla = tournament as any;
+                  return tournamentWithSevilla?.is_sevilla_imported 
+                    ? sortSevillaGamesWithPostponed(round.games as any)
+                    : round.games;
+                })().map((game, index) => (
+                <tr
+                  key={game.game_id}
+                  className={`border-b border-neutral-100 ${
+                    index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
+                  } hover:bg-mainAccent/5 transition-colors`}
+                >
+                  <td className="px-2 py-1 text-center">
+                    <div className="bg-mainAccent/10 text-mainAccent rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                      {index + 1}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span>{`${game.speler1.voornaam} ${game.speler1.achternaam} (${game.speler1.schaakrating_elo})`}</span>
-                      {playerScores.length > 0 && (
-                        <span className="text-xs text-gray-500 font-normal">
-                          ({getPlayerScore(game.speler1.user_id)} pt)
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                </td>
-
-                <td className="px-2 py-1 text-center">
-                  <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
-                </td>
-
-                <td className="px-2 py-1">
-                  {game.speler2 ? (
+                  </td>
+                  <td className="px-2 py-1">
                     <Link
-                      href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
+                      href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
                       className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm"
                     >
-                      <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
-                        Z
+                      <div className="w-6 h-6 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
+                        W
                       </div>
                       <div className="flex items-center gap-2">
-                        <span>{`${game.speler2.voornaam} ${game.speler2.achternaam} (${game.speler2.schaakrating_elo})`}</span>
+                        <span>{`${game.speler1.voornaam} ${game.speler1.achternaam} (${game.speler1.schaakrating_elo})`}</span>
                         {playerScores.length > 0 && (
                           <span className="text-xs text-gray-500 font-normal">
-                            ({getPlayerScore(game.speler2.user_id)} pt)
+                            ({getPlayerScore(game.speler1.user_id)} pt)
                           </span>
                         )}
                       </div>
                     </Link>
-                  ) : (
-                    <div className="flex items-center gap-2 text-gray-500 italic text-sm">
-                      <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
-                        -
-                      </div>
-                      {getByeText(game.result)}
-                    </div>
-                  )}
-                </td>
+                  </td>
 
-                <td className="px-2 py-1 text-center">
-                  <span
-                    className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                      game.uitgestelde_datum
-                        ? "bg-amber-100 text-amber-800 border border-amber-200"
+                  <td className="px-2 py-1 text-center">
+                    <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
+                  </td>
+
+                  <td className="px-2 py-1">
+                    {game.speler2 ? (
+                      <Link
+                        href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
+                        className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm"
+                      >
+                        <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
+                          Z
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span>{`${game.speler2.voornaam} ${game.speler2.achternaam} (${game.speler2.schaakrating_elo})`}</span>
+                          {playerScores.length > 0 && (
+                            <span className="text-xs text-gray-500 font-normal">
+                              ({getPlayerScore(game.speler2.user_id)} pt)
+                            </span>
+                          )}
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-2 text-gray-500 italic text-sm">
+                        <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
+                          -
+                        </div>
+                        {getByeText(game.result)}
+                      </div>
+                    )}
+                  </td>
+
+                  <td className="px-2 py-1 text-center">
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                        game.uitgestelde_datum
+                          ? "bg-amber-100 text-amber-800 border border-amber-200"
+                          : game.result && game.result !== "not_played" && game.result !== "..."
+                          ? "bg-green-100 text-green-800 border border-green-200"
+                          : "bg-gray-100 text-gray-600 border border-gray-200"
+                      }`}
+                    >
+                      {game.uitgestelde_datum
+                        ? "Uitgesteld"
                         : game.result && game.result !== "not_played" && game.result !== "..."
-                        ? "bg-green-100 text-green-800 border border-green-200"
-                        : "bg-gray-100 text-gray-600 border border-gray-200"
-                    }`}
-                  >
-                    {game.uitgestelde_datum
-                      ? "Uitgesteld"
+                        ? game.result
+                        : "Nog te spelen"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-3">
+          {(() => {
+            const tournamentWithSevilla = tournament as any;
+            return tournamentWithSevilla?.is_sevilla_imported 
+              ? sortSevillaGamesWithPostponed(round.games as any)
+              : round.games;
+          })().map((game, index) => (
+            <div
+              key={game.game_id}
+              className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4"
+            >
+              {/* Header with Board Number and Result */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="bg-mainAccent/10 text-mainAccent rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                    {index + 1}
+                  </div>
+                  <div className="text-sm font-medium text-gray-600">Bord {index + 1}</div>
+                </div>
+                <span
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                    game.uitgestelde_datum
+                      ? "bg-amber-100 text-amber-800 border border-amber-200"
                       : game.result && game.result !== "not_played" && game.result !== "..."
-                      ? game.result
-                      : "Nog te spelen"}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : "bg-gray-100 text-gray-600 border border-gray-200"
+                  }`}
+                >
+                  {game.uitgestelde_datum
+                    ? "Uitgesteld"
+                    : game.result && game.result !== "not_played" && game.result !== "..."
+                    ? game.result
+                    : "Nog te spelen"}
+                </span>
+              </div>
+
+              {/* Players */}
+              <div className="space-y-4">
+                {/* White Player */}
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    W
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
+                      className="font-medium text-textColor hover:text-mainAccent transition-colors block truncate"
+                    >
+                      {game.speler1.voornaam} {game.speler1.achternaam}
+                    </Link>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      ELO: {game.speler1.schaakrating_elo}
+                      {playerScores.length > 0 && (
+                        <span className="ml-2">
+                          ({getPlayerScore(game.speler1.user_id)} pt)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* VS Divider */}
+                <div className="flex items-center justify-center">
+                  <div className="text-gray-400 text-sm font-medium">VS</div>
+                </div>
+
+                {/* Black Player */}
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                    Z
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {game.speler2 ? (
+                      <Link
+                        href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
+                        className="font-medium text-textColor hover:text-mainAccent transition-colors block truncate"
+                      >
+                        {game.speler2.voornaam} {game.speler2.achternaam}
+                      </Link>
+                    ) : (
+                      <div className="font-medium text-gray-500 italic">
+                        {getByeText(game.result)}
+                      </div>
+                    )}
+                    {game.speler2 && (
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        ELO: {game.speler2.schaakrating_elo}
+                        {playerScores.length > 0 && (
+                          <span className="ml-2">
+                            ({getPlayerScore(game.speler2.user_id)} pt)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
       ) : (
         <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-8 text-center">
           <div className="text-gray-500 text-lg mb-2">Ronde {round.ronde_nummer}</div>
