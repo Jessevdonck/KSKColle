@@ -9,6 +9,7 @@ interface PlayerScore {
   score: number
   gamesPlayed: number
   tieBreak: number
+  schaakrating_elo?: number
 }
 
 interface RoundPairingsProps {
@@ -19,8 +20,8 @@ interface RoundPairingsProps {
     startuur?: string
     games?: Array<{
       game_id: number
-      speler1: { user_id: number; voornaam: string; achternaam: string }
-      speler2: { user_id: number; voornaam: string; achternaam: string } | null
+      speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
+      speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
       result: string | null
       uitgestelde_datum?: string
     }>
@@ -177,7 +178,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                       W
                     </div>
                     <div className="flex items-center gap-2">
-                      <span>{`${game.speler1.voornaam} ${game.speler1.achternaam}`}</span>
+                      <span>{`${game.speler1.voornaam} ${game.speler1.achternaam} (${game.speler1.schaakrating_elo})`}</span>
                       {playerScores.length > 0 && (
                         <span className="text-xs text-gray-500 font-normal">
                           ({getPlayerScore(game.speler1.user_id)} pt)
@@ -201,7 +202,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                         Z
                       </div>
                       <div className="flex items-center gap-2">
-                        <span>{`${game.speler2.voornaam} ${game.speler2.achternaam}`}</span>
+                        <span>{`${game.speler2.voornaam} ${game.speler2.achternaam} (${game.speler2.schaakrating_elo})`}</span>
                         {playerScores.length > 0 && (
                           <span className="text-xs text-gray-500 font-normal">
                             ({getPlayerScore(game.speler2.user_id)} pt)

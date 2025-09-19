@@ -15,7 +15,9 @@ interface StandingsProps {
         user_id: number
         voornaam: string
         achternaam: string
+        schaakrating_elo?: number
       }
+      sevilla_rating_change?: number | null
     }>
   }
   rounds: Array<{
@@ -24,8 +26,8 @@ interface StandingsProps {
     type: 'REGULAR' | 'MAKEUP'
     games: Array<{
       game_id: number
-      speler1: { user_id: number; voornaam: string; achternaam: string }
-      speler2: { user_id: number; voornaam: string; achternaam: string } | null
+      speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
+      speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
       result: string | null
       round?: { type: 'REGULAR' | 'MAKEUP' }
     }>
@@ -39,11 +41,14 @@ interface PlayerScore {
   score: number
   gamesPlayed: number
   tieBreak: number
+  ratingDifference?: number | null
+  schaakrating_elo?: number
 }
 
 interface PlayerGame {
   round: number
   opponent: string | null
+  opponentRating?: number | null
   result: string | null
   color: "white" | "black" | null
   score: number
@@ -61,6 +66,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
     return "BYE"
   }
   const playerScores = calculateStandings(tournament, rounds)
+  
+  // Find player with biggest rating gain
+  const maxRatingGain = Math.max(...playerScores.map(p => p.ratingDifference || 0))
 
   const getPositionIcon = (position: number) => {
     switch (position) {
@@ -130,10 +138,12 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
         // Determine opponent display and game type
         let opponentDisplay: string | null = null
+        let opponentRating: number | null = null
         let isRealBye = false
         
         if (opponent) {
           opponentDisplay = `${opponent.voornaam} ${opponent.achternaam}`
+          opponentRating = opponent.schaakrating_elo || null
         } else {
           // No opponent - check if result contains ABS
           if (playerGame.result && playerGame.result.includes("ABS")) {
@@ -151,6 +161,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
         history.push({
           round: round.ronde_nummer,
           opponent: opponentDisplay,
+          opponentRating: opponentRating,
           result: playerGame.result,
           color: isPlayer1 ? "white" : "black",
           score,
@@ -210,6 +221,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
         {playerScores.map((player, idx) => {
           const position = idx + 1
           const isTop = position <= 3
+          const isBiggestRatingGain = player.ratingDifference === maxRatingGain && maxRatingGain > 0
           return (
             <div
               key={player.user_id}
@@ -225,22 +237,37 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
 
                 {/* Player Info - All on one line */}
-                <div className="flex-1 min-w-0 flex items-center gap-2">
+                <div className="flex-1 min-w-0 flex items-center gap-1">
                   <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors truncate text-xs">
-                    {player.voornaam} {player.achternaam}
+                    {player.voornaam} {player.achternaam} ({player.schaakrating_elo})
                   </div>
-                  <div className="text-xs text-gray-600 flex items-center gap-1">
+                  <div className="text-xs text-gray-600 flex items-center gap-0.5">
                     <User className="h-3 w-3" />
                     {player.gamesPlayed}
                   </div>
                 </div>
 
-                {/* Score & Tie-break - Compact */}
-                <div className="text-right flex items-center gap-2">
-                  <div className={`text-sm font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                {/* Score, Rating Diff & Tie-break - Fixed width columns */}
+                <div className="text-right flex items-center gap-1">
+                  <div className={`w-8 text-sm font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
                     {player.score}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="w-12 flex justify-center">
+                    {player.ratingDifference !== null && player.ratingDifference !== undefined && (
+                      <div className={`text-xs font-bold ${
+                        isBiggestRatingGain
+                          ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg inline-block"
+                          : player.ratingDifference > 0 
+                          ? "text-green-600" 
+                          : player.ratingDifference < 0 
+                          ? "text-red-600" 
+                          : "text-gray-500"
+                      }`}>
+                        {player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-16 text-xs text-gray-500">
                     {tournament.type === "SWISS" ? (
                       <span>Bh: {player.tieBreak.toFixed(1)}</span>
                     ) : (
@@ -269,7 +296,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                     href={`/profile/${createUrlFriendlyName(selectedPlayer.voornaam, selectedPlayer.achternaam)}`}
                     className="text-base font-semibold text-textColor hover:text-mainAccent transition-colors"
                   >
-                    {selectedPlayer.voornaam} {selectedPlayer.achternaam}
+                    {selectedPlayer.voornaam} {selectedPlayer.achternaam}{selectedPlayer.schaakrating_elo ? ` (${selectedPlayer.schaakrating_elo})` : ''}
                   </Link>
                   <p className="text-xs text-gray-600">Toernooi geschiedenis</p>
                 </div>
@@ -284,7 +311,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
             {/* Stats Summary */}
             <div className="p-3 border-b border-gray-200">
-              <div className="grid grid-cols-3 gap-3">
+              <div className={`grid gap-3 ${selectedPlayer.ratingDifference !== null && selectedPlayer.ratingDifference !== undefined ? 'grid-cols-4' : 'grid-cols-3'}`}>
                 <div className="text-center">
                   <div className="text-xl font-bold text-mainAccent">{selectedPlayer.score}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">Punten</div>
@@ -293,6 +320,22 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   <div className="text-xl font-bold text-textColor">{selectedPlayer.gamesPlayed}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">Partijen</div>
                 </div>
+                {selectedPlayer.ratingDifference !== null && selectedPlayer.ratingDifference !== undefined && (
+                  <div className="text-center">
+                    <div className={`text-xl font-bold ${
+                      selectedPlayer.ratingDifference === maxRatingGain && maxRatingGain > 0
+                        ? "px-3 py-1 rounded bg-green-500 text-white shadow-lg inline-block"
+                        : selectedPlayer.ratingDifference > 0
+                        ? "text-green-600"
+                        : selectedPlayer.ratingDifference < 0
+                        ? "text-red-600"
+                        : "text-textColor"
+                    }`}>
+                      {selectedPlayer.ratingDifference > 0 ? "+" : ""}{Math.round(selectedPlayer.ratingDifference)}
+                    </div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Rating Δ</div>
+                  </div>
+                )}
                 <div className="text-center">
                   <div className="text-xl font-bold text-textColor">{selectedPlayer.tieBreak.toFixed(2)}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">
@@ -321,7 +364,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                             href={`/profile/${createUrlFriendlyName(game.opponent.split(' ')[0], game.opponent.split(' ').slice(1).join(' '))}`}
                             className="font-medium text-xs text-textColor hover:text-mainAccent transition-colors"
                           >
-                            {game.opponent}
+                            {game.opponent}{game.opponentRating ? ` (${game.opponentRating})` : ''}
                           </Link>
                         ) : (
                           <div className="font-medium text-xs text-textColor">
@@ -481,11 +524,13 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     }
   })
 
-  // vul voornaam/achternaam
-  tournament.participations.forEach(({ user }) => {
+  // vul voornaam/achternaam, rating difference en rating
+  tournament.participations.forEach(({ user, sevilla_rating_change }) => {
     const p = players.find((p) => p.user_id === user.user_id)!
     p.voornaam = user.voornaam
     p.achternaam = user.achternaam
+    p.ratingDifference = sevilla_rating_change
+    p.schaakrating_elo = user.schaakrating_elo
   })
 
   // 5) sorteren: eerst op score, dan tieBreak

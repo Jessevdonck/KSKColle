@@ -15,7 +15,7 @@ interface SevillaPlayer {
   Score: number;
   Rating: number;
   IRtg: number;        // Initial rating
-  Rtg_W_We: number;    // Rating change
+  RtgDif: number;      // Rating difference
   RatedGames: number;
   Game: SevillaGame[];
   Abs?: {
@@ -183,6 +183,10 @@ export class SevillaImporterService {
         await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
       }
 
+      // Always update participations with latest rating data, even for incremental imports
+      console.log('🔄 Updating participations with latest rating data...');
+      await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
+
       console.log(`Successfully imported tournament with ${latestRanking.Player.length} players and ${latestRanking.Round} rounds`);
       
       return tournament.tournament_id;
@@ -251,7 +255,7 @@ export class SevillaImporterService {
             email: email,
             tel_nummer: "000000000", // Default phone number for imported users
             schaakrating_elo: sevillaPlayer.Rating || 1200,
-            schaakrating_difference: sevillaPlayer.Rtg_W_We || 0,
+            schaakrating_difference: sevillaPlayer.RtgDif || 0,
             lid_sinds: new Date(),
             password_hash: "imported_user", // Placeholder for imported users
             roles: JSON.stringify(['user']),
@@ -267,10 +271,10 @@ export class SevillaImporterService {
             where: { user_id: user.user_id },
             data: { 
               schaakrating_elo: sevillaPlayer.Rating,
-              schaakrating_difference: sevillaPlayer.Rtg_W_We || 0, // Rating change
+              schaakrating_difference: sevillaPlayer.RtgDif || 0, // Rating change
             },
           });
-          console.log(`Updated rating for ${user.voornaam} ${user.achternaam}: ${user.schaakrating_elo} -> ${sevillaPlayer.Rating} (change: ${sevillaPlayer.Rtg_W_We || 0})`);
+          console.log(`Updated rating for ${user.voornaam} ${user.achternaam}: ${user.schaakrating_elo} -> ${sevillaPlayer.Rating} (change: ${sevillaPlayer.RtgDif || 0})`);
         }
       }
 
@@ -284,21 +288,23 @@ export class SevillaImporterService {
         }
       });
 
+      console.log(`🔍 Processing ${user.voornaam} ${user.achternaam}: RtgDif=${sevillaPlayer.RtgDif}, IRtg=${sevillaPlayer.IRtg}, Rating=${sevillaPlayer.Rating}`);
+
       if (!existingParticipation) {
-        // Create participation (store Sevilla rating data in existing fields for now)
+        // Create participation (store Sevilla rating data in dedicated fields)
         await prisma.participation.create({
           data: {
             user_id: user.user_id,
             tournament_id: tournamentId,
             score: sevillaPlayer.Score,
             bye_round: null,
-            // Store Sevilla rating data in existing fields temporarily
-            buchholz: sevillaPlayer.IRtg, // Initial rating
-            sonnebornBerger: sevillaPlayer.Rating, // Final rating  
-            tie_break: sevillaPlayer.Rtg_W_We, // Rating change
+            // Store Sevilla rating data in dedicated fields
+            sevilla_initial_rating: sevillaPlayer.IRtg, // Initial rating
+            sevilla_final_rating: sevillaPlayer.Rating, // Final rating  
+            sevilla_rating_change: sevillaPlayer.RtgDif, // Rating difference from Sevilla
           },
         });
-        console.log(`Created participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId}`);
+        console.log(`Created participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId} with RtgDif=${sevillaPlayer.RtgDif}`);
       } else {
         // Update existing participation with latest score and rating data
         await prisma.participation.update({
@@ -310,12 +316,12 @@ export class SevillaImporterService {
           },
           data: {
             score: sevillaPlayer.Score,
-            buchholz: sevillaPlayer.IRtg, // Initial rating
-            sonnebornBerger: sevillaPlayer.Rating, // Final rating  
-            tie_break: sevillaPlayer.Rtg_W_We, // Rating change
+            sevilla_initial_rating: sevillaPlayer.IRtg, // Initial rating
+            sevilla_final_rating: sevillaPlayer.Rating, // Final rating  
+            sevilla_rating_change: sevillaPlayer.RtgDif, // Rating difference from Sevilla
           },
         });
-        console.log(`Updated participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId}`);
+        console.log(`Updated participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId} with RtgDif=${sevillaPlayer.RtgDif}`);
       }
 
       playerMap.set(sevillaPlayer.ID, user.user_id);
