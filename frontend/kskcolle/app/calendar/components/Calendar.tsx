@@ -8,7 +8,7 @@ import EventDetails from "./EventDetails"
 import MonthNavigation from "./MonthNavigation"
 import EventCarousel from "./EventCarousel"
 import { addMonths, isSameDay } from "date-fns"
-import { CalendarIcon, Clock } from "lucide-react"
+import { CalendarIcon, Clock, Archive, Calendar } from "lucide-react"
 
 interface CalendarEvent {
   id: string
@@ -21,8 +21,12 @@ interface CalendarEvent {
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [showArchive, setShowArchive] = useState(false)
 
-  const { data: events, error, isLoading } = useSWR<CalendarEvent[]>("calendar", getAll)
+  const { data: events, error, isLoading } = useSWR<CalendarEvent[]>(
+    `calendar?show_archive=${showArchive}`, 
+    getAll
+  )
 
   const handlePrevMonth = () => setCurrentDate((prevDate) => addMonths(prevDate, -1))
   const handleNextMonth = () => setCurrentDate((prevDate) => addMonths(prevDate, 1))
@@ -64,18 +68,44 @@ export default function Calendar() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-mainAccent/10 p-3 rounded-xl">
-              <CalendarIcon className="h-8 w-8 text-mainAccent" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-textColor">Kalender 2024 - 2025</h1>
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{events?.length || 0} geplande evenementen</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-mainAccent/10 p-3 rounded-xl">
+                <CalendarIcon className="h-8 w-8 text-mainAccent" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-textColor">Kalender 2024 - 2025</h1>
+                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span>{events?.length || 0} {showArchive ? 'gearchiveerde' : 'geplande'} evenementen</span>
+                  </div>
                 </div>
               </div>
+            </div>
+            
+            {/* Archive Toggle */}
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-medium ${!showArchive ? 'text-gray-900' : 'text-gray-500'}`}>
+                <Calendar className="h-4 w-4 inline mr-1" />
+                Huidig
+              </span>
+              <button
+                onClick={() => setShowArchive(!showArchive)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-mainAccent focus:ring-offset-2 ${
+                  showArchive ? 'bg-mainAccent' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full transition-transform bg-white ${
+                    showArchive ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${showArchive ? 'text-gray-900' : 'text-gray-500'}`}>
+                <Archive className="h-4 w-4 inline mr-1" />
+                Archief
+              </span>
             </div>
           </div>
         </div>

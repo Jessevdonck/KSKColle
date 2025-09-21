@@ -6,12 +6,16 @@ import type { CalendarEvent } from "../../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { CalendarIcon, Clock, Info, Users, Tag } from "lucide-react"
+import { CalendarIcon, Clock, Info, Users, Tag, Archive } from "lucide-react"
 import Link from "next/link"
 import CalendarFilters from "../../../components/CalendarFilters"
 
 const YouthPlannedActivities = () => {
-  const { data: events, error } = useSWR<CalendarEvent[]>("calendar?is_youth=true", getAll)
+  const [showArchive, setShowArchive] = useState(false)
+  const { data: events, error } = useSWR<CalendarEvent[]>(
+    `calendar?is_youth=true&show_archive=${showArchive}`, 
+    getAll
+  )
   
   // Filter states
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
@@ -156,14 +160,40 @@ const YouthPlannedActivities = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
-          <div className="text-center">
-            <div className="bg-mainAccent/10 p-3 rounded-xl inline-flex mb-3">
-              <Users className="h-8 w-8 text-mainAccent" />
+          <div className="flex flex-col items-center gap-4">
+            <div className="text-center">
+              <div className="bg-mainAccent/10 p-3 rounded-xl inline-flex mb-3">
+                <Users className="h-8 w-8 text-mainAccent" />
+              </div>
+              <h1 className="text-2xl font-bold text-textColor mb-1">Jeugd Kalender</h1>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Overzicht van alle {showArchive ? 'gearchiveerde' : 'geplande'} jeugd activiteiten en evenementen
+              </p>
             </div>
-            <h1 className="text-2xl font-bold text-textColor mb-1">Jeugd Kalender</h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Overzicht van alle geplande jeugd activiteiten en evenementen
-            </p>
+            
+            {/* Archive Toggle */}
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-medium ${!showArchive ? 'text-gray-900' : 'text-gray-500'}`}>
+                <CalendarIcon className="h-4 w-4 inline mr-1" />
+                Huidig
+              </span>
+              <button
+                onClick={() => setShowArchive(!showArchive)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-mainAccent focus:ring-offset-2 ${
+                  showArchive ? 'bg-mainAccent' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full transition-transform bg-white ${
+                    showArchive ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${showArchive ? 'text-gray-900' : 'text-gray-500'}`}>
+                <Archive className="h-4 w-4 inline mr-1" />
+                Archief
+              </span>
+            </div>
           </div>
         </div>
       </div>

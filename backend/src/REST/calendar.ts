@@ -11,7 +11,8 @@ import { CreateEventRequest, CreateEventResponse, GetAllEventResponse, GetEventB
 
 const getAllEvents = async (ctx: KoaContext<GetAllEventResponse>) => {
   const isYouth = ctx.query.is_youth === 'true' ? true : ctx.query.is_youth === 'false' ? false : undefined;
-  const events = await eventService.getAllEvents(isYouth);
+  const showArchive = ctx.query.show_archive === 'true' ? true : ctx.query.show_archive === 'false' ? false : undefined;
+  const events = await eventService.getAllEvents(isYouth, showArchive);
   ctx.body = {
     items: events,
   };
@@ -20,6 +21,7 @@ const getAllEvents = async (ctx: KoaContext<GetAllEventResponse>) => {
 getAllEvents.validationScheme = {
   query: {
     is_youth: Joi.boolean().optional(),
+    show_archive: Joi.boolean().optional(),
   },
 };
 

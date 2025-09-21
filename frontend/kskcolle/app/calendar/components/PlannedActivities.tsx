@@ -6,10 +6,14 @@ import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Calendar, Clock, Info, Search, ChevronDown } from "lucide-react"
+import { Calendar, Clock, Info, Search, ChevronDown, Archive } from "lucide-react"
 
 const PlannedActivities = () => {
-  const { data: events, error } = useSWR<CalendarEvent[]>("calendar?is_youth=false", getAll)
+  const [showArchive, setShowArchive] = useState(false)
+  const { data: events, error } = useSWR<CalendarEvent[]>(
+    `calendar?is_youth=false&show_archive=${showArchive}`, 
+    getAll
+  )
   
   // Filter states
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
@@ -179,12 +183,40 @@ const PlannedActivities = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
-          <div className="flex items-center gap-2">
-            <div className="bg-mainAccent/10 p-1.5 rounded-lg">
-              <Calendar className="h-5 w-5 text-mainAccent" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-mainAccent/10 p-1.5 rounded-lg">
+                <Calendar className="h-5 w-5 text-mainAccent" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-textColor">
+                  {showArchive ? 'Gearchiveerde' : 'Geplande'} Activiteiten
+                </h1>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-textColor">Geplande Activiteiten</h1>
+            
+            {/* Archive Toggle */}
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-medium ${!showArchive ? 'text-gray-900' : 'text-gray-500'}`}>
+                <Calendar className="h-4 w-4 inline mr-1" />
+                Huidig
+              </span>
+              <button
+                onClick={() => setShowArchive(!showArchive)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-mainAccent focus:ring-offset-2 ${
+                  showArchive ? 'bg-mainAccent' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full transition-transform bg-white ${
+                    showArchive ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${showArchive ? 'text-gray-900' : 'text-gray-500'}`}>
+                <Archive className="h-4 w-4 inline mr-1" />
+                Archief
+              </span>
             </div>
           </div>
         </div>

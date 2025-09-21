@@ -3,9 +3,24 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import { CalendarEvent, CalendarEventCreateInput, EventUpdateInput } from "../types/calendar";
 
-export const getAllEvents = async (isYouth?: boolean): Promise<CalendarEvent[]> => {
+export const getAllEvents = async (isYouth?: boolean, showArchive?: boolean): Promise<CalendarEvent[]> => {
   try {
-    const whereClause = isYouth !== undefined ? { is_youth: isYouth } : {};
+    const whereClause: any = isYouth !== undefined ? { is_youth: isYouth } : {};
+    
+    // Filter by date based on archive setting
+    if (showArchive !== undefined) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset to start of day
+      
+      if (showArchive) {
+        // Show only past events (date < today)
+        whereClause.date = { lt: today };
+      } else {
+        // Show only future events (date >= today)
+        whereClause.date = { gte: today };
+      }
+    }
+    
     return await prisma.calendarEvent.findMany({
       where: whereClause,
       orderBy: { date: 'asc' }
