@@ -8,7 +8,7 @@ import EventDetails from "./EventDetails"
 import MonthNavigation from "./MonthNavigation"
 import EventCarousel from "./EventCarousel"
 import { addMonths, isSameDay } from "date-fns"
-import { CalendarIcon, Clock, Archive, Calendar } from "lucide-react"
+import { CalendarIcon, Clock, Archive, Calendar as CalendarIconAlt } from "lucide-react"
 
 interface CalendarEvent {
   id: string
@@ -87,7 +87,7 @@ export default function Calendar() {
             {/* Archive Toggle */}
             <div className="flex items-center gap-3">
               <span className={`text-sm font-medium ${!showArchive ? 'text-gray-900' : 'text-gray-500'}`}>
-                <Calendar className="h-4 w-4 inline mr-1" />
+                <CalendarIconAlt className="h-4 w-4 inline mr-1" />
                 Huidig
               </span>
               <button
