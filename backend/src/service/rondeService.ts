@@ -111,7 +111,12 @@ export const getNextRegularRoundNumber = async (tournament_id: number): Promise<
       return 1; // Eerste ronde
     }
     
-    return regularRounds[0].ronde_nummer + 1;
+    const lastRound = regularRounds[0];
+    if (!lastRound) {
+      return 1; // Fallback
+    }
+    
+    return lastRound.ronde_nummer + 1;
   } catch (error) {
     throw handleDBError(error);
   }
