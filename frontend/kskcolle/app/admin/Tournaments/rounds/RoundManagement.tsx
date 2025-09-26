@@ -97,20 +97,16 @@ export default function RoundManagement({ tournament }: Props) {
   // Bepaal of dit een Sevilla toernooi is (heeft geïmporteerde rondes)
   const isSevillaTournament = allRounds.some(r => r.is_sevilla_imported)
   
-  // Sorteer rondes: eerst reguliere rondes, dan inhaaldagen op de juiste plek
+  // Sorteer rondes: eerst op datum, dan op ronde_nummer
   const sortedRounds = allRounds.sort((a, b) => {
-    // Voor reguliere rondes, sorteer op ronde_nummer
-    if (a.type === 'REGULAR' && b.type === 'REGULAR') {
-      return a.ronde_nummer - b.ronde_nummer
+    // First sort by date
+    const dateA = new Date(a.ronde_datum).getTime()
+    const dateB = new Date(b.ronde_datum).getTime()
+    if (dateA !== dateB) {
+      return dateA - dateB
     }
-    // Voor inhaaldagen, sorteer op round_after (ronde_nummer - 1000)
-    if (a.type === 'MAKEUP' && b.type === 'MAKEUP') {
-      return (a.ronde_nummer - 1000) - (b.ronde_nummer - 1000)
-    }
-    // Inhaaldagen komen na reguliere rondes
-    if (a.type === 'MAKEUP') return 1
-    if (b.type === 'MAKEUP') return -1
-    return 0
+    // If dates are equal, sort by ronde_nummer
+    return a.ronde_nummer - b.ronde_nummer
   })
 
   // Tel verschillende types rondes

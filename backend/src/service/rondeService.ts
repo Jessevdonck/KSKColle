@@ -26,6 +26,10 @@ export const getAllRondesByTournamentId = async (
           },
         },
       },
+      orderBy: [
+        { ronde_datum: 'asc' }, // Sorteer eerst op datum
+        { ronde_nummer: 'asc' }  // Dan op ronde nummer als fallback
+      ]
     });
   } catch (error) {
     throw handleDBError(error);
@@ -67,15 +71,47 @@ export const getRondeByTournamentId = async (
 
 export const createRonde = async (input: any)=> {
   try {
+    // Als ronde_nummer niet is opgegeven, bereken het volgende beschikbare nummer
+    let ronde_nummer = input.ronde_nummer;
+    if (!ronde_nummer) {
+      ronde_nummer = await getNextRegularRoundNumber(input.tournament_id);
+    }
+    
     return await prisma.round.create({
       data: {
         tournament_id:      input.tournament_id,
-        ronde_nummer:       input.ronde_nummer,
+        ronde_nummer:       ronde_nummer,
         ronde_datum:        input.ronde_datum,
         startuur:           input.startuur ?? "20:00",
         calendar_event_id:  input.calendar_event_id ?? undefined,
       },
     });
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+/**
+ * Bepaal het volgende beschikbare reguliere ronde nummer
+ * Dit houdt rekening met inhaaldagen die offset van 1000 gebruiken
+ */
+export const getNextRegularRoundNumber = async (tournament_id: number): Promise<number> => {
+  try {
+    // Haal alle reguliere rondes op (niet inhaaldagen)
+    const regularRounds = await prisma.round.findMany({
+      where: { 
+        tournament_id,
+        type: 'REGULAR' // Alleen reguliere rondes, geen inhaaldagen
+      },
+      orderBy: { ronde_nummer: 'desc' },
+      take: 1
+    });
+    
+    if (regularRounds.length === 0) {
+      return 1; // Eerste ronde
+    }
+    
+    return regularRounds[0].ronde_nummer + 1;
   } catch (error) {
     throw handleDBError(error);
   }

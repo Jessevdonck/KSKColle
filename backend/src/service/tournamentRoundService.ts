@@ -34,7 +34,10 @@ export async function getAllTournamentRounds(tournament_id: number): Promise<Tou
           }
         }
       },
-      orderBy: { ronde_nummer: 'asc' }
+      orderBy: [
+        { ronde_datum: 'asc' }, // Sorteer eerst op datum
+        { ronde_nummer: 'asc' }  // Dan op ronde nummer als fallback
+      ]
     });
 
     return rounds.map(round => ({

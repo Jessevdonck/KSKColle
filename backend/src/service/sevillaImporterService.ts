@@ -461,16 +461,28 @@ export class SevillaImporterService {
       }
       
       if (incremental) {
-        // Check if round exists
-        const existingRound = await prisma.round.findFirst({
+        // For incremental import, we need to find the correct existing round
+        // Since Sevilla rounds might have different ronde_nummer due to makeup days,
+        // we'll look for Sevilla rounds and match them by their import order
+        
+        const allSevillaRounds = await prisma.round.findMany({
           where: { 
             tournament_id: tournamentId,
-            ronde_nummer: roundNumber 
-          }
+            is_sevilla_imported: true
+          },
+          orderBy: { ronde_nummer: 'asc' }
         });
         
+        // Find the round that corresponds to this Sevilla round number
+        // We'll match by the order in which Sevilla rounds were imported
+        const sortedSevillaRounds = Array.from(allRounds).sort((a, b) => a - b);
+        const sevillaRoundIndex = sortedSevillaRounds.indexOf(roundNumber);
+        const existingRound = sevillaRoundIndex >= 0 && sevillaRoundIndex < allSevillaRounds.length 
+          ? allSevillaRounds[sevillaRoundIndex] 
+          : null;
+        
         if (existingRound) {
-          console.log(`Round ${roundNumber} exists, checking for updates...`);
+          console.log(`Found existing Sevilla round ${roundNumber} with ID ${existingRound.round_id} and ronde_nummer ${existingRound.ronde_nummer}`);
           round = existingRound;
           
           // Check if round date needs to be updated
@@ -532,18 +544,20 @@ export class SevillaImporterService {
           console.log(`Created new round ${roundNumber} with correct number ${correctRoundNumber} and ID ${round.round_id}`);
         }
       } else {
-        // Original behavior - always create new round
+        // Use correct round numbering for all imports
+        const correctRoundNumber = await this.determineCorrectRoundNumber(tournamentId, roundNumber, existingRounds);
+        
         round = await prisma.round.create({
           data: {
             tournament_id: tournamentId,
-            ronde_nummer: roundNumber,
+            ronde_nummer: correctRoundNumber,
             ronde_datum: roundDate, // Use calculated date
             startuur: '20:00', // Default start time
             type: 'REGULAR', // Sevilla rounds are always regular rounds
             is_sevilla_imported: true, // Mark as Sevilla imported
           },
         });
-        console.log(`Created round ${roundNumber} with ID ${round.round_id}`);
+        console.log(`Created round ${roundNumber} with correct number ${correctRoundNumber} and ID ${round.round_id}`);
       }
 
       // Import games for this round
@@ -556,36 +570,28 @@ export class SevillaImporterService {
 
   /**
    * Bepaal het juiste ronde nummer rekening houdend met inhaaldagen
+   * Voor Sevilla imports: behoud de originele Sevilla ronde nummering
    */
   private async determineCorrectRoundNumber(_tournamentId: number, sevillaRoundNumber: number, existingRounds: any[]): Promise<number> {
-    // Als er geen bestaande rondes zijn, gebruik het Sevilla ronde nummer
-    if (existingRounds.length === 0) {
-      return sevillaRoundNumber;
-    }
-
-    // Zoek de laatste ronde die voor of op sevillaRoundNumber komt
-    const regularRounds = existingRounds.filter(r => r.type === 'REGULAR');
-    const lastRegularRound = regularRounds.find(r => r.ronde_nummer === sevillaRoundNumber);
+    // Voor Sevilla imports, probeer altijd de originele Sevilla ronde nummer te behouden
+    // Dit zorgt ervoor dat ronde 2 altijd ronde 2 blijft, ongeacht inhaaldagen
     
-    if (lastRegularRound) {
-      // Deze ronde bestaat al, gebruik het bestaande nummer
-      return lastRegularRound.ronde_nummer;
-    }
-
-    // Zoek de laatste ronde die voor sevillaRoundNumber komt
-    const previousRegularRounds = regularRounds.filter(r => r.ronde_nummer < sevillaRoundNumber);
-    if (previousRegularRounds.length === 0) {
-      // Geen vorige rondes, gebruik sevillaRoundNumber
-      return sevillaRoundNumber;
-    }
-
-    const lastPreviousRound = Math.max(...previousRegularRounds.map(r => r.ronde_nummer));
+    // Check of er al een ronde bestaat met dit nummer
+    const existingRoundWithNumber = existingRounds.find(r => r.ronde_nummer === sevillaRoundNumber);
     
-    // Tel alle rondes (regulier + inhaaldagen) die na lastPreviousRound komen
-    const roundsAfterLast = existingRounds.filter(r => r.ronde_nummer > lastPreviousRound);
+    if (existingRoundWithNumber) {
+      // Als het een Sevilla ronde is, gebruik het bestaande nummer
+      if (existingRoundWithNumber.is_sevilla_imported) {
+        return sevillaRoundNumber;
+      }
+      
+      // Als het een niet-Sevilla ronde is, zoek het volgende beschikbare nummer
+      const maxRegularRound = Math.max(...existingRounds.filter(r => r.type === 'REGULAR').map(r => r.ronde_nummer));
+      return maxRegularRound + 1;
+    }
     
-    // Het juiste nummer is lastPreviousRound + 1 + aantal inhaaldagen ertussen
-    return lastPreviousRound + 1 + roundsAfterLast.length;
+    // Geen conflict, gebruik het Sevilla ronde nummer
+    return sevillaRoundNumber;
   }
 
   private async importGamesForRound(players: SevillaPlayer[], roundId: number, roundNumber: number, playerMap: Map<number, number>) {

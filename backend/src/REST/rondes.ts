@@ -25,6 +25,26 @@ const getAllRondes = async (ctx: KoaContext<GetAllRoundsResponse>) => {
 getAllRondes.validationScheme = null;
 
 /**
+ * @api {get} /rondes/next/:tournament_id Get next available round number
+ * @apiName GetNextRoundNumber
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ *
+ * @apiSuccess {Number} nextRoundNumber The next available round number.
+ */
+const getNextRoundNumber = async (ctx: KoaContext<{ nextRoundNumber: number }, { tournament_id: string }>) => {
+  const tournament_id = Number(ctx.params.tournament_id);
+  const nextRoundNumber = await rondeService.getNextRegularRoundNumber(tournament_id);
+  ctx.body = { nextRoundNumber };
+};
+getNextRoundNumber.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive().required(),
+  },
+};
+
+/**
  * @api {post} /rondes Create a new ronde
  * @apiName CreateRonde
  * @apiGroup Ronde
@@ -220,6 +240,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const requireAdmin = makeRequireRole(Role.ADMIN);
 
   router.get('/', requireAuthentication, validate(getAllRondes.validationScheme), getAllRondes);
+  router.get('/next/:tournament_id', requireAuthentication, validate(getNextRoundNumber.validationScheme), getNextRoundNumber);
   router.get('/:tournament_id/rondes',validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
   router.get('/:ronde_id', validate(getRondeById.validationScheme), getRondeById);
   router.get('/:tournament_id/rondes/:round_id', requireAuthentication, validate(getRondeByTournament.validationScheme), getRondeByTournament); 
@@ -229,4 +250,16 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.delete('/:tournament_id/rondes/:ronde_id', requireAuthentication, requireAdmin, validate(removeRonde.validationScheme), removeRonde); 
 
   parent.use(router.routes()).use(router.allowedMethods());
+};
+
+export {
+  getAllRondes,
+  getNextRoundNumber,
+  createRonde,
+  getRondeById,
+  getAllRondesByTournamentId,
+  getRondeByTournament,
+  getRoundForExport,
+  updateRonde,
+  removeRonde,
 };

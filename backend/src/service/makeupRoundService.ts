@@ -46,10 +46,9 @@ export async function createMakeupRound(
       throw ServiceError.validationFailed(`Ronde ${round_after} niet gevonden in toernooi`);
     }
 
-    // 3. Bepaal het volgende ronde nummer
-    // Tel alle rondes (regulier + inhaaldagen) tot en met round_after
-    const roundsUpToAfter = tournament.rounds.filter(r => r.ronde_nummer <= round_after);
-    const nextRoundNumber = Math.max(...roundsUpToAfter.map(r => r.ronde_nummer)) + 1;
+    // 3. Bepaal het volgende ronde nummer voor inhaaldag
+    // Gebruik een offset van 1000 + round_after om conflicten met reguliere rondes te vermijden
+    const nextRoundNumber = round_after + 1000;
 
     // 4. Maak de inhaaldag ronde aan
     const makeupRound = await prisma.round.create({
@@ -185,7 +184,10 @@ export async function getMakeupRoundsForTournament(tournament_id: number): Promi
         tournament_id,
         type: RoundType.MAKEUP
       },
-      orderBy: { ronde_nummer: 'asc' }
+      orderBy: [
+        { ronde_datum: 'asc' }, // Sorteer eerst op datum
+        { ronde_nummer: 'asc' }  // Dan op ronde nummer als fallback
+      ]
     });
 
     return rounds;
@@ -201,7 +203,10 @@ export async function getAllRoundsForTournament(tournament_id: number): Promise<
   try {
     const rounds = await prisma.round.findMany({
       where: { tournament_id },
-      orderBy: { ronde_nummer: 'asc' }
+      orderBy: [
+        { ronde_datum: 'asc' }, // Sorteer eerst op datum
+        { ronde_nummer: 'asc' }  // Dan op ronde nummer als fallback
+      ]
     });
 
     return rounds;

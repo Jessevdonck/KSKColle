@@ -93,8 +93,17 @@ export default function TournamentDetails() {
       type Entry = { kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] }
       const newTimeline: Entry[] = []
 
-      // Sort all rounds by ronde_nummer
-      const sortedRounds = [...allRounds].sort((a, b) => a.ronde_nummer - b.ronde_nummer)
+      // Sort all rounds by date first, then by ronde_nummer
+      const sortedRounds = [...allRounds].sort((a, b) => {
+        // First sort by date
+        const dateA = new Date(a.ronde_datum).getTime()
+        const dateB = new Date(b.ronde_datum).getTime()
+        if (dateA !== dateB) {
+          return dateA - dateB
+        }
+        // If dates are equal, sort by ronde_nummer
+        return a.ronde_nummer - b.ronde_nummer
+      })
 
       let makeupDayCounter = 1
 
