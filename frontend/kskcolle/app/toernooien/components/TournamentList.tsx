@@ -233,7 +233,7 @@ export default function TournamentList() {
       { id: 'lentecompetitie', title: 'Lentecompetitie', tournaments: categorized.lentecompetitie },
       { id: 'blitzkampioenschap', title: 'Snelschaakkampioenschap', tournaments: categorized.blitzkampioenschap },
       { id: 'zomertoernooi', title: 'Zomertoernooi', tournaments: categorized.zomertoernooi },
-      { id: 'other', title: 'Andere Toernooien', tournaments: categorized.other }
+      { id: 'other', title: 'Nevenactiviteiten', tournaments: categorized.other }
     ].filter(section => section.tournaments.length > 0)
 
     if (sections.length <= 1) return null
@@ -370,7 +370,7 @@ export default function TournamentList() {
                         { id: 'lente', label: 'Lentecompetitie' },
                         { id: 'blitz', label: 'Snelschaakkampioenschap' },
                         { id: 'zomer', label: 'Zomertoernooi' },
-                        { id: 'other', label: 'Andere Toernooien' }
+                        { id: 'other', label: 'Nevenactiviteiten' }
                       ].find(t => t.id === selectedType)?.label}
                     </h2>
                   </div>
@@ -452,7 +452,7 @@ export default function TournamentList() {
                         { id: 'lente', label: 'Lentecompetitie' },
                         { id: 'blitz', label: 'Snelschaakkampioenschap' },
                         { id: 'zomer', label: 'Zomertoernooi' },
-                        { id: 'other', label: 'Andere Toernooien' }
+                        { id: 'other', label: 'Nevenactiviteiten' }
                       ].find(t => t.id === selectedType)?.label}
                     </h2>
                   </div>
