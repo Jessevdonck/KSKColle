@@ -64,6 +64,12 @@ interface SevillaGroup {
     Date: string;
     Player: SevillaPlayer[];
   }[];
+  RoundHist?: {
+    ID: number;
+    Name: string;
+    Date: string;
+    Game: SevillaGame[];
+  }[];
 }
 
 interface SevillaTournament {

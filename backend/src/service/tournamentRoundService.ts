@@ -4,33 +4,6 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import * as calendarService from "./calendarService";
 
-/**
- * Check if a user is an admin
- */
-async function isUserAdmin(user_id: number): Promise<boolean> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { user_id },
-      select: { is_admin: true, roles: true }
-    });
-    
-    if (!user) return false;
-    
-    // Check both is_admin flag and roles array
-    if (user.is_admin) return true;
-    
-    // Check if roles array contains 'admin'
-    if (user.roles && Array.isArray(user.roles) && user.roles.includes('admin')) {
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error checking admin status', { user_id, error });
-    return false;
-  }
-}
-
 export interface TournamentRound {
   round_id: number;
   tournament_id: number;
