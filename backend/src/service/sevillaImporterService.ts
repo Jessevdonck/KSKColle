@@ -344,28 +344,62 @@ export class SevillaImporterService {
         // Look through all ranking entries to find round dates
         mainGroup.Ranking.forEach(ranking => {
           if (ranking.Date && ranking.Round) {
-            // Parse date from format "18/09/2025" or "18-9-2025"
-            let dateParts: string[] = [];
-            if (ranking.Date.includes('/')) {
-              dateParts = ranking.Date.split('/');
-            } else if (ranking.Date.includes('-')) {
-              dateParts = ranking.Date.split('-');
-            }
-            
-            if (dateParts.length === 3) {
-              const day = dateParts[0] as string;
-              const month = dateParts[1] as string;
-              const year = dateParts[2] as string;
+            // Only set if we don't already have this round date (first occurrence wins)
+            if (!roundDates.has(ranking.Round)) {
+              // Parse date from format "18/09/2025" or "18-9-2025"
+              let dateParts: string[] = [];
+              if (ranking.Date.includes('/')) {
+                dateParts = ranking.Date.split('/');
+              } else if (ranking.Date.includes('-')) {
+                dateParts = ranking.Date.split('-');
+              }
               
-              if (day && month && year) {
-                // Create date in local timezone to avoid timezone issues
-                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
-                roundDates.set(ranking.Round, date);
-                console.log(`Parsed round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
+              if (dateParts.length === 3) {
+                const day = dateParts[0] as string;
+                const month = dateParts[1] as string;
+                const year = dateParts[2] as string;
+                
+                if (day && month && year) {
+                  // Create date in local timezone to avoid timezone issues
+                  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
+                  roundDates.set(ranking.Round, date);
+                  console.log(`✅ Set round ${ranking.Round} date: ${ranking.Date} -> ${date.toISOString()}`);
+                }
               }
             }
           }
         });
+        
+        // Also check RoundHist section for additional round dates
+        if (mainGroup.RoundHist) {
+          mainGroup.RoundHist.forEach(roundHist => {
+            if (roundHist.Date && roundHist.ID) {
+              // Only set if we don't already have this round date
+              if (!roundDates.has(roundHist.ID)) {
+                // Parse date from format "18/09/2025" or "18-9-2025"
+                let dateParts: string[] = [];
+                if (roundHist.Date.includes('/')) {
+                  dateParts = roundHist.Date.split('/');
+                } else if (roundHist.Date.includes('-')) {
+                  dateParts = roundHist.Date.split('-');
+                }
+                
+                if (dateParts.length === 3) {
+                  const day = dateParts[0] as string;
+                  const month = dateParts[1] as string;
+                  const year = dateParts[2] as string;
+                  
+                  if (day && month && year) {
+                    // Create date in local timezone to avoid timezone issues
+                    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
+                    roundDates.set(roundHist.ID, date);
+                    console.log(`✅ Set round ${roundHist.ID} date from RoundHist: ${roundHist.Date} -> ${date.toISOString()}`);
+                  }
+                }
+              }
+            }
+          });
+        }
         
         // Also check History section for additional round dates
         if (mainGroup.History) {
@@ -409,6 +443,31 @@ export class SevillaImporterService {
       console.log(`Using tournament start date from Sevilla data: ${tournamentStartDate.toISOString()}`);
     }
     
+    // Calculate fallback dates for rounds without Sevilla dates
+    const calculateFallbackDate = (roundNumber: number): Date => {
+      if (roundDates.has(roundNumber)) {
+        return roundDates.get(roundNumber)!;
+      }
+      
+      // If we have other round dates, calculate based on them
+      if (roundDates.size > 0) {
+        const earliestRound = Math.min(...Array.from(roundDates.keys()));
+        const earliestDate = roundDates.get(earliestRound)!;
+        const daysBetweenRounds = 7; // Assume 1 week between rounds
+        const roundsDifference = roundNumber - earliestRound;
+        const fallbackDate = new Date(earliestDate);
+        fallbackDate.setDate(fallbackDate.getDate() + (roundsDifference * daysBetweenRounds));
+        console.log(`📅 Calculated fallback date for round ${roundNumber}: ${fallbackDate.toISOString()}`);
+        return fallbackDate;
+      }
+      
+      // Ultimate fallback: use tournament start date + round offset
+      const fallbackDate = new Date(tournamentStartDate);
+      fallbackDate.setDate(fallbackDate.getDate() + ((roundNumber - 1) * 7));
+      console.log(`📅 Ultimate fallback date for round ${roundNumber}: ${fallbackDate.toISOString()}`);
+      return fallbackDate;
+    };
+    
     // Debug: show first few players
     console.log(`First 3 players:`, players.slice(0, 3).map(p => ({ name: p.Name, hasGame: !!p.Game, gameLength: p.Game?.length || 0 })));
     
@@ -450,15 +509,7 @@ export class SevillaImporterService {
       
       // Gebruik de echte datum uit Sevilla data of fallback naar berekende datum
       let roundDate: Date;
-      if (roundDates.has(roundNumber)) {
-        roundDate = roundDates.get(roundNumber)!;
-        console.log(`Using Sevilla date for round ${roundNumber}: ${roundDate.toISOString()}`);
-      } else {
-        // Fallback: bereken de datum (startdatum + (ronde-1) weken)
-        roundDate = new Date(tournamentStartDate);
-        roundDate.setDate(roundDate.getDate() + (roundNumber - 1) * 7);
-        console.log(`Using calculated date for round ${roundNumber}: ${roundDate.toISOString()}`);
-      }
+      roundDate = calculateFallbackDate(roundNumber);
       
       if (incremental) {
         // For incremental import, we need to find the correct existing round
