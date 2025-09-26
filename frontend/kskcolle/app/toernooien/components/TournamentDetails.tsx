@@ -6,7 +6,7 @@ import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
 import { getById, getAll, getAllTournamentRounds, undoPostponeGame, reportAbsence } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
-import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX } from "lucide-react"
+import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX, Clock } from "lucide-react"
 import { useState, useEffect } from "react"
 import PostponeGameButton from './PostponeGameButton'
 import { Button } from '@/components/ui/button'
@@ -513,21 +513,34 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
     <div>
       <div className="mb-4">
         <h3 className="text-xl font-bold text-textColor mb-2 flex items-center gap-2">
-          <div className="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+          <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
             I
           </div>
           Inhaaldag {round.makeupDayNumber}
         </h3>
-        <p className="text-gray-600 flex items-center gap-2 text-sm">
-          <Calendar className="h-3 w-3" />
-          {format(parseISO(round.ronde_datum), "dd-MM-yyyy")}
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-600">
+          <p>
+            {games.length} partijen
+          </p>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              <span>{format(parseISO(round.ronde_datum), "dd-MM-yyyy")}</span>
+            </div>
+            {round.startuur && (
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>{round.startuur}</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {games.length === 0 ? (
         <div className="text-center py-12">
-          <div className="bg-amber-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-            <Calendar className="h-8 w-8 text-amber-500" />
+          <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+            <Calendar className="h-8 w-8 text-mainAccent" />
           </div>
           <h4 className="text-base font-semibold text-gray-700 mb-2">Geen uitgestelde partijen</h4>
           <p className="text-gray-500 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
@@ -535,34 +548,34 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden md:block bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 overflow-hidden">
+          <div className="hidden md:block bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="bg-gradient-to-r from-amber-200 to-orange-200">
-                  <th className="p-3 text-center font-semibold text-amber-800 text-sm w-12">Bord</th>
-                  <th className="p-3 text-left font-semibold text-amber-800 text-sm">Wit</th>
-                  <th className="p-3 text-center font-semibold text-amber-800 w-8"></th>
-                  <th className="p-3 text-left font-semibold text-amber-800 text-sm">Zwart</th>
-                  <th className="p-3 text-center font-semibold text-amber-800 text-sm">Uitslag</th>
+                <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
+                  <th className="px-2 py-1 text-center font-semibold text-sm w-12">Bord</th>
+                  <th className="px-2 py-1 text-left font-semibold text-sm">Wit</th>
+                  <th className="px-2 py-1 text-center font-semibold w-8"></th>
+                  <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
+                  <th className="px-2 py-1 text-center font-semibold text-sm">Uitslag</th>
                 </tr>
               </thead>
               <tbody>
                 {games.map((g, idx) => (
                   <tr
                     key={g.game_id}
-                    className={`border-b border-amber-100 ${
-                      idx % 2 === 0 ? "bg-white" : "bg-amber-50/50"
-                    } hover:bg-amber-100/50 transition-colors`}
+                    className={`border-b border-neutral-100 ${
+                      idx % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
+                    } hover:bg-mainAccent/5 transition-colors`}
                   >
-                    <td className="p-3 text-center">
-                      <div className="bg-amber-200 text-amber-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                    <td className="px-2 py-1 text-center">
+                      <div className="bg-mainAccent/10 text-mainAccent rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                         {idx + 1}
                       </div>
                     </td>
-                    <td className="p-3">
+                    <td className="px-2 py-1">
                       {g.speler1 && g.speler1.voornaam && g.speler1.achternaam ? (
                         <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
-                          <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
+                          <div className="w-6 h-6 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
                             W
                           </div>
                           <span className="font-medium text-gray-800 text-sm group-hover:text-mainAccent transition-colors">
@@ -570,18 +583,18 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
                           </span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-amber-600 italic">
-                          <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
+                        <div className="flex items-center gap-2 text-gray-600 italic">
+                          <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
                             ?
                           </div>
                           <span className="text-sm">Speler niet gevonden</span>
                         </div>
                       )}
                     </td>
-                    <td className="p-3 text-center">
-                      <div className="text-amber-400 text-sm">vs</div>
+                    <td className="px-2 py-1 text-center">
+                      <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
                     </td>
-                    <td className="p-3">
+                    <td className="px-2 py-1">
                       {g.speler2 && g.speler2.voornaam && g.speler2.achternaam ? (
                         <div className="group flex items-center gap-2 hover:text-mainAccent transition-colors">
                           <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
@@ -592,15 +605,15 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
                           </span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-amber-600 italic">
-                          <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
+                        <div className="flex items-center gap-2 text-gray-600 italic">
+                          <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
                             -
                           </div>
                           <span className="text-sm">{getByeText(g.result)}</span>
                         </div>
                       )}
                     </td>
-                    <td className="p-3 text-center">
+                    <td className="px-2 py-1 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -633,15 +646,15 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
             {games.map((g, idx) => (
               <div
                 key={g.game_id}
-                className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 p-4"
+                className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4"
               >
                 {/* Header with Board Number and Result */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-amber-200">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-200">
                   <div className="flex items-center gap-3">
-                    <div className="bg-amber-200 text-amber-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                    <div className="bg-mainAccent/10 text-mainAccent rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                       {idx + 1}
                     </div>
-                    <div className="text-sm font-medium text-amber-700">Bord {idx + 1}</div>
+                    <div className="text-sm font-medium text-gray-700">Bord {idx + 1}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span
@@ -669,7 +682,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
                 <div className="space-y-4">
                   {/* White Player */}
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <div className="w-8 h-8 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                       W
                     </div>
                     <div className="flex-1 min-w-0">
@@ -678,7 +691,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
                           {g.speler1.voornaam} {g.speler1.achternaam}
                         </div>
                       ) : (
-                        <div className="text-amber-600 italic text-sm">
+                        <div className="text-gray-600 italic text-sm">
                           Speler niet gevonden
                         </div>
                       )}
@@ -687,7 +700,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
 
                   {/* VS Divider */}
                   <div className="flex items-center justify-center">
-                    <div className="text-amber-400 text-sm font-medium">VS</div>
+                    <div className="text-gray-400 text-sm font-medium">VS</div>
                   </div>
 
                   {/* Black Player */}
@@ -701,7 +714,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
                           {g.speler2.voornaam} {g.speler2.achternaam}
                         </div>
                       ) : (
-                        <div className="text-amber-600 italic text-sm">
+                        <div className="text-gray-600 italic text-sm">
                           {getByeText(g.result)}
                         </div>
                       )}
