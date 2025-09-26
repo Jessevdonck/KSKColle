@@ -410,7 +410,7 @@ export default function TournamentList() {
                 {renderTournamentSection('Lentecompetitie', categorized.lentecompetitie, 'lentecompetitie', true)}
                 {renderTournamentSection('Snelschaakkampioenschap', categorized.blitzkampioenschap, 'blitzkampioenschap', true)}
                 {renderTournamentSection('Zomertoernooi', categorized.zomertoernooi, 'zomertoernooi', true)}
-                {renderTournamentSection('Andere Toernooien', categorized.other, 'other', true)}
+                {renderTournamentSection('Nevenactiviteiten', categorized.other, 'other', true)}
               </div>
             )
           })()
@@ -486,7 +486,7 @@ export default function TournamentList() {
                 {renderTournamentSection('Lentecompetitie', categorized.lentecompetitie, 'lentecompetitie')}
                 {renderTournamentSection('Snelschaakkampioenschap', categorized.blitzkampioenschap, 'blitzkampioenschap')}
                 {renderTournamentSection('Zomertoernooi', categorized.zomertoernooi, 'zomertoernooi')}
-                {renderTournamentSection('Andere Toernooien', categorized.other, 'other')}
+                {renderTournamentSection('Nevenactiviteiten', categorized.other, 'other')}
               </div>
             )
           })()
