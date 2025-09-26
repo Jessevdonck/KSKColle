@@ -4,6 +4,33 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import * as calendarService from "./calendarService";
 
+/**
+ * Check if a user is an admin
+ */
+async function isUserAdmin(user_id: number): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { user_id },
+      select: { is_admin: true, roles: true }
+    });
+    
+    if (!user) return false;
+    
+    // Check both is_admin flag and roles array
+    if (user.is_admin) return true;
+    
+    // Check if roles array contains 'admin'
+    if (user.roles && Array.isArray(user.roles) && user.roles.includes('admin')) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error checking admin status', { user_id, error });
+    return false;
+  }
+}
+
 export interface TournamentRound {
   round_id: number;
   tournament_id: number;
@@ -151,10 +178,8 @@ export async function postponeGameToMakeupRound(
       throw ServiceError.notFound('Game niet gevonden');
     }
 
-    // 2. Controleer of de game al gespeeld is
-    if (originalGame.result && originalGame.result !== "..." && originalGame.result !== "not_played") {
-      throw ServiceError.validationFailed('Deze partij is al gespeeld en kan niet meer uitgesteld worden');
-    }
+    // 2. Admin functie - geen validatie op gespeelde games
+    // Admins kunnen altijd games uitstellen, zelfs als ze al gespeeld zijn
 
     // 3. Controleer of de game al uitgesteld is
     if (originalGame.uitgestelde_datum) {

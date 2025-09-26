@@ -6,6 +6,33 @@ import emailService from "./emailService";
 import { getLogger } from "../core/logging";
 const logger = getLogger();
 
+/**
+ * Check if a user is an admin
+ */
+async function isUserAdmin(user_id: number): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { user_id },
+      select: { is_admin: true, roles: true }
+    });
+    
+    if (!user) return false;
+    
+    // Check both is_admin flag and roles array
+    if (user.is_admin) return true;
+    
+    // Check if roles array contains 'admin'
+    if (user.roles && Array.isArray(user.roles) && user.roles.includes('admin')) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    logger.error('Error checking admin status', { user_id, error });
+    return false;
+  }
+}
+
 export interface PostponeGameData {
   game_id: number;
   user_id: number; // De gebruiker die de uitstel aanvraagt
@@ -96,7 +123,7 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
       throw ServiceError.forbidden('Je kunt alleen je eigen partijen uitstellen');
     }
 
-    // 3. Controleer of de game al gespeeld is
+    // 3. Controleer of de game al gespeeld is (tenzij gebruiker admin is)
     logger.info('Checking game status', { 
       result: game.result, 
       uitgestelde_datum: game.uitgestelde_datum 
@@ -108,8 +135,19 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
                      game.result !== "not_played" &&
                      game.result !== "null";
     
-    if (isPlayed) {
+    // Check if user is admin
+    const isAdmin = await isUserAdmin(data.user_id);
+    
+    if (isPlayed && !isAdmin) {
       throw ServiceError.validationFailed('Deze partij is al gespeeld en kan niet meer uitgesteld worden');
+    }
+    
+    if (isPlayed && isAdmin) {
+      logger.info('Admin user postponing already played game', { 
+        game_id: data.game_id, 
+        user_id: data.user_id, 
+        result: game.result 
+      });
     }
 
     // 4. Controleer of de game al uitgesteld is
@@ -562,28 +600,38 @@ async function sendPostponeNotification(opponent: any, game: any, newRound: any,
  */
 export async function getPostponableGames(user_id: number, tournament_id: number): Promise<any[]> {
   try {
-    const games = await prisma.game.findMany({
-      where: {
-        round: {
-          tournament_id: tournament_id
-        },
-        AND: [
-          {
-            OR: [
-              { speler1_id: user_id },
-              { speler2_id: user_id }
-            ]
-          },
-          {
-            OR: [
-              { result: null }, // Geen resultaat
-              { result: "..." }, // Sevilla placeholder voor ongespeelde games
-              { result: "not_played" } // Andere placeholder waarden
-            ]
-          },
-          { uitgestelde_datum: null } // Alleen niet-uitgestelde games
-        ]
+    // Check if user is admin
+    const isAdmin = await isUserAdmin(user_id);
+    
+    let whereClause: any = {
+      round: {
+        tournament_id: tournament_id
       },
+      AND: [
+        {
+          OR: [
+            { speler1_id: user_id },
+            { speler2_id: user_id }
+          ]
+        },
+        { uitgestelde_datum: null } // Alleen niet-uitgestelde games
+      ]
+    };
+    
+    // Voor normale gebruikers: alleen ongespeelde games
+    // Voor admins: alle games (ook gespeelde)
+    if (!isAdmin) {
+      whereClause.AND.push({
+        OR: [
+          { result: null }, // Geen resultaat
+          { result: "..." }, // Sevilla placeholder voor ongespeelde games
+          { result: "not_played" } // Andere placeholder waarden
+        ]
+      });
+    }
+    
+    const games = await prisma.game.findMany({
+      where: whereClause,
       include: {
         speler1: true,
         speler2: true,
