@@ -12,9 +12,14 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     throw ServiceError.notFound("Geen deelnemers voor dit toernooi");
   }
 
-  // 2) Haal alle games van dit toernooi
+  // 2) Haal alle games van dit toernooi (exclusief inhaaldagen)
   const games = await prisma.game.findMany({
-    where: { round: { tournament_id } },
+    where: { 
+      round: { 
+        tournament_id,
+        type: 'REGULAR' // Alleen normale rondes, geen inhaaldagen
+      } 
+    },
     select: {
       speler1_id: true,
       speler2_id: true,

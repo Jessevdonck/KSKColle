@@ -422,37 +422,40 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
 
   // 2) score & gamesPlayed
   rounds.forEach(({ games, type: roundType }) => {
-    // First, process all games with results
-    games.forEach(({ speler1, speler2, result }) => {
-      const p1 = speler1.user_id
-      const p2 = speler2?.user_id ?? null
+    // Skip makeup rounds for points calculation - they don't count for standings
+    const isMakeupRound = roundType === 'MAKEUP'
+    
+    if (!isMakeupRound) {
+      // First, process all games with results (only for regular rounds)
+      games.forEach(({ speler1, speler2, result }) => {
+        const p1 = speler1.user_id
+        const p2 = speler2?.user_id ?? null
 
-      if (result) {
-        gamesPlayed[p1]++
-        if (p2) gamesPlayed[p2]++
+        if (result) {
+          gamesPlayed[p1]++
+          if (p2) gamesPlayed[p2]++
 
-        if (result === "1-0") {
-          scoreMap[p1] += 1
-        } else if (result === "0-1" && p2) {
-          scoreMap[p2] += 1
-        } else if (result === "½-½" || result === "1/2-1/2") {
-          scoreMap[p1] += 0.5
-          if (p2) scoreMap[p2] += 0.5
-        } else if (result === "0.5-0") {
-          // Absent with message - player gets 0.5 points
-          scoreMap[p1] += 0.5
-        } else if (result && result.startsWith("ABS-")) {
-          // Absent with message from Sevilla import - extract score
-          const absScore = parseFloat(result.substring(4)) || 0
-          scoreMap[p1] += absScore
+          if (result === "1-0") {
+            scoreMap[p1] += 1
+          } else if (result === "0-1" && p2) {
+            scoreMap[p2] += 1
+          } else if (result === "½-½" || result === "1/2-1/2") {
+            scoreMap[p1] += 0.5
+            if (p2) scoreMap[p2] += 0.5
+          } else if (result === "0.5-0") {
+            // Absent with message - player gets 0.5 points
+            scoreMap[p1] += 0.5
+          } else if (result && result.startsWith("ABS-")) {
+            // Absent with message from Sevilla import - extract score
+            const absScore = parseFloat(result.substring(4)) || 0
+            scoreMap[p1] += absScore
+          }
         }
-      }
-    })
+      })
+    }
 
     // Then, check for BYE players (players who didn't play any game this round)
     // Only give BYE points for regular rounds, not makeup rounds
-    const isMakeupRound = roundType === 'MAKEUP'
-    
     if (!isMakeupRound) {
       const playersWhoPlayed = new Set<number>()
       games.forEach(({ speler1, speler2 }) => {
@@ -470,8 +473,10 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     }
   })
 
-  // 3) buchholzList & sbMap
-  rounds.forEach(({ games }) =>
+  // 3) buchholzList & sbMap (only for regular rounds)
+  rounds.forEach(({ games, type: roundType }) => {
+    const isMakeupRound = roundType === 'MAKEUP'
+    if (isMakeupRound) return // Skip makeup rounds
     games.forEach(({ speler1, speler2, result }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null

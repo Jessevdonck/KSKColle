@@ -398,47 +398,54 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
     <div>
       <div className="mb-4">
         <h3 className="text-xl font-bold text-textColor mb-2 flex items-center gap-2">
-          <div className="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+          <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
             I
           </div>
           Inhaaldag {day.label}
         </h3>
-        <p className="text-gray-600 flex items-center gap-2 text-sm">
-          <Calendar className="h-3 w-3" />
-          {format(parseISO(day.date), "dd-MM-yyyy")}
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-600">
+          <p>
+            {games.length} partijen
+          </p>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              <span>{format(parseISO(day.date), "dd-MM-yyyy")}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {games.length === 0 ? (
         <div className="text-center py-12">
-          <div className="bg-amber-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-            <Calendar className="h-8 w-8 text-amber-500" />
+          <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+            <Calendar className="h-8 w-8 text-mainAccent" />
           </div>
           <h4 className="text-base font-semibold text-gray-700 mb-2">Geen uitgestelde partijen</h4>
           <p className="text-gray-500 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-r from-amber-200 to-orange-200">
-                <th className="p-3 text-left font-semibold text-amber-800 text-sm">Wit</th>
-                <th className="p-3 text-center font-semibold text-amber-800 w-8"></th>
-                <th className="p-3 text-left font-semibold text-amber-800 text-sm">Zwart</th>
-                <th className="p-3 text-center font-semibold text-amber-800 text-sm">Uitslag</th>
+              <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
+                <th className="px-2 py-1 text-left font-semibold text-sm">Wit</th>
+                <th className="px-2 py-1 text-center font-semibold w-8"></th>
+                <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
+                <th className="px-2 py-1 text-center font-semibold text-sm">Uitslag</th>
               </tr>
             </thead>
             <tbody>
               {games.map((g, idx) => (
                 <tr
                   key={g.game_id}
-                  className={`border-b border-amber-100 ${
-                    idx % 2 === 0 ? "bg-white" : "bg-amber-50/50"
-                  } hover:bg-amber-100/50 transition-colors`}
+                  className={`border-b border-neutral-100 ${
+                    idx % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
+                  } hover:bg-mainAccent/5 transition-colors`}
                 >
-                  <td className="p-3">
+                  <td className="px-2 py-1">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-white border-2 border-amber-300 rounded-full flex items-center justify-center text-xs font-bold">
+                      <div className="w-6 h-6 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold">
                         W
                       </div>
                       <span className="font-medium text-gray-800 text-sm">
@@ -446,10 +453,10 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
                       </span>
                     </div>
                   </td>
-                  <td className="p-3 text-center">
-                    <div className="text-amber-400 text-sm">vs</div>
+                  <td className="px-2 py-1 text-center">
+                    <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
                   </td>
-                  <td className="p-3">
+                  <td className="px-2 py-1">
                     {g.speler2 ? (
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
@@ -460,15 +467,15 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
                         </span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-amber-600 italic">
-                        <div className="w-6 h-6 bg-amber-200 border-2 border-amber-300 rounded-full flex items-center justify-center text-xs">
+                      <div className="flex items-center gap-2 text-gray-600 italic">
+                        <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
                           -
                         </div>
                         <span className="text-sm">Bye</span>
                       </div>
                     )}
                   </td>
-                  <td className="p-3 text-center">
+                  <td className="px-2 py-1 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${

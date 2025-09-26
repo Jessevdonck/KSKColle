@@ -483,8 +483,8 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
   if (!games || games.length === 0) {
     return (
       <div className="text-center py-8">
-        <div className="bg-amber-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-          <Calendar className="h-8 w-8 text-amber-600" />
+        <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+          <Calendar className="h-8 w-8 text-mainAccent" />
         </div>
         <h4 className="text-base font-semibold text-gray-700 mb-2">Geen partijen</h4>
         <p className="text-gray-500 text-sm">Er zijn nog geen partijen voor deze inhaaldag.</p>
