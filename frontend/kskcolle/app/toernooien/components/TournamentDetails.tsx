@@ -300,7 +300,7 @@ export default function TournamentDetails() {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
+        <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-3">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="bg-mainAccent/10 p-1.5 rounded-lg">
@@ -350,7 +350,7 @@ export default function TournamentDetails() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+      <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-4">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Rounds & Makeup Days with Navigation */}
           <div className="xl:col-span-2 order-2 xl:order-1">

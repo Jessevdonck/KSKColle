@@ -154,7 +154,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
                   <th className="px-2 py-1 text-center font-semibold text-sm w-20">Rating</th>
                   <th className="px-2 py-1 text-center font-semibold text-sm w-16">Punten</th>
-                  <th className="px-2 py-1 text-center font-semibold text-sm">Uitslag</th>
+                  <th className="px-2 py-1 text-center font-semibold text-sm w-32">Uitslag</th>
                 </tr>
               </thead>
               <tbody>
@@ -246,7 +246,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
 
                   <td className="px-2 py-1 text-center">
                     <span
-                      className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                      className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
                         game.uitgestelde_datum
                           ? "bg-amber-100 text-amber-800 border border-amber-200"
                           : game.result && game.result !== "not_played" && game.result !== "..."
@@ -288,7 +288,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   <div className="text-sm font-medium text-gray-600">Bord {index + 1}</div>
                 </div>
                 <span
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
                     game.uitgestelde_datum
                       ? "bg-amber-100 text-amber-800 border border-amber-200"
                       : game.result && game.result !== "not_played" && game.result !== "..."
