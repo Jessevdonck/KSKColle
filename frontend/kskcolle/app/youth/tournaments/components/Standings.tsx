@@ -520,8 +520,8 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
         sbMap[p1] += scoreMap[p2] * 0.5
         sbMap[p2] += scoreMap[p1] * 0.5
       }
-    }),
-  )
+    })
+  })
 
   // 4) finally: bouw array met tieBreak
   const players: PlayerScore[] = Object.entries(scoreMap).map(([uid, s]) => {
