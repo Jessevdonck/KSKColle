@@ -127,9 +127,13 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
-              <th className="px-2 py-1 text-left font-semibold text-sm border-r border-white/20">Wit</th>
-              <th className="px-2 py-1 text-center font-semibold w-8 border-r border-white/20"></th>
-              <th className="px-2 py-1 text-left font-semibold text-sm border-r border-white/20">Zwart</th>
+              <th className="px-2 py-1 text-left font-semibold text-sm">Wit</th>
+              <th className="px-2 py-1 text-center font-semibold text-sm w-20">Rating</th>
+              <th className="px-2 py-1 text-center font-semibold text-sm w-16">Punten</th>
+              <th className="px-2 py-1 text-center font-semibold w-8"></th>
+              <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
+              <th className="px-2 py-1 text-center font-semibold text-sm w-20">Rating</th>
+              <th className="px-2 py-1 text-center font-semibold text-sm w-16">Punten</th>
               <th className="px-2 py-1 text-center font-semibold text-sm">Uitslag</th>
             </tr>
           </thead>
@@ -148,54 +152,72 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
                 } hover:bg-mainAccent/5 transition-colors`}
               >
-                <td className="px-2 py-1 border-r border-neutral-200">
+                <td className="px-2 py-1">
                   <Link
                     href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
-                    className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm"
+                    className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm whitespace-nowrap"
                   >
                     <div className="w-6 h-6 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
                       W
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span>{`${game.speler1.voornaam} ${game.speler1.achternaam} (${game.speler1.schaakrating_elo})`}</span>
-                      {playerScores.length > 0 && (
-                        <span className="text-xs text-gray-500 font-normal">
-                          ({getPlayerScore(game.speler1.user_id)} pt)
-                        </span>
-                      )}
-                    </div>
+                    <span>{`${game.speler1.voornaam} ${game.speler1.achternaam}`}</span>
                   </Link>
                 </td>
+                <td className="px-2 py-1 text-center">
+                  <span className="text-sm font-medium text-gray-700">
+                    {game.speler1.schaakrating_elo}
+                  </span>
+                </td>
+                <td className="px-2 py-1 text-center">
+                  {playerScores.length > 0 ? (
+                    <span className="text-sm font-medium text-mainAccent">
+                      {getPlayerScore(game.speler1.user_id)}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-400">-</span>
+                  )}
+                </td>
 
-                <td className="px-2 py-1 text-center border-r border-neutral-200">
+                <td className="px-2 py-1 text-center">
                   <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
                 </td>
 
-                <td className="px-2 py-1 border-r border-neutral-200">
+                <td className="px-2 py-1">
                   {game.speler2 ? (
                     <Link
                       href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
-                      className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm"
+                      className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm whitespace-nowrap"
                     >
                       <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
                         Z
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span>{`${game.speler2.voornaam} ${game.speler2.achternaam} (${game.speler2.schaakrating_elo})`}</span>
-                        {playerScores.length > 0 && (
-                          <span className="text-xs text-gray-500 font-normal">
-                            ({getPlayerScore(game.speler2.user_id)} pt)
-                          </span>
-                        )}
-                      </div>
+                      <span>{`${game.speler2.voornaam} ${game.speler2.achternaam}`}</span>
                     </Link>
                   ) : (
-                    <div className="flex items-center gap-2 text-gray-500 italic text-sm">
+                    <div className="flex items-center gap-2 text-gray-500 italic text-sm whitespace-nowrap">
                       <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
                         -
                       </div>
                       Bye
                     </div>
+                  )}
+                </td>
+                <td className="px-2 py-1 text-center">
+                  {game.speler2 ? (
+                    <span className="text-sm font-medium text-gray-700">
+                      {game.speler2.schaakrating_elo}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-400">-</span>
+                  )}
+                </td>
+                <td className="px-2 py-1 text-center">
+                  {game.speler2 && playerScores.length > 0 ? (
+                    <span className="text-sm font-medium text-mainAccent">
+                      {getPlayerScore(game.speler2.user_id)}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-400">-</span>
                   )}
                 </td>
 
