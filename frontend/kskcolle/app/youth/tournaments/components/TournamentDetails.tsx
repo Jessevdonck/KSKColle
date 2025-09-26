@@ -353,7 +353,7 @@ export default function TournamentDetails() {
                 </h2>
               </div>
               <div className="p-4">
-                <StandingsWithModal tournament={tournament} rounds={rounds} />
+                <StandingsWithModal tournament={tournament} rounds={allRounds} />
               </div>
             </div>
           </div>

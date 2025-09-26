@@ -270,18 +270,9 @@ export class SevillaImporterService {
         
         console.log(`Created new user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
       } else {
-        // Update rating if it's different
+        // User exists - no rating update during import
         console.log(`Found existing user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
-        if (sevillaPlayer.Rating && sevillaPlayer.Rating !== user.schaakrating_elo) {
-          await prisma.user.update({
-            where: { user_id: user.user_id },
-            data: { 
-              schaakrating_elo: sevillaPlayer.Rating,
-              schaakrating_difference: sevillaPlayer.RtgDif || 0, // Rating change
-            },
-          });
-          console.log(`Updated rating for ${user.voornaam} ${user.achternaam}: ${user.schaakrating_elo} -> ${sevillaPlayer.Rating} (change: ${sevillaPlayer.RtgDif || 0})`);
-        }
+        // Note: Rating updates are only done when tournament is closed, not during import
       }
 
       // Check if participation already exists

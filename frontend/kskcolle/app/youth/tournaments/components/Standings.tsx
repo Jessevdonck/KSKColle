@@ -211,7 +211,22 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
   return (
     <>
-      <div className="space-y-0.5">
+      {/* Headers */}
+      <div className="bg-gray-50 border border-gray-200 rounded-t-lg px-2 py-1">
+        <div className="flex items-center gap-1.5">
+          <div className="w-6 text-center text-xs font-semibold text-gray-600">#</div>
+          <div className="flex-1 text-xs font-semibold text-gray-600">Naam</div>
+          <div className="w-20 text-center text-xs font-semibold text-gray-600">ELO</div>
+          <div className="w-12 text-center text-xs font-semibold text-gray-600">Partijen</div>
+          <div className="w-8 text-center text-xs font-semibold text-gray-600">Punten</div>
+          <div className="w-16 text-center text-xs font-semibold text-gray-600">
+            {tournament.type === "SWISS" ? "Buchholz" : "SB-Score"}
+          </div>
+        </div>
+      </div>
+
+      {/* Standings */}
+      <div className="space-y-0.5 border-l border-r border-b border-gray-200 rounded-b-lg overflow-hidden">
         {playerScores.map((player, idx) => {
           const position = idx + 1
           const isTop = position <= 3
@@ -219,55 +234,64 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           return (
             <div
               key={player.user_id}
-              className={`rounded border transition-all hover:shadow-sm cursor-pointer ${
+              className={`transition-all hover:shadow-sm cursor-pointer ${
                 isTop
-                  ? "bg-gradient-to-r from-mainAccent/5 to-mainAccentDark/5 border-mainAccent/20 shadow-sm"
-                  : "bg-white border-neutral-200 hover:border-mainAccent/30"
-              }`}
+                  ? "bg-gradient-to-r from-mainAccent/5 to-mainAccentDark/5 border-mainAccent/20"
+                  : "bg-white hover:bg-gray-50"
+              } ${idx === playerScores.length - 1 ? 'rounded-b-lg' : ''}`}
               onClick={() => setSelectedPlayer(player)}
             >
               <div className="px-2 py-1 flex items-center gap-1.5">
                 {/* Position */}
-                <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
+                <div className="w-6 flex justify-center">
+                  <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
+                </div>
 
-                {/* Player Info - All on one line */}
-                <div className="flex-1 min-w-0 flex items-center gap-1">
+                {/* Player Name */}
+                <div className="flex-1 min-w-0">
                   <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors truncate text-xs">
-                    {player.voornaam} {player.achternaam} ({player.schaakrating_elo})
-                  </div>
-                  <div className="text-xs text-gray-600 flex items-center gap-0.5">
-                    <User className="h-3 w-3" />
-                    {player.gamesPlayed}
+                    {player.voornaam} {player.achternaam}
                   </div>
                 </div>
 
-                {/* Score, Rating Diff & Tie-break - Fixed width columns */}
-                <div className="text-right flex items-center gap-1">
-                  <div className={`w-8 text-sm font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                {/* ELO with Rating Difference */}
+                <div className="w-20 text-center text-xs font-medium text-gray-700 flex items-center justify-center gap-1">
+                  <span>{player.schaakrating_elo || '-'}</span>
+                  {player.ratingDifference !== null && player.ratingDifference !== undefined && (
+                    <span className={`text-xs font-bold ${
+                      isBiggestRatingGain
+                        ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg"
+                        : player.ratingDifference > 0
+                        ? "text-green-600"
+                        : player.ratingDifference < 0
+                        ? "text-red-600"
+                        : "text-gray-500"
+                    }`}>
+                      ({player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)})
+                    </span>
+                  )}
+                </div>
+
+                {/* Games Played */}
+                <div className="w-12 text-center text-xs text-gray-600 flex items-center justify-center gap-0.5">
+                  <User className="h-3 w-3" />
+                  {player.gamesPlayed}
+                </div>
+
+                {/* Score */}
+                <div className="w-8 text-center">
+                  <div className={`text-sm font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
                     {player.score}
                   </div>
-                  <div className="w-12 flex justify-center">
-                    {player.ratingDifference !== null && player.ratingDifference !== undefined && (
-                      <div className={`text-xs font-bold ${
-                        isBiggestRatingGain
-                          ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg inline-block"
-                          : player.ratingDifference > 0
-                          ? "text-green-600"
-                          : player.ratingDifference < 0
-                          ? "text-red-600"
-                          : "text-gray-500"
-                      }`}>
-                        {player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-16 text-xs text-gray-500">
-                    {tournament.type === "SWISS" ? (
-                      <span>Bh: {player.tieBreak.toFixed(1)}</span>
-                    ) : (
-                      <span>SB: {player.tieBreak.toFixed(1)}</span>
-                    )}
-                  </div>
+                </div>
+
+                {/* Tie-break */}
+                <div className="w-16 text-center text-xs text-gray-500">
+                  {tournament.type === "SWISS" ? (
+                    <span>{player.tieBreak.toFixed(1)}</span>
+                  ) : (
+                    <span>{player.tieBreak.toFixed(1)}</span>
+                  )}
                 </div>
               </div>
             </div>

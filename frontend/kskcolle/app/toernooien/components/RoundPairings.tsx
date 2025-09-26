@@ -378,7 +378,11 @@ function calculateStandings(tournament: RoundPairingsProps["tournament"], rounds
 
   // 2) score & gamesPlayed
   rounds.forEach(({ games, type: roundType }) => {
-    // First, process all games with results
+    // Skip makeup rounds for points calculation - they don't count for standings
+    const isMakeupRound = roundType === 'MAKEUP'
+    if (isMakeupRound) return
+    
+    // First, process all games with results (only for regular rounds)
     games.forEach(({ speler1, speler2, result }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
@@ -406,8 +410,11 @@ function calculateStandings(tournament: RoundPairingsProps["tournament"], rounds
     })
   })
 
-  // 3) buchholz & sonneborn-berger
+  // 3) buchholz & sonneborn-berger (only for regular rounds)
   rounds.forEach(({ games, type: roundType }) => {
+    const isMakeupRound = roundType === 'MAKEUP'
+    if (isMakeupRound) return // Skip makeup rounds
+    
     games.forEach(({ speler1, speler2, result }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
