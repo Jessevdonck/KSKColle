@@ -253,7 +253,10 @@ function calculateStandings(tournament: RoundPairingsProps["tournament"], rounds
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
 
-      if (result) {
+      // Only count games that are actually played (not postponed or not yet played)
+      const isPlayed = result && result !== "..." && result !== "uitgesteld" && result !== null
+      
+      if (isPlayed) {
         gamesPlayed[p1]++
         if (p2) gamesPlayed[p2]++
 
