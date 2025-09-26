@@ -146,10 +146,10 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
             <table className="w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
-                  <th className="px-2 py-1 text-center font-semibold text-sm w-12">Bord</th>
-                  <th className="px-2 py-1 text-left font-semibold text-sm">Wit</th>
-                  <th className="px-2 py-1 text-center font-semibold w-8"></th>
-                  <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
+                  <th className="px-2 py-1 text-center font-semibold text-sm w-16 border-r border-white/20">Bord</th>
+                  <th className="px-2 py-1 text-left font-semibold text-sm border-r border-white/20">Wit</th>
+                  <th className="px-2 py-1 text-center font-semibold w-12 border-r border-white/20"></th>
+                  <th className="px-2 py-1 text-left font-semibold text-sm border-r border-white/20">Zwart</th>
                   <th className="px-2 py-1 text-center font-semibold text-sm">Uitslag</th>
                 </tr>
               </thead>
@@ -166,12 +166,12 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
                   } hover:bg-mainAccent/5 transition-colors`}
                 >
-                  <td className="px-2 py-1 text-center">
+                  <td className="px-2 py-1 text-center border-r border-neutral-200">
                     <div className="bg-mainAccent/10 text-mainAccent rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                       {index + 1}
                     </div>
                   </td>
-                  <td className="px-2 py-1">
+                  <td className="px-2 py-1 border-r border-neutral-200">
                     <Link
                       href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
                       className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm"
@@ -190,11 +190,11 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     </Link>
                   </td>
 
-                  <td className="px-2 py-1 text-center">
+                  <td className="px-2 py-1 text-center border-r border-neutral-200">
                     <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
                   </td>
 
-                  <td className="px-2 py-1">
+                  <td className="px-2 py-1 border-r border-neutral-200">
                     {game.speler2 ? (
                       <Link
                         href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
