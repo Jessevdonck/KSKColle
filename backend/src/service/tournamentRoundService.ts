@@ -589,7 +589,7 @@ async function sendPlayerPostponeNotification(player: any, opponent: any, _newGa
  */
 async function sendAdminConfirmationNotification(originalGame: any, newGame: any, newRound: any): Promise<void> {
   try {
-    const adminEmail = 'jvaerendonck@gmail.com';
+    const adminEmail = 'niels.ongena@hotmail.be';
     const subject = `KSK Colle - Admin: Partij Uitgesteld`;
     
     const speler1Name = `${originalGame.speler1.voornaam} ${originalGame.speler1.achternaam}`;
