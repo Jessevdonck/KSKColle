@@ -45,9 +45,9 @@ export function createLazyComponent<T extends object>(
   
   return function WrappedLazyComponent(props: T) {
     return (
-      <LazyComponent fallback={fallback}>
+      <Suspense fallback={fallback}>
         <LazyComponent {...props} />
-      </LazyComponent>
+      </Suspense>
     )
   }
 }
