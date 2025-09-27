@@ -77,8 +77,8 @@ Deze speler meldt zich af voor ronde ${nextRoundNumber} en wenst niet uitgeloot 
 
     // Email adressen van toernooileiders
     const tournamentLeaders = [
-      'jvaerendonck@gmail.com',
-      'niels.ongena@hotmail.be'
+      'niels.ongena@hotmail.be',
+      'jvaerendonck@gmail.com'
     ]
 
     // Stuur email naar alle toernooileider
