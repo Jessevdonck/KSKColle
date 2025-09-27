@@ -27,13 +27,7 @@ export function observePerformance() {
 
   const observer = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      // Log performance entries for debugging
-      console.log('Performance entry:', {
-        name: entry.name,
-        duration: entry.duration,
-        startTime: entry.startTime,
-        entryType: entry.entryType
-      })
+      // Performance entries are observed but not logged
     }
   })
 
@@ -95,7 +89,6 @@ export function monitorBundleSize() {
           const contentLength = response.headers.get('content-length')
           if (contentLength) {
             totalSize += parseInt(contentLength)
-            console.log(`Bundle chunk: ${src} - ${(parseInt(contentLength) / 1024).toFixed(2)} KB`)
           }
         })
         .catch(() => {

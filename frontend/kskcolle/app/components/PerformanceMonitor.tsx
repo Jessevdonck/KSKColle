@@ -10,8 +10,6 @@ export function PerformanceMonitor() {
 
     // Measure Web Vitals
     measureWebVitals((metric) => {
-      console.log('Web Vital:', metric)
-      
       // Send to analytics service (replace with your preferred service)
       // Example: gtag('event', metric.name, { value: metric.value })
     })
@@ -23,9 +21,7 @@ export function PerformanceMonitor() {
     const analyzeResources = () => {
       setTimeout(() => {
         const analysis = analyzeResourceTiming()
-        if (analysis) {
-          console.log('Resource Analysis:', analysis)
-        }
+        // Analysis is performed but not logged
       }, 2000)
     }
 
