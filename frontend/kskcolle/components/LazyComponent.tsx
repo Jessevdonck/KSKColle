@@ -37,7 +37,7 @@ export function withLazyLoading<T extends object>(
 }
 
 // Utility function to create lazy components
-export function createLazyComponent<T extends Record<string, any>>(
+export function createLazyComponent<T = any>(
   importFunc: () => Promise<{ default: ComponentType<T> }>,
   fallback?: React.ReactNode
 ) {
@@ -46,7 +46,7 @@ export function createLazyComponent<T extends Record<string, any>>(
   return function WrappedLazyComponent(props: T) {
     return (
       <Suspense fallback={fallback}>
-        <LazyComponent {...props} />
+        <LazyComponent {...(props as any)} />
       </Suspense>
     )
   }
