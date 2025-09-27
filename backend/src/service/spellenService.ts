@@ -61,6 +61,7 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
         round: {
           type: 'REGULAR', // Alleen reguliere rondes, geen inhaaldagen
         },
+        speler2_id: { not: null }, // Geen BYE games of games zonder tegenstander
       },
       include: {
         round: {
