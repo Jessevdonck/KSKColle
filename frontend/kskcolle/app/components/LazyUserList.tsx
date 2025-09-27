@@ -8,6 +8,7 @@ const UserList = lazy(() => import('../admin/Users/UserList'))
 
 interface LazyUserListProps {
   users: any[]
+  onEdit: (user: any) => void
   onDelete: (userId: number) => Promise<void>
   isDeleting?: boolean
   pagination?: any
