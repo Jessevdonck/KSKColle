@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   description: "Officiële website van KSK Colle schaakclub",
   keywords: "schaken, schaakclub, KSK Colle, toernooi, competitie",
   authors: [{ name: "KSK Colle" }],
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   openGraph: {
     title: "KSK Colle - Schaakclub",
@@ -21,6 +20,11 @@ export const metadata: Metadata = {
     type: "website",
     locale: "nl_BE",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
