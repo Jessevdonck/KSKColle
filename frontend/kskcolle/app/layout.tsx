@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/Auth.context";
 import { PerformanceMonitor } from "./components/PerformanceMonitor";
+import Navbar from "./components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,6 +38,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
+          <Navbar />
           {children}
           <Toaster />
           <PerformanceMonitor />
