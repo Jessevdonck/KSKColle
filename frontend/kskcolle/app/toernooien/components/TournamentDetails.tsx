@@ -120,12 +120,7 @@ export default function TournamentDetails() {
       let makeupDayCounter = 1
 
       // Add all rounds (both REGULAR and MAKEUP) to timeline in chronological order
-      console.log('🔍 Available rounds:', sortedRounds.map(r => ({
-        ronde_nummer: r.ronde_nummer,
-        type: r.type,
-        label: r.label,
-        games_count: r.games?.length || 0
-      })))
+      // Available rounds processed
       
       for (const round of sortedRounds) {
         if (round.type === 'REGULAR') {
@@ -153,12 +148,7 @@ export default function TournamentDetails() {
         }
       }
 
-      console.log('🔍 Final timeline:', newTimeline.map(entry => ({
-        kind: entry.kind,
-        ronde_nummer: entry.kind === 'round' ? entry.round.ronde_nummer : entry.day.ronde_nummer,
-        label: entry.kind === 'round' ? entry.round.label : entry.day.label,
-        games_count: entry.kind === 'round' ? (entry.round.games?.length || 0) : (entry.games?.length || 0)
-      })))
+      // Final timeline processed
       
       setTimeline(newTimeline)
     }
@@ -288,7 +278,7 @@ export default function TournamentDetails() {
       })
       alert(result.message)
     } catch (error: any) {
-      console.error('Failed to report absence:', error)
+      // Failed to report absence
       const errorMessage = error?.response?.data?.message || error?.message || 'Kon afwezigheid niet melden'
       alert(`Fout bij afwezigheid melden: ${errorMessage}`)
     } finally {
@@ -473,7 +463,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser }: { round: an
       // Refresh the page to show updated data
       window.location.reload();
     } catch (error: any) {
-      console.error('Failed to undo postpone game:', error);
+      // Failed to undo postpone game
       const errorMessage = error?.response?.data?.message || error?.message || 'Kon uitstel niet ongedaan maken';
       alert(`Fout: ${errorMessage}`);
     }

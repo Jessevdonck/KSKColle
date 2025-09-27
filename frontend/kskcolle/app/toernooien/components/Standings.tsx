@@ -218,8 +218,8 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   return (
     <>
       {/* Mobile Layout */}
-      <div className="block sm:hidden">
-        <div className="space-y-2">
+      <div className="block sm:hidden text-[0.9em]">
+        <div className="space-y-1.5">
           {playerScores.map((player, idx) => {
             const position = idx + 1
             const isTop = position <= 3
@@ -228,7 +228,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             return (
               <div
                 key={player.user_id}
-                className={`rounded-lg border p-3 ${
+                className={`rounded-lg border p-2.5 ${
                   isTop
                     ? "bg-gradient-to-r from-mainAccent/5 to-mainAccentDark/5 border-mainAccent/20"
                     : "bg-white border-gray-200"
@@ -238,12 +238,12 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
-                    <div className="font-semibold text-textColor text-sm">
+                    <div className="font-semibold text-textColor text-xs">
                       {player.voornaam} {player.achternaam}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-lg font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                    <div className={`text-base font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
                       {player.score}
                     </div>
                     <div className="text-xs text-gray-500">
@@ -282,16 +282,16 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden sm:block">
+      <div className="hidden sm:block text-[0.9em]">
         {/* Headers */}
-        <div className="bg-gray-50 border border-gray-200 rounded-t-lg px-2 py-1">
+        <div className="bg-gray-50 border border-gray-200 rounded-t-lg px-1.5 py-0.5">
           <div className="flex items-center gap-1.5">
-            <div className="w-6 text-center text-xs font-semibold text-gray-600">#</div>
-            <div className="flex-1 text-xs font-semibold text-gray-600">Naam</div>
-            <div className="w-20 text-center text-xs font-semibold text-gray-600">ELO</div>
-            <div className="w-12 text-center text-xs font-semibold text-gray-600">Partijen</div>
-            <div className="w-10 text-center text-xs font-semibold text-gray-600">Punten</div>
-            <div className="w-16 text-center text-xs font-semibold text-gray-600">
+            <div className="w-5 text-center text-[0.7em] font-semibold text-gray-600">#</div>
+            <div className="flex-1 text-[0.7em] font-semibold text-gray-600">Naam</div>
+            <div className="w-16 text-center text-[0.7em] font-semibold text-gray-600">ELO</div>
+            <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
+            <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
+            <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
               {tournament.type === "SWISS" ? "Buchholz" : "SB-Score"}
             </div>
           </div>
@@ -313,9 +313,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 } ${idx === playerScores.length - 1 ? 'rounded-b-lg' : ''}`}
                 onClick={() => setSelectedPlayer(player)}
               >
-                <div className="px-2 py-1 flex items-center gap-1.5">
+                <div className="px-1.5 py-0.5 flex items-center gap-1">
                   {/* Position */}
-                  <div className="w-6 flex justify-center">
+                  <div className="w-5 flex justify-center">
                     <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
                   </div>
 
@@ -327,7 +327,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   </div>
 
                   {/* ELO with Rating Difference */}
-                  <div className="w-20 text-center text-xs font-medium text-gray-700 flex items-center justify-center gap-1">
+                  <div className="w-16 text-center text-[0.7em] font-medium text-gray-700 flex items-center justify-center gap-0.5">
                     <span>{player.schaakrating_elo || '-'}</span>
                     {player.ratingDifference !== null && player.ratingDifference !== undefined && (
                       <span className={`text-xs font-bold ${
@@ -345,20 +345,20 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   </div>
 
                   {/* Games Played */}
-                  <div className="w-12 text-center text-xs text-gray-600 flex items-center justify-center gap-0.5">
+                  <div className="w-10 text-center text-[0.7em] text-gray-600 flex items-center justify-center gap-0.5">
                     <User className="h-3 w-3" />
                     {player.gamesPlayed}
                   </div>
 
                   {/* Score */}
-                  <div className="w-10 text-center">
-                    <div className={`text-sm font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                  <div className="w-9 text-center">
+                    <div className={`text-xs font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
                       {player.score}
                     </div>
                   </div>
 
                   {/* Tie-break */}
-                  <div className="w-16 text-center text-xs text-gray-500">
+                  <div className="w-14 text-center text-[0.7em] text-gray-500">
                     {tournament.type === "SWISS" ? (
                       <span>{player.tieBreak.toFixed(1)}</span>
                     ) : (

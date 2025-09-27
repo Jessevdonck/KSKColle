@@ -72,22 +72,11 @@ export default function PostponeGameButton({ tournamentId, tournamentName, isHer
       setMakeupRounds(rounds)
       
       // Debug: log the makeup rounds data
-      console.log('Makeup rounds received:', rounds)
-      console.log('Makeup rounds length:', rounds.length)
-      rounds.forEach((round, index) => {
-        console.log(`Round ${index}:`, {
-          round_id: round.round_id,
-          ronde_datum: round.ronde_datum,
-          startuur: round.startuur,
-          label: round.label,
-          type: typeof round.ronde_datum,
-          full_round: round
-        })
-      })
+      // Makeup rounds processed
       
       setIsOpen(true)
     } catch (error: any) {
-      console.error('Failed to load postponable games:', error)
+      // Failed to load postponable games
       const errorMessage = error?.response?.data?.message || error?.message || 'Kon games niet laden'
       alert(errorMessage)
     } finally {
@@ -123,8 +112,7 @@ export default function PostponeGameButton({ tournamentId, tournamentName, isHer
       // Refresh the entire page to show the postponed game
       window.location.reload()
     } catch (error: any) {
-      console.error('Failed to postpone game:', error)
-      console.error('Error response:', error?.response?.data)
+      // Failed to postpone game
       const errorMessage = error?.response?.data?.message || error?.message || 'Kon game niet uitstellen'
       alert(`Fout bij uitstellen: ${errorMessage}`)
     } finally {
@@ -141,11 +129,11 @@ export default function PostponeGameButton({ tournamentId, tournamentName, isHer
 
   const formatDate = (dateString: string | undefined) => {
     try {
-      console.log('Formatting date:', dateString, 'Type:', typeof dateString)
+      // Formatting date
       
       // Handle undefined or null dates
       if (!dateString || dateString === 'undefined' || dateString === 'null') {
-        console.warn('Date string is undefined/null:', dateString)
+        // Date string is undefined/null
         return 'Datum niet beschikbaar'
       }
       
@@ -164,7 +152,7 @@ export default function PostponeGameButton({ tournamentId, tournamentName, isHer
       }
       
       if (isNaN(date.getTime())) {
-        console.error('Invalid date string:', dateString)
+        // Invalid date string
         return 'Ongeldige datum'
       }
       
@@ -175,10 +163,10 @@ export default function PostponeGameButton({ tournamentId, tournamentName, isHer
         day: 'numeric'
       })
       
-      console.log('Formatted date:', formatted)
+      // Formatted date
       return formatted
     } catch (error) {
-      console.error('Error formatting date:', error, 'Input:', dateString)
+      // Error formatting date
       return 'Ongeldige datum'
     }
   }
