@@ -548,7 +548,7 @@ export default function RoundManagement({ tournament }: Props) {
                   tournamentName={T.naam}
                   makeupRounds={makeupRounds.map(r => ({
                     round_id: r.round_id,
-                    ronde_datum: typeof r.ronde_datum === 'string' ? r.ronde_datum.split('T')[0] : r.ronde_datum.toISOString().split('T')[0], // Convert Date to string
+                    ronde_datum: new Date(r.ronde_datum).toISOString().split('T')[0], // Convert to date string
                     startuur: r.startuur,
                     label: r.label
                   }))}
