@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "export": "next build && next export",
-    "test": "cypress open"
+    "test": "cypress open",
+    "analyze": "ANALYZE=true npm run build",
+    "analyze:server": "BUNDLE_ANALYZE=server npm run build",
+    "analyze:browser": "BUNDLE_ANALYZE=browser npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -53,6 +56,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.4",
     "@types/json5": "^2.2.0",
     "@types/node": "^20.17.10",
     "@types/prop-types": "^15.7.14",
@@ -64,7 +68,8 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "web-vitals": "^5.1.0"
   },
   "engines": {
     "node": "22.18.0",

@@ -1,43 +1,45 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import Footer from "@/app/components/Footer";
-import Navbar from "@/app/components/Navbar";
-import { AuthProvider } from "../app/contexts/Auth.context";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "./contexts/auth";
+import { PerformanceMonitor } from "./components/PerformanceMonitor";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "KSK Colle",
-  description: "Koninklijke Schaakclub te Sint-Niklaas",
+  title: "KSK Colle - Schaakclub",
+  description: "Officiële website van KSK Colle schaakclub",
+  keywords: "schaken, schaakclub, KSK Colle, toernooi, competitie",
+  authors: [{ name: "KSK Colle" }],
+  viewport: "width=device-width, initial-scale=1",
+  robots: "index, follow",
+  openGraph: {
+    title: "KSK Colle - Schaakclub",
+    description: "Officiële website van KSK Colle schaakclub",
+    type: "website",
+    locale: "nl_BE",
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-50 `}
-      >
+    <html lang="nl">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//kskcolle-production.up.railway.app" />
+        <link rel="dns-prefetch" href="//res.cloudinary.com" />
+      </head>
+      <body className={inter.className}>
         <AuthProvider>
-          <Navbar />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-          <Toaster position="top-right" />
+          {children}
+          <Toaster />
+          <PerformanceMonitor />
         </AuthProvider>
       </body>
     </html>
