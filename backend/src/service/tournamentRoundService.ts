@@ -3,6 +3,9 @@ import { RoundType } from "../types/Types";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import * as calendarService from "./calendarService";
+import { emailService } from "./emailService";
+import { getLogger } from "../core/logging";
+const logger = getLogger();
 
 export interface TournamentRound {
   round_id: number;
@@ -197,9 +200,16 @@ export async function postponeGameToMakeupRound(
       include: {
         speler1: true,
         speler2: true,
-        round: true
+        round: {
+          include: {
+            tournament: true
+          }
+        }
       }
     });
+
+    // 8. Stuur email notificaties naar beide spelers en admin
+    await sendAdminPostponeNotifications(originalGame, newGame, makeup_round_id);
 
     return {
       success: true,
@@ -438,6 +448,238 @@ async function shiftRoundsBack(tournament_id: number, from_round_number: number)
     await prisma.round.update({
       where: { round_id: round.round_id },
       data: { ronde_nummer: round.ronde_nummer - 1 }
+    });
+  }
+}
+
+/**
+ * Stuur email notificaties wanneer een admin een partij uitstelt
+ */
+async function sendAdminPostponeNotifications(originalGame: any, newGame: any, makeup_round_id: number): Promise<void> {
+  try {
+    // Haal de inhaaldag ronde op
+    const makeupRound = await prisma.round.findUnique({
+      where: { round_id: makeup_round_id }
+    });
+
+    if (!makeupRound) {
+      logger.error('Makeup round not found for email notifications', { makeup_round_id });
+      return;
+    }
+
+    // Stuur email naar speler 1
+    if (originalGame.speler1 && originalGame.speler1.email) {
+      await sendPlayerPostponeNotification(originalGame.speler1, originalGame.speler2, newGame, makeupRound, originalGame.round.tournament);
+    }
+
+    // Wacht 1 seconde om rate limiting te voorkomen
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Stuur email naar speler 2 (als die bestaat)
+    if (originalGame.speler2 && originalGame.speler2.email) {
+      await sendPlayerPostponeNotification(originalGame.speler2, originalGame.speler1, newGame, makeupRound, originalGame.round.tournament);
+    }
+
+    // Wacht 1 seconde om rate limiting te voorkomen
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Stuur bevestiging email naar admin
+    await sendAdminConfirmationNotification(originalGame, newGame, makeupRound);
+
+  } catch (error) {
+    logger.error('Failed to send admin postpone notifications', { 
+      error: error instanceof Error ? error.message : String(error),
+      original_game_id: originalGame.game_id,
+      new_game_id: newGame.game_id
+    });
+    // We gooien de error niet door omdat de uitstel wel succesvol is
+  }
+}
+
+/**
+ * Stuur email notificatie naar een speler
+ */
+async function sendPlayerPostponeNotification(player: any, opponent: any, _newGame: any, newRound: any, tournament: any): Promise<void> {
+  try {
+    const subject = `KSK Colle - Partij Uitgesteld (Admin)`;
+    
+    const opponentName = opponent ? `${opponent.voornaam} ${opponent.achternaam}` : 'BYE';
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${subject}</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 5px; }
+          .content { padding: 20px; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>KSK Colle</h1>
+            <h2>Partij Uitgesteld (Admin)</h2>
+          </div>
+          
+          <div class="content">
+            <p>Beste ${player.voornaam} ${player.achternaam},</p>
+            
+            <p>Je partij tegen <strong>${opponentName}</strong> in het toernooi <strong>${tournament.naam}</strong> is door een admin uitgesteld.</p>
+            
+            <p><strong>Nieuwe datum:</strong> ${newRound.ronde_datum.toLocaleDateString('nl-BE')} om ${newRound.startuur}</p>
+            
+            <p>Je kunt de toernooi details bekijken op de website.</p>
+          </div>
+          
+          <div class="footer">
+            <p>Met vriendelijke groet,<br>Het KSK Colle Team</p>
+            <p>Deze email is automatisch gegenereerd. Reageer niet op deze email.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const textContent = `
+      KSK Colle - Partij Uitgesteld (Admin)
+      
+      Beste ${player.voornaam} ${player.achternaam},
+      
+      Je partij tegen ${opponentName} in het toernooi ${tournament.naam} is door een admin uitgesteld.
+      
+      Nieuwe datum: ${newRound.ronde_datum.toLocaleDateString('nl-BE')} om ${newRound.startuur}
+      
+      Je kunt de toernooi details bekijken op de website.
+      
+      Met vriendelijke groet,
+      Het KSK Colle Team
+      
+      Deze email is automatisch gegenereerd. Reageer niet op deze email.
+    `;
+
+    await emailService.sendCustomEmail({
+      to: player.email,
+      subject: subject,
+      html: htmlContent,
+      text: textContent
+    });
+
+    logger.info('Player postpone notification sent', {
+      to: player.email,
+      player_name: `${player.voornaam} ${player.achternaam}`,
+      tournament: tournament.naam
+    });
+
+  } catch (error) {
+    logger.error('Failed to send player postpone notification', {
+      error: error instanceof Error ? error.message : String(error),
+      player_email: player.email
+    });
+  }
+}
+
+/**
+ * Stuur bevestiging email naar admin
+ */
+async function sendAdminConfirmationNotification(originalGame: any, newGame: any, newRound: any): Promise<void> {
+  try {
+    const adminEmail = 'jvaerendonck@gmail.com';
+    const subject = `KSK Colle - Admin: Partij Uitgesteld`;
+    
+    const speler1Name = `${originalGame.speler1.voornaam} ${originalGame.speler1.achternaam}`;
+    const speler2Name = originalGame.speler2 ? `${originalGame.speler2.voornaam} ${originalGame.speler2.achternaam}` : 'BYE';
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${subject}</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #e8f5e8; padding: 20px; text-align: center; border-radius: 5px; }
+          .content { padding: 20px; }
+          .info-box { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>KSK Colle</h1>
+            <h2>Admin Bevestiging: Partij Uitgesteld</h2>
+          </div>
+          
+          <div class="content">
+            <p>Beste Admin,</p>
+            
+            <p>De volgende partij is succesvol uitgesteld:</p>
+            
+            <div class="info-box">
+              <p><strong>Spelers:</strong> ${speler1Name} vs ${speler2Name}</p>
+              <p><strong>Toernooi:</strong> ${originalGame.round.tournament.naam}</p>
+              <p><strong>Originele ronde:</strong> ${originalGame.round.ronde_nummer}</p>
+              <p><strong>Nieuwe datum:</strong> ${newRound.ronde_datum.toLocaleDateString('nl-BE')} om ${newRound.startuur}</p>
+              <p><strong>Game ID's:</strong> Origineel: ${originalGame.game_id}, Nieuw: ${newGame.game_id}</p>
+            </div>
+            
+            <p>Beide spelers hebben een notificatie ontvangen over de uitstel.</p>
+          </div>
+          
+          <div class="footer">
+            <p>Met vriendelijke groet,<br>Het KSK Colle Systeem</p>
+            <p>Deze email is automatisch gegenereerd.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const textContent = `
+      KSK Colle - Admin Bevestiging: Partij Uitgesteld
+      
+      Beste Admin,
+      
+      De volgende partij is succesvol uitgesteld:
+      
+      Spelers: ${speler1Name} vs ${speler2Name}
+      Toernooi: ${originalGame.round.tournament.naam}
+      Originele ronde: ${originalGame.round.ronde_nummer}
+      Nieuwe datum: ${newRound.ronde_datum.toLocaleDateString('nl-BE')} om ${newRound.startuur}
+      Game ID's: Origineel: ${originalGame.game_id}, Nieuw: ${newGame.game_id}
+      
+      Beide spelers hebben een notificatie ontvangen over de uitstel.
+      
+      Met vriendelijke groet,
+      Het KSK Colle Systeem
+      
+      Deze email is automatisch gegenereerd.
+    `;
+
+    await emailService.sendCustomEmail({
+      to: adminEmail,
+      subject: subject,
+      html: htmlContent,
+      text: textContent
+    });
+
+    logger.info('Admin confirmation notification sent', {
+      to: adminEmail,
+      original_game_id: originalGame.game_id,
+      new_game_id: newGame.game_id,
+      tournament: originalGame.round.tournament.naam
+    });
+
+  } catch (error) {
+    logger.error('Failed to send admin confirmation notification', {
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 }
