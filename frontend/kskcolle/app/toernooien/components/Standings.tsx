@@ -288,7 +288,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           <div className="flex items-center gap-1.5">
             <div className="w-5 text-center text-[0.7em] font-semibold text-gray-600">#</div>
             <div className="flex-1 text-[0.7em] font-semibold text-gray-600">Naam</div>
-            <div className="w-16 text-center text-[0.7em] font-semibold text-gray-600">ELO</div>
+            <div className="w-16 text-center text-[0.7em] font-semibold text-gray-600">ELIO</div>
             <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
             <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
             <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
