@@ -68,11 +68,11 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   const getPositionIcon = (position: number) => {
     switch (position) {
       case 1:
-        return <Trophy className="h-4 w-4 text-yellow-500" />
+        return <Medal className="h-4 w-4 text-yellow-500" />
       case 2:
         return <Medal className="h-4 w-4 text-gray-400" />
       case 3:
-        return <Award className="h-4 w-4 text-amber-600" />
+        return <Medal className="h-4 w-4 text-amber-600" />
       default:
         return <span className="text-xs font-bold text-gray-600 w-4 text-center">{position}</span>
     }
@@ -248,7 +248,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 <div className="flex items-center justify-between text-xs text-gray-600">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
-                      <span>ELO: {player.schaakrating_elo || '-'}</span>
+                      <span>ELIO: {player.schaakrating_elo || '-'}</span>
                       {player.ratingDifference !== null && player.ratingDifference !== undefined && (
                         <span className={`text-xs font-bold ${
                           isBiggestRatingGain

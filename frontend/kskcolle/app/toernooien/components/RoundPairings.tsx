@@ -319,7 +319,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                       {game.speler1.voornaam} {game.speler1.achternaam}
                     </Link>
                     <div className="flex items-center gap-4 mt-0.5 text-xs text-gray-500">
-                      <span>ELO: {game.speler1.schaakrating_elo}</span>
+                      <span>ELIO: {game.speler1.schaakrating_elo}</span>
                       {playerScores.length > 0 && (
                         <span className="text-mainAccent font-medium">
                           {getPlayerScore(game.speler1.user_id)} pt
@@ -354,7 +354,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     )}
                     {game.speler2 && (
                       <div className="flex items-center gap-4 mt-0.5 text-xs text-gray-500">
-                        <span>ELO: {game.speler2.schaakrating_elo}</span>
+                        <span>ELIO: {game.speler2.schaakrating_elo}</span>
                         {playerScores.length > 0 && (
                           <span className="text-mainAccent font-medium">
                             {getPlayerScore(game.speler2.user_id)} pt

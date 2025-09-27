@@ -197,7 +197,7 @@ export default function TournamentForm() {
             {/* ELO Rating */}
             <div className="flex items-center space-x-3">
               <Label htmlFor="rating" className="text-sm font-medium text-gray-700">
-                Gebruik ELO Rating
+                Gebruik ELIO Rating
               </Label>
               <Controller
                 name="rating_enabled"

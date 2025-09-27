@@ -353,7 +353,7 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
                   <div>
                     <div className="flex items-center gap-1 text-gray-500 mb-1">
                       <Trophy className="h-3 w-3" />
-                      <span>ELO Rating</span>
+                      <span>ELIO Rating</span>
                     </div>
                     <div className="font-semibold text-textColor text-sm">{user.schaakrating_elo}</div>
                   </div>
