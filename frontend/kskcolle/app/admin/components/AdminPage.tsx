@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import UsersManagement from "../Users/UsersManagement"
 import TournamentsManagement from "../Tournaments/TournamentsManagement"
 import CalendarManagement from "../Calendar/CalendarManagement"
-import LazySevillaImport from "../../components/LazySevillaImport"
+import SevillaImportPage from "../SevillaImport/page"
 import ColorSettings from "../Settings/ColorSettings"
 import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload, Palette, Euro } from "lucide-react"
 import { getAll } from "../../api/index"
@@ -284,7 +284,7 @@ const AdminPage = () => {
             <CalendarManagement />
           </TabsContent>
           <TabsContent value="sevilla" className="mt-0">
-            <LazySevillaImport />
+            <SevillaImportPage />
           </TabsContent>
           <TabsContent value="settings" className="mt-0">
             <ColorSettings />

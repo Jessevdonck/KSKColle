@@ -1,9 +1,9 @@
 import React from 'react'
-import LazyPlayerRanking from '../components/LazyPlayerRanking'
+import PlayerRanking from './components/PlayerRanking'
 
 const spelers = () => {
   return (
-    <LazyPlayerRanking />
+    <PlayerRanking />
   )
 }
 
