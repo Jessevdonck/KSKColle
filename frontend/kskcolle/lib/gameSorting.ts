@@ -34,7 +34,7 @@ export function sortGamesByPairingOrder<T extends GameWithScore>(
   games: T[],
   isSevillaImported?: boolean
 ): T[] {
-  console.log('🔄 sortGamesByPairingOrder called - isSevillaImported:', isSevillaImported);
+  // sortGamesByPairingOrder called
   
   return [...games].sort((a, b) => {
     // For Sevilla tournaments, maintain original board order by using game_id
@@ -66,13 +66,7 @@ export function sortSevillaGamesWithPostponed<T extends GameWithScore>(
   // For Sevilla tournaments, we need to maintain the original pairing order
   // Use board_position if available, otherwise fall back to rating-based sorting
   
-  console.log('🔍 Sorting Sevilla games:', games.map(g => ({
-    game_id: g.game_id,
-    board_position: g.board_position,
-    speler1: (g as any).speler1?.voornaam + ' ' + (g as any).speler1?.achternaam || 'Unknown',
-    uitgestelde_datum: g.uitgestelde_datum,
-    result: (g as any).result
-  })));
+  // Sorting Sevilla games
   
   const sortedGames = [...games].sort((a, b) => {
     // For Sevilla tournaments, always sort by board_position if available
@@ -81,28 +75,22 @@ export function sortSevillaGamesWithPostponed<T extends GameWithScore>(
     const aBoardPos = a.board_position ?? 999; // Default to high number if no board_position
     const bBoardPos = b.board_position ?? 999; // Default to high number if no board_position
     
-    console.log(`🔍 Comparing: ${(a as any).speler1?.voornaam} (board: ${a.board_position}, game_id: ${a.game_id}) vs ${(b as any).speler1?.voornaam} (board: ${b.board_position}, game_id: ${b.game_id})`);
+    // Comparing games
     
     // Sort by board_position (lower numbers first)
     if (aBoardPos !== bBoardPos) {
       const result = aBoardPos - bBoardPos;
-      console.log(`  → Board position sort: ${aBoardPos} - ${bBoardPos} = ${result}`);
+      // Board position sort
       return result;
     }
     
     // If board_position is the same, sort by game_id as tiebreaker
     const result = a.game_id - b.game_id;
-    console.log(`  → Game ID tiebreaker: ${a.game_id} - ${b.game_id} = ${result}`);
+    // Game ID tiebreaker
     return result;
   });
   
-  console.log('✅ Sorted Sevilla games:', sortedGames.map(g => ({
-    game_id: g.game_id,
-    board_position: g.board_position,
-    speler1: (g as any).speler1?.voornaam + ' ' + (g as any).speler1?.achternaam || 'Unknown',
-    uitgestelde_datum: g.uitgestelde_datum,
-    result: (g as any).result
-  })));
+  // Sorted Sevilla games
   
   return sortedGames;
 }
