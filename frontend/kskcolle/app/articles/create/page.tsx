@@ -149,7 +149,7 @@ export default function CreateArticlePage() {
                 <CardContent className="space-y-4">
                   {/* Hidden type and featured fields */}
                   <input type="hidden" name="type" value={formData.type} />
-                  <input type="hidden" name="featured" value={formData.featured} />
+                  <input type="hidden" name="featured" value={formData.featured.toString()} />
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">

@@ -214,7 +214,7 @@ export default function EditArticlePage() {
                   </div>
 
                   {/* Hidden featured field */}
-                  <input type="hidden" name="featured" value={formData.featured} />
+                  <input type="hidden" name="featured" value={formData.featured.toString()} />
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
