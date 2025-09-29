@@ -58,6 +58,7 @@ model User {
   speler2Games       Game[]          @relation("Speler2")
   gewonnenGames      Game[]          @relation("Winnaar")
   passwordResetTokens PasswordResetToken[]
+  articles           Article[]
 
   @@index([is_youth])
 }
@@ -187,4 +188,32 @@ model PasswordResetToken {
   @@index([user_id])
   @@index([token])
   @@index([expires])
+}
+
+enum ArticleType {
+  NEWS
+  TOURNAMENT_REPORT
+  GENERAL
+}
+
+model Article {
+  article_id    Int         @id @default(autoincrement())
+  title         String      @db.VarChar(255)
+  content       String      @db.Text
+  excerpt       String?     @db.VarChar(500)
+  type          ArticleType @default(NEWS)
+  author_id     Int
+  published     Boolean     @default(false)
+  featured      Boolean     @default(false)
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  published_at  DateTime?
+  
+  author        User        @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
+  
+  @@index([author_id])
+  @@index([published])
+  @@index([featured])
+  @@index([created_at])
+  @@index([published_at])
 } 

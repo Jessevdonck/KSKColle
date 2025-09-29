@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client'; 
 import { hashPassword } from '../core/password';
 import Role from '../core/roles';
+import { seedArticles } from './seed-articles';
 
 const prisma = new PrismaClient(); 
 
@@ -92,6 +93,9 @@ async function main() {
       { user_id: 4, tournament_id: 2, score: 1.0, buchholz: 0.5, sonnebornBerger: 0.25, opponents: JSON.stringify([3]), color_history: JSON.stringify(["black"]), bye_round: null },
     ],
   });
+
+  // Seed articles
+  await seedArticles();
 }
 
 main()

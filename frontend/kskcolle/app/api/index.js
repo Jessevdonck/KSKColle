@@ -251,3 +251,35 @@ export const updateLidgeldStatus = async (userId, data) => {
   const response = await axios.put(`${baseUrl}/lidgeld/${userId}`, data);
   return response.data;
 };
+
+// Article functions
+export const getAllArticles = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = queryString ? `${baseUrl}/articles?${queryString}` : `${baseUrl}/articles`;
+  const { data } = await axios.get(fullUrl);
+  return data;
+};
+
+export const getRecentArticles = async (limit = 5) => {
+  const { data } = await axios.get(`${baseUrl}/articles/recent?limit=${limit}`);
+  return data;
+};
+
+export const getArticleById = async (articleId) => {
+  const { data } = await axios.get(`${baseUrl}/articles/${articleId}`);
+  return data;
+};
+
+export const createArticle = async (articleData) => {
+  const { data } = await axios.post(`${baseUrl}/articles`, articleData);
+  return data;
+};
+
+export const updateArticle = async (articleId, articleData) => {
+  const { data } = await axios.put(`${baseUrl}/articles/${articleId}`, articleData);
+  return data;
+};
+
+export const deleteArticle = async (articleId) => {
+  await axios.delete(`${baseUrl}/articles/${articleId}`);
+};

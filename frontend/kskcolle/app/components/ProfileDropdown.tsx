@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, LogOut, Settings, Lock } from 'lucide-react'
+import { User, LogOut, Settings, Lock, FileText } from 'lucide-react'
 import { useAuth } from "../contexts/auth"
 import { useRouter } from 'next/navigation'
 import { parseRoles } from "@/lib/utils"
@@ -66,10 +66,16 @@ export default function ProfileDropdown() {
           <span>Profiel bekijken</span>
         </DropdownMenuItem>
         {hasAdminAccess && (
-          <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/admin')}>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Adminpaneel</span>
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/admin')}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Adminpaneel</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/articles')}>
+              <FileText className="mr-2 h-4 w-4" />
+              <span>Artikels beheren</span>
+            </DropdownMenuItem>
+          </>
         )}
 
       <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/change-password')}>

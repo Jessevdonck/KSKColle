@@ -78,6 +78,7 @@ const validate = (scheme: RequestValidationSchemeInput | null) => {
     }
 
     if (errors.size > 0) {
+      console.error('Validation failed:', Object.fromEntries(errors));
       ctx.throw(400, 'Validation failed, check details for more information', {
         code: 'VALIDATION_FAILED',
         details: Object.fromEntries(errors),
