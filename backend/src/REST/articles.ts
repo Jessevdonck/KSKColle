@@ -32,7 +32,7 @@ import type {
  * @apiSuccess {Number} response.totalPages Total number of pages
  */
 const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
-  const params = {
+  const params: any = {
     page: ctx.query.page ? parseInt(ctx.query.page as string) : undefined,
     pageSize: ctx.query.pageSize ? parseInt(ctx.query.pageSize as string) : undefined,
     type: ctx.query.type as ArticleType,
@@ -122,7 +122,7 @@ getArticleById.validationScheme = {
  */
 const createArticle = async (ctx: KoaContext<ArticleWithAuthor, CreateArticleRequest>) => {
   const userId = ctx.state.session.userId
-  const articleData = ctx.request.body
+  const articleData = ctx.request.body as CreateArticleRequest
   
   const article = await articleService.createArticle(userId, articleData)
   ctx.status = 201
@@ -162,7 +162,7 @@ createArticle.validationScheme = {
 const updateArticle = async (ctx: KoaContext<ArticleWithAuthor, UpdateArticleRequest>) => {
   const articleId = parseInt((ctx.params as { id: string }).id)
   const userId = ctx.state.session.userId
-  const articleData = ctx.request.body
+  const articleData = ctx.request.body as UpdateArticleRequest
   
   const article = await articleService.updateArticle(articleId, userId, articleData)
   ctx.body = article
