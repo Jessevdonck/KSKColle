@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getRecentArticles } from "../api/index"
-import { Article } from "../data/article"
+import { Article } from "../../data/article"
 import { Calendar, User, Tag, Star, ArrowRight } from "lucide-react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
