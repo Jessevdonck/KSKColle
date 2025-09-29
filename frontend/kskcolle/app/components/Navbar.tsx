@@ -126,7 +126,7 @@ export default function Navbar() {
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <a href="https://interclub.web.app/" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="flex items-center">
                   <span>Interclub</span>
                 </a>
               </DropdownMenuItem>
@@ -372,7 +372,7 @@ export default function Navbar() {
                     Oost-Vlaamse Interclub
                   </a>
                   <a
-                    href="https://interclub.web.app/"
+                    href="https://interclub.web.app/club/410/players"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block font-medium hover:text-mainAccent transition-colors"
