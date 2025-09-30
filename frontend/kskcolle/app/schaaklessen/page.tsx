@@ -251,11 +251,16 @@ export default function SchaaklessenPage() {
                                  </span>
                                </div>
                                <p className="text-mainAccent text-sm font-medium">
-                                 {formatDate(lesson.date)} om {lesson.startuur}
+                                 {lesson.description ? (
+                                   <>
+                                     {lesson.description} - {formatDate(lesson.date)} om {lesson.startuur}
+                                   </>
+                                 ) : (
+                                   <>
+                                     {formatDate(lesson.date)} om {lesson.startuur}
+                                   </>
+                                 )}
                                </p>
-                               {lesson.description && (
-                                 <p className={`${instructorInfo.accentColor} text-xs mt-1`}>{lesson.description}</p>
-                               )}
                              </div>
                            </div>
                          </div>
