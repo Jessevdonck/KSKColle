@@ -151,9 +151,15 @@ export default function RichTextEditor({ content, onChange, placeholder = "Begin
           line-height: 1.6 !important;
         }
       `}</style>
-      <div className="editor-content border border-gray-200 rounded-lg overflow-hidden">
+      <div className="editor-content border border-gray-200 rounded-lg overflow-hidden" onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }}>
         {/* Toolbar */}
-        <div className="border-b border-gray-200 p-2 bg-gray-50 flex flex-wrap gap-1" onClick={(e) => e.preventDefault()}>
+        <div className="border-b border-gray-200 p-2 bg-gray-50 flex flex-wrap gap-1" onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}>
           <Button
             type="button"
             variant="ghost"
@@ -161,7 +167,12 @@ export default function RichTextEditor({ content, onChange, placeholder = "Begin
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
+              e.nativeEvent.stopImmediatePropagation()
               editor.chain().focus().toggleBold().run()
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
             }}
             className={editor.isActive('bold') ? 'bg-gray-200' : ''}
             title="Bold"
@@ -287,7 +298,12 @@ export default function RichTextEditor({ content, onChange, placeholder = "Begin
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
+              e.nativeEvent.stopImmediatePropagation()
               setShowImageUpload(true)
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
             }}
             title="Add Image"
           >
@@ -328,7 +344,10 @@ export default function RichTextEditor({ content, onChange, placeholder = "Begin
         </div>
 
         {/* Editor Content */}
-        <div className="min-h-[200px]" onClick={(e) => e.preventDefault()}>
+        <div className="min-h-[200px]" onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}>
           <EditorContent editor={editor} />
         </div>
       </div>

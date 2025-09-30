@@ -56,8 +56,7 @@ export default function EditArticlePage() {
     fetchArticle()
   }, [params.id, router])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     setSaving(true)
 
     try {
@@ -140,7 +139,7 @@ export default function EditArticlePage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main content */}
             <div className="lg:col-span-2 space-y-6">
@@ -210,7 +209,8 @@ export default function EditArticlePage() {
                 <CardContent className="p-4">
                   <div className="space-y-2">
                     <Button
-                      type="submit"
+                      type="button"
+                      onClick={handleSubmit}
                       className="w-full bg-mainAccent hover:bg-mainAccentDark text-white"
                       disabled={saving}
                     >
@@ -242,7 +242,7 @@ export default function EditArticlePage() {
               </Card>
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </main>
   )

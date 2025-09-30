@@ -153,7 +153,7 @@ export const getRecentArticles = async (limit: number = 5): Promise<ArticleWithA
   }
 }
 
-export const updateArticle = async (articleId: number, authorId: number, articleData: UpdateArticleRequest): Promise<ArticleWithAuthor> => {
+export const updateArticle = async (articleId: number, authorId: number, userRoles: string[], articleData: UpdateArticleRequest): Promise<ArticleWithAuthor> => {
   try {
     // Check if user is the author or admin
     const article = await prisma.article.findUnique({
@@ -162,7 +162,8 @@ export const updateArticle = async (articleId: number, authorId: number, article
         author: {
           select: {
             user_id: true,
-            roles: true,
+            voornaam: true,
+            achternaam: true,
           }
         }
       }
@@ -174,7 +175,7 @@ export const updateArticle = async (articleId: number, authorId: number, article
 
     // Check if user is the author or has admin role
     const isAuthor = article.author_id === authorId
-    const isAdmin = Array.isArray(article.author.roles) && article.author.roles.includes('admin')
+    const isAdmin = userRoles.includes('admin')
     
     if (!isAuthor && !isAdmin) {
       throw new Error('Unauthorized to update this article')
@@ -214,7 +215,7 @@ export const updateArticle = async (articleId: number, authorId: number, article
   }
 }
 
-export const deleteArticle = async (articleId: number, userId: number): Promise<void> => {
+export const deleteArticle = async (articleId: number, userId: number, userRoles: string[]): Promise<void> => {
   try {
     // Check if user is the author or admin
     const article = await prisma.article.findUnique({
@@ -223,7 +224,8 @@ export const deleteArticle = async (articleId: number, userId: number): Promise<
         author: {
           select: {
             user_id: true,
-            roles: true,
+            voornaam: true,
+            achternaam: true,
           }
         }
       }
@@ -235,7 +237,7 @@ export const deleteArticle = async (articleId: number, userId: number): Promise<
 
     // Check if user is the author or has admin role
     const isAuthor = article.author_id === userId
-    const isAdmin = Array.isArray(article.author.roles) && article.author.roles.includes('admin')
+    const isAdmin = userRoles.includes('admin')
     
     if (!isAuthor && !isAdmin) {
       throw new Error('Unauthorized to delete this article')

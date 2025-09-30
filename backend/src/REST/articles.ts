@@ -1,5 +1,12 @@
 import Router from '@koa/router'
-import * as articleService from '../service/articleService'
+import { 
+  getArticles as getArticlesService, 
+  getRecentArticles as getRecentArticlesService, 
+  getArticleById as getArticleByIdService, 
+  createArticle as createArticleService, 
+  updateArticle as updateArticleService, 
+  deleteArticle as deleteArticleService 
+} from '../service/articleService'
 import { requireAuthentication, makeRequireRole } from '../core/auth'
 import validate from '../core/validation'
 import Joi from 'joi'
@@ -41,7 +48,7 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
     author_id: ctx.query.author_id ? parseInt(ctx.query.author_id as string) : undefined,
   }
 
-  const result = await articleService.getArticles(params)
+  const result = await getArticlesService(params)
   ctx.body = result
 }
 getArticles.validationScheme = {
@@ -66,7 +73,7 @@ getArticles.validationScheme = {
  */
 const getRecentArticles = async (ctx: KoaContext<ArticleWithAuthor[]>) => {
   const limit = ctx.query.limit ? parseInt(ctx.query.limit as string) : 5
-  const articles = await articleService.getRecentArticles(limit)
+  const articles = await getRecentArticlesService(limit)
   ctx.body = articles
 }
 getRecentArticles.validationScheme = {
@@ -87,7 +94,7 @@ getRecentArticles.validationScheme = {
  */
 const getArticleById = async (ctx: KoaContext<ArticleWithAuthor>) => {
   const articleId = parseInt((ctx.params as { id: string }).id)
-  const article = await articleService.getArticleById(articleId)
+  const article = await getArticleByIdService(articleId)
   
   if (!article) {
     ctx.status = 404
@@ -124,7 +131,7 @@ const createArticle = async (ctx: KoaContext<ArticleWithAuthor, CreateArticleReq
   const userId = ctx.state.session.userId
   const articleData = ctx.request.body as CreateArticleRequest
   
-  const article = await articleService.createArticle(userId, articleData)
+  const article = await createArticleService(userId, articleData)
   ctx.status = 201
   ctx.body = article
 }
@@ -162,9 +169,10 @@ createArticle.validationScheme = {
 const updateArticle = async (ctx: KoaContext<ArticleWithAuthor, UpdateArticleRequest>) => {
   const articleId = parseInt((ctx.params as { id: string }).id)
   const userId = ctx.state.session.userId
+  const userRoles = ctx.state.session.roles || []
   const articleData = ctx.request.body as UpdateArticleRequest
   
-  const article = await articleService.updateArticle(articleId, userId, articleData)
+  const article = await updateArticleService(articleId, userId, userRoles, articleData)
   ctx.body = article
 }
 updateArticle.validationScheme = {
@@ -197,8 +205,9 @@ updateArticle.validationScheme = {
 const deleteArticle = async (ctx: KoaContext) => {
   const articleId = parseInt((ctx.params as { id: string }).id)
   const userId = ctx.state.session.userId
+  const userRoles = ctx.state.session.roles || []
   
-  await articleService.deleteArticle(articleId, userId)
+  await deleteArticleService(articleId, userId, userRoles)
   ctx.status = 204
 }
 deleteArticle.validationScheme = {

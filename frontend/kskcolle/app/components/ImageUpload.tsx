@@ -69,7 +69,7 @@ export default function ImageUpload({ onImageSelect, onClose }: ImageUploadProps
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Afbeelding toevoegen</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -86,7 +86,7 @@ export default function ImageUpload({ onImageSelect, onClose }: ImageUploadProps
               onChange={(e) => setImageUrl(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
             />
-            <Button onClick={handleUrlSubmit} disabled={!imageUrl.trim()}>
+            <Button type="button" onClick={handleUrlSubmit} disabled={!imageUrl.trim()}>
               Toevoegen
             </Button>
           </div>
@@ -120,6 +120,7 @@ export default function ImageUpload({ onImageSelect, onClose }: ImageUploadProps
               Sleep een afbeelding hierheen of klik om te selecteren
             </p>
             <Button 
+              type="button"
               variant="outline" 
               size="sm"
               onClick={() => fileInputRef.current?.click()}
