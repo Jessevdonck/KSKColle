@@ -58,9 +58,9 @@ export default function SchaaklessenPage() {
     const begeleider = lesson.begeleider ? JSON.parse(lesson.begeleider) : []
     
     // Check for Bruno De Jonghe
-    if (instructors.some((inst: string) => inst.toLowerCase().includes('bruno')) ||
-        begeleider.some((bg: string) => bg.toLowerCase().includes('bruno')) ||
-        lesson.title.toLowerCase().includes('bruno')) {
+    if (instructors.some((inst: string) => inst.toLowerCase().includes('bruno') || inst.toLowerCase().includes('jonghe')) ||
+        begeleider.some((bg: string) => bg.toLowerCase().includes('bruno') || bg.toLowerCase().includes('jonghe')) ||
+        lesson.title.toLowerCase().includes('bruno') || lesson.title.toLowerCase().includes('jonghe')) {
       return {
         name: 'Bruno De Jonghe',
         type: 'bruno',
@@ -73,9 +73,9 @@ export default function SchaaklessenPage() {
     }
     
     // Check for Tom Piceu
-    if (instructors.some((inst: string) => inst.toLowerCase().includes('tom')) ||
-        begeleider.some((bg: string) => bg.toLowerCase().includes('tom')) ||
-        lesson.title.toLowerCase().includes('tom')) {
+    if (instructors.some((inst: string) => inst.toLowerCase().includes('tom') || inst.toLowerCase().includes('piceu')) ||
+        begeleider.some((bg: string) => bg.toLowerCase().includes('tom') || bg.toLowerCase().includes('piceu')) ||
+        lesson.title.toLowerCase().includes('tom') || lesson.title.toLowerCase().includes('piceu')) {
       return {
         name: 'Tom Piceu',
         type: 'tom',
@@ -242,7 +242,11 @@ export default function SchaaklessenPage() {
                        const instructorInfo = getInstructorInfo(lesson)
                        
                        return (
-                         <div key={lesson.event_id} className={`bg-white border-l-4 ${instructorInfo.borderColor} border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all`}>
+                         <div key={lesson.event_id} className={`bg-white border-t border-r border-b border-gray-200 rounded-lg p-3 hover:shadow-md transition-all ${
+                           instructorInfo.type === 'tom' ? 'border-l-4 border-l-blue-400' :
+                           instructorInfo.type === 'bruno' ? 'border-l-4 border-l-green-400' :
+                           'border-l-4 border-l-gray-400'
+                         }`}>
                            <div className="flex items-center justify-between mb-2">
                              <h3 className="font-semibold text-base text-gray-900">{lesson.title}</h3>
                              <span className={`text-xs px-2 py-1 rounded-full ${instructorInfo.bgColor} ${instructorInfo.textColor} border ${instructorInfo.borderColor}`}>
