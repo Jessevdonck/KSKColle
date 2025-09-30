@@ -1,8 +1,6 @@
-export enum ArticleType {
-  NEWS = 'NEWS',
-  TOURNAMENT_REPORT = 'TOURNAMENT_REPORT',
-  GENERAL = 'GENERAL'
-}
+import { ArticleType } from '@prisma/client'
+
+export { ArticleType }
 
 export interface Article {
   article_id: number

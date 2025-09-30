@@ -1,12 +1,11 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, ArticleType } from '@prisma/client'
 import handleDBError from './handleDBError'
 import type { 
   ArticleWithAuthor, 
   CreateArticleRequest, 
   UpdateArticleRequest, 
   GetArticlesRequest, 
-  GetArticlesResponse,
-  ArticleType 
+  GetArticlesResponse
 } from '../types/article'
 
 const prisma = new PrismaClient()
@@ -18,7 +17,7 @@ export const createArticle = async (authorId: number, articleData: CreateArticle
         title: articleData.title,
         content: articleData.content,
         excerpt: articleData.excerpt ?? null,
-        type: articleData.type || 'NEWS',
+        type: articleData.type || ArticleType.NEWS,
         author_id: authorId,
         published: articleData.published || false,
         featured: articleData.featured || false,
