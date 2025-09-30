@@ -153,61 +153,74 @@ export default function SchaaklessenPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {/* Tom Piceu */}
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                    <h3 className="font-bold text-blue-800 text-lg mb-2">IM Tom Piceu</h3>
-                    <p className="text-blue-700">
-                      Tom Piceu is een Internationaal Meester afkomstig uit Oostkamp bij Brugge. Als topspeler in België is hij een zeer ervaren en sterke speler die regelmatig terug te vinden is op internationale toernooien als in de Belgische, Nederlandse en Duitse interclubcompetities. Daarnaast is lesgeven zijn passie waar hij zijn beroep van heeft kunnen maken. Je mag je verwachten aan doorgedreven thematische lessen die toch voor zowel nieuwkomers als sterkere spelers zeer leerrijk zijn. Deze lessen zijn vrij toegankelijk en gratis voor clubleden.
-                    </p>
-                  </div>
+                 <div className="space-y-6">
+                   {/* Tom Piceu */}
+                   <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                     <div className="flex flex-col md:flex-row gap-4">
+                       <div className="flex-1">
+                         <h3 className="font-bold text-blue-800 text-lg mb-2">IM Tom Piceu</h3>
+                         <p className="text-blue-700">
+                           Tom Piceu is een Internationaal Meester afkomstig uit Oostkamp bij Brugge. Als topspeler in België is hij een zeer ervaren en sterke speler die regelmatig terug te vinden is op internationale toernooien als in de Belgische, Nederlandse en Duitse interclubcompetities. Daarnaast is lesgeven zijn passie waar hij zijn beroep van heeft kunnen maken. Je mag je verwachten aan doorgedreven thematische lessen die toch voor zowel nieuwkomers als sterkere spelers zeer leerrijk zijn. Deze lessen zijn vrij toegankelijk en gratis voor clubleden.
+                         </p>
+                       </div>
+                       <div className="md:w-48 flex-shrink-0">
+                         <div 
+                           className="relative h-32 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                           onClick={() => setSelectedImage("/images/lessen/lessen1.jpg")}
+                         >
+                           <Image
+                             src="/images/lessen/lessen1.jpg"
+                             alt="Tom Piceu schaakles"
+                             fill
+                             className="object-cover"
+                             quality={60}
+                             sizes="(max-width: 768px) 100vw, 200px"
+                             onError={(e) => {
+                               console.error('Error loading lessen1.jpg:', e)
+                               // Fallback to placeholder if image fails to load
+                               e.currentTarget.src = '/images/image_placeholder.png'
+                             }}
+                           />
+                         </div>
+                       </div>
+                     </div>
+                   </div>
 
-                  {/* Bruno De Jonghe */}
-                  <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                    <h3 className="font-bold text-green-800 text-lg mb-2">FM Bruno De Jonghe</h3>
-                    <p className="text-green-700">
-                      Bruno De Jonghe is een Belgische top 100 speler die aangesloten is bij schaakclub Boey in Temse. Hij geeft al vele jaren les aan zowel jongere als minder jongere schakers in de jeugdwerkingen van Temse en andere clubs. Daarnaast heeft hij ook ervaring als schaakcoach van Belgische talenten op internationale jeugdtoernooien. Deze lessen zijn gericht op schakers met al enige ervaring en werken steeds rond een bepaald thema. Voor deze lessen dien je op voorhand in te schrijven. De groep bestaat uit maximum 12 personen. De lessen van Bruno De Jonghe vinden plaats op vijf maandagen in het najaar en vijf maandagen in het voorjaar en kosten €20 per deelnemer per lessenreeks 5.
-                    </p>
-                  </div>
-                </div>
+                   {/* Bruno De Jonghe */}
+                   <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                     <div className="flex flex-col md:flex-row gap-4">
+                       <div className="flex-1">
+                         <h3 className="font-bold text-green-800 text-lg mb-2">FM Bruno De Jonghe</h3>
+                         <p className="text-green-700">
+                           Bruno De Jonghe is een Belgische top 100 speler die aangesloten is bij schaakclub Boey in Temse. Hij geeft al vele jaren les aan zowel jongere als minder jongere schakers in de jeugdwerkingen van Temse en andere clubs. Daarnaast heeft hij ook ervaring als schaakcoach van Belgische talenten op internationale jeugdtoernooien. Deze lessen zijn gericht op schakers met al enige ervaring en werken steeds rond een bepaald thema. Voor deze lessen dien je op voorhand in te schrijven. De groep bestaat uit maximum 12 personen. De lessen van Bruno De Jonghe vinden plaats op vijf maandagen in het najaar en vijf maandagen in het voorjaar en kosten €20 per deelnemer per lessenreeks 5.
+                         </p>
+                       </div>
+                       <div className="md:w-48 flex-shrink-0">
+                         <div 
+                           className="relative h-32 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                           onClick={() => setSelectedImage("/images/lessen/lessen2.jpg")}
+                         >
+                           <Image
+                             src="/images/lessen/lessen2.jpg"
+                             alt="Bruno De Jonghe schaakles"
+                             fill
+                             className="object-cover"
+                             quality={60}
+                             sizes="(max-width: 768px) 100vw, 200px"
+                             onError={(e) => {
+                               console.error('Error loading lessen2.jpg:', e)
+                               // Fallback to placeholder if image fails to load
+                               e.currentTarget.src = '/images/image_placeholder.png'
+                             }}
+                           />
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
               </CardContent>
             </Card>
 
-            {/* Images */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <BookOpen className="mr-2" size={24} />
-                  Foto's van onze lessen
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div 
-                    className="relative h-64 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => setSelectedImage("/images/lessen/lessen1.jpg")}
-                  >
-                    <Image
-                      src="/images/lessen/lessen1.jpg"
-                      alt="Schaakles"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div 
-                    className="relative h-64 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => setSelectedImage("/images/lessen/lessen2.jpg")}
-                  >
-                    <Image
-                      src="/images/lessen/lessen2.jpg"
-                      alt="Schaakles"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Calendar Events */}
             <Card className="border-mainAccent/20 shadow-lg">
