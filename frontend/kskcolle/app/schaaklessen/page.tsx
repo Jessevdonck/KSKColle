@@ -156,16 +156,16 @@ export default function SchaaklessenPage() {
                  <div className="space-y-6">
                    {/* Tom Piceu */}
                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                     <div className="flex flex-col md:flex-row gap-4">
-                       <div className="flex-1">
+                     <div className="space-y-4">
+                       <div>
                          <h3 className="font-bold text-blue-800 text-lg mb-2">IM Tom Piceu</h3>
                          <p className="text-blue-700">
                            Tom Piceu is een Internationaal Meester afkomstig uit Oostkamp bij Brugge. Als topspeler in België is hij een zeer ervaren en sterke speler die regelmatig terug te vinden is op internationale toernooien als in de Belgische, Nederlandse en Duitse interclubcompetities. Daarnaast is lesgeven zijn passie waar hij zijn beroep van heeft kunnen maken. Je mag je verwachten aan doorgedreven thematische lessen die toch voor zowel nieuwkomers als sterkere spelers zeer leerrijk zijn. Deze lessen zijn vrij toegankelijk en gratis voor clubleden.
                          </p>
                        </div>
-                       <div className="md:w-48 flex-shrink-0">
+                       <div className="flex justify-center">
                          <div 
-                           className="relative h-32 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                           className="relative h-64 w-80 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                            onClick={() => setSelectedImage("/images/lessen/lessen1.jpg")}
                          >
                            <Image
@@ -174,7 +174,7 @@ export default function SchaaklessenPage() {
                              fill
                              className="object-cover"
                              quality={60}
-                             sizes="(max-width: 768px) 100vw, 200px"
+                             sizes="(max-width: 768px) 100vw, 320px"
                              onError={(e) => {
                                console.error('Error loading lessen1.jpg:', e)
                                // Fallback to placeholder if image fails to load
@@ -188,16 +188,16 @@ export default function SchaaklessenPage() {
 
                    {/* Bruno De Jonghe */}
                    <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                     <div className="flex flex-col md:flex-row gap-4">
-                       <div className="flex-1">
+                     <div className="space-y-4">
+                       <div>
                          <h3 className="font-bold text-green-800 text-lg mb-2">FM Bruno De Jonghe</h3>
                          <p className="text-green-700">
                            Bruno De Jonghe is een Belgische top 100 speler die aangesloten is bij schaakclub Boey in Temse. Hij geeft al vele jaren les aan zowel jongere als minder jongere schakers in de jeugdwerkingen van Temse en andere clubs. Daarnaast heeft hij ook ervaring als schaakcoach van Belgische talenten op internationale jeugdtoernooien. Deze lessen zijn gericht op schakers met al enige ervaring en werken steeds rond een bepaald thema. Voor deze lessen dien je op voorhand in te schrijven. De groep bestaat uit maximum 12 personen. De lessen van Bruno De Jonghe vinden plaats op vijf maandagen in het najaar en vijf maandagen in het voorjaar en kosten €20 per deelnemer per lessenreeks 5.
                          </p>
                        </div>
-                       <div className="md:w-48 flex-shrink-0">
+                       <div className="flex justify-center">
                          <div 
-                           className="relative h-32 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                           className="relative h-64 w-80 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                            onClick={() => setSelectedImage("/images/lessen/lessen2.jpg")}
                          >
                            <Image
@@ -206,7 +206,7 @@ export default function SchaaklessenPage() {
                              fill
                              className="object-cover"
                              quality={60}
-                             sizes="(max-width: 768px) 100vw, 200px"
+                             sizes="(max-width: 768px) 100vw, 320px"
                              onError={(e) => {
                                console.error('Error loading lessen2.jpg:', e)
                                // Fallback to placeholder if image fails to load
@@ -237,31 +237,31 @@ export default function SchaaklessenPage() {
                     <p className="mt-2 text-gray-600">Lessen laden...</p>
                   </div>
                 ) : lessons.length > 0 ? (
-                  <div className="space-y-4">
-                    {lessons.map((lesson) => {
-                      const instructorInfo = getInstructorInfo(lesson)
-                      return (
-                        <div key={lesson.event_id} className={`border-l-4 ${instructorInfo.borderColor} ${instructorInfo.bgColor} rounded-lg p-4 hover:shadow-md transition-all`}>
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="mb-2">
-                                <h3 className="font-semibold text-lg text-gray-900 mb-1">{lesson.title}</h3>
-                                <p className={`text-sm font-medium ${instructorInfo.textColor}`}>
-                                  Lesgever: {instructorInfo.name}
-                                </p>
-                              </div>
-                              <p className="text-mainAccent font-medium mb-2">
-                                {formatDate(lesson.date)} om {lesson.startuur}
-                              </p>
-                              {lesson.description && (
-                                <p className={`${instructorInfo.accentColor} text-sm`}>{lesson.description}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                   <div className="space-y-3">
+                     {lessons.map((lesson) => {
+                       const instructorInfo = getInstructorInfo(lesson)
+                       return (
+                         <div key={lesson.event_id} className={`border-l-4 ${instructorInfo.borderColor} ${instructorInfo.bgColor} rounded-lg p-3 hover:shadow-md transition-all`}>
+                           <div className="flex items-center justify-between">
+                             <div className="flex-1">
+                               <div className="flex items-center gap-3 mb-1">
+                                 <h3 className="font-semibold text-base text-gray-900">{lesson.title}</h3>
+                                 <span className={`text-xs px-2 py-1 rounded-full ${instructorInfo.bgColor} ${instructorInfo.textColor} border ${instructorInfo.borderColor}`}>
+                                   {instructorInfo.name}
+                                 </span>
+                               </div>
+                               <p className="text-mainAccent text-sm font-medium">
+                                 {formatDate(lesson.date)} om {lesson.startuur}
+                               </p>
+                               {lesson.description && (
+                                 <p className={`${instructorInfo.accentColor} text-xs mt-1`}>{lesson.description}</p>
+                               )}
+                             </div>
+                           </div>
+                         </div>
+                       )
+                     })}
+                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-gray-600">Er zijn momenteel geen schaaklessen gepland.</p>
