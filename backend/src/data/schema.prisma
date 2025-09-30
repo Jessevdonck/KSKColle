@@ -198,9 +198,9 @@ enum ArticleType {
 
 model Article {
   article_id    Int         @id @default(autoincrement())
-  title         String      @db.VarChar(255)
-  content       String      @db.Text
-  excerpt       String?     @db.VarChar(500)
+  title         String      @db.Text
+  content       String      @db.LongText
+  excerpt       String?     @db.Text
   type          ArticleType @default(NEWS)
   author_id     Int
   published     Boolean     @default(false)

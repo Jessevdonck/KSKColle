@@ -137,9 +137,9 @@ const createArticle = async (ctx: KoaContext<ArticleWithAuthor, CreateArticleReq
 }
 createArticle.validationScheme = {
   body: {
-    title: Joi.string().max(255).required(),
+    title: Joi.string().required(),
     content: Joi.string().required(),
-    excerpt: Joi.string().max(500).allow('').optional(), // Completely optional
+    excerpt: Joi.string().allow('').optional(),
     type: Joi.string().valid('NEWS', 'TOURNAMENT_REPORT', 'GENERAL').optional(),
     published: Joi.boolean().default(false),
     featured: Joi.boolean().default(false),
@@ -180,9 +180,9 @@ updateArticle.validationScheme = {
     id: Joi.number().integer().positive().required(),
   },
   body: {
-    title: Joi.string().max(255).optional(),
+    title: Joi.string().optional(),
     content: Joi.string().optional(),
-    excerpt: Joi.string().max(500).allow('').optional(),
+    excerpt: Joi.string().allow('').optional(),
     type: Joi.string().valid('NEWS', 'TOURNAMENT_REPORT', 'GENERAL').optional(),
     published: Joi.boolean().optional(),
     featured: Joi.boolean().optional(),
