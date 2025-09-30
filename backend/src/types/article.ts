@@ -8,14 +8,14 @@ export interface Article {
   article_id: number
   title: string
   content: string
-  excerpt?: string
+  excerpt: string | null
   type: ArticleType
   author_id: number
   published: boolean
   featured: boolean
   created_at: Date
   updated_at: Date
-  published_at?: Date
+  published_at: Date | null
 }
 
 export interface ArticleWithAuthor extends Article {
@@ -29,7 +29,7 @@ export interface ArticleWithAuthor extends Article {
 export interface CreateArticleRequest {
   title: string
   content: string
-  excerpt?: string
+  excerpt?: string | null
   type: ArticleType
   published?: boolean
   featured?: boolean
@@ -38,7 +38,7 @@ export interface CreateArticleRequest {
 export interface UpdateArticleRequest {
   title?: string
   content?: string
-  excerpt?: string
+  excerpt?: string | null
   type?: ArticleType
   published?: boolean
   featured?: boolean

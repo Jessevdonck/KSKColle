@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { handleDBError } from './handleDBError'
+import handleDBError from './handleDBError'
 import type { 
-  Article, 
   ArticleWithAuthor, 
   CreateArticleRequest, 
   UpdateArticleRequest, 
@@ -18,7 +17,7 @@ export const createArticle = async (authorId: number, articleData: CreateArticle
       data: {
         title: articleData.title,
         content: articleData.content,
-        excerpt: articleData.excerpt,
+        excerpt: articleData.excerpt ?? null,
         type: articleData.type || 'NEWS',
         author_id: authorId,
         published: articleData.published || false,

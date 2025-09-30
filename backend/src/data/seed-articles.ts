@@ -56,13 +56,18 @@ export const seedArticles = async () => {
     ]
 
     for (const article of articles) {
-      await prisma.article.upsert({
+      // Check if article already exists by title
+      const existingArticle = await prisma.article.findFirst({
         where: {
           title: article.title,
-        },
-        update: {},
-        create: article,
+        }
       })
+
+      if (!existingArticle) {
+        await prisma.article.create({
+          data: article,
+        })
+      }
     }
 
     console.log(`Seeded ${articles.length} articles`)
