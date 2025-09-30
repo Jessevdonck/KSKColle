@@ -27,8 +27,10 @@ export default function SchaaklessenPage() {
     const fetchLessons = async () => {
       try {
         const events = await getAll("calendar")
-        // Filter events with type "Les"
-        const lessonEvents = events.filter((event: CalendarEvent) => event.type === "Les")
+        // Filter events with type "Les" and is_youth = false (volwassen lessen)
+        const lessonEvents = events.filter((event: CalendarEvent) => 
+          event.type === "Les" && event.is_youth === false
+        )
         setLessons(lessonEvents)
       } catch (error) {
         console.error("Error fetching lessons:", error)
