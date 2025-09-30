@@ -173,7 +173,7 @@ export default function ArticlesPage() {
                 </p>
                 {canCreate && (
                   <Link href="/articles/create">
-                    <Button>
+                    <Button className="bg-mainAccent hover:bg-mainAccentDark text-white">
                       <Plus className="h-4 w-4 mr-2" />
                       Eerste artikel aanmaken
                     </Button>

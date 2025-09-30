@@ -115,17 +115,6 @@ export default function CreateArticlePage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="excerpt">Samenvatting</Label>
-                    <Textarea
-                      id="excerpt"
-                      value={formData.excerpt}
-                      onChange={(e) => handleInputChange("excerpt", e.target.value)}
-                      placeholder="Korte samenvatting van het artikel (optioneel)..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
                     <Label htmlFor="content">Inhoud *</Label>
                     <RichTextEditor
                       content={formData.content}

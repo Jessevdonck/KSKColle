@@ -164,17 +164,6 @@ export default function EditArticlePage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="excerpt">Samenvatting</Label>
-                    <Textarea
-                      id="excerpt"
-                      value={formData.excerpt}
-                      onChange={(e) => handleInputChange("excerpt", e.target.value)}
-                      placeholder="Korte samenvatting van het artikel (optioneel)..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
                     <Label htmlFor="content">Inhoud *</Label>
                     <RichTextEditor
                       content={formData.content}
@@ -196,24 +185,8 @@ export default function EditArticlePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="type">Type artikel</Label>
-                    <Select
-                      value={formData.type}
-                      onValueChange={(value) => handleInputChange("type", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="NEWS">Nieuws</SelectItem>
-                        <SelectItem value="TOURNAMENT_REPORT">Toernooiverslag</SelectItem>
-                        <SelectItem value="GENERAL">Algemeen</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Hidden featured field */}
+                  {/* Hidden type and featured fields */}
+                  <input type="hidden" name="type" value={formData.type} />
                   <input type="hidden" name="featured" value={formData.featured.toString()} />
 
                   <div className="flex items-center justify-between">
