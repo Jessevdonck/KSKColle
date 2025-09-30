@@ -238,29 +238,57 @@ export default function SchaaklessenPage() {
                   </div>
                 ) : lessons.length > 0 ? (
                    <div className="space-y-3">
-                     {lessons.map((lesson) => {
+                     {lessons.map((lesson, index) => {
                        const instructorInfo = getInstructorInfo(lesson)
+                       const isEven = index % 2 === 0
+                       
                        return (
-                         <div key={lesson.event_id} className={`border-l-4 ${instructorInfo.borderColor} ${instructorInfo.bgColor} rounded-lg p-3 hover:shadow-md transition-all`}>
-                           <div className="flex items-center justify-between">
+                         <div key={lesson.event_id} className={`${isEven ? 'bg-white border border-gray-200' : `${instructorInfo.bgColor} border-l-4 ${instructorInfo.borderColor}`} rounded-lg p-3 hover:shadow-md transition-all`}>
+                           <div className={`${isEven ? 'flex flex-col' : 'flex items-center justify-between'}`}>
                              <div className="flex-1">
-                               <div className="flex items-center gap-3 mb-1">
-                                 <h3 className="font-semibold text-base text-gray-900">{lesson.title}</h3>
-                                 <span className={`text-xs px-2 py-1 rounded-full ${instructorInfo.bgColor} ${instructorInfo.textColor} border ${instructorInfo.borderColor}`}>
-                                   {instructorInfo.name}
-                                 </span>
-                               </div>
-                               <p className="text-mainAccent text-sm font-medium">
-                                 {lesson.description ? (
-                                   <>
-                                     {lesson.description} - {formatDate(lesson.date)} om {lesson.startuur}
-                                   </>
-                                 ) : (
-                                   <>
-                                     {formatDate(lesson.date)} om {lesson.startuur}
-                                   </>
-                                 )}
-                               </p>
+                               {isEven ? (
+                                 // Even items: vertical layout
+                                 <div>
+                                   <div className="flex items-center justify-between mb-2">
+                                     <h3 className="font-semibold text-base text-gray-900">{lesson.title}</h3>
+                                     <span className={`text-xs px-2 py-1 rounded-full ${instructorInfo.bgColor} ${instructorInfo.textColor} border ${instructorInfo.borderColor}`}>
+                                       {instructorInfo.name}
+                                     </span>
+                                   </div>
+                                   <p className="text-mainAccent text-sm font-medium">
+                                     {lesson.description ? (
+                                       <>
+                                         {lesson.description} - {formatDate(lesson.date)} om {lesson.startuur}
+                                       </>
+                                     ) : (
+                                       <>
+                                         {formatDate(lesson.date)} om {lesson.startuur}
+                                       </>
+                                     )}
+                                   </p>
+                                 </div>
+                               ) : (
+                                 // Odd items: horizontal layout
+                                 <div className="flex items-center gap-3">
+                                   <div className="flex-1">
+                                     <h3 className="font-semibold text-base text-gray-900">{lesson.title}</h3>
+                                     <p className="text-mainAccent text-sm font-medium">
+                                       {lesson.description ? (
+                                         <>
+                                           {lesson.description} - {formatDate(lesson.date)} om {lesson.startuur}
+                                         </>
+                                       ) : (
+                                         <>
+                                           {formatDate(lesson.date)} om {lesson.startuur}
+                                         </>
+                                       )}
+                                     </p>
+                                   </div>
+                                   <span className={`text-xs px-2 py-1 rounded-full ${instructorInfo.bgColor} ${instructorInfo.textColor} border ${instructorInfo.borderColor} flex-shrink-0`}>
+                                     {instructorInfo.name}
+                                   </span>
+                                 </div>
+                               )}
                              </div>
                            </div>
                          </div>
