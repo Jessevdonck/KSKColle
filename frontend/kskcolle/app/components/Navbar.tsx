@@ -59,19 +59,19 @@ export default function Navbar() {
           <span className="text-xl font-bold text-textColor">KSK Colle</span>
         </Link>
 
-        <div className="hidden xl:flex space-x-6">
+        <div className="hidden xl:flex space-x-4">
           {/* Home */}
-          <Link href="/" className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-            <Home size={14} />
+          <Link href="/" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+            <Home size={12} />
             <span>Home</span>
           </Link>
 
           {/* About Us Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-              <Users size={14} />
+            <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+              <Users size={12} />
               <span>Over Ons</span>
-              <ChevronDown size={14} />
+              <ChevronDown size={12} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -104,10 +104,10 @@ export default function Navbar() {
 
           {/* Tournaments Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-              <Trophy size={14} />
+            <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+              <Trophy size={12} />
               <span>Toernooien</span>
-              <ChevronDown size={14} />
+              <ChevronDown size={12} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -138,19 +138,25 @@ export default function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Schaaklessen */}
+          <Link href="/schaaklessen" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+            <BookOpen size={12} />
+            <span>Schaaklessen</span>
+          </Link>
+
           {/* Kalender */}
-          <Link href="/calendar" className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-            <CalendarDays size={14} />
+          <Link href="/calendar" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+            <CalendarDays size={12} />
             <span>Kalender</span>
           </Link>
 
 
           {/* Jeugd werking */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-                <PersonStanding size={14} />
+              <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+                <PersonStanding size={12} />
                 <span>Jeugd</span>
-                <ChevronDown size={14} />
+                <ChevronDown size={12} />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -192,17 +198,17 @@ export default function Navbar() {
             </DropdownMenu>
 
           {/* Spelers */}
-          <Link href="/spelers" className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-            <ChartColumnBig size={14} />
+          <Link href="/spelers" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+            <ChartColumnBig size={12} />
             <span>Spelers</span>
           </Link>
 
           {/* Historiek Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-              <History size={14} />
+            <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+              <History size={12} />
               <span>Historiek</span>
-              <ChevronDown size={14} />
+              <ChevronDown size={12} />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -220,10 +226,10 @@ export default function Navbar() {
 
           {/* External Links Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors">
-                <Globe size={14} />
+              <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+                <Globe size={12} />
                 <span>Links</span>
-                <ChevronDown size={14} />
+                <ChevronDown size={12} />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem asChild className="hover:cursor-pointer">
@@ -395,6 +401,9 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+
+            {/* Mobile Schaaklessen */}
+            <NavItem href="/schaaklessen" icon={<BookOpen size={18} />} text="Schaaklessen" onClick={() => setIsMobileMenuOpen(false)} />
 
             {/* Mobile Kalender */}
             <NavItem href="/calendar" icon={<CalendarDays size={18} />} text="Kalender" onClick={() => setIsMobileMenuOpen(false)} />
