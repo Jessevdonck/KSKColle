@@ -209,7 +209,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     {game.speler2 ? (
                       <Link
                         href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
-                        className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-sm whitespace-nowrap"
+                        className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-xs whitespace-nowrap"
                       >
                         <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
                           Z
