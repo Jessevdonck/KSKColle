@@ -12,6 +12,8 @@ export default {
       'https://kskcolle-production.up.railway.app',
       'https://frontendweb-kskcolle.onrender.com',
       'https://kskcolle.onrender.com',
+      'https://kskcolle-personal.up.railway.app',
+      'https://kskcolle-production-personal.up.railway.app',
       'https://www.kskcolle.be',
       'http://www.kskcolle.be'
     ],
