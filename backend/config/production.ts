@@ -7,7 +7,15 @@ export default {
   },
   cors: {
     // 👈 1
-    origins: ['https://kskcolle-production.up.railway.app', 'https://frontendweb-kskcolle.onrender.com', 'https://kskcolle.onrender.com', 'https://www.kskcolle.be'], // 👈 2
+    origins: [
+      'https://backend-kskcolle-production.up.railway.app',
+      'https://kskcolle-production.up.railway.app',
+      'https://frontendweb-kskcolle.onrender.com',
+      'https://kskcolle.onrender.com',
+      'https://www.kskcolle.be',
+      'http://www.kskcolle.be'
+    ],
+    
     maxAge: 3 * 60 * 60, // 👈 3
   },
   auth: {
