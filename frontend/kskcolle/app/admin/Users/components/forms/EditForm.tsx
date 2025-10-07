@@ -81,7 +81,7 @@ const toDateInputString = (date: Date) => {
 interface EditFormProps {
   user
   onClose: () => void
-  onRefresh?: () => void
+  onRefresh?: (updatedUser?: any) => void
 }
 
 export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
@@ -152,16 +152,18 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
 
 
     try {
-      await saveUser(formattedValues, {
-        onSuccess: () => {
-          setSuccessMessage("Speler correct gewijzigd")
-          onRefresh?.() // Refresh the user list
-          setTimeout(() => {
-            setSuccessMessage(null)
-            onClose()
-          }, 2000)
-        },
-      })
+      const updatedUser = await saveUser(formattedValues)
+      setSuccessMessage("Speler correct gewijzigd")
+      
+      // Call onRefresh with the updated user data for optimistic update
+      if (onRefresh) {
+        onRefresh(updatedUser)
+      }
+      
+      setTimeout(() => {
+        setSuccessMessage(null)
+        onClose()
+      }, 2000)
     } catch (error: any) {
       console.error("Error saving user:", error)
       console.error("Error response data:", error.response?.data)

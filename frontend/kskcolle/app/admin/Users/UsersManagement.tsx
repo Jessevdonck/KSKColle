@@ -22,8 +22,22 @@ export default function UsersManagement() {
     (url) => getPaginated(url)
   )
   
-  const refreshUsers = () => {
-    mutate()
+  const refreshUsers = (updatedUser?: User) => {
+    if (updatedUser) {
+      // Optimistic update: update the cache immediately with the new user data
+      mutate((currentData) => {
+        if (!currentData) return currentData
+        return {
+          ...currentData,
+          items: currentData.items.map((user) => 
+            user.user_id === updatedUser.user_id ? updatedUser : user
+          )
+        }
+      }, false) // false = don't revalidate immediately
+    } else {
+      // No updated user data provided, just revalidate
+      mutate()
+    }
   }
   const { trigger: deleteUser, isMutating: isDeleting } = useSWRMutation("users", deleteById)
 
