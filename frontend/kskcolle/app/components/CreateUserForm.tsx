@@ -60,6 +60,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       voornaam: '',
       achternaam: '',
       email: '',
+      guardian_email: '',
       geboortedatum: '',
       tel_nummer: '',
       vast_nummer: '',
@@ -110,6 +111,7 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
         roles: finalRoles,
         is_youth: Boolean(data.is_youth), // Ensure is_youth is properly set as boolean
         email: data.email?.trim() || undefined,
+        guardian_email: data.guardian_email?.trim() || undefined,
         tel_nummer: data.tel_nummer?.trim() || undefined,
         schaakrating_elo: data.schaakrating_elo || undefined,
         fide_id: data.fide_id || undefined,
@@ -257,6 +259,25 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
               placeholder="Optioneel"
             />
             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="guardian_email" className="text-sm font-medium text-gray-700">Email Voogd (optioneel)</Label>
+            <Input
+              id="guardian_email"
+              type="email"
+              {...register('guardian_email', {
+                validate: (value) => {
+                  if (!value || value.trim() === '') return true;
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  return emailRegex.test(value) || 'Voer een geldig emailadres in';
+                }
+              })}
+              data-cy="create_user_guardian_email_input"
+              className="text-sm"
+              placeholder="Voor jeugdleden (optioneel)"
+            />
+            {errors.guardian_email && <p className="text-sm text-red-500">{errors.guardian_email.message}</p>}
           </div>
 
           <div className="space-y-2">

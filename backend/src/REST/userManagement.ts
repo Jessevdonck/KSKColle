@@ -19,6 +19,7 @@ interface CreateUserRequest {
   voornaam: string;
   achternaam: string;
   email: string;
+  guardian_email?: string;
   geboortedatum?: string;
   tel_nummer: string;
   vast_nummer?: string;
@@ -128,6 +129,7 @@ createUser.validationScheme = {
     voornaam: Joi.string().required(),
     achternaam: Joi.string().required(),
     email: Joi.string().email().allow('').optional(),
+    guardian_email: Joi.string().email().allow('', null).optional(),
     geboortedatum: Joi.string().isoDate().allow('', null).optional(),
     tel_nummer: Joi.string().allow('').optional(),
     vast_nummer: Joi.string().allow('').optional(),

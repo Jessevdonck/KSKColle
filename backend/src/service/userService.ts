@@ -16,6 +16,7 @@ const makeExposedUser = ({
   schaakrating_elo, 
   fide_id,  
   email,
+  guardian_email,
   tel_nummer,
   vast_nummer,
   geboortedatum,
@@ -37,6 +38,7 @@ const makeExposedUser = ({
     schaakrating_elo, 
     fide_id,  
     email,
+    guardian_email,
     tel_nummer,
     vast_nummer,
     geboortedatum,
@@ -238,6 +240,9 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
     // Convert empty strings to null for optional fields
     if (cleanedData.email === '') {
       cleanedData.email = null;
+    }
+    if (cleanedData.guardian_email === '') {
+      cleanedData.guardian_email = null;
     }
     if (cleanedData.tel_nummer === '') {
       cleanedData.tel_nummer = null;

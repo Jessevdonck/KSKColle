@@ -8,6 +8,7 @@ export interface User {
   achternaam: string;
   geboortedatum?: Date | null;
   email: string | null;
+  guardian_email?: string | null;
   tel_nummer: string;
   schaakrating_elo: number;
   schaakrating_difference?: number;
@@ -68,6 +69,7 @@ export interface CreateUserRequest {
   voornaam: string;
   achternaam: string;
   email?: string;
+  guardian_email?: string;
   geboortedatum?: string;
   tel_nummer: string;
   vast_nummer?: string;

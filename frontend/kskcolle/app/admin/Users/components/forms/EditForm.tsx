@@ -54,6 +54,7 @@ interface FormData {
   achternaam: string
   geboortedatum?: string
   email: string
+  guardian_email?: string
   tel_nummer: string
   vast_nummer?: string;
   schaakrating_elo: number
@@ -102,6 +103,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
       achternaam: user.achternaam,
       geboortedatum: user.geboortedatum ? toDateInputString(user.geboortedatum) : "",
       email: user.email || "",
+      guardian_email: user.guardian_email || "",
       tel_nummer: user.tel_nummer || "",
       vast_nummer: user.vast_nummer,
       lid_sinds: toDateInputString(user.lid_sinds),
@@ -351,6 +353,18 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
                 className="mt-1 text-sm"
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="guardian_email" className="text-xs font-medium text-gray-700">
+                Email Voogd
+              </Label>
+              <Input
+                {...register("guardian_email")}
+                id="guardian_email"
+                placeholder="Voor jeugdleden"
+                className="mt-1 text-sm"
+              />
+              {errors.guardian_email && <p className="text-red-500 text-xs mt-1">{errors.guardian_email.message}</p>}
             </div>
             <div>
               <Label htmlFor="tel_nummer" className="text-xs font-medium text-gray-700">
