@@ -73,7 +73,7 @@ type UserListProps = {
   onEdit: (user: User) => void
   onDelete: (userId: number) => Promise<void>
   isDeleting?: boolean
-  onRefresh?: () => void
+  onRefresh?: (updatedUser?: User) => void
   onUserDeleted?: (userId: number) => void
   pagination?: {
     currentPage: number
@@ -118,6 +118,20 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
     } catch (error) {
       // Error handling is done in the parent component
     }
+  }
+
+  // Handler voor user updates
+  const handleUserUpdated = (updatedUser?: any) => {
+    // Update allUsers cache if it exists and user was updated
+    if (updatedUser && allUsers.length > 0) {
+      setAllUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.user_id === updatedUser.user_id ? updatedUser : user
+        )
+      )
+    }
+    // Also call parent refresh
+    onRefresh?.(updatedUser)
   }
 
   // Filter gebruikers op zoekterm - gebruik alle gebruikers als er wordt gezocht
@@ -468,7 +482,7 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
               Speler Bewerken
             </DialogTitle>
           </DialogHeader>
-          {editingUser && <EditForm user={editingUser} onClose={() => setEditingUser(null)} onRefresh={onRefresh} />}
+          {editingUser && <EditForm user={editingUser} onClose={() => setEditingUser(null)} onRefresh={handleUserUpdated} />}
         </DialogContent>
       </Dialog>
     </>

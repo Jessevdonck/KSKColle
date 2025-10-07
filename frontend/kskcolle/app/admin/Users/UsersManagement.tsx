@@ -33,7 +33,7 @@ export default function UsersManagement() {
             user.user_id === updatedUser.user_id ? updatedUser : user
           )
         }
-      }, false) // false = don't revalidate immediately
+      }, true) // true = also revalidate to ensure consistency
     } else {
       // No updated user data provided, just revalidate
       mutate()

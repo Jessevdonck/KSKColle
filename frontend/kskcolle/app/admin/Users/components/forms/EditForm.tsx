@@ -137,6 +137,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
       fide_id: values.fide_id ? Number(values.fide_id) : undefined,
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : undefined,
       email: values.email?.trim() || undefined,
+      guardian_email: values.guardian_email?.trim() || undefined,
       tel_nummer: values.tel_nummer?.trim() || undefined,
       vast_nummer: values.vast_nummer?.trim() || undefined,
       is_youth: values.is_youth || false,
@@ -163,6 +164,10 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
       setTimeout(() => {
         setSuccessMessage(null)
         onClose()
+        // Force a final refresh after closing to ensure consistency in production
+        if (onRefresh) {
+          onRefresh()
+        }
       }, 2000)
     } catch (error: any) {
       console.error("Error saving user:", error)
