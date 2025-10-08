@@ -9,6 +9,7 @@ export type User = {
   guardian_email?: string | null;
   tel_nummer: string | null;
   vast_nummer?: string | null;
+  guardian_phone?: string | null;
   geboortedatum?: Date | null;
   schaakrating_elo: number;
   max_rating?: number | null;           
@@ -35,10 +36,10 @@ export type User = {
   bondslidgeld_periode_eind?: Date | null;
 };
 
-export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "guardian_email" | "tel_nummer" | "vast_nummer" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles" | "avatar_url" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind"> {}
+export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "guardian_email" | "tel_nummer" | "vast_nummer" | "guardian_phone" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles" | "avatar_url" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind"> {}
 
 
-export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "guardian_email" | "tel_nummer" | "vast_nummer" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password" | "roles" | "adres_straat" | "adres_nummer" | "adres_bus" | "adres_postcode" | "adres_gemeente" | "adres_land" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind">> {}
+export interface UserUpdateInput extends Partial<Pick<UserCreateInput, "voornaam" | "achternaam" | "email" | "guardian_email" | "tel_nummer" | "vast_nummer" | "guardian_phone" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "password" | "roles" | "adres_straat" | "adres_nummer" | "adres_bus" | "adres_postcode" | "adres_gemeente" | "adres_land" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind">> {}
 
 export type UserCreateInput = {
   voornaam: string;
@@ -48,6 +49,7 @@ export type UserCreateInput = {
   guardian_email?: string;
   tel_nummer?: string;
   vast_nummer?: string;
+  guardian_phone?: string;
   schaakrating_elo: number;
   max_rating?: number | null;
   rating_difference?: number | null;
@@ -92,6 +94,7 @@ export interface RegisterUserRequest {
   guardian_email?: string;
   tel_nummer?: string;
   vast_nummer?: string;
+  guardian_phone?: string;
   schaakrating_elo?: number;
   max_rating?: number | null;
   rating_difference?: number | null;
@@ -119,7 +122,7 @@ export interface UpdatePasswordResponse {
 
 export interface CreateUserRequest extends UserCreateInput {}
 
-export interface UpdateUserRequest extends Partial<Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email' | 'guardian_email' | 'tel_nummer' | 'vast_nummer' | 'schaakrating_elo' | 'max_rating' | 'rating_difference' | 'fide_id' | 'is_youth' | 'adres_straat' | 'adres_nummer' | 'adres_bus' | 'adres_postcode' | 'adres_gemeente' | 'adres_land'>> {}
+export interface UpdateUserRequest extends Partial<Pick<RegisterUserRequest, 'voornaam' | 'achternaam' | 'email' | 'guardian_email' | 'tel_nummer' | 'vast_nummer' | 'guardian_phone' | 'schaakrating_elo' | 'max_rating' | 'rating_difference' | 'fide_id' | 'is_youth' | 'adres_straat' | 'adres_nummer' | 'adres_bus' | 'adres_postcode' | 'adres_gemeente' | 'adres_land'>> {}
 
 export interface GetAllUserResponse extends ListResponse<User> {}
 export interface GetAllPublicUserResponse extends ListResponse<PublicUser> {}

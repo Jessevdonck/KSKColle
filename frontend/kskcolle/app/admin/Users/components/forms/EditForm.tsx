@@ -55,6 +55,7 @@ interface FormData {
   geboortedatum?: string
   email: string
   guardian_email?: string
+  guardian_phone?: string
   tel_nummer: string
   vast_nummer?: string;
   schaakrating_elo: number
@@ -104,6 +105,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
       geboortedatum: user.geboortedatum ? toDateInputString(user.geboortedatum) : "",
       email: user.email || "",
       guardian_email: user.guardian_email || "",
+      guardian_phone: user.guardian_phone || "",
       tel_nummer: user.tel_nummer || "",
       vast_nummer: user.vast_nummer,
       lid_sinds: toDateInputString(user.lid_sinds),
@@ -138,6 +140,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
       schaakrating_max: values.schaakrating_max ? Number(values.schaakrating_max) : undefined,
       email: values.email?.trim() || undefined,
       guardian_email: values.guardian_email?.trim() || undefined,
+      guardian_phone: values.guardian_phone?.trim() || undefined,
       tel_nummer: values.tel_nummer?.trim() || undefined,
       vast_nummer: values.vast_nummer?.trim() || undefined,
       is_youth: values.is_youth || false,
@@ -372,6 +375,18 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
                 className="mt-1 text-sm"
               />
               {errors.guardian_email && <p className="text-red-500 text-xs mt-1">{errors.guardian_email.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="guardian_phone" className="text-xs font-medium text-gray-700">
+                Tel. Voogd
+              </Label>
+              <Input
+                {...register("guardian_phone")}
+                id="guardian_phone"
+                placeholder="Voor jeugdleden"
+                className="mt-1 text-sm"
+              />
+              {errors.guardian_phone && <p className="text-red-500 text-xs mt-1">{errors.guardian_phone.message}</p>}
             </div>
             <div>
               <Label htmlFor="tel_nummer" className="text-xs font-medium text-gray-700">

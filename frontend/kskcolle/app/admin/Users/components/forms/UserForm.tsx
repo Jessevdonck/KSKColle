@@ -15,6 +15,7 @@ const EMPTY_USER = {
   geboortedatum: null,
   email: "",
   guardian_email: "",
+  guardian_phone: "",
   tel_nummer: "",
   vast_nummer: "",
   schaakrating_elo: 0,
@@ -73,6 +74,7 @@ interface FormData {
   geboortedatum?: string
   email: string
   guardian_email?: string
+  guardian_phone?: string
   tel_nummer: string
   vast_nummer?: string;
   schaakrating_elo: number
@@ -112,6 +114,7 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
       geboortedatum: user.geboortedatum ? toDateInputString(user.geboortedatum) : "",
       email: user.email || "",
       guardian_email: user.guardian_email || "",
+      guardian_phone: user.guardian_phone || "",
       tel_nummer: user.tel_nummer || "",
       vast_nummer: user.vast_nummer ?? "",
       lid_sinds: toDateInputString(user.lid_sinds),
@@ -386,6 +389,24 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
               {errors.guardian_email && (
                 <p className="text-red-500 text-xs mt-1" data-cy="error_guardian_email">
                   {errors.guardian_email.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="guardian_phone" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Phone className="h-3 w-3" />
+                Tel. Voogd
+              </Label>
+              <Input
+                {...register("guardian_phone")}
+                id="guardian_phone"
+                placeholder="Voor jeugdleden"
+                data-cy="guardian_phone"
+                className="mt-1 text-sm"
+              />
+              {errors.guardian_phone && (
+                <p className="text-red-500 text-xs mt-1" data-cy="error_guardian_phone">
+                  {errors.guardian_phone.message}
                 </p>
               )}
             </div>

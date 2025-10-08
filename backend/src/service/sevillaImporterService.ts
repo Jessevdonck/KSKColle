@@ -251,15 +251,14 @@ export class SevillaImporterService {
         // Create new user if they don't exist in the database
         console.log(`Creating new user for player "${sevillaPlayer.Name}"`);
         
-        // Generate a unique email for this player
-        const email = `${sevillaPlayer.PlayerID || `sevilla_${sevillaPlayer.ID}`}@kskcolle.be`;
-        
+        // Don't generate fake emails - leave email empty for imported users
+        // Admins can add proper email addresses later if needed
         user = await prisma.user.create({
           data: {
             voornaam: voornaam,
             achternaam: achternaam,
-            email: email,
-            tel_nummer: "000000000", // Default phone number for imported users
+            email: null, // No fake email - leave it empty
+            tel_nummer: null, // No fake phone number either
             schaakrating_elo: sevillaPlayer.Rating || 1200,
             schaakrating_difference: sevillaPlayer.RtgDif || 0,
             lid_sinds: new Date(),

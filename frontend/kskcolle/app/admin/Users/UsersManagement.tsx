@@ -118,20 +118,27 @@ export default function UsersManagement() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           <AddOrEditUser onRefresh={refreshUsers} />
-          <UserList 
-            users={usersData.items} 
-            onEdit={setSelectedUser} 
-            onDelete={handleDeleteUser} 
-            isDeleting={isDeleting} 
-            onRefresh={refreshUsers}
-            onUserDeleted={handleUserDeleted}
-            pagination={{
-              currentPage,
-              totalPages: usersData.totalPages,
-              total: usersData.total,
-              onPageChange: setCurrentPage
-            }}
-          />
+          {!usersData ? (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading users...</p>
+            </div>
+          ) : (
+            <UserList 
+              users={usersData.items || []} 
+              onEdit={setSelectedUser} 
+              onDelete={handleDeleteUser} 
+              isDeleting={isDeleting} 
+              onRefresh={refreshUsers}
+              onUserDeleted={handleUserDeleted}
+              pagination={{
+                currentPage,
+                totalPages: usersData.totalPages || 0,
+                total: usersData.total || 0,
+                onPageChange: setCurrentPage
+              }}
+            />
+          )}
         </div>
       </div>
 

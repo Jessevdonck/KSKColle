@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import type { User } from "@/data/types"
 import EditForm from "./components/forms/EditForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search, Euro, CheckCircle, XCircle, Clock } from "lucide-react"
+import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search, Euro, CheckCircle, XCircle, Clock, Shield } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -88,10 +88,11 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
   const [searchTerm, setSearchTerm] = useState("")
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [isLoadingAllUsers, setIsLoadingAllUsers] = useState(false)
+  const [selectedFilter, setSelectedFilter] = useState<string>("all")
 
-  // Fetch all users when searching
+  // Fetch all users when searching or filtering
   const fetchAllUsers = async () => {
-    if (searchTerm && allUsers.length === 0 && !isLoadingAllUsers) {
+    if (allUsers.length === 0 && !isLoadingAllUsers) {
       setIsLoadingAllUsers(true)
       try {
         const allUsersData = await getAll("users")
@@ -134,27 +135,105 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
     onRefresh?.(updatedUser)
   }
 
-  // Filter gebruikers op zoekterm - gebruik alle gebruikers als er wordt gezocht
-  const filteredUsers = searchTerm ? 
-    allUsers.filter((user) => {
+  // Filter gebruikers op zoekterm en user type
+  const filteredUsers = React.useMemo(() => {
+    // Use allUsers if search or filter is active, otherwise use paginated users
+    let result = (searchTerm || selectedFilter !== "all") && allUsers.length > 0 ? allUsers : users
+    
+    // Apply search filter
+    if (searchTerm) {
       const searchLower = searchTerm.toLowerCase()
-      return (
+      result = result.filter((user) => (
         `${user.voornaam} ${user.achternaam}`.toLowerCase().includes(searchLower) ||
         (user.email?.toLowerCase().includes(searchLower) ?? false) ||
         (user.fide_id?.toString().includes(searchLower) ?? false) ||
         user.schaakrating_elo.toString().includes(searchLower)
-      )
-    }) : users
-
-  // Fetch all users when search term changes
-  React.useEffect(() => {
-    if (searchTerm) {
-      fetchAllUsers()
-    } else {
-      // Reset all users when search is cleared
-      setAllUsers([])
+      ))
     }
-  }, [searchTerm])
+    
+    // Apply role/type filter
+    if (selectedFilter !== "all") {
+      result = result.filter((user) => {
+        // Parse roles consistently
+        let userRoles: string[] = []
+        if (typeof user.roles === 'string') {
+          try {
+            userRoles = JSON.parse(user.roles)
+          } catch (e) {
+            userRoles = []
+          }
+        } else if (Array.isArray(user.roles)) {
+          userRoles = user.roles
+        }
+        
+        switch (selectedFilter) {
+          case "admin":
+            return userRoles.includes("admin")
+          case "bestuurslid":
+            return userRoles.includes("bestuurslid")
+          case "youth":
+            return user.is_youth === true
+          case "exlid":
+            return userRoles.includes("exlid")
+          case "user":
+            return userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("exlid") && !user.is_youth
+          default:
+            return true
+        }
+      })
+    }
+    
+    return result
+  }, [searchTerm, allUsers, users, selectedFilter])
+
+  // Count users by category
+  const userCounts = React.useMemo(() => {
+    const dataSource = allUsers.length > 0 ? allUsers : users
+    const counts = {
+      all: dataSource.length,
+      admin: 0,
+      bestuurslid: 0,
+      youth: 0,
+      user: 0,
+      exlid: 0,
+    }
+    
+    dataSource.forEach((user) => {
+      // Parse roles if it's a string, otherwise use as is
+      let userRoles: string[] = []
+      if (typeof user.roles === 'string') {
+        try {
+          userRoles = JSON.parse(user.roles)
+        } catch (e) {
+          userRoles = []
+        }
+      } else if (Array.isArray(user.roles)) {
+        userRoles = user.roles
+      }
+      
+      if (userRoles.includes("admin")) counts.admin++
+      if (userRoles.includes("bestuurslid")) counts.bestuurslid++
+      if (user.is_youth === true) counts.youth++
+      if (userRoles.includes("exlid")) counts.exlid++
+      if (userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("exlid") && !user.is_youth) {
+        counts.user++
+      }
+    })
+    
+    return counts
+  }, [users, allUsers])
+
+  // Load all users on mount for counting purposes and filtering
+  useEffect(() => {
+    fetchAllUsers()
+  }, []) // Empty dependency array is correct here
+
+  // Fetch all users when search term or filter changes
+  useEffect(() => {
+    if (searchTerm || selectedFilter !== "all") {
+      fetchAllUsers()
+    }
+  }, [searchTerm, selectedFilter]) // Dependencies are correct here
 
   if (!users.length) {
     return (
@@ -190,8 +269,9 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
         </div>
 
         <div className="p-4">
-          {/* Search Bar */}
-          <div className="mb-4">
+          {/* Search Bar and Filters */}
+          <div className="mb-4 space-y-4">
+            {/* Search */}
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
               <Input
@@ -202,15 +282,131 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
                 className="pl-9 pr-4 text-sm"
               />
             </div>
-            {searchTerm && (
-              <div className="mt-2">
+
+            {/* Filter Badges */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-xs font-medium text-gray-600">Filter:</span>
+              <button
+                onClick={() => {
+                  setSelectedFilter("all")
+                  pagination.onPageChange(1)
+                }}
+                disabled={isLoadingAllUsers}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  selectedFilter === "all"
+                    ? "bg-mainAccent text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Alle ({userCounts.all})
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedFilter("admin")
+                  pagination.onPageChange(1)
+                }}
+                disabled={isLoadingAllUsers}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  selectedFilter === "admin"
+                    ? "bg-red-500 text-white"
+                    : "bg-red-50 text-red-600 hover:bg-red-100"
+                } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Shield className="inline h-3 w-3 mr-1" />
+                Admin ({userCounts.admin})
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedFilter("bestuurslid")
+                  pagination.onPageChange(1)
+                }}
+                disabled={isLoadingAllUsers}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  selectedFilter === "bestuurslid"
+                    ? "bg-purple-500 text-white"
+                    : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Bestuurslid ({userCounts.bestuurslid})
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedFilter("youth")
+                  pagination.onPageChange(1)
+                }}
+                disabled={isLoadingAllUsers}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  selectedFilter === "youth"
+                    ? "bg-blue-500 text-white"
+                    : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Jeugd ({userCounts.youth})
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedFilter("user")
+                  pagination.onPageChange(1)
+                }}
+                disabled={isLoadingAllUsers}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  selectedFilter === "user"
+                    ? "bg-green-500 text-white"
+                    : "bg-green-50 text-green-600 hover:bg-green-100"
+                } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Leden ({userCounts.user})
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedFilter("exlid")
+                  pagination.onPageChange(1)
+                }}
+                disabled={isLoadingAllUsers}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  selectedFilter === "exlid"
+                    ? "bg-gray-500 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Clock className="inline h-3 w-3 mr-1" />
+                Ex-Lid ({userCounts.exlid})
+              </button>
+            </div>
+
+            {/* Results counter */}
+            {(searchTerm || selectedFilter !== "all") && (
+              <div className="flex items-center gap-2 text-xs text-gray-600">
                 {isLoadingAllUsers ? (
-                  <p className="text-xs text-gray-600">Zoeken door alle spelers...</p>
-                ) : (
-                  <p className="text-xs text-gray-600">
-                    {filteredUsers.length} van {allUsers.length || users.length} spelers gevonden
-                    {allUsers.length > 0 && " (alle resultaten)"}
+                  <p className="flex items-center gap-2">
+                    <span className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-mainAccent"></span>
+                    Laden van alle spelers...
                   </p>
+                ) : (
+                  <>
+                    <p>
+                      <span className="font-semibold">{filteredUsers.length}</span> 
+                      {searchTerm && ` van ${allUsers.length || users.length}`} spelers 
+                      {selectedFilter !== "all" && ` (gefilterd op ${
+                        selectedFilter === "admin" ? "Admin" :
+                        selectedFilter === "bestuurslid" ? "Bestuurslid" :
+                        selectedFilter === "youth" ? "Jeugd" :
+                        selectedFilter === "user" ? "Leden" :
+                        "Ex-Lid"
+                      })`}
+                    </p>
+                    {(searchTerm || selectedFilter !== "all") && (
+                      <button
+                        onClick={() => {
+                          setSearchTerm("")
+                          setSelectedFilter("all")
+                        }}
+                        className="text-mainAccent hover:text-mainAccentDark underline"
+                      >
+                        Reset filters
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             )}

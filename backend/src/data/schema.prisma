@@ -24,7 +24,8 @@ model User {
   email              String?          @unique(map: "idx_user_email_unique") @db.VarChar(255)
   guardian_email     String?          @db.VarChar(255)
   tel_nummer         String?
-  vast_nummer        String? 
+  vast_nummer        String?
+  guardian_phone     String?          @db.VarChar(255) 
   geboortedatum      DateTime?
   schaakrating_elo   Int             @default(0)              
   schaakrating_difference Int?

@@ -35,6 +35,7 @@ interface LidgeldUser {
 export default function LidgeldManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'unpaid' | 'expired'>('all')
+  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'bestuurslid' | 'user' | 'youth' | 'exlid'>('all')
   const [editingUser, setEditingUser] = useState<LidgeldUser | null>(null)
 
   const { data: users = [], error, mutate } = useSWR('lidgeld-status', getLidgeldStatus)
@@ -46,6 +47,44 @@ export default function LidgeldManagement() {
       (user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
 
     if (!matchesSearch) return false
+
+    // Role filtering - parse roles if they're a string
+    let userRoles: string[] = []
+    if (typeof user.roles === 'string') {
+      try {
+        userRoles = JSON.parse(user.roles)
+      } catch (e) {
+        userRoles = []
+      }
+    } else if (Array.isArray(user.roles)) {
+      userRoles = user.roles
+    }
+    
+    let matchesRole = true
+    
+    if (roleFilter !== 'all') {
+      switch (roleFilter) {
+        case 'admin':
+          matchesRole = userRoles.includes('admin')
+          break
+        case 'bestuurslid':
+          matchesRole = userRoles.includes('bestuurslid')
+          break
+        case 'youth':
+          matchesRole = user.is_youth === true
+          break
+        case 'exlid':
+          matchesRole = userRoles.includes('exlid')
+          break
+        case 'user':
+          matchesRole = userRoles.includes('user') && !userRoles.includes('admin') && !userRoles.includes('bestuurslid') && !userRoles.includes('exlid') && !user.is_youth
+          break
+        default:
+          matchesRole = true
+      }
+    }
+
+    if (!matchesRole) return false
 
     const now = new Date()
     const lidgeldValid = user.lidgeld_betaald && 
@@ -172,7 +211,7 @@ export default function LidgeldManagement() {
             </div>
             <div className="sm:w-48">
               <Label htmlFor="filter" className="text-sm font-medium text-gray-700 mb-2 block">
-                Filter
+                Lidgeld Status
               </Label>
               <select
                 id="filter"
@@ -184,6 +223,24 @@ export default function LidgeldManagement() {
                 <option value="paid">Lidgeld betaald</option>
                 <option value="unpaid">Geen lidgeld</option>
                 <option value="expired">Verlopen</option>
+              </select>
+            </div>
+            <div className="sm:w-48">
+              <Label htmlFor="roleFilter" className="text-sm font-medium text-gray-700 mb-2 block">
+                Rol
+              </Label>
+              <select
+                id="roleFilter"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mainAccent"
+              >
+                <option value="all">Alle rollen</option>
+                <option value="admin">Admin</option>
+                <option value="bestuurslid">Bestuurslid</option>
+                <option value="user">Leden</option>
+                <option value="youth">Jeugd</option>
+                <option value="exlid">Ex-lid</option>
               </select>
             </div>
           </div>

@@ -19,6 +19,7 @@ const makeExposedUser = ({
   guardian_email,
   tel_nummer,
   vast_nummer,
+  guardian_phone,
   geboortedatum,
   max_rating,
   rating_difference,
@@ -41,6 +42,7 @@ const makeExposedUser = ({
     guardian_email,
     tel_nummer,
     vast_nummer,
+    guardian_phone,
     geboortedatum,
     max_rating,
     rating_difference,
@@ -249,6 +251,9 @@ export const updateUser = async (user_id: number, changes: UserUpdateInput): Pro
     }
     if (cleanedData.vast_nummer === '') {
       cleanedData.vast_nummer = null;
+    }
+    if (cleanedData.guardian_phone === '') {
+      cleanedData.guardian_phone = null;
     }
     if (cleanedData.fide_id === '') {
       cleanedData.fide_id = null;
