@@ -149,7 +149,7 @@ export default function SchaaklessenPage() {
               <CardHeader>
                 <CardTitle className="flex items-center text-mainAccent">
                   <GraduationCap className="mr-2" size={24} />
-                  De Lesgevers
+                  Lesgevers
                 </CardTitle>
               </CardHeader>
               <CardContent>
