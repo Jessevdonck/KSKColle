@@ -82,25 +82,27 @@ export default function RoundExport({
         }
       })();
       
+      // Check if this is a makeup round
+      const isMakeupRound = roundData.round.type === 'MAKEUP'
+      
       // Create PDF with smaller margins
       const pdf = new jsPDF()
       
       // Set font
       pdf.setFont("helvetica")
       
-      // Title 
+      // Title - different for makeup rounds
       pdf.setFontSize(16)
-      pdf.text(`${tournamentName} - Ronde ${roundNumber}`, 15, 20)
+      const roundTitle = isMakeupRound 
+        ? `${tournamentName} - ${roundData.round.label || 'Inhaaldag'}`
+        : `${tournamentName} - Ronde ${roundNumber}`
+      pdf.text(roundTitle, 15, 20)
       
       // Round info
       pdf.setFontSize(10)
       const roundDate = format(new Date(roundData.round.ronde_datum), "EEEE dd MMMM yyyy", { locale: nl })
       pdf.text(`Datum: ${roundDate}`, 15, 30)
       pdf.text(`Startuur: ${roundData.round.startuur}`, 15, 36)
-      
-      if (roundData.round.label) {
-        pdf.text(`Type: ${roundData.round.label}`, 15, 42)
-      }
       
       // Games table 
       let yPosition = 50
@@ -172,8 +174,10 @@ export default function RoundExport({
         pdf.text(`Gegenereerd op ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 110, 290)
       }
       
-      // Save PDF
-      const fileName = `${tournamentName.replace(/[^a-zA-Z0-9]/g, '_')}_Ronde_${roundNumber}.pdf`
+      // Save PDF - different filename for makeup rounds
+      const fileName = isMakeupRound
+        ? `${tournamentName.replace(/[^a-zA-Z0-9]/g, '_')}_${(roundData.round.label || 'Inhaaldag').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+        : `${tournamentName.replace(/[^a-zA-Z0-9]/g, '_')}_Ronde_${roundNumber}.pdf`
       pdf.save(fileName)
       
     } catch (error) {
