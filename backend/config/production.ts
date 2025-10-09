@@ -6,7 +6,6 @@ export default {
     disabled: false,
   },
   cors: {
-    // 👈 1
     origins: [
       'https://backend-kskcolle-production.up.railway.app',
       'https://kskcolle-production.up.railway.app',
