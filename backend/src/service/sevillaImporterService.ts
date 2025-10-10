@@ -942,27 +942,40 @@ export class SevillaImporterService {
         return;
       }
 
-      // Find the makeup round for this tournament
-      const makeupRound = await prisma.round.findFirst({
+      // Find ALL makeup rounds for this tournament
+      const makeupRounds = await prisma.round.findMany({
         where: {
           tournament_id: originalGame.round.tournament_id,
           type: 'MAKEUP'
+        },
+        orderBy: {
+          ronde_datum: 'asc'
         }
       });
 
-      if (!makeupRound) {
-        console.log(`No makeup round found for tournament ${originalGame.round.tournament_id}`);
+      if (makeupRounds.length === 0) {
+        console.log(`No makeup rounds found for tournament ${originalGame.round.tournament_id}`);
         return;
       }
 
-      // Find the corresponding game in the makeup round
-      const makeupGame = await prisma.game.findFirst({
-        where: {
-          round_id: makeupRound.round_id,
-          speler1_id: originalGame.speler1_id,
-          speler2_id: originalGame.speler2_id
+      console.log(`Found ${makeupRounds.length} makeup round(s) for tournament ${originalGame.round.tournament_id}`);
+
+      // Search for the corresponding game in ALL makeup rounds
+      let makeupGame = null;
+      for (const makeupRound of makeupRounds) {
+        makeupGame = await prisma.game.findFirst({
+          where: {
+            round_id: makeupRound.round_id,
+            speler1_id: originalGame.speler1_id,
+            speler2_id: originalGame.speler2_id
+          }
+        });
+
+        if (makeupGame) {
+          console.log(`Found makeup game ${makeupGame.game_id} in round ${makeupRound.round_id} (${makeupRound.label})`);
+          break;
         }
-      });
+      }
 
       if (makeupGame) {
         console.log(`Syncing result ${result} to makeup game ${makeupGame.game_id}`);
@@ -975,7 +988,7 @@ export class SevillaImporterService {
           }
         });
       } else {
-        console.log(`No makeup game found for original game ${originalGameId}`);
+        console.log(`No makeup game found in any makeup round for original game ${originalGameId}`);
       }
     } catch (error) {
       console.error('Error syncing postponed game to makeup round:', error);
