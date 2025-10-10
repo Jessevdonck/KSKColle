@@ -32,7 +32,7 @@ const HeroHomepage = () => {
               </span>
             </h1>
             <p className="mt-8 text-xl sm:text-2xl text-white font-medium drop-shadow-lg">
-              De beste schaakclub van het Waasland!
+              De gezelligste schaakclub van het Waasland!
             </p>
           </div>
 
