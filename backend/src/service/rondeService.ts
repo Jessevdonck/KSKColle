@@ -234,6 +234,7 @@ export const getRoundForExport = async (
         winnaar: game.winnaar,
         result: game.result,
         uitgestelde_datum: game.uitgestelde_datum,
+        board_position: game.board_position,
       })),
     };
   } catch (error) {
