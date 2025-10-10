@@ -247,7 +247,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                       {player.score}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {tournament.type === "SWISS" ? "Buchholz" : "SB-Score"}: {player.tieBreak.toFixed(1)}
+                      {tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}: {player.tieBreak.toFixed(1)}
                     </div>
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
             <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
             <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
-              {tournament.type === "SWISS" ? "Buchholz" : "SB-Score"}
+              {tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}
             </div>
           </div>
         </div>
@@ -573,7 +573,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     }
   })
 
-  // 3) buchholzList & sbMap (only for regular rounds)
+  // 3) buchholzList (Bhlz-W) & sbMap (only for regular rounds)
   rounds.forEach(({ games, type: roundType }) => {
     const isMakeupRound = roundType === 'MAKEUP'
     if (isMakeupRound) return // Skip makeup rounds
@@ -581,7 +581,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
 
-      // Buchholz: volledige score van tegenstander
+      // Bhlz-W: volledige score van tegenstander
       if (p2) {
         buchholzList[p1].push(scoreMap[p2])
         buchholzList[p2].push(scoreMap[p1])
@@ -639,7 +639,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       return b.score - a.score
     }
     
-    // Tweede criterium: Tie-break (Buchholz/SB-score) (hoog naar laag)
+    // Tweede criterium: Tie-break (Bhlz-W/SB-score) (hoog naar laag)
     if (b.tieBreak !== a.tieBreak) {
       return b.tieBreak - a.tieBreak
     }

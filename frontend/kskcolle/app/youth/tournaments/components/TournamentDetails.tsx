@@ -59,6 +59,7 @@ export default function TournamentDetails() {
   const [timeline, setTimeline] = useState<
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] })[]
   >([])
+  const [activeTab, setActiveTab] = useState<'rounds' | 'standings'>('rounds')
 
   // 1) Tournament data fetching
   const {
@@ -264,11 +265,45 @@ export default function TournamentDetails() {
         </div>
       </div>
 
+      {/* Mobile Tabs - Only visible on mobile */}
+      <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">
+        <div className="max-w-[90rem] mx-auto px-6">
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab('rounds')}
+              className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                activeTab === 'rounds'
+                  ? 'text-mainAccent border-mainAccent'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Rondes
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('standings')}
+              className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                activeTab === 'standings'
+                  ? 'text-mainAccent border-mainAccent'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Stand
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-6">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Rounds & Makeup Days with Navigation */}
-          <div className="xl:col-span-2">
+          <div className={`xl:col-span-2 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
                 <div className="flex items-center justify-between">
@@ -344,7 +379,7 @@ export default function TournamentDetails() {
           </div>
 
           {/* Standings */}
-          <div className="xl:col-span-1">
+          <div className={`xl:col-span-1 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
             <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-6">
               <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
