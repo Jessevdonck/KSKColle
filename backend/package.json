@@ -14,6 +14,8 @@
     "test:coverage": "env-cmd -f .env.test jest --runInBand --coverage",
     "generate-docs": "apidoc -i src/ -o apidoc/",
     "import-sevilla": "tsx src/scripts/importSevillaTournament.ts",
+    "sync-makeup-results": "tsx src/scripts/sync-makeup-results.ts",
+    "undo-board-positions": "tsx src/scripts/undo-board-positions.ts",
     "update-leden": "tsx src/scripts/update-leden.ts",
     "send-launch-email": "tsx src/scripts/send-launch-email.ts",
     "simulate-launch-email": "tsx src/scripts/simulate-launch-email.ts",

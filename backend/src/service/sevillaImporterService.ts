@@ -332,6 +332,21 @@ export class SevillaImporterService {
   private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>, incremental: boolean = false, sevillaData?: SevillaTournament) {
     console.log(`=== importRoundsAndGames called with ${players.length} players (incremental: ${incremental}) ===`);
     
+    // Load all makeup rounds and their games upfront for efficient syncing
+    const makeupRounds = await prisma.round.findMany({
+      where: {
+        tournament_id: tournamentId,
+        type: 'MAKEUP'
+      },
+      include: {
+        games: true
+      }
+    });
+    console.log(`📦 Preloaded ${makeupRounds.length} makeup rounds for syncing`);
+    
+    // Collect makeup game updates to batch at the end
+    const makeupGameUpdates: Array<{ game_id: number; winnaar_id: number | null; result: string }> = [];
+    
     // Parse round dates from Sevilla data if available
     const roundDates = new Map<number, Date>();
     if (sevillaData) {
@@ -608,10 +623,25 @@ export class SevillaImporterService {
       }
 
       // Import games for this round
-      await this.importGamesForRound(players, round.round_id, roundNumber, playerMap);
+      await this.importGamesForRound(players, round.round_id, roundNumber, playerMap, makeupRounds, makeupGameUpdates);
       
       // Import absent players with scores for this round
       await this.importAbsentPlayers(players, round.round_id, roundNumber, playerMap);
+    }
+    
+    // Batch update all makeup games at the end
+    if (makeupGameUpdates.length > 0) {
+      console.log(`\n🔄 Batch updating ${makeupGameUpdates.length} makeup games...`);
+      for (const update of makeupGameUpdates) {
+        await prisma.game.update({
+          where: { game_id: update.game_id },
+          data: {
+            winnaar_id: update.winnaar_id,
+            result: update.result
+          }
+        });
+      }
+      console.log(`✅ Makeup games synced!`);
     }
   }
 
@@ -641,7 +671,7 @@ export class SevillaImporterService {
     return sevillaRoundNumber;
   }
 
-  private async importGamesForRound(players: SevillaPlayer[], roundId: number, roundNumber: number, playerMap: Map<number, number>) {
+  private async importGamesForRound(players: SevillaPlayer[], roundId: number, roundNumber: number, playerMap: Map<number, number>, makeupRounds: any[] = [], makeupGameUpdates: any[] = []) {
     const gamesInRound = new Set<string>(); // To avoid duplicates
     let gamesFound = 0;
 
@@ -651,13 +681,8 @@ export class SevillaImporterService {
         continue;
       }
       
-      // Debug: show all games for this player
-      const allRounds = player.Game.map(g => g.Round).sort((a, b) => a - b);
-      console.log(`Player ${player.Name} has ${player.Game.length} games in rounds: ${allRounds.join(', ')}`);
-      
       const playerGame = player.Game.find(g => g.Round === roundNumber);
       if (!playerGame) {
-        console.log(`Player ${player.Name} has no game in round ${roundNumber}`);
         continue;
       }
       
@@ -693,8 +718,6 @@ export class SevillaImporterService {
       const whitePlayerId = whiteSevillaPlayer ? playerMap.get(whiteSevillaPlayer.ID) || null : null;
       const blackPlayerId = blackSevillaPlayer ? playerMap.get(blackSevillaPlayer.ID) || null : null;
       
-      console.log(`Game: ${whitePlayerName}(${whiteSevillaPlayer?.ID}->${whitePlayerId}) vs ${blackPlayerName}(${blackSevillaPlayer?.ID}->${blackPlayerId})`);
-      
       // The result is always from white's perspective: "1-0" = white wins, "0-1" = black wins, "1/2-1/2" = draw
       if (playerGame.Res === '1-0') {
         // White wins
@@ -720,12 +743,8 @@ export class SevillaImporterService {
       });
 
       if (existingGame) {
-        console.log(`Game already exists, updating result: ${existingGame.game_id}, current result: "${existingGame.result}", current uitgestelde_datum: ${existingGame.uitgestelde_datum}`);
-        
         // Check if the game now has a real result (not "..." or "not_played")
         const hasRealResult = result && result !== "..." && result !== "not_played" && result !== "0-0" && result !== "uitgesteld";
-        
-        console.log(`Checking if game has real result: result="${result}", hasRealResult=${hasRealResult}, winnaarId=${winnaarId}`);
         
         // Update the game with the new result
         await prisma.game.update({
@@ -733,20 +752,16 @@ export class SevillaImporterService {
           data: {
             winnaar_id: winnaarId,
             result: result,
-            board_position: existingGame.board_position, // Preserve board position
+            board_position: playerGame.Pos || existingGame.board_position, // Update with Sevilla board position if available
             // Remove uitgestelde_datum if game now has a real result
             ...(hasRealResult ? { uitgestelde_datum: null } : 
                 existingGame.uitgestelde_datum ? { uitgestelde_datum: existingGame.uitgestelde_datum } : {})
           }
         });
         
-        // ALWAYS check if there's a corresponding makeup game to sync
-        // This handles both cases: games with uitgestelde_datum and games that were postponed earlier
-        if (hasRealResult) {
-          console.log(`✅ Game has result ${result}, checking for makeup round to sync`);
-          await this.syncPostponedGameToMakeupRound(existingGame.game_id, result, winnaarId);
-        } else {
-          console.log(`Game has no real result yet (result="${result}"), not syncing to makeup round`);
+        // Sync to makeup rounds if game has a result (efficient in-memory lookup)
+        if (hasRealResult && makeupRounds.length > 0) {
+          this.collectMakeupGameUpdate(existingGame.speler1_id, existingGame.speler2_id, result, winnaarId, makeupRounds, makeupGameUpdates);
         }
         continue;
       }
@@ -759,11 +774,9 @@ export class SevillaImporterService {
           speler2_id: blackPlayerId || opponentUserId, // Use black player as speler2, fallback to original logic
           winnaar_id: winnaarId,
           result: result,
-          board_position: gamesInRound.size + 1, // Track the board position
+          board_position: playerGame.Pos || (gamesInRound.size + 1), // Use Sevilla board position (Pos field)
         },
       });
-      
-      console.log(`Created game: speler1=${whitePlayerId || playerUserId} vs speler2=${blackPlayerId || opponentUserId} (${playerGame.Res}) - White: ${whitePlayerName}(${whitePlayerId}), Black: ${blackPlayerName}(${blackPlayerId}), Winner: ${winnaarId || 'Draw'}`);
     }
     
     console.log(`Round ${roundNumber}: Found ${gamesFound} games, created ${gamesInRound.size} unique games`);
@@ -962,6 +975,38 @@ export class SevillaImporterService {
       }
     } catch (error) {
       console.error('Error syncing postponed game to makeup round:', error);
+    }
+  }
+
+  /**
+   * Collect makeup game updates for batch processing (no database queries during collection)
+   */
+  private collectMakeupGameUpdate(
+    speler1_id: number, 
+    speler2_id: number | null, 
+    result: string, 
+    winnaarId: number | null, 
+    makeupRounds: any[],
+    makeupGameUpdates: any[]
+  ): void {
+    if (!speler2_id) return; // Skip bye games
+    
+    // Search for matching game in preloaded makeup rounds (in-memory)
+    for (const makeupRound of makeupRounds) {
+      const makeupGame = makeupRound.games.find((g: any) => 
+        (g.speler1_id === speler1_id && g.speler2_id === speler2_id) ||
+        (g.speler1_id === speler2_id && g.speler2_id === speler1_id)
+      );
+      
+      if (makeupGame && (makeupGame.result !== result || makeupGame.winnaar_id !== winnaarId)) {
+        // Collect this update for batch processing
+        makeupGameUpdates.push({
+          game_id: makeupGame.game_id,
+          winnaar_id: winnaarId,
+          result: result
+        });
+        return; // Found, added to batch
+      }
     }
   }
 }
