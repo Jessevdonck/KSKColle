@@ -55,6 +55,8 @@ async function undoBoardPositions(tournamentId: number) {
       let restoredInRound = 0;
       for (let i = 0; i < sortedGames.length; i++) {
         const game = sortedGames[i];
+        if (!game) continue;
+        
         const originalPosition = i + 1;
 
         // Update to original position
