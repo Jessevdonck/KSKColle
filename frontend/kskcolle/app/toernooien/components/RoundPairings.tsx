@@ -211,14 +211,14 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                         href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
                         className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-xs whitespace-nowrap"
                       >
-                        <div className="w-6 h-6 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white group-hover:border-mainAccent transition-colors">
+                        <div className="w-5 h-5 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-[0.7em] font-bold text-white group-hover:border-mainAccent transition-colors">
                           Z
                         </div>
                         <span>{`${game.speler2.voornaam} ${game.speler2.achternaam}`}</span>
                       </Link>
                     ) : (
                       <div className="flex items-center gap-2 text-gray-500 italic text-sm whitespace-nowrap">
-                        <div className="w-6 h-6 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-xs">
+                        <div className="w-5 h-5 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-[0.7em]">
                           -
                         </div>
                         {getByeText(game.result)}
