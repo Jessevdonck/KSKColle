@@ -729,22 +729,26 @@ export class SevillaImporterService {
         });
         
         if (round) {
-          const postponedGame = await prisma.game.findFirst({
+          const player1 = whitePlayerId || playerUserId;
+          const player2 = blackPlayerId || opponentUserId;
+          
+          // Only search for postponed games if both players exist
+          const postponedGame = player1 && player2 ? await prisma.game.findFirst({
             where: {
               round: { tournament_id: round.tournament_id },
               OR: [
                 {
-                  speler1_id: whitePlayerId || playerUserId,
-                  speler2_id: blackPlayerId || opponentUserId
+                  speler1_id: player1,
+                  speler2_id: player2
                 },
                 {
-                  speler1_id: blackPlayerId || opponentUserId,
-                  speler2_id: whitePlayerId || playerUserId
+                  speler1_id: player2,
+                  speler2_id: player1
                 }
               ],
               uitgestelde_datum: { not: null }
             }
-          });
+          }) : null;
           
           if (postponedGame) {
             console.log(`Found postponed game ${postponedGame.game_id} with uitgestelde_datum: ${postponedGame.uitgestelde_datum}`);
@@ -973,28 +977,34 @@ export class SevillaImporterService {
       // Search for the corresponding game in ALL makeup rounds
       // Need to check both player order combinations since they might be swapped
       let makeupGame = null;
-      for (const makeupRound of makeupRounds) {
-        // Try to find the game with either player order
-        makeupGame = await prisma.game.findFirst({
-          where: {
-            round_id: makeupRound.round_id,
-            OR: [
-              {
-                speler1_id: originalGame.speler1_id,
-                speler2_id: originalGame.speler2_id
-              },
-              {
-                speler1_id: originalGame.speler2_id,
-                speler2_id: originalGame.speler1_id
-              }
-            ]
-          }
-        });
+      
+      // Only search if both players exist (speler2_id might be null for bye games)
+      if (originalGame.speler2_id) {
+        for (const makeupRound of makeupRounds) {
+          // Try to find the game with either player order
+          makeupGame = await prisma.game.findFirst({
+            where: {
+              round_id: makeupRound.round_id,
+              OR: [
+                {
+                  speler1_id: originalGame.speler1_id,
+                  speler2_id: originalGame.speler2_id
+                },
+                {
+                  speler1_id: originalGame.speler2_id,
+                  speler2_id: originalGame.speler1_id
+                }
+              ]
+            }
+          });
 
-        if (makeupGame) {
-          console.log(`Found makeup game ${makeupGame.game_id} in round ${makeupRound.round_id} (${makeupRound.label})`);
-          break;
+          if (makeupGame) {
+            console.log(`Found makeup game ${makeupGame.game_id} in round ${makeupRound.round_id} (${makeupRound.label})`);
+            break;
+          }
         }
+      } else {
+        console.log(`Original game ${originalGameId} has no speler2_id (bye game?), skipping makeup sync`);
       }
 
       if (makeupGame) {
