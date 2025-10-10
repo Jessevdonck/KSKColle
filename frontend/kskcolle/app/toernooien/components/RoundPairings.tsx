@@ -258,7 +258,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                         ? "Uitgesteld"
                         : game.result && game.result !== "not_played" && game.result !== "..."
                         ? game.result
-                        : "Nog te spelen"}
+                        : "..."}
                     </span>
                   </td>
                 </tr>
@@ -300,7 +300,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     ? "Uitgesteld"
                     : game.result && game.result !== "not_played" && game.result !== "..."
                     ? game.result
-                    : "Nog te spelen"}
+                    : "..."}
                 </span>
               </div>
 

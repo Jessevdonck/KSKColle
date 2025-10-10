@@ -42,8 +42,6 @@ export interface PostponeGameData {
 export interface PostponeGameResponse {
   success: boolean;
   message: string;
-  original_game_id: number;
-  new_game_id: number;
   new_round_id: number;
   new_round_date: Date;
 }
@@ -346,8 +344,6 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
     return {
       success: true,
       message: `Partij succesvol uitgesteld naar ${targetRound.label || 'inhaaldag'} op ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`,
-      original_game_id: data.game_id,
-      new_game_id: newGame.game_id,
       new_round_id: targetRound.round_id,
       new_round_date: targetRound.ronde_datum
     };
