@@ -732,20 +732,30 @@ export class SevillaImporterService {
           const postponedGame = await prisma.game.findFirst({
             where: {
               round: { tournament_id: round.tournament_id },
-              speler1_id: whitePlayerId || playerUserId,
-              speler2_id: blackPlayerId || opponentUserId,
+              OR: [
+                {
+                  speler1_id: whitePlayerId || playerUserId,
+                  speler2_id: blackPlayerId || opponentUserId
+                },
+                {
+                  speler1_id: blackPlayerId || opponentUserId,
+                  speler2_id: whitePlayerId || playerUserId
+                }
+              ],
               uitgestelde_datum: { not: null }
             }
           });
           
           if (postponedGame) {
-            console.log(`Found postponed game ${postponedGame.game_id}`);
+            console.log(`Found postponed game ${postponedGame.game_id} with uitgestelde_datum: ${postponedGame.uitgestelde_datum}`);
             
             // Check if the game now has a real result (not "..." or "not_played")
             const hasRealResult = result && result !== "..." && result !== "not_played" && result !== "0-0";
             
+            console.log(`Checking if game has real result: result="${result}", hasRealResult=${hasRealResult}, winnaarId=${winnaarId}`);
+            
             if (hasRealResult) {
-              console.log(`Game now has result ${result}, removing uitgestelde_datum and syncing to makeup round`);
+              console.log(`✅ Game now has result ${result}, removing uitgestelde_datum and syncing to makeup round`);
               // Game now has a result, remove the postponement and sync to makeup round
               await prisma.game.update({
                 where: { game_id: existingGame.game_id },
@@ -961,13 +971,23 @@ export class SevillaImporterService {
       console.log(`Found ${makeupRounds.length} makeup round(s) for tournament ${originalGame.round.tournament_id}`);
 
       // Search for the corresponding game in ALL makeup rounds
+      // Need to check both player order combinations since they might be swapped
       let makeupGame = null;
       for (const makeupRound of makeupRounds) {
+        // Try to find the game with either player order
         makeupGame = await prisma.game.findFirst({
           where: {
             round_id: makeupRound.round_id,
-            speler1_id: originalGame.speler1_id,
-            speler2_id: originalGame.speler2_id
+            OR: [
+              {
+                speler1_id: originalGame.speler1_id,
+                speler2_id: originalGame.speler2_id
+              },
+              {
+                speler1_id: originalGame.speler2_id,
+                speler2_id: originalGame.speler1_id
+              }
+            ]
           }
         });
 
