@@ -720,93 +720,33 @@ export class SevillaImporterService {
       });
 
       if (existingGame) {
-        console.log(`Game already exists, updating result: ${existingGame.game_id}`);
+        console.log(`Game already exists, updating result: ${existingGame.game_id}, current result: "${existingGame.result}", current uitgestelde_datum: ${existingGame.uitgestelde_datum}`);
         
-        // Check if there's a postponed game with the same players in this tournament
-        const round = await prisma.round.findUnique({
-          where: { round_id: roundId },
-          select: { tournament_id: true }
+        // Check if the game now has a real result (not "..." or "not_played")
+        const hasRealResult = result && result !== "..." && result !== "not_played" && result !== "0-0" && result !== "uitgesteld";
+        
+        console.log(`Checking if game has real result: result="${result}", hasRealResult=${hasRealResult}, winnaarId=${winnaarId}`);
+        
+        // Update the game with the new result
+        await prisma.game.update({
+          where: { game_id: existingGame.game_id },
+          data: {
+            winnaar_id: winnaarId,
+            result: result,
+            board_position: existingGame.board_position, // Preserve board position
+            // Remove uitgestelde_datum if game now has a real result
+            ...(hasRealResult ? { uitgestelde_datum: null } : 
+                existingGame.uitgestelde_datum ? { uitgestelde_datum: existingGame.uitgestelde_datum } : {})
+          }
         });
         
-        if (round) {
-          const player1 = whitePlayerId || playerUserId;
-          const player2 = blackPlayerId || opponentUserId;
-          
-          // Only search for postponed games if both players exist
-          const postponedGame = player1 && player2 ? await prisma.game.findFirst({
-            where: {
-              round: { tournament_id: round.tournament_id },
-              OR: [
-                {
-                  speler1_id: player1,
-                  speler2_id: player2
-                },
-                {
-                  speler1_id: player2,
-                  speler2_id: player1
-                }
-              ],
-              uitgestelde_datum: { not: null }
-            }
-          }) : null;
-          
-          if (postponedGame) {
-            console.log(`Found postponed game ${postponedGame.game_id} with uitgestelde_datum: ${postponedGame.uitgestelde_datum}`);
-            
-            // Check if the game now has a real result (not "..." or "not_played")
-            const hasRealResult = result && result !== "..." && result !== "not_played" && result !== "0-0";
-            
-            console.log(`Checking if game has real result: result="${result}", hasRealResult=${hasRealResult}, winnaarId=${winnaarId}`);
-            
-            if (hasRealResult) {
-              console.log(`✅ Game now has result ${result}, removing uitgestelde_datum and syncing to makeup round`);
-              // Game now has a result, remove the postponement and sync to makeup round
-              await prisma.game.update({
-                where: { game_id: existingGame.game_id },
-                data: {
-                  winnaar_id: winnaarId,
-                  result: result,
-                  uitgestelde_datum: null, // Remove postponement since game is now played
-                  board_position: existingGame.board_position, // Preserve board position
-                }
-              });
-              
-              // Sync the result to the makeup round
-              await this.syncPostponedGameToMakeupRound(existingGame.game_id, result, winnaarId);
-            } else {
-              console.log(`Game still has no result, preserving uitgestelde_datum`);
-              // Game still has no result, preserve the postponement
-              await prisma.game.update({
-                where: { game_id: existingGame.game_id },
-                data: {
-                  winnaar_id: winnaarId,
-                  result: result,
-                  uitgestelde_datum: postponedGame.uitgestelde_datum, // Preserve the postponement date
-                  board_position: existingGame.board_position, // Preserve board position
-                }
-              });
-            }
-          } else {
-            // No postponed game found, update normally
-            await prisma.game.update({
-              where: { game_id: existingGame.game_id },
-              data: {
-                winnaar_id: winnaarId,
-                result: result,
-                board_position: existingGame.board_position, // Preserve board position
-              }
-            });
-          }
+        // ALWAYS check if there's a corresponding makeup game to sync
+        // This handles both cases: games with uitgestelde_datum and games that were postponed earlier
+        if (hasRealResult) {
+          console.log(`✅ Game has result ${result}, checking for makeup round to sync`);
+          await this.syncPostponedGameToMakeupRound(existingGame.game_id, result, winnaarId);
         } else {
-          // Fallback: update normally if round not found
-          await prisma.game.update({
-            where: { game_id: existingGame.game_id },
-            data: {
-              winnaar_id: winnaarId,
-              result: result,
-              board_position: existingGame.board_position, // Preserve board position
-            }
-          });
+          console.log(`Game has no real result yet (result="${result}"), not syncing to makeup round`);
         }
         continue;
       }
