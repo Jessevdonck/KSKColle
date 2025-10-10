@@ -699,7 +699,7 @@ export default function RoundManagement({ tournament }: Props) {
                         roundId={round.round_id}
                         roundNumber={round.ronde_nummer}
                         tournamentName={tournament.naam}
-                        isSevillaImported={tournament.sevilla_imported || false}
+                        isSevillaImported={round.is_sevilla_imported || false}
                         className="border-white/50 text-white hover:bg-white/30 bg-white/10"
                       />
                     )}
