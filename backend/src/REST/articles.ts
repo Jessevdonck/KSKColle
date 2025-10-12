@@ -61,18 +61,27 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
       select: { roles: true, is_admin: true }
     })
     
-    const isAdmin = user?.is_admin || user?.roles?.includes('admin')
-    const isBestuurslid = user?.roles?.includes('bestuurslid')
+    // Check if user has admin or bestuurslid role
+    const roles = Array.isArray(user?.roles) ? user.roles : []
+    const isAdmin = user?.is_admin || roles.includes('admin')
+    const isBestuurslid = roles.includes('bestuurslid')
     
-    // If not admin or bestuurslid and requesting drafts, only show own drafts
-    if (!isAdmin && !isBestuurslid && params.published === false) {
-      params.author_id = userId
+    // If not admin or bestuurslid, restrict what they can see
+    if (!isAdmin && !isBestuurslid) {
+      // If explicitly requesting drafts (published=false), only show their own
+      if (params.published === false) {
+        params.author_id = userId
+      }
+      // If requesting "all" (published=undefined), only show published articles
+      // because normal users shouldn't see other people's drafts
+      if (params.published === undefined) {
+        params.published = true
+      }
     }
+    // Admin and bestuurslid can see everything based on their filter choice
   } else {
     // Not authenticated - only show published articles
-    if (params.published === undefined) {
-      params.published = true
-    }
+    params.published = true
   }
 
   const result = await getArticlesService(params)
