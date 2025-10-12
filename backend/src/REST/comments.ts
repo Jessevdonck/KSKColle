@@ -39,6 +39,7 @@ const createComment = async (ctx: KoaContext) => {
     const commentData = {
       article_id: (ctx.request.body as any).article_id,
       content: (ctx.request.body as any).content,
+      parent_comment_id: (ctx.request.body as any).parent_comment_id,
     }
 
     const comment = await commentService.createComment(userId, commentData)
@@ -54,6 +55,7 @@ createComment.validationScheme = {
   body: {
     article_id: Joi.number().integer().positive().required(),
     content: Joi.string().min(1).required(),
+    parent_comment_id: Joi.number().integer().positive().optional(),
   }
 }
 

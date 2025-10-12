@@ -7,6 +7,10 @@ import type {
   GetCommentsRequest, 
   GetCommentsResponse
 } from '../types/comment'
+import { 
+  createArticleCommentNotification, 
+  createCommentReplyNotification 
+} from './notificationService'
 
 const prisma = new PrismaClient()
 
@@ -17,6 +21,7 @@ export const createComment = async (authorId: number, commentData: CreateComment
         article_id: commentData.article_id,
         author_id: authorId,
         content: commentData.content,
+        parent_comment_id: commentData.parent_comment_id || null,
       },
       include: {
         author: {
@@ -30,6 +35,41 @@ export const createComment = async (authorId: number, commentData: CreateComment
       }
     })
 
+    // Send notifications
+    if (commentData.parent_comment_id) {
+      // This is a reply to a comment
+      const parentComment = await prisma.comment.findUnique({
+        where: { comment_id: commentData.parent_comment_id },
+        include: { article: true }
+      })
+      
+      if (parentComment) {
+        await createCommentReplyNotification(
+          parentComment.author_id,
+          authorId,
+          `${comment.author.voornaam} ${comment.author.achternaam}`,
+          commentData.article_id,
+          commentData.parent_comment_id,
+          parentComment.article.title
+        )
+      }
+    } else {
+      // This is a comment on an article
+      const article = await prisma.article.findUnique({
+        where: { article_id: commentData.article_id }
+      })
+      
+      if (article) {
+        await createArticleCommentNotification(
+          article.author_id,
+          authorId,
+          `${comment.author.voornaam} ${comment.author.achternaam}`,
+          commentData.article_id,
+          article.title
+        )
+      }
+    }
+
     return comment
   } catch (error) {
     throw handleDBError(error)
@@ -40,9 +80,13 @@ export const getCommentsByArticleId = async (request: GetCommentsRequest): Promi
   try {
     const { article_id, limit = 20, offset = 0 } = request
 
-    const [comments, total] = await Promise.all([
+    // Get top-level comments (no parent)
+    const [topLevelComments, total] = await Promise.all([
       prisma.comment.findMany({
-        where: { article_id },
+        where: { 
+          article_id,
+          parent_comment_id: null
+        },
         include: {
           author: {
             select: {
@@ -58,14 +102,51 @@ export const getCommentsByArticleId = async (request: GetCommentsRequest): Promi
         skip: offset,
       }),
       prisma.comment.count({
-        where: { article_id },
+        where: { 
+          article_id,
+          parent_comment_id: null
+        },
       })
     ])
 
+    // Get ALL replies for this article (not just first level)
+    const allReplies = await prisma.comment.findMany({
+      where: {
+        article_id,
+        parent_comment_id: { not: null }
+      },
+      include: {
+        author: {
+          select: {
+            user_id: true,
+            voornaam: true,
+            achternaam: true,
+            avatar_url: true,
+          }
+        }
+      },
+      orderBy: { created_at: 'asc' },
+    })
+
+    // Build hierarchical structure recursively
+    const buildCommentTree = (parentId: number | null): any[] => {
+      return allReplies
+        .filter(reply => reply.parent_comment_id === parentId)
+        .map(reply => ({
+          ...reply,
+          replies: buildCommentTree(reply.comment_id)
+        }))
+    }
+
+    const commentsWithReplies = topLevelComments.map(comment => ({
+      ...comment,
+      replies: buildCommentTree(comment.comment_id)
+    }))
+
     return {
-      comments,
+      comments: commentsWithReplies,
       total,
-      hasMore: offset + comments.length < total,
+      hasMore: offset + topLevelComments.length < total,
     }
   } catch (error) {
     throw handleDBError(error)

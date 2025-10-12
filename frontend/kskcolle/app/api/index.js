@@ -305,3 +305,23 @@ export const updateComment = async (commentId, commentData) => {
 export const deleteComment = async (commentId) => {
   await axios.delete(`${baseUrl}/comments/${commentId}`);
 };
+
+// Notification API functions
+export const getNotifications = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = queryString ? `${baseUrl}/notifications?${queryString}` : `${baseUrl}/notifications`;
+  const { data } = await axios.get(fullUrl);
+  return data;
+};
+
+export const markNotificationAsRead = async (notificationId) => {
+  await axios.put(`${baseUrl}/notifications/${notificationId}/read`);
+};
+
+export const markAllNotificationsAsRead = async () => {
+  await axios.put(`${baseUrl}/notifications/read-all`);
+};
+
+export const deleteNotification = async (notificationId) => {
+  await axios.delete(`${baseUrl}/notifications/${notificationId}`);
+};

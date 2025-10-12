@@ -24,6 +24,7 @@ import Image from "next/image"
 import LoginSheet from "./LoginSheet"
 import { useAuth } from "../contexts/auth"
 import ProfileDropdown from "./ProfileDropdown"
+import NotificationBell from "../../components/NotificationBell"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export default function Navbar() {
@@ -275,6 +276,7 @@ export default function Navbar() {
           <Link href="/contact" className="text-textColor hover:text-mainAccent transition-colors">
             <Mail size={18} />
           </Link>
+          {isAuthed && <NotificationBell />}
           {isAuthed ? <ProfileDropdown /> : <LoginSheet />}
         </div>
       </div>
@@ -579,7 +581,13 @@ export default function Navbar() {
               )}
             </div>
 
-            <div className="pt-4 border-t border-gray-200">{isAuthed ? <ProfileDropdown /> : <LoginSheet />}</div>
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium text-gray-700">Notificaties</span>
+                {isAuthed && <NotificationBell />}
+              </div>
+              {isAuthed ? <ProfileDropdown /> : <LoginSheet />}
+            </div>
           </div>
         </div>
       )}

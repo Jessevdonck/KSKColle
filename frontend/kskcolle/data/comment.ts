@@ -19,6 +19,7 @@ export interface CommentWithAuthor extends Comment {
 export interface CreateCommentRequest {
   article_id: number;
   content: string;
+  parent_comment_id?: number;
 }
 
 export interface UpdateCommentRequest {

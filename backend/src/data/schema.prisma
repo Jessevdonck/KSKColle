@@ -62,6 +62,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   articles           Article[]
   comments           Comment[]
+  notifications      Notification[]
 
   @@index([is_youth])
 }
@@ -215,6 +216,7 @@ model Article {
   
   author        User        @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
   comments      Comment[]
+  notifications Notification[]
   
   @@index([author_id])
   @@index([published])
@@ -224,17 +226,42 @@ model Article {
 }
 
 model Comment {
-  comment_id    Int         @id @default(autoincrement())
-  article_id    Int
-  author_id     Int
-  content       String      @db.Text
-  created_at    DateTime    @default(now())
-  updated_at    DateTime    @updatedAt
+  comment_id         Int         @id @default(autoincrement())
+  article_id         Int
+  author_id          Int
+  parent_comment_id  Int?
+  content            String      @db.Text
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @updatedAt
   
-  article       Article     @relation(fields: [article_id], references: [article_id], onDelete: Cascade)
-  author        User        @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
+  article            Article     @relation(fields: [article_id], references: [article_id], onDelete: Cascade)
+  author             User        @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
+  parent             Comment?    @relation("CommentReplies", fields: [parent_comment_id], references: [comment_id], onDelete: Cascade)
+  replies            Comment[]   @relation("CommentReplies")
+  notifications      Notification[]
   
   @@index([article_id])
   @@index([author_id])
+  @@index([parent_comment_id])
+  @@index([created_at])
+}
+
+model Notification {
+  notification_id    Int         @id @default(autoincrement())
+  user_id            Int
+  type               String      @db.VarChar(50)  // 'comment_reply', 'article_comment', etc.
+  title              String      @db.VarChar(255)
+  message            String      @db.Text
+  related_article_id Int?
+  related_comment_id Int?
+  is_read            Boolean     @default(false)
+  created_at         DateTime    @default(now())
+  
+  user               User        @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  related_article    Article?    @relation(fields: [related_article_id], references: [article_id], onDelete: Cascade)
+  related_comment    Comment?    @relation(fields: [related_comment_id], references: [comment_id], onDelete: Cascade)
+  
+  @@index([user_id])
+  @@index([is_read])
   @@index([created_at])
 } 
