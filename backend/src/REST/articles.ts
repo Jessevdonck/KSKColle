@@ -75,7 +75,7 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
       let roles: string[] = []
       if (user?.roles) {
         if (Array.isArray(user.roles)) {
-          roles = user.roles
+          roles = user.roles as string[]
         } else if (typeof user.roles === 'string') {
           try {
             roles = JSON.parse(user.roles)
