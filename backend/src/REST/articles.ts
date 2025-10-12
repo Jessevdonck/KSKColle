@@ -11,6 +11,7 @@ import { requireAuthentication, makeRequireRole } from '../core/auth'
 import validate from '../core/validation'
 import Joi from 'joi'
 import { PrismaClient } from '@prisma/client'
+import * as userService from '../service/userService'
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa'
 import type { 
   CreateArticleRequest, 
@@ -46,45 +47,96 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
     page: ctx.query.page ? parseInt(ctx.query.page as string) : undefined,
     pageSize: ctx.query.pageSize ? parseInt(ctx.query.pageSize as string) : undefined,
     type: ctx.query.type as ArticleType,
-    published: ctx.query.published ? ctx.query.published === 'true' : undefined,
+    published: ctx.query.published !== undefined ? ctx.query.published === 'true' : undefined,
     featured: ctx.query.featured ? ctx.query.featured === 'true' : undefined,
     author_id: ctx.query.author_id ? parseInt(ctx.query.author_id as string) : undefined,
   }
 
-  // If user is authenticated, check their role
-  // Only admins and bestuursleden can see all drafts
-  // Other users can only see their own drafts or published articles
-  if (ctx.state && ctx.state.session) {
-    const userId = ctx.state.session.userId
-    const user = await prisma.user.findUnique({
-      where: { user_id: userId },
-      select: { roles: true, is_admin: true }
-    })
-    
-    // Check if user has admin or bestuurslid role
-    const roles = Array.isArray(user?.roles) ? user.roles : []
-    const isAdmin = user?.is_admin || roles.includes('admin')
-    const isBestuurslid = roles.includes('bestuurslid')
-    
+  // Try to authenticate from Authorization header (optional)
+  let userId: number | undefined
+  let isAdmin = false
+  let isBestuurslid = false
+  
+  const { authorization } = ctx.headers
+  if (authorization) {
+    try {
+      const session = await userService.checkAndParseSession(authorization)
+      userId = session.userId
+      
+      // Get user details to check roles
+      const user = await prisma.user.findUnique({
+        where: { user_id: userId },
+        select: { roles: true }
+      })
+      
+      console.log('User from DB:', { userId, rawRoles: user?.roles, type: typeof user?.roles })
+      
+      // Parse roles - it's stored as JSON in the database
+      let roles: string[] = []
+      if (user?.roles) {
+        if (Array.isArray(user.roles)) {
+          roles = user.roles
+        } else if (typeof user.roles === 'string') {
+          try {
+            roles = JSON.parse(user.roles)
+          } catch (e) {
+            roles = []
+          }
+        } else if (typeof user.roles === 'object') {
+          // Sometimes Prisma returns JSON as object
+          roles = user.roles as any
+        }
+      }
+      
+      console.log('Parsed roles:', roles)
+      
+      isAdmin = roles.includes('admin')
+      isBestuurslid = roles.includes('bestuurslid')
+      
+      console.log('Articles - Authenticated user:', { userId, isAdmin, isBestuurslid, roles })
+    } catch (error) {
+      // Invalid/expired token - treat as guest
+      console.log('Articles - Invalid token, treating as guest')
+    }
+  }
+
+  console.log('Articles query params:', { 
+    rawPublished: ctx.query.published, 
+    parsedPublished: params.published,
+    userId,
+    isAdmin,
+    isBestuurslid
+  })
+
+  // Apply authorization rules based on user role
+  if (userId) {
     // If not admin or bestuurslid, restrict what they can see
     if (!isAdmin && !isBestuurslid) {
       // If explicitly requesting drafts (published=false), only show their own
       if (params.published === false) {
         params.author_id = userId
       }
-      // If requesting "all" (published=undefined), only show published articles
+      // If no filter specified (published=undefined), only show published articles
       // because normal users shouldn't see other people's drafts
-      if (params.published === undefined) {
+      else if (params.published === undefined) {
         params.published = true
       }
+      // If published=true, that's fine - show published articles
     }
     // Admin and bestuurslid can see everything based on their filter choice
+    // If they don't specify a filter (published=undefined), leave it undefined to show ALL articles
+    
+    console.log('Final params.published:', params.published)
   } else {
     // Not authenticated - only show published articles
-    params.published = true
+    if (params.published === undefined) {
+      params.published = true
+    }
+    console.log('Not authenticated, forcing published=true')
   }
 
   const result = await getArticlesService(params)
+  console.log('Articles result:', { total: result.total, items: result.items.length })
   ctx.body = result
 }
 getArticles.validationScheme = {

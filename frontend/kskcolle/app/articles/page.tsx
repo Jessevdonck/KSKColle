@@ -27,7 +27,7 @@ export default function ArticlesPage() {
 
   useEffect(() => {
     fetchArticles()
-  }, [currentPage, filters])
+  }, [currentPage, filters, user])
 
   const fetchArticles = async () => {
     setLoading(true)
@@ -40,15 +40,24 @@ export default function ArticlesPage() {
       // Check if user is admin or bestuurslid
       const canManage = user && (user.roles?.includes("admin") || user.roles?.includes("bestuurslid"))
       
+      console.log('Frontend - Fetching articles:', { 
+        canManage, 
+        filterPublished: filters.published,
+        userRoles: user?.roles 
+      })
+      
       if (canManage) {
         // Admins and bestuursleden can see all articles and use filters
         if (filters.published && filters.published !== "all") {
           params.published = filters.published === "true"
         }
+        // If filters.published === "all", we don't set params.published (leave it undefined)
       } else {
         // Normal users can only see published articles
         params.published = true
       }
+
+      console.log('Frontend - API params:', params)
 
       const response: ArticleListResponse = await getAllArticles(params)
       
