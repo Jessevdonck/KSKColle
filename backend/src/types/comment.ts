@@ -3,8 +3,8 @@ export interface Comment {
   article_id: number
   author_id: number
   content: string
-  created_at: string
-  updated_at: string
+  created_at: Date | string
+  updated_at: Date | string
 }
 
 export interface CommentWithAuthor extends Comment {

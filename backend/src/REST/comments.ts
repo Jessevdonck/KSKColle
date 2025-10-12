@@ -1,9 +1,9 @@
 import Router from '@koa/router'
 import Joi from 'joi'
 import * as commentService from '../service/commentService'
-import { requireAuthentication, makeRequireRole } from '../core/auth'
+import { requireAuthentication } from '../core/auth'
 import validate from '../core/validation'
-import type { ChessAppState, ChessAppContext } from '../types/koa'
+import type { ChessAppState, ChessAppContext, KoaContext } from '../types/koa'
 import { getLogger } from '../core/logging'
 
 const logger = getLogger()
@@ -22,7 +22,7 @@ const logger = getLogger()
  * @apiError (403) Forbidden Insufficient permissions (exlid users cannot comment)
  * @apiError (400) BadRequest Invalid input data
  */
-const createComment = async (ctx: ChessAppContext) => {
+const createComment = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId
   const userRoles = ctx.state.session.roles || []
   
@@ -37,8 +37,8 @@ const createComment = async (ctx: ChessAppContext) => {
 
   try {
     const commentData = {
-      article_id: ctx.request.body.article_id,
-      content: ctx.request.body.content,
+      article_id: (ctx.request.body as any).article_id,
+      content: (ctx.request.body as any).content,
     }
 
     const comment = await commentService.createComment(userId, commentData)
@@ -70,7 +70,7 @@ createComment.validationScheme = {
  * @apiSuccess (200) {Object} response Comments with pagination info
  * @apiError (400) BadRequest Invalid article ID
  */
-const getComments = async (ctx: ChessAppContext) => {
+const getComments = async (ctx: KoaContext) => {
   try {
     const articleId = parseInt((ctx.params as { articleId: string }).articleId)
     const limit = parseInt(ctx.query.limit as string) || 20
@@ -114,19 +114,19 @@ getComments.validationScheme = {
  * @apiError (403) Forbidden You can only edit your own comments
  * @apiError (404) NotFound Comment not found
  */
-const updateComment = async (ctx: ChessAppContext) => {
+const updateComment = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId
   const commentId = parseInt((ctx.params as { id: string }).id)
 
   try {
     const commentData = {
-      content: ctx.request.body.content,
+      content: (ctx.request.body as any).content,
     }
 
     const comment = await commentService.updateComment(commentId, userId, commentData)
     
     ctx.body = comment
-  } catch (error) {
+  } catch (error: any) {
     if (error.message === 'Comment not found or you do not have permission to edit it') {
       ctx.status = 403
       ctx.body = { error: 'You can only edit your own comments' }
@@ -159,7 +159,7 @@ updateComment.validationScheme = {
  * @apiError (403) Forbidden You can only delete your own comments
  * @apiError (404) NotFound Comment not found
  */
-const deleteComment = async (ctx: ChessAppContext) => {
+const deleteComment = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId
   const userRoles = ctx.state.session.roles || []
   const commentId = parseInt((ctx.params as { id: string }).id)
@@ -167,7 +167,7 @@ const deleteComment = async (ctx: ChessAppContext) => {
   try {
     await commentService.deleteComment(commentId, userId, userRoles)
     ctx.status = 204
-  } catch (error) {
+  } catch (error: any) {
     if (error.message === 'Comment not found') {
       ctx.status = 404
       ctx.body = { error: 'Comment not found' }
