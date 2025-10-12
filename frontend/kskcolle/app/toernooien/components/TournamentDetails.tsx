@@ -46,6 +46,7 @@ type Tournament = {
   }>
   rounds: Round[]
   is_sevilla_imported?: boolean
+  class_name?: string | null
 }
 
 export default function TournamentDetails() {
@@ -298,7 +299,14 @@ export default function TournamentDetails() {
                 <Trophy className="h-5 w-5 text-mainAccent" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-textColor">{tournament.naam}</h1>
+                <h1 className="text-xl font-bold text-textColor">
+                  {tournament.naam}
+                  {tournament.class_name && (
+                    <span className="ml-2 text-base font-medium text-mainAccent">
+                      ({tournament.class_name})
+                    </span>
+                  )}
+                </h1>
                 <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3" />

@@ -140,9 +140,14 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-textColor mb-2" data-cy="tournament_name">
+                    <h3 className="text-lg font-semibold text-textColor mb-1" data-cy="tournament_name">
                       {t.naam}
                     </h3>
+                    {t.class_name && (
+                      <p className="text-sm text-mainAccent font-medium mb-2">
+                        {t.class_name}
+                      </p>
+                    )}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="h-4 w-4" />

@@ -102,31 +102,69 @@ export class SevillaImporterService {
     return normalized;
   }
 
-  async importTournament(sevillaData: SevillaTournament, tournamentName?: string, incremental: boolean = false): Promise<number> {
+  async importTournament(sevillaData: SevillaTournament, tournamentName?: string, incremental: boolean = false): Promise<number | number[]> {
     try {
-      // Get the main group (usually Group 1)
-      const mainGroup = sevillaData.GroupReport.find(g => g.ID === 1);
-      if (!mainGroup) {
-        throw new Error('No main group found in Sevilla data');
+      const tournamentNameToUse = tournamentName || sevillaData.Name;
+      const groups = sevillaData.GroupReport;
+      
+      // Check if there are multiple groups (classes)
+      if (groups.length > 1) {
+        console.log(`Found ${groups.length} groups/classes in Sevilla data`);
+        const tournamentIds: number[] = [];
+        
+        // Import each group as a separate tournament with class_name
+        for (const group of groups) {
+          console.log(`Importing group ${group.ID}: ${group.Name}`);
+          const tournamentId = await this.importGroup(group, sevillaData, tournamentNameToUse, group.Name, incremental);
+          tournamentIds.push(tournamentId);
+        }
+        
+        console.log(`Successfully imported ${groups.length} tournaments with classes`);
+        return tournamentIds;
+      } else {
+        // Single group - import without class_name (backwards compatible)
+        console.log('Single group found, importing without class_name');
+        const mainGroup = groups[0];
+        if (!mainGroup) {
+          throw new Error('No group found in Sevilla data');
+        }
+        
+        const tournamentId = await this.importGroup(mainGroup, sevillaData, tournamentNameToUse, null, incremental);
+        return tournamentId;
       }
+    } catch (error) {
+      console.error('Error importing Sevilla tournament:', error);
+      throw error;
+    }
+  }
 
+  private async importGroup(group: SevillaGroup, sevillaData: SevillaTournament, tournamentName: string, className: string | null, incremental: boolean = false): Promise<number> {
+    try {
       // Get the latest ranking (final standings) for tournament info
-      const latestRanking = mainGroup.Ranking[mainGroup.Ranking.length - 1];
+      const latestRanking = group.Ranking[group.Ranking.length - 1];
       if (!latestRanking) {
         throw new Error('No ranking data found');
       }
 
-      const tournamentNameToUse = tournamentName || sevillaData.Name;
-
       let tournament;
       
       if (incremental) {
-        // Try to find existing tournament
+        // Try to find existing tournament (with matching class_name if provided)
+        const whereClause: any = {
+          naam: tournamentName,
+          finished: false // Only active tournaments
+        };
+        
+        // Add class_name to search criteria if provided
+        if (className !== null) {
+          whereClause.class_name = className;
+        } else {
+          // If no class_name, search for tournaments without class_name
+          whereClause.class_name = null;
+        }
+        
         tournament = await prisma.tournament.findFirst({
-          where: { 
-            naam: tournamentNameToUse,
-            finished: false // Only active tournaments
-          },
+          where: whereClause,
           include: { rounds: true }
         });
 
@@ -145,44 +183,49 @@ export class SevillaImporterService {
           // Create new tournament if not found
           tournament = await prisma.tournament.create({
             data: {
-              naam: tournamentNameToUse,
+              naam: tournamentName,
               rondes: latestRanking.Round,
               type: 'SWISS',
               rating_enabled: true,
               finished: false,
               is_youth: false,
+              class_name: className,
             },
           });
-          console.log(`Created new tournament: ${tournament.naam} (ID: ${tournament.tournament_id})`);
+          console.log(`Created new tournament: ${tournament.naam}${className ? ` (${className})` : ''} (ID: ${tournament.tournament_id})`);
         }
       } else {
         // Original behavior - always create new tournament
         tournament = await prisma.tournament.create({
           data: {
-            naam: tournamentNameToUse,
+            naam: tournamentName,
             rondes: latestRanking.Round,
             type: 'SWISS',
             rating_enabled: true,
             finished: false,
             is_youth: false,
+            class_name: className,
           },
         });
-        console.log(`Created tournament: ${tournament.naam} (ID: ${tournament.tournament_id})`);
+        console.log(`Created tournament: ${tournament.naam}${className ? ` (${className})` : ''} (ID: ${tournament.tournament_id})`);
       }
 
       // Import players from the History section (which contains all players with games)
-      const historySection = mainGroup.History || [];
+      const historySection = group.History || [];
       if (historySection.length > 0) {
-        // Get all players from the first history entry (they should all have the same games)
-        const playersWithGames = historySection[0]?.Player || [];
+        // Get all players from the LAST history entry (which contains ALL rounds cumulatively)
+        // History[0] = Round 1 only, History[1] = Rounds 1+2, History[n-1] = All rounds
+        const lastHistoryEntry = historySection[historySection.length - 1];
+        const playersWithGames = lastHistoryEntry?.Player || [];
+        console.log(`Found ${historySection.length} history entries, using the last one with all rounds`);
         console.log(`About to import players and games from ${playersWithGames.length} players with games`);
         console.log(`First few players with games:`, playersWithGames.slice(0, 3).map(p => ({ id: p.ID, name: p.Name, hasGame: !!p.Game, gameLength: p.Game?.length || 0 })));
         
         // Import players from the History section
         const playerMap = await this.importPlayers(playersWithGames, tournament.tournament_id, incremental);
         
-        // Import rounds and games
-        await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap, incremental, sevillaData);
+        // Import rounds and games (pass the group instead of the whole sevillaData for better date parsing)
+        await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap, incremental, group);
       } else {
         console.log('No history section found, using ranking section');
         // Fallback to ranking section if no history
@@ -193,7 +236,7 @@ export class SevillaImporterService {
       console.log('🔄 Updating participations with latest rating data...');
       await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
 
-      console.log(`Successfully imported tournament with ${latestRanking.Player.length} players and ${latestRanking.Round} rounds`);
+      console.log(`Successfully imported tournament${className ? ` (${className})` : ''} with ${latestRanking.Player.length} players and ${latestRanking.Round} rounds`);
       
       return tournament.tournament_id;
     } catch (error) {
@@ -329,7 +372,7 @@ export class SevillaImporterService {
 
 
 
-  private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>, incremental: boolean = false, sevillaData?: SevillaTournament) {
+  private async importRoundsAndGames(players: SevillaPlayer[], tournamentId: number, playerMap: Map<number, number>, incremental: boolean = false, group?: SevillaGroup) {
     console.log(`=== importRoundsAndGames called with ${players.length} players (incremental: ${incremental}) ===`);
     
     // Load all makeup rounds and their games upfront for efficient syncing
@@ -349,11 +392,10 @@ export class SevillaImporterService {
     
     // Parse round dates from Sevilla data if available
     const roundDates = new Map<number, Date>();
-    if (sevillaData) {
-      const mainGroup = sevillaData.GroupReport.find(g => g.ID === 1);
-      if (mainGroup && mainGroup.Ranking) {
+    if (group) {
+      if (group.Ranking) {
         // Look through all ranking entries to find round dates
-        mainGroup.Ranking.forEach(ranking => {
+        group.Ranking.forEach(ranking => {
           if (ranking.Date && ranking.Round) {
             // Only set if we don't already have this round date (first occurrence wins)
             if (!roundDates.has(ranking.Round)) {
@@ -382,8 +424,8 @@ export class SevillaImporterService {
         });
         
         // Also check RoundHist section for additional round dates
-        if (mainGroup.RoundHist) {
-          mainGroup.RoundHist.forEach(roundHist => {
+        if (group.RoundHist) {
+          group.RoundHist.forEach(roundHist => {
             if (roundHist.Date && roundHist.ID) {
               // Only set if we don't already have this round date
               if (!roundDates.has(roundHist.ID)) {
@@ -413,8 +455,8 @@ export class SevillaImporterService {
         }
         
         // Also check History section for additional round dates
-        if (mainGroup.History) {
-          mainGroup.History.forEach(history => {
+        if (group.History) {
+          group.History.forEach(history => {
             if (history.Date && history.Round) {
               // Parse date from format "18/09/2025" or "18-9-2025"
               let dateParts: string[] = [];

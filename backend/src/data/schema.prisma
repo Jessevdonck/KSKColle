@@ -73,6 +73,7 @@ model Tournament {
   rating_enabled     Boolean         @default(true)   
   finished           Boolean         @default(false) 
   is_youth           Boolean         @default(false)
+  class_name         String?        // Voor toernooien met meerdere klasses (bv. "Eerste Klasse", "Tweede Klasse")
   
   participations     Participation[]  
   rounds             Round[]          

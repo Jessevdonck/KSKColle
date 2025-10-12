@@ -32,7 +32,17 @@ export default function TournamentManagement() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-textColor">
-                {selectedTournament ? `${selectedTournament.naam} - Beheer` : "Toernooien Beheren"}
+                {selectedTournament ? (
+                  <>
+                    {selectedTournament.naam}
+                    {selectedTournament.class_name && (
+                      <span className="text-2xl font-medium text-mainAccent ml-2">
+                        ({selectedTournament.class_name})
+                      </span>
+                    )}
+                    {" - Beheer"}
+                  </>
+                ) : "Toernooien Beheren"}
               </h1>
               <p className="text-gray-600 mt-1">
                 {selectedTournament

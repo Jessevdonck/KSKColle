@@ -32,14 +32,26 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
     }
 
     // Import tournament (incremental or full)
-    const tournamentId = await sevillaImporter.importTournament(sevillaData, tournamentName, incremental || false);
+    const result = await sevillaImporter.importTournament(sevillaData, tournamentName, incremental || false);
 
     ctx.status = 201;
-    ctx.body = {
-      message: incremental ? 'Toernooi succesvol bijgewerkt' : 'Toernooi succesvol geïmporteerd',
-      tournamentId,
-      incremental: incremental || false,
-    };
+    
+    // Handle both single and multiple tournament imports
+    if (Array.isArray(result)) {
+      ctx.body = {
+        message: incremental ? 'Toernooien succesvol bijgewerkt' : 'Toernooien succesvol geïmporteerd',
+        tournamentIds: result,
+        multiClass: true,
+        incremental: incremental || false,
+      };
+    } else {
+      ctx.body = {
+        message: incremental ? 'Toernooi succesvol bijgewerkt' : 'Toernooi succesvol geïmporteerd',
+        tournamentId: result,
+        multiClass: false,
+        incremental: incremental || false,
+      };
+    }
   } catch (error) {
     console.error('Error importing Sevilla tournament:', error);
     ctx.status = 500;
@@ -70,14 +82,26 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
     }
 
     // Import tournament incrementally
-    const tournamentId = await sevillaImporter.importTournament(sevillaData, tournamentName, true);
+    const result = await sevillaImporter.importTournament(sevillaData, tournamentName, true);
 
     ctx.status = 201;
-    ctx.body = {
-      message: 'Toernooi succesvol bijgewerkt (incrementeel)',
-      tournamentId,
-      incremental: true,
-    };
+    
+    // Handle both single and multiple tournament imports
+    if (Array.isArray(result)) {
+      ctx.body = {
+        message: 'Toernooien succesvol bijgewerkt (incrementeel)',
+        tournamentIds: result,
+        multiClass: true,
+        incremental: true,
+      };
+    } else {
+      ctx.body = {
+        message: 'Toernooi succesvol bijgewerkt (incrementeel)',
+        tournamentId: result,
+        multiClass: false,
+        incremental: true,
+      };
+    }
   } catch (error) {
     console.error('Error importing Sevilla tournament incrementally:', error);
     ctx.status = 500;

@@ -15,6 +15,7 @@ interface Tournament {
     voornaam: string
     achternaam: string
   }>
+  class_name?: string | null
 }
 
 interface CategorizedTournaments {

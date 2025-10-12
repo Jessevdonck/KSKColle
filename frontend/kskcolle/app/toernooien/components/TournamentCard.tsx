@@ -17,6 +17,7 @@ interface TournamentCardProps {
       voornaam: string
       achternaam: string
     }>
+    class_name?: string | null
   }
 }
 
@@ -24,8 +25,15 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
   return (
     <Link href={`/toernooien/${tournament.tournament_id}`} className="block">
       <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200">
-        <h2 className="text-2xl font-semibold text-[#2e2c2c] mb-4">{tournament.naam}</h2>
-        <div className="flex items-center text-[#2e2c2c] mb-2">
+        <h2 className="text-2xl font-semibold text-[#2e2c2c] mb-1">
+          {tournament.naam}
+        </h2>
+        {tournament.class_name && (
+          <p className="text-sm text-mainAccent font-medium mb-3">
+            {tournament.class_name}
+          </p>
+        )}
+        <div className="flex items-center text-[#2e2c2c] mb-2 mt-3">
           <Calendar className="h-5 w-5 mr-2 text-mainAccent" />
           <span className="font-semibold">Rondes:</span>
           <span className="ml-2">{tournament.rondes}</span>

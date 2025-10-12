@@ -163,6 +163,7 @@ export type Toernooi = {
   finished: boolean;
   rating_enabled: boolean;
   rounds: Round[];
+  class_name?: string | null;
 };
 
 export type Participation = {
