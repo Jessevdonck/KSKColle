@@ -283,3 +283,25 @@ export const updateArticle = async (articleId, articleData) => {
 export const deleteArticle = async (articleId) => {
   await axios.delete(`${baseUrl}/articles/${articleId}`);
 };
+
+// Comment API functions
+export const createComment = async (commentData) => {
+  const { data } = await axios.post(`${baseUrl}/comments`, commentData);
+  return data;
+};
+
+export const getComments = async (articleId, params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const fullUrl = queryString ? `${baseUrl}/comments/${articleId}?${queryString}` : `${baseUrl}/comments/${articleId}`;
+  const { data } = await axios.get(fullUrl);
+  return data;
+};
+
+export const updateComment = async (commentId, commentData) => {
+  const { data } = await axios.put(`${baseUrl}/comments/${commentId}`, commentData);
+  return data;
+};
+
+export const deleteComment = async (commentId) => {
+  await axios.delete(`${baseUrl}/comments/${commentId}`);
+};

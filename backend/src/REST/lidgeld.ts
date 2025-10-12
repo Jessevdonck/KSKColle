@@ -94,7 +94,7 @@ updateLidgeldStatus.validationScheme = {
  * @apiError (401) Unauthorized You need to be authenticated to access this resource.
  * @apiError (403) Forbidden You don't have access to this resource.
  */
-const batchUpdateUserRoles = async (ctx: ChessAppContext) => {
+const batchUpdateUserRoles = async (ctx: KoaContext) => {
   try {
     const result = await lidgeldService.updateAllUserRolesBasedOnMembership();
     

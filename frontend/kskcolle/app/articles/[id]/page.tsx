@@ -12,6 +12,7 @@ import { ArrowLeft, Edit, Trash2, Calendar, User, Tag } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
+import CommentsSection from "../../../components/CommentsSection"
 
 export default function ArticleDetailPage() {
   const { user } = useAuth()
@@ -258,6 +259,11 @@ export default function ArticleDetailPage() {
               />
             </CardContent>
           </Card>
+
+          {/* Comments Section */}
+          <div className="mt-8">
+            <CommentsSection articleId={article.article_id} />
+          </div>
         </article>
       </div>
     </main>

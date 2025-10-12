@@ -18,6 +18,7 @@ import installAvatarRouter from './avatar';
 import installLidgeldRouter from './lidgeld';
 import installAbsenceRouter from './absence';
 import installArticlesRouter from './articles';
+import installCommentsRouter from './comments';
 import type { ChessAppContext, ChessAppState, KoaApplication } from '../types/koa';
 import installSessionRouter from './session';
 
@@ -123,6 +124,7 @@ export default (app: KoaApplication) => {
   installLidgeldRouter(router);
   installAbsenceRouter(router);
   installArticlesRouter(router);
+  installCommentsRouter(router);
 
   app.use(router.routes()).use(router.allowedMethods());
 };

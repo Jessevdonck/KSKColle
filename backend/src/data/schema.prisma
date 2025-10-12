@@ -61,6 +61,7 @@ model User {
   gewonnenGames      Game[]          @relation("Winnaar")
   passwordResetTokens PasswordResetToken[]
   articles           Article[]
+  comments           Comment[]
 
   @@index([is_youth])
 }
@@ -213,10 +214,27 @@ model Article {
   published_at  DateTime?
   
   author        User        @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
+  comments      Comment[]
   
   @@index([author_id])
   @@index([published])
   @@index([featured])
   @@index([created_at])
   @@index([published_at])
+}
+
+model Comment {
+  comment_id    Int         @id @default(autoincrement())
+  article_id    Int
+  author_id     Int
+  content       String      @db.Text
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  
+  article       Article     @relation(fields: [article_id], references: [article_id], onDelete: Cascade)
+  author        User        @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
+  
+  @@index([article_id])
+  @@index([author_id])
+  @@index([created_at])
 } 
