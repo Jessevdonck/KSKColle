@@ -128,9 +128,9 @@ export default function NotificationBell({ className }: NotificationBellProps) {
               {notifications.map((notification) => (
                 <div 
                   key={notification.notification_id}
-                  className={`p-4 hover:bg-gray-50 cursor-pointer ${
-                    !notification.is_read ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                  }`}
+                className={`p-4 hover:bg-gray-50 cursor-pointer ${
+                  !notification.is_read ? 'bg-mainAccent/10 border-l-4 border-mainAccent' : ''
+                }`}
                   onClick={() => !notification.is_read && handleMarkAsRead(notification.notification_id)}
                 >
                   <div className="flex items-start justify-between">
@@ -147,7 +147,7 @@ export default function NotificationBell({ className }: NotificationBellProps) {
                     </div>
                     <div className="flex items-center gap-1 ml-2">
                       {!notification.is_read && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                        <div className="w-2 h-2 bg-mainAccent rounded-full flex-shrink-0" />
                       )}
                       <Button
                         variant="ghost"

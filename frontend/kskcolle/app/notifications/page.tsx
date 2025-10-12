@@ -8,7 +8,7 @@ import * as api from '../api/index.js'
 import { Notification, GetNotificationsResponse } from '../../data/notification'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
-import { Bell, Trash2, Check, CheckCheck } from 'lucide-react'
+import { Bell, Trash2, Check, CheckCheck, MessageSquare, Reply, Clock, Calendar } from 'lucide-react'
 
 export default function NotificationsPage() {
   const [response, setResponse] = useState<GetNotificationsResponse | null>(null)
@@ -103,13 +103,19 @@ export default function NotificationsPage() {
   }
 
   const getNotificationIcon = (type: string) => {
+    const iconClass = "h-6 w-6 text-mainAccent"
+    
     switch (type) {
       case 'article_comment':
-        return '💬'
+        return <MessageSquare className={iconClass} />
       case 'comment_reply':
-        return '↩️'
+        return <Reply className={iconClass} />
+      case 'game_postponed':
+        return <Clock className={iconClass} />
+      case 'absence_reported':
+        return <Calendar className={iconClass} />
       default:
-        return '🔔'
+        return <Bell className={iconClass} />
     }
   }
 
@@ -119,6 +125,10 @@ export default function NotificationsPage() {
         return 'Artikel reactie'
       case 'comment_reply':
         return 'Reactie antwoord'
+      case 'game_postponed':
+        return 'Partij uitgesteld'
+      case 'absence_reported':
+        return 'Afwezigheid gemeld'
       default:
         return 'Notificatie'
     }
@@ -145,10 +155,10 @@ export default function NotificationsPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <Bell className="h-6 w-6" />
-            <h1 className="text-2xl font-bold">Notificaties</h1>
+            <Bell className="h-6 w-6 text-mainAccent" />
+            <h1 className="text-2xl font-bold text-mainAccent">Notificaties</h1>
             {response && response.unread_count > 0 && (
-              <Badge variant="destructive">
+              <Badge className="bg-mainAccent hover:bg-mainAccentDark">
                 {response.unread_count} ongelezen
               </Badge>
             )}
@@ -159,7 +169,7 @@ export default function NotificationsPage() {
               onClick={handleMarkAllAsRead}
               disabled={actionLoading === -1}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 border-mainAccent text-mainAccent hover:bg-mainAccent/10"
             >
               <CheckCheck className="h-4 w-4" />
               {actionLoading === -1 ? 'Bezig...' : 'Alles als gelezen markeren'}
@@ -170,7 +180,9 @@ export default function NotificationsPage() {
         {response && response.notifications.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Bell className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <div className="inline-block p-4 bg-mainAccent/10 rounded-full mb-4">
+                <Bell className="h-12 w-12 text-mainAccent" />
+              </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Geen notificaties
               </h3>
@@ -186,13 +198,13 @@ export default function NotificationsPage() {
                 key={notification.notification_id}
                 className={`transition-all duration-200 ${
                   !notification.is_read 
-                    ? 'border-blue-200 bg-blue-50/50 shadow-sm' 
+                    ? 'border-mainAccent/30 bg-mainAccent/5 shadow-sm' 
                     : 'hover:shadow-sm'
                 }`}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="text-2xl flex-shrink-0">
+                    <div className="flex-shrink-0 p-2 bg-mainAccent/10 rounded-full">
                       {getNotificationIcon(notification.type)}
                     </div>
                     
@@ -202,11 +214,11 @@ export default function NotificationsPage() {
                           <h3 className="font-medium text-gray-900">
                             {notification.title}
                           </h3>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs border-mainAccent/30 text-mainAccent">
                             {getNotificationTypeLabel(notification.type)}
                           </Badge>
                           {!notification.is_read && (
-                            <Badge variant="default" className="text-xs">
+                            <Badge className="text-xs bg-mainAccent hover:bg-mainAccentDark">
                               Nieuw
                             </Badge>
                           )}
@@ -219,7 +231,7 @@ export default function NotificationsPage() {
                               size="sm"
                               onClick={() => handleMarkAsRead(notification.notification_id)}
                               disabled={actionLoading === notification.notification_id}
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 p-0 text-mainAccent hover:text-mainAccentDark hover:bg-mainAccent/10"
                               title="Als gelezen markeren"
                             >
                               <Check className="h-4 w-4" />
@@ -230,7 +242,7 @@ export default function NotificationsPage() {
                             size="sm"
                             onClick={() => handleDeleteNotification(notification.notification_id)}
                             disabled={actionLoading === notification.notification_id}
-                            className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
+                            className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50"
                             title="Verwijderen"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -252,7 +264,7 @@ export default function NotificationsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => window.location.href = `/articles/${notification.related_article_id}`}
-                            className="text-blue-600 hover:text-blue-700"
+                            className="text-mainAccent hover:text-mainAccentDark hover:bg-mainAccent/10"
                           >
                             Bekijk artikel
                           </Button>
@@ -274,6 +286,7 @@ export default function NotificationsPage() {
                 // TODO: Implement pagination
                 console.log('Load more notifications')
               }}
+              className="border-mainAccent text-mainAccent hover:bg-mainAccent/10"
             >
               Meer notificaties laden
             </Button>

@@ -1,6 +1,8 @@
 import { prisma } from '../data'
 import emailService from './emailService'
 import handleDBError from './handleDBError'
+import { createNotification } from './notificationService'
+import { NotificationTypes } from '../types/notification'
 
 /**
  * Meld afwezigheid voor een speler voor de volgende reguliere ronde
@@ -92,6 +94,39 @@ Deze speler meldt zich af voor ronde ${nextRoundNumber} en wenst niet uitgeloot 
         })
       )
     )
+
+    // Stuur site notificaties naar alle admins
+    try {
+      const admins = await prisma.user.findMany({
+        where: {
+          OR: [
+            { is_admin: true },
+            { roles: { has: 'admin' } }
+          ]
+        }
+      })
+
+      console.log(`Found ${admins.length} admins for absence notifications`)
+
+      for (const admin of admins) {
+        try {
+          await createNotification({
+            user_id: admin.user_id,
+            type: NotificationTypes.ABSENCE_REPORTED,
+            title: '[ADMIN] Afwezigheid gemeld',
+            message: `${playerName} heeft zich afgemeld voor ronde ${nextRoundNumber} in ${tournament.naam}`,
+          })
+          
+          console.log(`Notification sent to admin ${admin.user_id} (${admin.email})`)
+        } catch (notifError) {
+          console.error(`Failed to send notification to admin ${admin.user_id}:`, notifError)
+          // Continue met de volgende admin
+        }
+      }
+    } catch (error) {
+      console.error('Failed to get or notify admins about absence:', error)
+      // We gooien de error niet door omdat de afwezigheid wel succesvol is gemeld
+    }
 
     console.log(`Afwezigheid gemeld voor ${playerName} in toernooi ${tournament.naam} voor ronde ${nextRoundNumber}`)
 

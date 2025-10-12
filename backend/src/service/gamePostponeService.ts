@@ -3,6 +3,8 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import { RoundType } from "@prisma/client";
 import emailService from "./emailService";
+import { createNotification } from "./notificationService";
+import { NotificationTypes } from "../types/notification";
 import { getLogger } from "../core/logging";
 const logger = getLogger();
 
@@ -300,37 +302,153 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
       speler2_id: newGame.speler2_id
     });
 
-    // 8. Stuur email notificatie naar de tegenstander
+    // 8. Stuur notificaties naar beide spelers en alle admins
+    const postponingPlayer = game.speler1_id === data.user_id ? game.speler1 : game.speler2;
     const opponent = game.speler1_id === data.user_id ? game.speler2 : game.speler1;
-    logger.info('Sending email notification', { 
+    
+    logger.info('Sending notifications and emails', { 
       opponent_id: opponent?.user_id,
       opponent_name: opponent ? `${opponent.voornaam} ${opponent.achternaam}` : 'null',
       opponent_email: opponent?.email,
-      postponing_user_id: data.user_id
+      postponing_user_id: data.user_id,
+      postponing_player_name: postponingPlayer ? `${postponingPlayer.voornaam} ${postponingPlayer.achternaam}` : 'null'
     });
     
+    // Notificatie en email naar tegenstander
     if (opponent) {
-      logger.info('Opponent found, attempting to send email', {
+      logger.info('Sending notifications to opponent', {
         opponent_email: opponent.email,
         opponent_name: `${opponent.voornaam} ${opponent.achternaam}`
       });
       
       try {
+        // Email naar tegenstander
         await sendPostponeNotification(opponent, newGame, targetRound, data.user_id, game.round.tournament);
-        logger.info('Email notification sent successfully');
-      } catch (emailError) {
-        logger.error('Failed to send email notification', { 
-          error: emailError,
+        logger.info('Email notification sent to opponent successfully');
+        
+        // Site notificatie naar tegenstander
+        await createNotification({
+          user_id: opponent.user_id,
+          type: NotificationTypes.GAME_POSTPONED,
+          title: 'Partij uitgesteld',
+          message: `Je partij tegen ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} in ${game.round.tournament.naam} is uitgesteld naar ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`,
+        });
+        logger.info('Site notification sent to opponent successfully');
+      } catch (error) {
+        logger.error('Failed to send notifications to opponent', { 
+          error,
           opponent_email: opponent.email 
         });
         // We gooien de error niet door omdat de uitstel wel succesvol is
       }
-    } else {
-      logger.warn('No opponent found, skipping email notification', {
-        speler1_id: game.speler1_id,
-        speler2_id: game.speler2_id,
-        user_id: data.user_id
+    }
+    
+    // Notificatie en email naar de speler die het uitstel aanvroeg
+    if (postponingPlayer && postponingPlayer.user_id !== opponent?.user_id) {
+      try {
+        // Site notificatie naar de speler zelf
+        await createNotification({
+          user_id: postponingPlayer.user_id,
+          type: NotificationTypes.GAME_POSTPONED,
+          title: 'Partij uitgesteld bevestiging',
+          message: `Je partij tegen ${opponent?.voornaam} ${opponent?.achternaam} in ${game.round.tournament.naam} is succesvol uitgesteld naar ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`,
+        });
+        logger.info('Site notification sent to postponing player successfully');
+      } catch (error) {
+        logger.error('Failed to send notification to postponing player', { error });
+      }
+    }
+    
+    // Notificaties en emails naar alle admins
+    try {
+      const admins = await prisma.user.findMany({
+        where: {
+          OR: [
+            { is_admin: true },
+            { roles: { has: 'admin' } }
+          ]
+        }
       });
+      
+      logger.info('Found admins for notifications', { admin_count: admins.length });
+      
+      for (const admin of admins) {
+        try {
+          // Site notificatie naar admin
+          await createNotification({
+            user_id: admin.user_id,
+            type: NotificationTypes.GAME_POSTPONED,
+            title: '[ADMIN] Partij uitgesteld',
+            message: `${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} heeft een partij uitgesteld tegen ${opponent?.voornaam} ${opponent?.achternaam} in ${game.round.tournament.naam}. Nieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`,
+          });
+          
+          // Email naar admin
+          const adminSubject = `[ADMIN] Partij uitgesteld - ${game.round.tournament.naam}`;
+          const adminHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 5px; }
+                .admin-notice { background-color: #007bff; color: white; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                .content { padding: 20px; }
+                .info-box { background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; }
+                .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>KSK Colle - Admin Notificatie</h1>
+                  <h2>Partij Uitgesteld</h2>
+                </div>
+                
+                <div class="admin-notice">
+                  <strong>⚠️ ADMIN NOTIFICATIE</strong><br>
+                  Dit is een automatische melding voor administratoren.
+                </div>
+                
+                <div class="content">
+                  <div class="info-box">
+                    <p><strong>Toernooi:</strong> ${game.round.tournament.naam}</p>
+                    <p><strong>Speler die uitstel aanvroeg:</strong> ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam}</p>
+                    <p><strong>Tegenstander:</strong> ${opponent?.voornaam} ${opponent?.achternaam}</p>
+                    <p><strong>Originele ronde:</strong> Ronde ${game.round.ronde_nummer}</p>
+                    <p><strong>Nieuwe datum:</strong> ${targetRound.ronde_datum.toLocaleDateString('nl-BE')} om ${targetRound.startuur}</p>
+                    <p><strong>Inhaaldag:</strong> ${targetRound.label || 'Inhaaldag'}</p>
+                  </div>
+                  
+                  <p>Beide spelers hebben een notificatie ontvangen op de website en via email.</p>
+                </div>
+                
+                <div class="footer">
+                  <p>KSK Colle Admin Systeem</p>
+                  <p>Deze email is automatisch gegenereerd.</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `;
+          
+          await emailService.sendCustomEmail({
+            to: admin.email,
+            subject: adminSubject,
+            html: adminHtml,
+            text: `[ADMIN] Partij uitgesteld\n\nToernooi: ${game.round.tournament.naam}\nSpeler: ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam}\nTegenstander: ${opponent?.voornaam} ${opponent?.achternaam}\nNieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`
+          });
+          
+          logger.info('Notifications sent to admin successfully', { admin_id: admin.user_id, admin_email: admin.email });
+        } catch (adminError) {
+          logger.error('Failed to send notification to admin', { admin_id: admin.user_id, error: adminError });
+          // Continue met de volgende admin
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to get or notify admins', { error });
+      // We gooien de error niet door omdat de uitstel wel succesvol is
     }
 
     logger.info('Game postponed successfully', {
@@ -552,32 +670,6 @@ async function sendPostponeNotification(opponent: any, game: any, newRound: any,
       text: textContent
     });
 
-    // Stuur ook een kopie naar de admin emails
-    const adminEmails = ['niels.ongena@hotmail.be', 'jvaerendonck@gmail.com'];
-    
-    for (const adminEmail of adminEmails) {
-      try {
-        await emailService.sendCustomEmail({
-          to: adminEmail,
-          subject: `[ADMIN KOPIE] ${subject}`,
-          html: `
-            <div style="background-color: #f0f8ff; padding: 10px; margin-bottom: 20px; border-left: 4px solid #007bff;">
-              <strong>Admin Kopie:</strong> Deze email is een kopie van de notificatie die naar ${opponent.voornaam} ${opponent.achternaam} is gestuurd.
-            </div>
-            ${htmlContent}
-          `,
-          text: `[ADMIN KOPIE]\n\n${textContent}`
-        });
-        
-        logger.info('Admin copy sent', { admin_email: adminEmail });
-      } catch (adminEmailError) {
-        logger.error('Failed to send admin copy', { 
-          admin_email: adminEmail, 
-          error: adminEmailError 
-        });
-        // We gooien de error niet door omdat de hoofdemail wel succesvol is
-      }
-    }
 
     logger.info('Postpone notification sent successfully', {
       opponent_id: opponent.user_id,
