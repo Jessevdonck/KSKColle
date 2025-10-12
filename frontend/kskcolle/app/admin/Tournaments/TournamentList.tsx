@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import useSWR from "swr"
@@ -7,6 +8,7 @@ import useSWRMutation from "swr/mutation"
 import { getAll, deleteById } from "../../api/index"
 import type { Toernooi } from "@/data/types"
 import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle } from "lucide-react"
+import CloseTournamentDialog from "./components/CloseTournamentDialog"
 
 interface TournamentListProps {
   onSelectTournament: (tournament: Toernooi) => void
@@ -14,6 +16,9 @@ interface TournamentListProps {
 
 export default function TournamentList({ onSelectTournament }: TournamentListProps) {
   const { toast } = useToast()
+  const [closeDialogOpen, setCloseDialogOpen] = useState(false)
+  const [selectedTournamentForClose, setSelectedTournamentForClose] = useState<{ id: number; name: string } | null>(null)
+  
   // Haal alleen actieve toernooien op (finished = false)
   const { data: tournaments, error, mutate } = useSWR<Toernooi[]>(
     "tournament?active=true", 
@@ -27,13 +32,14 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
 
   const { trigger: closeTournament, isMutating: isClosing } = useSWRMutation(
     "tournament?active=true",
-    async (url, { arg }: { arg: number }) => {
-      const response = await fetch(`http://localhost:9000/api/tournament/${arg}/close`, {
+    async (url, { arg }: { arg: { id: number; updateRatings: boolean } }) => {
+      const response = await fetch(`http://localhost:9000/api/tournament/${arg.id}/close`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
         },
+        body: JSON.stringify({ updateRatings: arg.updateRatings }),
       });
       
       if (!response.ok) {
@@ -87,21 +93,29 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
     }
   }
 
-  const handleClose = async (tournamentId: number, tournamentName: string) => {
-    // Vraag om bevestiging
-    const confirmed = window.confirm(
-      `Weet je zeker dat je het toernooi "${tournamentName}" wilt afsluiten?\n\nDit zal de ratings van alle spelers updaten en het toernooi als voltooid markeren.`
-    )
-    if (!confirmed) return
+  const handleClose = (tournamentId: number, tournamentName: string) => {
+    setSelectedTournamentForClose({ id: tournamentId, name: tournamentName })
+    setCloseDialogOpen(true)
+  }
+
+  const handleConfirmClose = async (updateRatings: boolean) => {
+    if (!selectedTournamentForClose) return
 
     try {
-      await closeTournament(tournamentId)
+      const result = await closeTournament({ 
+        id: selectedTournamentForClose.id, 
+        updateRatings 
+      })
+      
       toast({ 
         title: "Success", 
-        description: `Toernooi "${tournamentName}" is afgesloten en ratings zijn geüpdatet!` 
+        description: result.message || `Toernooi "${selectedTournamentForClose.name}" is afgesloten!` 
       })
+      
       // Refresh de lijst om de status te updaten
       mutate()
+      setCloseDialogOpen(false)
+      setSelectedTournamentForClose(null)
     } catch (err) {
       console.error("Fout met toernooi af te sluiten:", err)
       toast({ 
@@ -113,14 +127,23 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Trophy className="h-6 w-6" />
-          Actieve Toernooien
-        </h2>
-        <p className="text-white/80 mt-1">{tournaments.length} toernooien gevonden</p>
-      </div>
+    <>
+      <CloseTournamentDialog
+        open={closeDialogOpen}
+        onOpenChange={setCloseDialogOpen}
+        tournamentName={selectedTournamentForClose?.name || ""}
+        onConfirm={handleConfirmClose}
+        isLoading={isClosing}
+      />
+      
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Trophy className="h-6 w-6" />
+            Actieve Toernooien
+          </h2>
+          <p className="text-white/80 mt-1">{tournaments.length} toernooien gevonden</p>
+        </div>
 
       <div className="p-6">
         {tournaments.length === 0 ? (
@@ -200,5 +223,6 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
         )}
       </div>
     </div>
+    </>
   )
 }

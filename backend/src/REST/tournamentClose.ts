@@ -6,10 +6,11 @@ import { prisma } from '../data';
 const requireAdmin = makeRequireRole('admin');
 
 export function installTournamentCloseRouter(router: Router) {
-  // Close tournament and update ratings
+  // Close tournament and optionally update ratings
   router.post('/tournament/:id/close', requireAuthentication, requireAdmin, async (ctx) => {
     try {
       const tournamentId = parseInt(ctx.params.id || '0');
+      const { updateRatings = true } = ctx.request.body as { updateRatings?: boolean };
       
       if (isNaN(tournamentId)) {
         ctx.status = 400;
@@ -34,10 +35,15 @@ export function installTournamentCloseRouter(router: Router) {
         return;
       }
 
-      console.log(`Closing tournament ${tournamentId}: ${tournament.naam}`);
+      console.log(`Closing tournament ${tournamentId}: ${tournament.naam} (updateRatings: ${updateRatings})`);
 
-      // Update ratings for all players
-      await ratingService.updateRatingsForTournament(tournamentId);
+      // Update ratings for all players if requested
+      if (updateRatings) {
+        await ratingService.updateRatingsForTournament(tournamentId);
+        console.log(`✅ Ratings updated for tournament ${tournamentId}`);
+      } else {
+        console.log(`⏭️ Skipping rating updates for tournament ${tournamentId}`);
+      }
 
       // Mark tournament as finished
       await prisma.tournament.update({
@@ -47,8 +53,11 @@ export function installTournamentCloseRouter(router: Router) {
 
       ctx.status = 200;
       ctx.body = {
-        message: `Tournament "${tournament.naam}" has been closed and ratings have been updated`,
+        message: updateRatings 
+          ? `Tournament "${tournament.naam}" has been closed and ratings have been updated`
+          : `Tournament "${tournament.naam}" has been closed without updating ratings`,
         tournamentId: tournamentId,
+        ratingsUpdated: updateRatings,
       };
 
     } catch (error) {

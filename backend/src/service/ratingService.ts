@@ -43,29 +43,30 @@ export class RatingService {
 
     console.log(`Found ${participations.length} participations`);
 
-    // Update ratings using Sevilla data (stored in existing fields temporarily)
+    // Update ratings using Sevilla rating data
     for (const participation of participations) {
-      // Sevilla data is stored in: buchholz=initial, sonnebornBerger=final, tie_break=change
-      if (participation.sonnebornBerger && participation.tie_break !== null) {
-        const newRating = participation.sonnebornBerger;
-        const ratingChange = Math.round(participation.tie_break);
+      // Check if we have Sevilla rating data
+      if (participation.sevilla_final_rating !== null && participation.sevilla_rating_change !== null) {
+        const newRating = participation.sevilla_final_rating;
+        const ratingChange = participation.sevilla_rating_change;
+        const currentRating = participation.user.schaakrating_elo;
         
         await prisma.user.update({
           where: { user_id: participation.user_id },
           data: {
             schaakrating_elo: newRating,
             schaakrating_difference: ratingChange,
-            schaakrating_max: Math.max(participation.user.schaakrating_max || participation.user.schaakrating_elo, newRating),
+            schaakrating_max: Math.max(participation.user.schaakrating_max || currentRating, newRating),
           },
         });
 
-        console.log(`Updated rating for ${participation.user.voornaam} ${participation.user.achternaam}: ${participation.user.schaakrating_elo} -> ${newRating} (change: ${ratingChange})`);
+        console.log(`✅ Updated rating for ${participation.user.voornaam} ${participation.user.achternaam}: ${currentRating} -> ${newRating} (change: ${ratingChange > 0 ? '+' : ''}${ratingChange})`);
       } else {
-        console.log(`No Sevilla rating data for ${participation.user.voornaam} ${participation.user.achternaam}, skipping`);
+        console.log(`⏭️  No Sevilla rating data for ${participation.user.voornaam} ${participation.user.achternaam}, skipping`);
       }
     }
 
-    console.log(`Rating update completed for tournament ${tournamentId} using Sevilla data`);
+    console.log(`✅ Rating update completed for tournament ${tournamentId}`);
   }
 }
 
