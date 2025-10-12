@@ -10,6 +10,7 @@ import {
 import { requireAuthentication, makeRequireRole } from '../core/auth'
 import validate from '../core/validation'
 import Joi from 'joi'
+import { PrismaClient } from '@prisma/client'
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa'
 import type { 
   CreateArticleRequest, 
@@ -18,6 +19,8 @@ import type {
   ArticleWithAuthor,
   ArticleType 
 } from '../types/article'
+
+const prisma = new PrismaClient()
 
 /**
  * @api {get} /articles Get articles with pagination and filters
@@ -46,6 +49,30 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
     published: ctx.query.published ? ctx.query.published === 'true' : undefined,
     featured: ctx.query.featured ? ctx.query.featured === 'true' : undefined,
     author_id: ctx.query.author_id ? parseInt(ctx.query.author_id as string) : undefined,
+  }
+
+  // If user is authenticated, check their role
+  // Only admins and bestuursleden can see all drafts
+  // Other users can only see their own drafts or published articles
+  if (ctx.state && ctx.state.session) {
+    const userId = ctx.state.session.userId
+    const user = await prisma.user.findUnique({
+      where: { user_id: userId },
+      select: { roles: true, is_admin: true }
+    })
+    
+    const isAdmin = user?.is_admin || user?.roles?.includes('admin')
+    const isBestuurslid = user?.roles?.includes('bestuurslid')
+    
+    // If not admin or bestuurslid and requesting drafts, only show own drafts
+    if (!isAdmin && !isBestuurslid && params.published === false) {
+      params.author_id = userId
+    }
+  } else {
+    // Not authenticated - only show published articles
+    if (params.published === undefined) {
+      params.published = true
+    }
   }
 
   const result = await getArticlesService(params)
