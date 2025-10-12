@@ -241,7 +241,7 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
       <div className="space-y-4">
         {comments.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            Nog geen reacties. Wees de eerste om te reageren!
+            Nog geen reacties!
           </div>
         ) : (
           comments.map((comment) => (

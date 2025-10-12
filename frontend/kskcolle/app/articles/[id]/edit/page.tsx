@@ -15,6 +15,7 @@ import { Article } from "../../../../data/article"
 import { ArrowLeft, Save, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import RichTextEditor from "../../../components/RichTextEditor"
+import { isAdmin, isBoardMember } from "@/lib/roleUtils"
 
 export default function EditArticlePage() {
   const { user } = useAuth()
@@ -74,11 +75,27 @@ export default function EditArticlePage() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  // Check permissions
-  const canEdit = user && (
-    user.roles?.includes("admin") || 
-    (user.roles?.includes("bestuurslid") && article?.author_id === user.user_id)
+  // Check permissions - admin and bestuurslid can edit all, authors can only edit their own
+  const canEdit = user && article && (
+    isAdmin(user) || 
+    isBoardMember(user) ||
+    article.author_id === user.user_id
   )
+  
+  // Debug logging
+  useEffect(() => {
+    if (user && article) {
+      console.log('Edit page - Permission check:', {
+        userId: user.user_id,
+        userRoles: user.roles,
+        articleAuthorId: article.author_id,
+        isAdmin: isAdmin(user),
+        isBoardMember: isBoardMember(user),
+        isOwnArticle: article.author_id === user.user_id,
+        canEdit
+      })
+    }
+  }, [user, article, canEdit])
 
   if (loading) {
     return (

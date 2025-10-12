@@ -12,6 +12,7 @@ import { ArrowLeft, Edit, Trash2, Calendar, User, Tag } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
+import { isAdmin, isBoardMember } from "@/lib/roleUtils"
 import CommentsSection from "../../../components/CommentsSection"
 
 export default function ArticleDetailPage() {
@@ -68,9 +69,11 @@ export default function ArticleDetailPage() {
     }
   }
 
-  const canEdit = user && (
-    user.roles?.includes("admin") || 
-    user.roles?.includes("bestuurslid") && article?.author_id === user.user_id
+  // Admin and bestuurslid can edit all articles, authors can only edit their own
+  const canEdit = user && article && (
+    isAdmin(user) || 
+    isBoardMember(user) ||
+    article.author_id === user.user_id
   )
 
   if (loading) {

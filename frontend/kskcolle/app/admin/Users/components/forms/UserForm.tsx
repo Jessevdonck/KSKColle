@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, User, Mail, Phone, Trophy, Calendar, Shield, Key, MapPin, Hash, Building, Globe, LandPlot, Mailbox } from "lucide-react"
+import { CheckCircle2, User, Mail, Phone, Trophy, Calendar, Shield, Key, MapPin, Hash, Building, Globe, LandPlot, Mailbox, PenTool } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 
 const EMPTY_USER = {
@@ -580,6 +580,30 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
                 <Label htmlFor="isBestuurslid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <Building className="h-3 w-3" />
                   Bestuurslid
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isAuthor"
+                  data-cy="author"
+                  checked={watch("roles").includes("author")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    if (checked) {
+                      setValue("roles", [...currentRoles, "author"])
+                    } else {
+                      setValue(
+                        "roles",
+                        currentRoles.filter((role) => role !== "author"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isAuthor" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <PenTool className="h-3 w-3" />
+                  Auteur
                 </Label>
               </div>
               

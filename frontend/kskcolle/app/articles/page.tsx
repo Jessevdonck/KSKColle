@@ -13,6 +13,7 @@ import { Article, ArticleListResponse } from "../../data/article"
 import { Plus, Search, Calendar, User, Tag, Eye, EyeOff, Star } from "lucide-react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
+import { canManageArticles } from "@/lib/roleUtils"
 
 export default function ArticlesPage() {
   const { user } = useAuth()
@@ -37,17 +38,17 @@ export default function ArticlesPage() {
         pageSize: 10,
       }
 
-      // Check if user is admin or bestuurslid
-      const canManage = user && (user.roles?.includes("admin") || user.roles?.includes("bestuurslid"))
+      // Check if user can manage articles (admin, bestuurslid, or author)
+      const canManageCheck = canManageArticles(user)
       
       console.log('Frontend - Fetching articles:', { 
-        canManage, 
+        canManage: canManageCheck, 
         filterPublished: filters.published,
         userRoles: user?.roles 
       })
       
-      if (canManage) {
-        // Admins and bestuursleden can see all articles and use filters
+      if (canManageCheck) {
+        // Admins, bestuursleden, and authors can see all articles and use filters
         if (filters.published && filters.published !== "all") {
           params.published = filters.published === "true"
         }
@@ -99,8 +100,8 @@ export default function ArticlesPage() {
     }
   }
 
-  const canCreate = user && (user.roles?.includes("admin") || user.roles?.includes("bestuurslid"))
-  const canManage = user && (user.roles?.includes("admin") || user.roles?.includes("bestuurslid"))
+  const canCreate = canManageArticles(user)
+  const canManage = canManageArticles(user)
 
   return (
     <main className="container mx-auto px-4 py-6">

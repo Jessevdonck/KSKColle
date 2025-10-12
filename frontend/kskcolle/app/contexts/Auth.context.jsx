@@ -10,7 +10,35 @@ export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(typeof window !== "undefined" ? localStorage.getItem(JWT_TOKEN_KEY) : null)
 
-  const { data: user, error: userError, mutate: mutateUser } = useSWR(token ? "users/me" : null, api.getById)
+  const { data: rawUser, error: userError, mutate: mutateUser } = useSWR(token ? "users/me" : null, api.getById)
+  
+  // Normalize user data - parse roles if they're a string
+  const user = useMemo(() => {
+    if (!rawUser) return rawUser
+    
+    let roles = rawUser.roles
+    console.log('Auth context - Raw roles:', { type: typeof roles, value: roles })
+    
+    if (typeof roles === 'string') {
+      try {
+        roles = JSON.parse(roles)
+        console.log('Auth context - Parsed roles from string:', roles)
+      } catch (e) {
+        console.log('Auth context - Failed to parse roles:', e)
+        roles = []
+      }
+    } else if (!Array.isArray(roles)) {
+      console.log('Auth context - Roles not array, defaulting to empty:', roles)
+      roles = []
+    }
+    
+    const normalizedUser = {
+      ...rawUser,
+      roles
+    }
+    console.log('Auth context - Normalized user:', normalizedUser)
+    return normalizedUser
+  }, [rawUser])
 
   const { isMutating: loginLoading, error: loginError, trigger: doLogin } = useSWRMutation("sessions", api.post)
 

@@ -7,7 +7,7 @@ import { parseRoles } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, User, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox, LandPlot, Phone, Building } from "lucide-react"
+import { CheckCircle2, User, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox, LandPlot, Phone, Building, PenTool } from "lucide-react"
 import useSWRMutation from "swr/mutation"
 import { save } from "../../../../api/index"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -525,6 +525,31 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
                 <Label htmlFor="isBestuurslid" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
                   <Building className="h-3 w-3" />
                   Bestuurslid
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isAuthor"
+                  checked={watch("roles").includes("author")}
+                  disabled={watch("roles").includes("exlid")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    const updatedRoles = parseRoles(currentRoles)
+                    if (checked) {
+                      setValue("roles", [...updatedRoles, "author"])
+                    } else {
+                      setValue(
+                        "roles",
+                        updatedRoles.filter((role) => role !== "author"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isAuthor" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
+                  <PenTool className="h-3 w-3" />
+                  Auteur
                 </Label>
               </div>
               

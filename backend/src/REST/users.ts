@@ -172,7 +172,7 @@ registerUser.validationScheme = {
     schaakrating_max: Joi.number().integer().min(0).optional(),
     is_youth: Joi.boolean().optional(),
     password: Joi.string(),
-    roles: Joi.array().items(Joi.string().valid('user', 'admin', 'bestuurslid', 'exlid')).required(),
+    roles: Joi.array().items(Joi.string().valid('user', 'admin', 'bestuurslid', 'author', 'exlid')).required(),
 
     adres_straat: Joi.string().required(),
     adres_nummer: Joi.string().required(),
@@ -263,7 +263,7 @@ updateUser.validationScheme = {
     schaakrating_max: Joi.number().integer().min(0).allow(null).optional(),
     is_youth: Joi.boolean().optional(),
     password: Joi.string().optional(),
-    roles: Joi.array().items(Joi.string().valid('user', 'admin', 'bestuurslid', 'exlid')).optional(),
+    roles: Joi.array().items(Joi.string().valid('user', 'admin', 'bestuurslid', 'author', 'exlid')).optional(),
 
     adres_straat: Joi.string().optional(),
     adres_nummer: Joi.string().optional(),

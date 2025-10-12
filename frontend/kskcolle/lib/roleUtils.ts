@@ -8,10 +8,30 @@ import { User } from '../data/types'
  */
 export function hasRole(user: User | null | undefined, requiredRoles: string[]): boolean {
   if (!user || !user.roles) {
+    console.log('hasRole - No user or roles:', { user: !!user, hasRoles: !!user?.roles })
     return false
   }
   
-  return requiredRoles.some(role => user.roles!.includes(role))
+  // Parse roles if it's a string, otherwise use as is
+  let userRoles: string[] = []
+  if (typeof user.roles === 'string') {
+    try {
+      userRoles = JSON.parse(user.roles)
+      console.log('hasRole - Parsed string roles:', userRoles)
+    } catch (e) {
+      console.log('hasRole - Failed to parse roles string:', user.roles)
+      userRoles = []
+    }
+  } else if (Array.isArray(user.roles)) {
+    userRoles = user.roles
+    console.log('hasRole - Already array:', userRoles)
+  } else {
+    console.log('hasRole - Unknown roles type:', typeof user.roles, user.roles)
+  }
+  
+  const result = requiredRoles.some(role => userRoles.includes(role))
+  console.log('hasRole - Check:', { userRoles, requiredRoles, result })
+  return result
 }
 
 /**
@@ -70,4 +90,22 @@ export function isAdmin(user: User | null | undefined): boolean {
  */
 export function isBoardMember(user: User | null | undefined): boolean {
   return hasRole(user, ['bestuurslid'])
+}
+
+/**
+ * Check if a user is an author (can write articles)
+ * @param user - The user object to check
+ * @returns true if user is author
+ */
+export function isAuthor(user: User | null | undefined): boolean {
+  return hasRole(user, ['author'])
+}
+
+/**
+ * Check if a user can create/edit articles
+ * @param user - The user object to check
+ * @returns true if user is admin, bestuurslid, or author
+ */
+export function canManageArticles(user: User | null | undefined): boolean {
+  return hasRole(user, ['admin', 'bestuurslid', 'author'])
 }

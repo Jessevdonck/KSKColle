@@ -72,8 +72,21 @@ export const getArticles = async (params: GetArticlesRequest = {}): Promise<GetA
     // Build where clause
     const where: any = {}
     
-    if (params.published !== undefined) {
-      where.published = params.published
+    // Special handling for authors who want to see published + own drafts
+    if (params.showAllForAuthor !== undefined) {
+      where.OR = [
+        { published: true }, // All published articles
+        { author_id: params.showAllForAuthor } // Or their own drafts
+      ]
+    } else {
+      // Normal filtering
+      if (params.published !== undefined) {
+        where.published = params.published
+      }
+      
+      if (params.author_id) {
+        where.author_id = params.author_id
+      }
     }
     
     if (params.featured !== undefined) {
@@ -82,10 +95,6 @@ export const getArticles = async (params: GetArticlesRequest = {}): Promise<GetA
     
     if (params.type) {
       where.type = params.type
-    }
-    
-    if (params.author_id) {
-      where.author_id = params.author_id
     }
 
     const [articles, total] = await Promise.all([

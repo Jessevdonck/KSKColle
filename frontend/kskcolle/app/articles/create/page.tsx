@@ -14,6 +14,7 @@ import { createArticle } from "../../api/index"
 import { ArrowLeft, Save, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import RichTextEditor from "../../components/RichTextEditor"
+import { canManageArticles } from "@/lib/roleUtils"
 
 export default function CreateArticlePage() {
   const { user } = useAuth()
@@ -50,7 +51,7 @@ export default function CreateArticlePage() {
   }
 
   // Check if user has permission to create articles
-  if (!user || (!user.roles?.includes("admin") && !user.roles?.includes("bestuurslid"))) {
+  if (!canManageArticles(user)) {
     return (
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">

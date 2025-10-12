@@ -49,6 +49,7 @@ export interface GetArticlesRequest {
   published?: boolean
   featured?: boolean
   author_id?: number
+  showAllForAuthor?: number // For authors: show published articles + own drafts
 }
 
 export interface GetArticlesResponse {

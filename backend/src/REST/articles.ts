@@ -56,6 +56,7 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
   let userId: number | undefined
   let isAdmin = false
   let isBestuurslid = false
+  let isAuthor = false
   
   const { authorization } = ctx.headers
   if (authorization) {
@@ -92,8 +93,9 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
       
       isAdmin = roles.includes('admin')
       isBestuurslid = roles.includes('bestuurslid')
+      isAuthor = roles.includes('author')
       
-      console.log('Articles - Authenticated user:', { userId, isAdmin, isBestuurslid, roles })
+      console.log('Articles - Authenticated user:', { userId, isAdmin, isBestuurslid, isAuthor, roles })
     } catch (error) {
       // Invalid/expired token - treat as guest
       console.log('Articles - Invalid token, treating as guest')
@@ -110,8 +112,24 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
 
   // Apply authorization rules based on user role
   if (userId) {
-    // If not admin or bestuurslid, restrict what they can see
-    if (!isAdmin && !isBestuurslid) {
+    // Admins and bestuursleden can see everything
+    if (isAdmin || isBestuurslid) {
+      // No restrictions - they can see all articles based on their filter choice
+    }
+    // Authors can see published articles + their own drafts
+    else if (isAuthor) {
+      // If explicitly requesting drafts (published=false), only show their own
+      if (params.published === false) {
+        params.author_id = userId
+      }
+      // If no filter specified (published=undefined), show published articles + own drafts
+      else if (params.published === undefined) {
+        params.showAllForAuthor = userId
+      }
+      // If published=true, that's fine - show published articles
+    }
+    // Normal users can only see published articles
+    else {
       // If explicitly requesting drafts (published=false), only show their own
       if (params.published === false) {
         params.author_id = userId
@@ -123,10 +141,8 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
       }
       // If published=true, that's fine - show published articles
     }
-    // Admin and bestuurslid can see everything based on their filter choice
-    // If they don't specify a filter (published=undefined), leave it undefined to show ALL articles
     
-    console.log('Final params.published:', params.published)
+    console.log('Final params:', { published: params.published, author_id: params.author_id, showAllForAuthor: params.showAllForAuthor })
   } else {
     // Not authenticated - only show published articles
     if (params.published === undefined) {
@@ -314,10 +330,10 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/recent', validate(getRecentArticles.validationScheme), getRecentArticles)
   router.get('/:id', validate(getArticleById.validationScheme), getArticleById)
 
-  // Protected routes (admin and bestuurslid only)
-  router.post('/', requireAuthentication, makeRequireRole(['admin', 'bestuurslid']), validate(createArticle.validationScheme), createArticle)
-  router.put('/:id', requireAuthentication, makeRequireRole(['admin', 'bestuurslid']), validate(updateArticle.validationScheme), updateArticle)
-  router.delete('/:id', requireAuthentication, makeRequireRole(['admin', 'bestuurslid']), validate(deleteArticle.validationScheme), deleteArticle)
+  // Protected routes (admin, bestuurslid, and author only)
+  router.post('/', requireAuthentication, makeRequireRole(['admin', 'bestuurslid', 'author']), validate(createArticle.validationScheme), createArticle)
+  router.put('/:id', requireAuthentication, makeRequireRole(['admin', 'bestuurslid', 'author']), validate(updateArticle.validationScheme), updateArticle)
+  router.delete('/:id', requireAuthentication, makeRequireRole(['admin', 'bestuurslid', 'author']), validate(deleteArticle.validationScheme), deleteArticle)
 
   parent.use(router.routes()).use(router.allowedMethods())
 }

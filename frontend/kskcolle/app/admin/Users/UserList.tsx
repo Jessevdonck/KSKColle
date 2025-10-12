@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import type { User } from "@/data/types"
 import EditForm from "./components/forms/EditForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search, Euro, CheckCircle, XCircle, Clock, Shield } from "lucide-react"
+import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search, Euro, CheckCircle, XCircle, Clock, Shield, PenTool } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -171,12 +171,14 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
             return userRoles.includes("admin")
           case "bestuurslid":
             return userRoles.includes("bestuurslid")
+          case "author":
+            return userRoles.includes("author")
           case "youth":
             return user.is_youth === true
           case "exlid":
             return userRoles.includes("exlid")
           case "user":
-            return userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("exlid") && !user.is_youth
+            return userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("author") && !userRoles.includes("exlid") && !user.is_youth
           default:
             return true
         }
@@ -193,6 +195,7 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
       all: dataSource.length,
       admin: 0,
       bestuurslid: 0,
+      author: 0,
       youth: 0,
       user: 0,
       exlid: 0,
@@ -213,9 +216,10 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
       
       if (userRoles.includes("admin")) counts.admin++
       if (userRoles.includes("bestuurslid")) counts.bestuurslid++
+      if (userRoles.includes("author")) counts.author++
       if (user.is_youth === true) counts.youth++
       if (userRoles.includes("exlid")) counts.exlid++
-      if (userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("exlid") && !user.is_youth) {
+      if (userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("author") && !userRoles.includes("exlid") && !user.is_youth) {
         counts.user++
       }
     })
@@ -328,6 +332,21 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
                 } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Bestuurslid ({userCounts.bestuurslid})
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedFilter("author")
+                  pagination.onPageChange(1)
+                }}
+                disabled={isLoadingAllUsers}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  selectedFilter === "author"
+                    ? "bg-indigo-500 text-white"
+                    : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                } ${isLoadingAllUsers ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <PenTool className="inline h-3 w-3 mr-1" />
+                Auteur ({userCounts.author})
               </button>
               <button
                 onClick={() => {
