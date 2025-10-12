@@ -18,6 +18,8 @@ interface TournamentCardProps {
       achternaam: string
     }>
     class_name?: string | null
+    _isMultiClass?: boolean
+    _classCount?: number
   }
 }
 
@@ -28,7 +30,12 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
         <h2 className="text-2xl font-semibold text-[#2e2c2c] mb-1">
           {tournament.naam}
         </h2>
-        {tournament.class_name && (
+        {tournament._isMultiClass && (
+          <p className="text-sm text-mainAccent font-medium mb-3">
+            {tournament._classCount} klasses
+          </p>
+        )}
+        {tournament.class_name && !tournament._isMultiClass && (
           <p className="text-sm text-mainAccent font-medium mb-3">
             {tournament.class_name}
           </p>

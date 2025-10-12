@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import useSWR from 'swr'
 import TournamentCard from './TournamentCard'
 import { getAll } from '../../api/index'
-import { Trophy, ChevronUp, Archive, Calendar } from 'lucide-react'
+import { Trophy, ChevronUp, Archive, Calendar, Users } from 'lucide-react'
 
 interface Tournament {
   tournament_id: number
@@ -123,6 +123,57 @@ export default function TournamentList() {
     }
   }
 
+  // Group tournaments by name for multi-class tournaments
+  const groupTournamentsByName = (tournaments: Tournament[]) => {
+    const groups = new Map<string, Tournament[]>()
+    
+    tournaments.forEach(tournament => {
+      const groupKey = tournament.naam
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, [])
+      }
+      groups.get(groupKey)!.push(tournament)
+    })
+    
+    // Custom sort order for class names
+    const classOrder = [
+      'Eerste Klasse',
+      'Tweede Klasse', 
+      'Derde Klasse',
+      'Vierde Klasse',
+      'Vijfde Klasse',
+      'Vierde en Vijfde Klasse',
+      'Zesde Klasse',
+      'Zevende Klasse'
+    ]
+    
+    return Array.from(groups.entries()).map(([name, tournaments]) => ({
+      name,
+      tournaments: tournaments.sort((a, b) => {
+        // If no class_name, put at the end
+        if (!a.class_name && !b.class_name) return 0
+        if (!a.class_name) return 1
+        if (!b.class_name) return -1
+        
+        // Use custom order for known class names
+        const aIndex = classOrder.indexOf(a.class_name)
+        const bIndex = classOrder.indexOf(b.class_name)
+        
+        // If both are in the order list, use their index
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex
+        }
+        
+        // If only one is in the list, prioritize it
+        if (aIndex !== -1) return -1
+        if (bIndex !== -1) return 1
+        
+        // If neither is in the list, use alphabetical
+        return a.class_name.localeCompare(b.class_name)
+      })
+    }))
+  }
+
   const categorizeTournaments = (tournaments: Tournament[]): CategorizedTournaments => {
     const categorized: CategorizedTournaments = {
       herfstcompetitie: [],
@@ -213,13 +264,40 @@ export default function TournamentList() {
       ? archiveSectionRefs[sectionId as keyof typeof archiveSectionRefs]
       : sectionRefs[sectionId as keyof typeof sectionRefs]
 
+    // Group tournaments by name for multi-class tournaments
+    const groupedTournaments = groupTournamentsByName(tournaments)
+
+    // Create simplified tournament list - one card per tournament name
+    const simplifiedTournaments = groupedTournaments.map(group => {
+      // Take the first tournament as representative and calculate totals
+      const firstTournament = group.tournaments[0]
+      const totalPlayers = group.tournaments.reduce((sum, t) => sum + t.participations.length, 0)
+      const maxRounds = Math.max(...group.tournaments.map(t => t.rondes))
+      
+      return {
+        ...firstTournament,
+        // Override participations count with total
+        participations: Array.from({ length: totalPlayers }, (_, i) => ({ 
+          user_id: i, 
+          voornaam: `Player ${i + 1}`, 
+          achternaam: '' 
+        })),
+        // Override rounds with max
+        rondes: maxRounds,
+        // Add metadata for multi-class tournaments
+        _isMultiClass: group.tournaments.length > 1,
+        _classCount: group.tournaments.length,
+        _allTournamentIds: group.tournaments.map(t => t.tournament_id)
+      }
+    })
+
     return (
       <div ref={sectionRef} id={`${isArchive ? 'archive-' : ''}${sectionId}`} className="mb-12 scroll-mt-24">
         <h2 className="text-2xl font-bold text-[#2e2c2c] mb-6 border-b-2 border-mainAccent pb-2">
           {title}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tournaments.map(tournament => (
+          {simplifiedTournaments.map(tournament => (
             <TournamentCard key={tournament.tournament_id} tournament={tournament} />
           ))}
         </div>

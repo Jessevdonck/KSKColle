@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import useSWR from "swr"
@@ -126,6 +127,32 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
     }
   }
 
+  // Groepeer toernooien op naam
+  const groupedTournaments = React.useMemo(() => {
+    if (!tournaments) return []
+    
+    const groups = new Map<string, Toernooi[]>()
+    
+    tournaments.forEach(tournament => {
+      const groupKey = tournament.naam
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, [])
+      }
+      groups.get(groupKey)!.push(tournament)
+    })
+    
+    return Array.from(groups.entries()).map(([name, tournaments]) => ({
+      name,
+      tournaments: tournaments.sort((a, b) => {
+        // Sorteer op class_name als die bestaat
+        if (!a.class_name && !b.class_name) return 0
+        if (!a.class_name) return 1
+        if (!b.class_name) return -1
+        return a.class_name.localeCompare(b.class_name)
+      })
+    }))
+  }, [tournaments])
+
   return (
     <>
       <CloseTournamentDialog
@@ -142,7 +169,10 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
             <Trophy className="h-6 w-6" />
             Actieve Toernooien
           </h2>
-          <p className="text-white/80 mt-1">{tournaments.length} toernooien gevonden</p>
+          <p className="text-white/80 mt-1">
+            {groupedTournaments.length} {groupedTournaments.length === 1 ? 'toernooi' : 'toernooien'} 
+            ({tournaments.length} totaal met klasses)
+          </p>
         </div>
 
       <div className="p-6">
@@ -156,66 +186,87 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-cy="tournament">
-            {tournaments.map((t) => (
+            {groupedTournaments.map((group) => (
               <div
-                key={t.tournament_id}
+                key={group.name}
                 className="border border-neutral-200 rounded-lg p-6 hover:border-mainAccent/30 hover:shadow-md transition-all duration-200"
               >
+                {/* Hoofdtitel */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-textColor mb-1" data-cy="tournament_name">
-                      {t.naam}
+                    <h3 className="text-lg font-semibold text-textColor mb-2" data-cy="tournament_name">
+                      {group.name}
                     </h3>
-                    {t.class_name && (
-                      <p className="text-sm text-mainAccent font-medium mb-2">
-                        {t.class_name}
+                    {group.tournaments.length > 1 && (
+                      <p className="text-xs text-gray-500 mb-3">
+                        {group.tournaments.length} klasses
                       </p>
                     )}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="h-4 w-4" />
-                        <span data-cy="tournament_round">{t.rondes} rondes</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Users className="h-4 w-4" />
-                        <span data-cy="tournament_participation">{t.participations.length} deelnemers</span>
-                      </div>
-                    </div>
                   </div>
                   <div className="bg-mainAccent/10 p-2 rounded-lg">
                     <Trophy className="h-5 w-5 text-mainAccent" />
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => onSelectTournament(t)}
-                    className="flex-1 bg-mainAccent hover:bg-mainAccentDark"
-                    data-cy="tournament_manage_button"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Beheer
-                  </Button>
-                  {!t.finished && (
-                    <Button
-                      onClick={() => handleClose(t.tournament_id, t.naam)}
-                      variant="outline"
-                      className="border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
-                      disabled={isClosing}
-                      data-cy="tournament_close_button"
+                {/* Klasses */}
+                <div className="space-y-3 mb-4">
+                  {group.tournaments.map((t) => (
+                    <div
+                      key={t.tournament_id}
+                      className="border-l-2 border-mainAccent/30 pl-3 py-1"
                     >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => handleDelete(t.tournament_id)}
-                    variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                    disabled={isDeleting}
-                    data-cy="tournament_delete_button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                      {t.class_name && (
+                        <p className="text-sm font-medium text-mainAccent mb-1">
+                          {t.class_name}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 text-xs text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{t.rondes} rondes</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          <span>{t.participations.length} spelers</span>
+                        </div>
+                      </div>
+                      
+                      {/* Action buttons per klasse */}
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={() => onSelectTournament(t)}
+                          size="sm"
+                          className="h-7 text-xs bg-mainAccent hover:bg-mainAccentDark"
+                          data-cy="tournament_manage_button"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Beheer
+                        </Button>
+                        {!t.finished && (
+                          <Button
+                            onClick={() => handleClose(t.tournament_id, `${t.naam}${t.class_name ? ` (${t.class_name})` : ''}`)}
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
+                            disabled={isClosing}
+                            data-cy="tournament_close_button"
+                          >
+                            <CheckCircle className="h-3 w-3" />
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => handleDelete(t.tournament_id)}
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                          disabled={isDeleting}
+                          data-cy="tournament_delete_button"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

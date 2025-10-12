@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
@@ -58,6 +59,7 @@ export default function TournamentDetails() {
   >([])
   const [reportingAbsence, setReportingAbsence] = useState(false)
   const [activeTab, setActiveTab] = useState<'rounds' | 'standings'>('rounds')
+  const [selectedClassId, setSelectedClassId] = useState<number>(tournamentId)
   const { user: currentUser } = useAuth()
 
   // 1) Tournament data fetching
@@ -66,8 +68,8 @@ export default function TournamentDetails() {
     error: tournamentError,
     isLoading: tournamentLoading,
   } = useSWR<Tournament>(
-    tournamentId ? `tournament/${tournamentId}` : null,
-    () => getById(`tournament/${tournamentId}`),
+    selectedClassId ? `tournament/${selectedClassId}` : null,
+    () => getById(`tournament/${selectedClassId}`),
     {
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
@@ -75,14 +77,84 @@ export default function TournamentDetails() {
     },
   )
 
+  // Fetch all active tournaments to find other classes
+  const { data: allTournaments = [] } = useSWR<Tournament[]>(
+    'tournament?active=true&is_youth=false',
+    () => getAll('tournament', { active: 'true', is_youth: 'false' })
+  )
+
+  // Find all classes of this tournament (tournaments with same naam)
+  const tournamentClasses = React.useMemo(() => {
+    if (!tournament || !allTournaments) return []
+    
+    const classes = allTournaments.filter(t => t.naam === tournament.naam)
+    
+    // Custom sort order for class names
+    const classOrder = [
+      'Eerste Klasse',
+      'Tweede Klasse', 
+      'Derde Klasse',
+      'Vierde Klasse',
+      'Vijfde Klasse',
+      'Vierde en Vijfde Klasse',
+      'Zesde Klasse',
+      'Zevende Klasse'
+    ]
+    
+    return classes.sort((a, b) => {
+      // If no class_name, put at the end
+      if (!a.class_name && !b.class_name) return 0
+      if (!a.class_name) return 1
+      if (!b.class_name) return -1
+      
+      // Use custom order for known class names
+      const aIndex = classOrder.indexOf(a.class_name)
+      const bIndex = classOrder.indexOf(b.class_name)
+      
+      // If both are in the order list, use their index
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex
+      }
+      
+      // If only one is in the list, prioritize it
+      if (aIndex !== -1) return -1
+      if (bIndex !== -1) return 1
+      
+      // If neither is in the list, use alphabetical
+      return a.class_name.localeCompare(b.class_name)
+    })
+  }, [tournament, allTournaments])
+
+  const hasMultipleClasses = tournamentClasses.length > 1
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('🔍 TournamentDetails Debug:', {
+      tournamentName: tournament?.naam,
+      tournamentClasses: tournamentClasses.map(t => ({ 
+        id: t.tournament_id, 
+        class_name: t.class_name,
+        participations: t.participations.length 
+      })),
+      hasMultipleClasses,
+      selectedClassId
+    })
+  }, [tournament, tournamentClasses, hasMultipleClasses, selectedClassId])
+
+  // Reset state when switching classes
+  useEffect(() => {
+    setCurrentIndex(0)
+    setTimeline([])
+  }, [selectedClassId])
+
   // Check if current user is participating in the tournament
   const isParticipating = currentUser && tournament && 
     tournament.participations.some(p => p.user.user_id === currentUser.user_id)
 
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<any[]>(
-    tournamentId ? `tournamentRounds?tournament_id=${tournamentId}` : null,
-    () => getAllTournamentRounds(tournamentId),
+    selectedClassId ? `tournamentRounds?tournament_id=${selectedClassId}` : null,
+    () => getAllTournamentRounds(selectedClassId),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -326,7 +398,7 @@ export default function TournamentDetails() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-2">
               <PostponeGameButton 
-                tournamentId={tournamentId}
+                tournamentId={selectedClassId}
                 tournamentName={tournament.naam}
                 isHerfst={tournament.naam.toLowerCase().includes('herfst')}
                 participations={tournament.participations.map(p => ({ user_id: p.user.user_id }))}
@@ -347,6 +419,32 @@ export default function TournamentDetails() {
           </div>
         </div>
       </div>
+
+      {/* Class Tabs - Only show if tournament has multiple classes */}
+      {hasMultipleClasses && (
+        <div className="bg-white border-b border-neutral-200">
+          <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
+            <div className="flex gap-2 overflow-x-auto py-2">
+              {tournamentClasses.map((tournamentClass) => (
+                <button
+                  key={tournamentClass.tournament_id}
+                  onClick={() => setSelectedClassId(tournamentClass.tournament_id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                    selectedClassId === tournamentClass.tournament_id
+                      ? 'bg-mainAccent text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tournamentClass.class_name || 'Hoofdtoernooi'}
+                  <span className="ml-2 text-xs opacity-75">
+                    ({tournamentClass.participations.length} spelers)
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Tabs - Only visible on mobile */}
       <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">
