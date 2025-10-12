@@ -1,6 +1,7 @@
 import { prisma } from './data';
 import handleDBError from './handleDBError';
 import { getLogger } from '../core/logging';
+import Role from '../core/roles';
 
 const logger = getLogger();
 
@@ -90,6 +91,9 @@ export const updateLidgeldStatus = async (
       where: { user_id: userId },
       data: updateData
     });
+
+    // Automatically update user role based on membership status
+    await updateUserRoleBasedOnMembership(userId);
 
     logger.info('Lidgeld status updated', { userId, data: updateData });
   } catch (error) {
@@ -208,4 +212,195 @@ export const getMembershipStatus = (user: {
     jeugdlidgeldValid,
     expiresAt
   };
+};
+
+/**
+ * Automatically update user role based on membership status
+ * - If user has valid membership: ensure they have 'user' role (and remove 'exlid' if present)
+ * - If user has no valid membership: set role to 'exlid' (and remove other roles)
+ */
+const updateUserRoleBasedOnMembership = async (userId: number): Promise<void> => {
+  try {
+    // Get user with current lidgeld status
+    const user = await prisma.user.findUnique({
+      where: { user_id: userId },
+      select: {
+        user_id: true,
+        roles: true,
+        lidgeld_betaald: true,
+        lidgeld_periode_eind: true,
+        bondslidgeld_betaald: true,
+        bondslidgeld_periode_eind: true,
+        jeugdlidgeld_betaald: true,
+        jeugdlidgeld_periode_eind: true,
+        is_admin: true
+      }
+    });
+
+    if (!user) {
+      logger.warn('User not found for role update', { userId });
+      return;
+    }
+
+    // Parse current roles
+    const currentRoles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
+    
+    // Check membership status
+    const membershipStatus = getMembershipStatus({
+      lidgeld_betaald: user.lidgeld_betaald,
+      lidgeld_periode_eind: user.lidgeld_periode_eind,
+      bondslidgeld_betaald: user.bondslidgeld_betaald,
+      bondslidgeld_periode_eind: user.bondslidgeld_periode_eind,
+      jeugdlidgeld_betaald: user.jeugdlidgeld_betaald,
+      jeugdlidgeld_periode_eind: user.jeugdlidgeld_periode_eind
+    });
+
+    let newRoles: string[] = [];
+
+    if (membershipStatus.isMember) {
+      // User has valid membership - ensure they have 'user' role
+      if (user.is_admin) {
+        // Admin users keep admin + user roles
+        newRoles = [Role.ADMIN, Role.USER];
+      } else if (currentRoles.includes(Role.BESTUURSLID)) {
+        // Bestuurslid users keep bestuurslid + user roles
+        newRoles = [Role.BESTUURSLID, Role.USER];
+      } else {
+        // Regular users just get user role
+        newRoles = [Role.USER];
+      }
+      
+      logger.info('Membership valid - updating roles to active member', { 
+        userId, 
+        oldRoles: currentRoles, 
+        newRoles,
+        membershipStatus 
+      });
+    } else {
+      // User has no valid membership - set to exlid
+      newRoles = [Role.EXLID];
+      
+      logger.info('Membership expired - updating roles to exlid', { 
+        userId, 
+        oldRoles: currentRoles, 
+        newRoles,
+        membershipStatus 
+      });
+    }
+
+    // Only update if roles actually changed
+    const rolesChanged = JSON.stringify(currentRoles.sort()) !== JSON.stringify(newRoles.sort());
+    
+    if (rolesChanged) {
+      await prisma.user.update({
+        where: { user_id: userId },
+        data: { roles: JSON.stringify(newRoles) }
+      });
+      
+      logger.info('User roles updated successfully', { userId, newRoles });
+    } else {
+      logger.info('User roles unchanged', { userId, roles: newRoles });
+    }
+
+  } catch (error) {
+    logger.error('Failed to update user role based on membership', { error, userId });
+    throw handleDBError(error);
+  }
+};
+
+/**
+ * Update roles for all users based on their current membership status
+ * Useful for batch processing or maintenance tasks
+ */
+export const updateAllUserRolesBasedOnMembership = async (): Promise<{
+  updated: number;
+  unchanged: number;
+  errors: number;
+}> => {
+  try {
+    logger.info('Starting batch role update for all users based on membership status');
+    
+    // Get all users with their membership status
+    const users = await prisma.user.findMany({
+      select: {
+        user_id: true,
+        roles: true,
+        lidgeld_betaald: true,
+        lidgeld_periode_eind: true,
+        bondslidgeld_betaald: true,
+        bondslidgeld_periode_eind: true,
+        jeugdlidgeld_betaald: true,
+        jeugdlidgeld_periode_eind: true,
+        is_admin: true
+      }
+    });
+
+    let updated = 0;
+    let unchanged = 0;
+    let errors = 0;
+
+    for (const user of users) {
+      try {
+        // Parse current roles
+        const currentRoles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
+        
+        // Check membership status
+        const membershipStatus = getMembershipStatus({
+          lidgeld_betaald: user.lidgeld_betaald,
+          lidgeld_periode_eind: user.lidgeld_periode_eind,
+          bondslidgeld_betaald: user.bondslidgeld_betaald,
+          bondslidgeld_periode_eind: user.bondslidgeld_periode_eind,
+          jeugdlidgeld_betaald: user.jeugdlidgeld_betaald,
+          jeugdlidgeld_periode_eind: user.jeugdlidgeld_periode_eind
+        });
+
+        let newRoles: string[] = [];
+
+        if (membershipStatus.isMember) {
+          // User has valid membership
+          if (user.is_admin) {
+            newRoles = [Role.ADMIN, Role.USER];
+          } else if (currentRoles.includes(Role.BESTUURSLID)) {
+            newRoles = [Role.BESTUURSLID, Role.USER];
+          } else {
+            newRoles = [Role.USER];
+          }
+        } else {
+          // User has no valid membership
+          newRoles = [Role.EXLID];
+        }
+
+        // Check if roles need to be updated
+        const rolesChanged = JSON.stringify(currentRoles.sort()) !== JSON.stringify(newRoles.sort());
+        
+        if (rolesChanged) {
+          await prisma.user.update({
+            where: { user_id: user.user_id },
+            data: { roles: JSON.stringify(newRoles) }
+          });
+          
+          updated++;
+          logger.info('User role updated in batch', { 
+            userId: user.user_id, 
+            oldRoles: currentRoles, 
+            newRoles,
+            membershipStatus 
+          });
+        } else {
+          unchanged++;
+        }
+
+      } catch (error) {
+        errors++;
+        logger.error('Failed to update user role in batch', { error, userId: user.user_id });
+      }
+    }
+
+    logger.info('Batch role update completed', { updated, unchanged, errors, total: users.length });
+    
+    return { updated, unchanged, errors };
+  } catch (error) {
+    logger.error('Failed to perform batch role update', { error });
+    throw handleDBError(error);
+  }
 };

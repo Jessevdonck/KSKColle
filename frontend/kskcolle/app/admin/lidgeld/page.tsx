@@ -285,7 +285,7 @@ export default function LidgeldManagement() {
                       <h4 className="font-medium text-gray-900 mb-2">Lidgeld</h4>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-2">
-                          <Checkbox checked={user.lidgeld_betaald} disabled />
+                          <Checkbox checked={status.lidgeldValid} disabled />
                           <span>Betaald</span>
                         </div>
                         {user.lidgeld_periode_start && (
@@ -304,7 +304,7 @@ export default function LidgeldManagement() {
                       <h4 className="font-medium text-gray-900 mb-2">Bondslidgeld</h4>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center gap-2">
-                          <Checkbox checked={user.bondslidgeld_betaald} disabled />
+                          <Checkbox checked={status.bondslidgeldValid} disabled />
                           <span>Betaald</span>
                         </div>
                         {user.bondslidgeld_periode_start && (
@@ -324,7 +324,7 @@ export default function LidgeldManagement() {
                         <h4 className="font-medium text-gray-900 mb-2">Jeugdlidgeld</h4>
                         <div className="space-y-1 text-sm">
                           <div className="flex items-center gap-2">
-                            <Checkbox checked={user.jeugdlidgeld_betaald} disabled />
+                            <Checkbox checked={status.jeugdlidgeldValid} disabled />
                             <span>Betaald</span>
                           </div>
                           {user.jeugdlidgeld_periode_start && (
@@ -374,11 +374,18 @@ function LidgeldEditModal({ user, onClose, onSave }: {
   onClose: () => void
   onSave: (userId: number, data: any) => void
 }) {
+  // Check if current lidgeld/bondslidgeld is expired
+  const now = new Date()
+  const lidgeldExpired = user.lidgeld_betaald && user.lidgeld_periode_eind && new Date(user.lidgeld_periode_eind) <= now
+  const bondslidgeldExpired = user.bondslidgeld_betaald && user.bondslidgeld_periode_eind && new Date(user.bondslidgeld_periode_eind) <= now
+
   const [formData, setFormData] = useState({
-    lidgeld_betaald: user.lidgeld_betaald,
+    // If lidgeld is expired, uncheck it
+    lidgeld_betaald: user.lidgeld_betaald && !lidgeldExpired,
     lidgeld_periode_start: user.lidgeld_periode_start ? format(new Date(user.lidgeld_periode_start), 'yyyy-MM-dd') : '',
     lidgeld_periode_eind: user.lidgeld_periode_eind ? format(new Date(user.lidgeld_periode_eind), 'yyyy-MM-dd') : '',
-    bondslidgeld_betaald: user.bondslidgeld_betaald,
+    // If bondslidgeld is expired, uncheck it
+    bondslidgeld_betaald: user.bondslidgeld_betaald && !bondslidgeldExpired,
     bondslidgeld_periode_start: user.bondslidgeld_periode_start ? format(new Date(user.bondslidgeld_periode_start), 'yyyy-MM-dd') : '',
     bondslidgeld_periode_eind: user.bondslidgeld_periode_eind ? format(new Date(user.bondslidgeld_periode_eind), 'yyyy-MM-dd') : '',
     jeugdlidgeld_betaald: user.jeugdlidgeld_betaald,
@@ -386,9 +393,8 @@ function LidgeldEditModal({ user, onClose, onSave }: {
     jeugdlidgeld_periode_eind: user.jeugdlidgeld_periode_eind ? format(new Date(user.jeugdlidgeld_periode_eind), 'yyyy-MM-dd') : '',
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  // Helper function to get August 31st date
+  const getAugust31st = () => {
     const today = new Date()
     const currentYear = today.getFullYear()
     const currentMonth = today.getMonth() // 0-indexed, so August is 7
@@ -399,7 +405,41 @@ function LidgeldEditModal({ user, onClose, onSave }: {
       ? currentYear + 1 
       : currentYear
     
-    const august31 = new Date(yearForAugust31, 7, 31) // August 31st (month is 0-indexed)
+    return new Date(yearForAugust31, 7, 31) // August 31st (month is 0-indexed)
+  }
+
+  // Handle checkbox changes with automatic date setting
+  const handleLidgeldChange = (checked: boolean) => {
+    const today = new Date()
+    const august31 = getAugust31st()
+    
+    setFormData(prev => ({
+      ...prev,
+      lidgeld_betaald: checked,
+      // When checking, set dates if they're empty
+      lidgeld_periode_start: checked && !prev.lidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.lidgeld_periode_start,
+      lidgeld_periode_eind: checked && !prev.lidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.lidgeld_periode_eind,
+    }))
+  }
+
+  const handleBondslidgeldChange = (checked: boolean) => {
+    const today = new Date()
+    const august31 = getAugust31st()
+    
+    setFormData(prev => ({
+      ...prev,
+      bondslidgeld_betaald: checked,
+      // When checking, set dates if they're empty
+      bondslidgeld_periode_start: checked && !prev.bondslidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.bondslidgeld_periode_start,
+      bondslidgeld_periode_eind: checked && !prev.bondslidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.bondslidgeld_periode_eind,
+    }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const today = new Date()
+    const august31 = getAugust31st()
     
     const data = {
       ...formData,
@@ -429,26 +469,7 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                   <Checkbox
                     id="lidgeld_betaald"
                     checked={formData.lidgeld_betaald}
-                    onCheckedChange={(checked) => {
-                      const today = new Date()
-                      const currentYear = today.getFullYear()
-                      const currentMonth = today.getMonth() // 0-indexed, so August is 7
-                      const currentDay = today.getDate()
-                      
-                      // If we're past August 31st this year, use next year's August 31st
-                      const yearForAugust31 = (currentMonth > 7 || (currentMonth === 7 && currentDay > 31)) 
-                        ? currentYear + 1 
-                        : currentYear
-                      
-                      const august31 = new Date(yearForAugust31, 7, 31)
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        lidgeld_betaald: !!checked,
-                        // Only set dates if they're not already filled in
-                        lidgeld_periode_start: checked && !prev.lidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.lidgeld_periode_start,
-                        lidgeld_periode_eind: checked && !prev.lidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.lidgeld_periode_eind
-                      }))
-                    }}
+                    onCheckedChange={(checked) => handleLidgeldChange(!!checked)}
                   />
                   <Label htmlFor="lidgeld_betaald">Betaald</Label>
                 </div>
@@ -479,26 +500,7 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                   <Checkbox
                     id="bondslidgeld_betaald"
                     checked={formData.bondslidgeld_betaald}
-                    onCheckedChange={(checked) => {
-                      const today = new Date()
-                      const currentYear = today.getFullYear()
-                      const currentMonth = today.getMonth() // 0-indexed, so August is 7
-                      const currentDay = today.getDate()
-                      
-                      // If we're past August 31st this year, use next year's August 31st
-                      const yearForAugust31 = (currentMonth > 7 || (currentMonth === 7 && currentDay > 31)) 
-                        ? currentYear + 1 
-                        : currentYear
-                      
-                      const august31 = new Date(yearForAugust31, 7, 31)
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        bondslidgeld_betaald: !!checked,
-                        // Only set dates if they're not already filled in
-                        bondslidgeld_periode_start: checked && !prev.bondslidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.bondslidgeld_periode_start,
-                        bondslidgeld_periode_eind: checked && !prev.bondslidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.bondslidgeld_periode_eind
-                      }))
-                    }}
+                    onCheckedChange={(checked) => handleBondslidgeldChange(!!checked)}
                   />
                   <Label htmlFor="bondslidgeld_betaald">Betaald</Label>
                 </div>

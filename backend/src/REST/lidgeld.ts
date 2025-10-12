@@ -84,6 +84,32 @@ updateLidgeldStatus.validationScheme = {
   },
 };
 
+/**
+ * @api {post} /lidgeld/batch-update-roles Update roles for all users based on membership status
+ * @apiName BatchUpdateUserRoles
+ * @apiGroup Lidgeld
+ * @apiPermission admin
+ * 
+ * @apiSuccess (200) Success Roles updated successfully.
+ * @apiError (401) Unauthorized You need to be authenticated to access this resource.
+ * @apiError (403) Forbidden You don't have access to this resource.
+ */
+const batchUpdateUserRoles = async (ctx: ChessAppContext) => {
+  try {
+    const result = await lidgeldService.updateAllUserRolesBasedOnMembership();
+    
+    ctx.status = 200;
+    ctx.body = { 
+      message: 'User roles updated successfully',
+      result
+    };
+  } catch (error) {
+    logger.error('Failed to batch update user roles', { error });
+    ctx.throw(500, 'Failed to update user roles');
+  }
+};
+batchUpdateUserRoles.validationScheme = null;
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/lidgeld',
@@ -91,9 +117,11 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   // Require admin or bestuurslid role
   const requireAdminOrBestuurslid = makeRequireRole(['admin', 'bestuurslid']);
+  const requireAdmin = makeRequireRole('admin');
 
   router.get('/', requireAuthentication, requireAdminOrBestuurslid, validate(getLidgeldStatus.validationScheme), getLidgeldStatus);
   router.put('/:id', requireAuthentication, requireAdminOrBestuurslid, validate(updateLidgeldStatus.validationScheme), updateLidgeldStatus);
+  router.post('/batch-update-roles', requireAuthentication, requireAdmin, validate(batchUpdateUserRoles.validationScheme), batchUpdateUserRoles);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };
