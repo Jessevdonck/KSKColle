@@ -138,7 +138,7 @@ export class SevillaImporterService {
     }
   }
 
-  private async importGroup(group: SevillaGroup, sevillaData: SevillaTournament, tournamentName: string, className: string | null, incremental: boolean = false): Promise<number> {
+  private async importGroup(group: SevillaGroup, _sevillaData: SevillaTournament, tournamentName: string, className: string | null, incremental: boolean = false): Promise<number> {
     try {
       // Get the latest ranking (final standings) for tournament info
       const latestRanking = group.Ranking[group.Ranking.length - 1];
