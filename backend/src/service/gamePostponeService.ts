@@ -365,7 +365,7 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
         where: {
           OR: [
             { is_admin: true },
-            { roles: { has: 'admin' } }
+            { roles: { array_contains: 'admin' } }
           ]
         }
       });
@@ -433,12 +433,15 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
             </html>
           `;
           
-          await emailService.sendCustomEmail({
-            to: admin.email,
-            subject: adminSubject,
-            html: adminHtml,
-            text: `[ADMIN] Partij uitgesteld\n\nToernooi: ${game.round.tournament.naam}\nSpeler: ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam}\nTegenstander: ${opponent?.voornaam} ${opponent?.achternaam}\nNieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`
-          });
+          // Alleen email sturen als admin een email adres heeft
+          if (admin.email) {
+            await emailService.sendCustomEmail({
+              to: admin.email,
+              subject: adminSubject,
+              html: adminHtml,
+              text: `[ADMIN] Partij uitgesteld\n\nToernooi: ${game.round.tournament.naam}\nSpeler: ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam}\nTegenstander: ${opponent?.voornaam} ${opponent?.achternaam}\nNieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`
+            });
+          }
           
           logger.info('Notifications sent to admin successfully', { admin_id: admin.user_id, admin_email: admin.email });
         } catch (adminError) {

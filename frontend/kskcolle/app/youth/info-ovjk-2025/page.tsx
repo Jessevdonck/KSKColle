@@ -142,7 +142,7 @@ export default function InfoOVJK2025Page() {
                       <tr>
                         <td className="border border-gray-300 p-3 font-semibold" rowSpan={5}>25/10</td>
                         <td className="border border-gray-300 p-3">10:00</td>
-                        <td className="border border-gray-300 p-3">AANMELDEN TOT</td>
+                        <td className="border border-gray-300 p-3">AFSLUITEN AANMELDINGEN</td>
                         <td className="border border-gray-300 p-3">-</td>
                       </tr>
                       <tr>
@@ -166,10 +166,10 @@ export default function InfoOVJK2025Page() {
                         <td className="border border-gray-300 p-3">-</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 p-3 font-semibold" rowSpan={6}>26/10</td>
+                        <td className="border border-gray-300 p-3 font-semibold" rowSpan={12}>26/10</td>
                         <td className="border border-gray-300 p-3">10:00</td>
-                        <td className="border border-gray-300 p-3">AANMELDEN TOT</td>
-                        <td className="border border-gray-300 p-3">AANMELDEN TOT</td>
+                        <td className="border border-gray-300 p-3">AFSLUITEN AANMELDINGEN</td>
+                        <td className="border border-gray-300 p-3">AFSLUITEN AANMELDINGEN</td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 p-3">10:10</td>
@@ -197,37 +197,31 @@ export default function InfoOVJK2025Page() {
                         <td className="border border-gray-300 p-3">RONDE 5</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 p-3 font-semibold">26/10</td>
                         <td className="border border-gray-300 p-3">14:00</td>
                         <td className="border border-gray-300 p-3">-</td>
                         <td className="border border-gray-300 p-3">RONDE 6</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 p-3 font-semibold">26/10</td>
                         <td className="border border-gray-300 p-3">14:50</td>
                         <td className="border border-gray-300 p-3">-</td>
                         <td className="border border-gray-300 p-3">RONDE 7</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 p-3 font-semibold">26/10</td>
                         <td className="border border-gray-300 p-3">15:40</td>
                         <td className="border border-gray-300 p-3">-</td>
                         <td className="border border-gray-300 p-3">RONDE 8</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 p-3 font-semibold">26/10</td>
                         <td className="border border-gray-300 p-3">16:00</td>
                         <td className="border border-gray-300 p-3">-</td>
                         <td className="border border-gray-300 p-3">RONDE 9</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 p-3 font-semibold">26/10</td>
                         <td className="border border-gray-300 p-3">16:30</td>
                         <td className="border border-gray-300 p-3">-</td>
                         <td className="border border-gray-300 p-3">-</td>
                       </tr>
                       <tr>
-                        <td className="border border-gray-300 p-3 font-semibold">26/10</td>
                         <td className="border border-gray-300 p-3">17:20</td>
                         <td className="border border-gray-300 p-3">-</td>
                         <td className="border border-gray-300 p-3">-</td>

@@ -101,7 +101,7 @@ Deze speler meldt zich af voor ronde ${nextRoundNumber} en wenst niet uitgeloot 
         where: {
           OR: [
             { is_admin: true },
-            { roles: { has: 'admin' } }
+            { roles: { array_contains: 'admin' } }
           ]
         }
       })

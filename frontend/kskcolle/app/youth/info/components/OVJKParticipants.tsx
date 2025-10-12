@@ -51,20 +51,6 @@ export default function OVJKParticipants() {
             </iframe>
           </div>
 
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-600 mb-2">
-              Als de lijst hierboven niet werkt, gebruik dan deze link:
-            </p>
-            <a 
-              href="https://docs.google.com/spreadsheets/d/e/2PACX-1vSLCTV-yg58WBsoy_Xk6sRWsHhLNICzAu46d8Bu8tmO7R_xoJKYMVHUksFNJaY_EvzB-E8mmAJpzRZ8/pubhtml?gid=1452248494&single=true" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-mainAccent hover:underline font-medium"
-            >
-              https://docs.google.com/spreadsheets/d/e/2PACX-1vSLCTV-yg58WBsoy_Xk6sRWsHhLNICzAu46d8Bu8tmO7R_xoJKYMVHUksFNJaY_EvzB-E8mmAJpzRZ8/pubhtml?gid=1452248494&single=true
-            </a>
-          </div>
-
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-3">
               <ExternalLink className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />

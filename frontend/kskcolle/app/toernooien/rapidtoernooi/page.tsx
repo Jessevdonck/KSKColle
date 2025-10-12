@@ -93,7 +93,7 @@ export default function RapidToernooiPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span className="font-medium">AANMELDEN TOT</span>
+                      <span className="font-medium">AFSLUITEN AANMELDINGEN </span>
                       <span className="font-bold text-mainAccent">13:00</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-gray-200">
