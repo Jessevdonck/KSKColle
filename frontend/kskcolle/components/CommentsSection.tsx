@@ -202,25 +202,26 @@ export default function CommentsSection({ articleId }: CommentsSectionProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold flex items-center gap-2">
+      <h3 className="text-lg font-semibold flex items-center gap-2 text-mainAccent">
         <MessageSquare className="h-5 w-5" />
         Reacties ({total})
       </h3>
 
       {canComment ? (
         <Card>
-          <CardContent className="pt-4">
+          <CardContent className="pt-6">
             <Textarea
               placeholder="Schrijf je reactie hier..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               rows={4}
+              className="mb-4"
             />
             <div className="flex justify-end items-center">
               <Button 
                 onClick={() => handleSubmitComment()}
                 disabled={!newComment.trim() || submitting}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-mainAccent hover:bg-mainAccentDark"
               >
                 <Send className="h-4 w-4" />
                 {submitting ? 'Bezig...' : 'Plaats reactie'}
@@ -371,7 +372,7 @@ function CommentItem({
                     variant="ghost"
                     size="sm"
                     onClick={() => onStartReply(comment.comment_id)}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 text-mainAccent hover:text-mainAccentDark hover:bg-mainAccent/10"
                     title="Reageren"
                   >
                     <Reply className="h-4 w-4" />
@@ -386,7 +387,7 @@ function CommentItem({
                           variant="ghost"
                           size="sm"
                           onClick={() => onStartEdit(comment)}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 text-mainAccent hover:text-mainAccentDark hover:bg-mainAccent/10"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -394,7 +395,7 @@ function CommentItem({
                           variant="ghost"
                           size="sm"
                           onClick={() => onDeleteComment(comment.comment_id)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -405,7 +406,7 @@ function CommentItem({
                           variant="ghost"
                           size="sm"
                           onClick={onCancelEdit}
-                          className="h-8 px-2"
+                          className="h-8 px-3 hover:bg-mainAccent/10"
                         >
                           Annuleren
                         </Button>
@@ -413,7 +414,7 @@ function CommentItem({
                           size="sm"
                           onClick={() => onSubmitEdit(comment.comment_id)}
                           disabled={!editContent.trim() || submitting}
-                          className="h-8 px-2"
+                          className="h-8 px-3 bg-mainAccent hover:bg-mainAccentDark"
                         >
                           Opslaan
                         </Button>
@@ -445,19 +446,20 @@ function CommentItem({
 
             {/* Reply Form */}
             {replyingTo === comment.comment_id && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <div className="mt-4 p-4 bg-mainAccent/5 border border-mainAccent/20 rounded-lg">
                 <Textarea
                   placeholder="Schrijf je reactie hier..."
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
                   rows={3}
-                  className="mb-3"
+                  className="mb-4"
                 />
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={onCancelReply}
+                    className="hover:bg-mainAccent/10"
                   >
                     Annuleren
                   </Button>
@@ -465,7 +467,7 @@ function CommentItem({
                     size="sm"
                     onClick={() => onSubmitReply(comment.comment_id)}
                     disabled={!replyContent.trim() || submitting}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-mainAccent hover:bg-mainAccentDark"
                   >
                     <Send className="h-4 w-4" />
                     {submitting ? 'Bezig...' : 'Plaats reactie'}
@@ -476,7 +478,7 @@ function CommentItem({
 
             {/* Replies - Recursive rendering for unlimited nesting */}
             {comment.replies && comment.replies.length > 0 && (
-              <div className="mt-4 pl-6 border-l-2 border-gray-200 space-y-3">
+              <div className="mt-4 pl-6 border-l-2 border-mainAccent/30 space-y-3">
                 {comment.replies.map((reply) => (
                   <CommentItem
                     key={reply.comment_id}

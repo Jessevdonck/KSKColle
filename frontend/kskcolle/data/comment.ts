@@ -2,6 +2,7 @@ export interface Comment {
   comment_id: number;
   article_id: number;
   author_id: number;
+  parent_comment_id?: number | null;
   content: string;
   created_at: string;
   updated_at: string;
@@ -14,6 +15,7 @@ export interface CommentWithAuthor extends Comment {
     achternaam: string;
     avatar_url: string | null;
   };
+  replies?: CommentWithAuthor[];
 }
 
 export interface CreateCommentRequest {
