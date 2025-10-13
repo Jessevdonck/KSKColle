@@ -31,6 +31,8 @@ interface RoundPairingsProps {
     naam: string
     rondes: number
     type: "SWISS" | "ROUND_ROBIN"
+    rating_enabled?: boolean
+    is_youth?: boolean
     is_sevilla_imported?: boolean
     participations: Array<{
       user: {
@@ -128,11 +130,15 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
           <thead>
             <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
               <th className="px-2 py-1 text-left font-semibold text-sm">Wit</th>
-              <th className="px-2 py-1 text-center font-semibold text-sm w-20">Rating</th>
+              {!tournament?.is_youth && tournament?.rating_enabled !== false && (
+                <th className="px-2 py-1 text-center font-semibold text-sm w-20">Rating</th>
+              )}
               <th className="px-2 py-1 text-center font-semibold text-sm w-16">Punten</th>
               <th className="px-2 py-1 text-center font-semibold w-8"></th>
               <th className="px-2 py-1 text-left font-semibold text-sm">Zwart</th>
-              <th className="px-2 py-1 text-center font-semibold text-sm w-20">Rating</th>
+              {!tournament?.is_youth && tournament?.rating_enabled !== false && (
+                <th className="px-2 py-1 text-center font-semibold text-sm w-20">Rating</th>
+              )}
               <th className="px-2 py-1 text-center font-semibold text-sm w-16">Punten</th>
               <th className="px-2 py-1 text-center font-semibold text-sm w-32">Uitslag</th>
             </tr>
@@ -140,8 +146,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
           <tbody>
         {(() => {
           const tournamentWithSevilla = tournament as any;
-          console.log('👶 Youth page - tournament.is_sevilla_imported:', tournamentWithSevilla?.is_sevilla_imported);
-          console.log('👶 Youth page - round.games count:', round.games.length);
+          console.log('👶 Youth RoundPairings - is_youth:', tournamentWithSevilla?.is_youth, 'naam:', tournamentWithSevilla?.naam);
           return tournamentWithSevilla?.is_sevilla_imported 
             ? sortSevillaGamesWithPostponed(round.games)
             : round.games;
@@ -163,11 +168,13 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     <span>{`${game.speler1.voornaam} ${game.speler1.achternaam}`}</span>
                   </Link>
                 </td>
-                <td className="px-2 py-1 text-center">
-                  <span className="text-sm font-medium text-gray-700">
-                    {game.speler1.schaakrating_elo}
-                  </span>
-                </td>
+                {!tournament?.is_youth && tournament?.rating_enabled !== false && (
+                  <td className="px-2 py-1 text-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      {game.speler1.schaakrating_elo}
+                    </span>
+                  </td>
+                )}
                 <td className="px-2 py-1 text-center">
                   {playerScores.length > 0 ? (
                     <span className="text-sm font-medium text-mainAccent">
@@ -202,15 +209,17 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     </div>
                   )}
                 </td>
-                <td className="px-2 py-1 text-center">
-                  {game.speler2 ? (
-                    <span className="text-sm font-medium text-gray-700">
-                      {game.speler2.schaakrating_elo}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-gray-400">-</span>
-                  )}
-                </td>
+                {!tournament?.is_youth && tournament?.rating_enabled !== false && (
+                  <td className="px-2 py-1 text-center">
+                    {game.speler2 ? (
+                      <span className="text-sm font-medium text-gray-700">
+                        {game.speler2.schaakrating_elo}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
+                    )}
+                  </td>
+                )}
                 <td className="px-2 py-1 text-center">
                   {game.speler2 && playerScores.length > 0 ? (
                     <span className="text-sm font-medium text-mainAccent">

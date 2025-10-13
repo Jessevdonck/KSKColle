@@ -41,6 +41,8 @@ type Tournament = {
   naam: string
   rondes: number
   type: "SWISS" | "ROUND_ROBIN"
+  rating_enabled?: boolean
+  is_youth?: boolean
   participations: Array<{
     user: {
       user_id: number
@@ -76,6 +78,9 @@ export default function TournamentDetails() {
       dedupingInterval: 0, // Disable deduplication to force fresh data
     },
   )
+
+  // Debug logging
+  console.log('🎯 Youth TournamentDetails - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);
 
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<Round[]>(

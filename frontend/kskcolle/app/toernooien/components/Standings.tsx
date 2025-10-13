@@ -10,6 +10,7 @@ interface StandingsProps {
     naam: string
     rondes: number
     type: "SWISS" | "ROUND_ROBIN"
+    rating_enabled?: boolean
     participations: Array<{
       user: {
         user_id: number
@@ -253,22 +254,24 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-600">
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <span>ELIO: {player.schaakrating_elo || '-'}</span>
-                      {player.ratingDifference !== null && player.ratingDifference !== undefined && (
-                        <span className={`text-xs font-bold ${
-                          isBiggestRatingGain
-                            ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg"
-                            : player.ratingDifference > 0 
-                            ? "text-green-600" 
-                            : player.ratingDifference < 0 
-                            ? "text-red-600" 
-                            : "text-gray-500"
-                        }`}>
-                          ({player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)})
-                        </span>
-                      )}
-                    </div>
+                    {tournament.is_youth !== true && (
+                      <div className="flex items-center gap-1">
+                        <span>ELIO: {player.schaakrating_elo || '-'}</span>
+                        {player.ratingDifference !== null && player.ratingDifference !== undefined && (
+                          <span className={`text-xs font-bold ${
+                            isBiggestRatingGain
+                              ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg"
+                              : player.ratingDifference > 0 
+                              ? "text-green-600" 
+                              : player.ratingDifference < 0 
+                              ? "text-red-600" 
+                              : "text-gray-500"
+                          }`}>
+                            ({player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)})
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center gap-1">
                       <User className="h-3 w-3" />
                       <span>{player.gamesPlayed} partijen</span>
@@ -288,7 +291,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           <div className="flex items-center gap-1.5">
             <div className="w-5 text-center text-[0.7em] font-semibold text-gray-600">#</div>
             <div className="flex-1 text-[0.7em] font-semibold text-gray-600">Naam</div>
-            <div className="w-16 text-center text-[0.7em] font-semibold text-gray-600">ELIO</div>
+            {tournament.is_youth !== true && (
+              <div className="w-16 text-center text-[0.7em] font-semibold text-gray-600">ELIO</div>
+            )}
             <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
             <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
             <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
@@ -327,22 +332,24 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   </div>
 
                   {/* ELO with Rating Difference */}
-                  <div className="w-16 text-center text-[0.7em] font-medium text-gray-700 flex items-center justify-center gap-0.5">
-                    <span>{player.schaakrating_elo || '-'}</span>
-                    {player.ratingDifference !== null && player.ratingDifference !== undefined && (
-                      <span className={`text-xs font-bold ${
-                        isBiggestRatingGain
-                          ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg"
-                          : player.ratingDifference > 0 
-                          ? "text-green-600" 
-                          : player.ratingDifference < 0 
-                          ? "text-red-600" 
-                          : "text-gray-500"
-                      }`}>
-                        ({player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)})
-                      </span>
-                    )}
-                  </div>
+                  {tournament.is_youth !== true && (
+                    <div className="w-16 text-center text-[0.7em] font-medium text-gray-700 flex items-center justify-center gap-0.5">
+                      <span>{player.schaakrating_elo || '-'}</span>
+                      {player.ratingDifference !== null && player.ratingDifference !== undefined && (
+                        <span className={`text-xs font-bold ${
+                          isBiggestRatingGain
+                            ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg"
+                            : player.ratingDifference > 0 
+                            ? "text-green-600" 
+                            : player.ratingDifference < 0 
+                            ? "text-red-600" 
+                            : "text-gray-500"
+                        }`}>
+                          ({player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)})
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Games Played */}
                   <div className="w-10 text-center text-[0.7em] text-gray-600 flex items-center justify-center gap-0.5">

@@ -38,6 +38,8 @@ type Tournament = {
   naam: string
   rondes: number
   type: "SWISS" | "ROUND_ROBIN"
+  rating_enabled?: boolean
+  is_youth?: boolean
   participations: Array<{
     user: {
       user_id: number
@@ -76,6 +78,9 @@ export default function TournamentDetails() {
       dedupingInterval: 0, // Disable deduplication to force fresh data
     },
   )
+
+  // Debug logging
+  console.log('🎯 Tournament type check - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);
 
   // Fetch all active tournaments to find other classes
   const { data: allTournaments = [] } = useSWR<Tournament[]>(

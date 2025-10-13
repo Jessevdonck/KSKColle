@@ -18,7 +18,7 @@ interface TournamentListProps {
 export default function TournamentList({ onSelectTournament }: TournamentListProps) {
   const { toast } = useToast()
   const [closeDialogOpen, setCloseDialogOpen] = useState(false)
-  const [selectedTournamentForClose, setSelectedTournamentForClose] = useState<{ id: number; name: string } | null>(null)
+  const [selectedTournamentForClose, setSelectedTournamentForClose] = useState<{ id: number; name: string; ratingEnabled: boolean } | null>(null)
   
   // Haal alleen actieve toernooien op (finished = false)
   const { data: tournaments, error, mutate } = useSWR<Toernooi[]>(
@@ -94,8 +94,8 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
     }
   }
 
-  const handleClose = (tournamentId: number, tournamentName: string) => {
-    setSelectedTournamentForClose({ id: tournamentId, name: tournamentName })
+  const handleClose = (tournamentId: number, tournamentName: string, ratingEnabled: boolean) => {
+    setSelectedTournamentForClose({ id: tournamentId, name: tournamentName, ratingEnabled })
     setCloseDialogOpen(true)
   }
 
@@ -161,6 +161,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
         tournamentName={selectedTournamentForClose?.name || ""}
         onConfirm={handleConfirmClose}
         isLoading={isClosing}
+        ratingEnabled={selectedTournamentForClose?.ratingEnabled ?? true}
       />
       
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -244,7 +245,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                         </Button>
                         {!t.finished && (
                           <Button
-                            onClick={() => handleClose(t.tournament_id, `${t.naam}${t.class_name ? ` (${t.class_name})` : ''}`)}
+                            onClick={() => handleClose(t.tournament_id, `${t.naam}${t.class_name ? ` (${t.class_name})` : ''}`, t.rating_enabled)}
                             size="sm"
                             variant="outline"
                             className="h-7 text-xs border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"

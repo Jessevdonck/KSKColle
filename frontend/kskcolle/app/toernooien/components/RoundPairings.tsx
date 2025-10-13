@@ -31,6 +31,8 @@ interface RoundPairingsProps {
     naam: string
     rondes: number
     type: "SWISS" | "ROUND_ROBIN"
+    rating_enabled?: boolean
+    is_youth?: boolean
     participations: Array<{
       user: {
         user_id: number
@@ -56,6 +58,9 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
+
+  // Debug logging
+  console.log('🎮 RoundPairings - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);
 
   // Calculate player scores if tournament data is available
   const playerScores = tournament && allRounds ? calculateStandings(tournament, allRounds) : []
@@ -148,11 +153,15 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                 <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
                   <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-12">Bord</th>
                   <th className="px-1.5 py-0.5 text-left font-semibold text-xs">Wit</th>
-                  <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-16">Rating</th>
+                  {tournament?.is_youth !== true && (
+                    <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-16">Rating</th>
+                  )}
                   <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-12">Punten</th>
                   <th className="px-1.5 py-0.5 text-center font-semibold w-8"></th>
                   <th className="px-1.5 py-0.5 text-left font-semibold text-xs">Zwart</th>
-                  <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-16">Rating</th>
+                  {tournament?.is_youth !== true && (
+                    <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-16">Rating</th>
+                  )}
                   <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-12">Punten</th>
                   <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-24">Uitslag</th>
                 </tr>
@@ -186,11 +195,13 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                       <span>{`${game.speler1.voornaam} ${game.speler1.achternaam}`}</span>
                     </Link>
                   </td>
-                  <td className="px-1.5 py-0.5 text-center">
-                    <span className="text-sm font-medium text-gray-700">
-                      {game.speler1.schaakrating_elo}
-                    </span>
-                  </td>
+                  {tournament?.is_youth !== true && (
+                    <td className="px-1.5 py-0.5 text-center">
+                      <span className="text-sm font-medium text-gray-700">
+                        {game.speler1.schaakrating_elo}
+                      </span>
+                    </td>
+                  )}
                   <td className="px-1.5 py-0.5 text-center">
                     {playerScores.length > 0 ? (
                       <span className="text-sm font-medium text-mainAccent">
@@ -225,15 +236,17 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                       </div>
                     )}
                   </td>
-                  <td className="px-1.5 py-0.5 text-center">
-                    {game.speler2 ? (
-                      <span className="text-sm font-medium text-gray-700">
-                        {game.speler2.schaakrating_elo}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-gray-400">-</span>
-                    )}
-                  </td>
+                  {tournament?.is_youth !== true && (
+                    <td className="px-1.5 py-0.5 text-center">
+                      {game.speler2 ? (
+                        <span className="text-sm font-medium text-gray-700">
+                          {game.speler2.schaakrating_elo}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
+                      )}
+                    </td>
+                  )}
                   <td className="px-1.5 py-0.5 text-center">
                     {game.speler2 && playerScores.length > 0 ? (
                       <span className="text-sm font-medium text-mainAccent">
@@ -319,7 +332,9 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                       {game.speler1.voornaam} {game.speler1.achternaam}
                     </Link>
                     <div className="flex items-center gap-4 mt-0.5 text-xs text-gray-500">
-                      <span>ELIO: {game.speler1.schaakrating_elo}</span>
+                      {tournament?.is_youth !== true && (
+                        <span>ELIO: {game.speler1.schaakrating_elo}</span>
+                      )}
                       {playerScores.length > 0 && (
                         <span className="text-mainAccent font-medium">
                           {getPlayerScore(game.speler1.user_id)} pt
@@ -354,7 +369,9 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     )}
                     {game.speler2 && (
                       <div className="flex items-center gap-4 mt-0.5 text-xs text-gray-500">
-                        <span>ELIO: {game.speler2.schaakrating_elo}</span>
+                        {tournament?.is_youth !== true && (
+                          <span>ELIO: {game.speler2.schaakrating_elo}</span>
+                        )}
                         {playerScores.length > 0 && (
                           <span className="text-mainAccent font-medium">
                             {getPlayerScore(game.speler2.user_id)} pt

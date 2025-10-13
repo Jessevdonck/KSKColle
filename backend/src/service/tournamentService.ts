@@ -110,6 +110,7 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
       }))
     };
 
+    console.log('🔍 Backend - Tournament is_youth:', tournamentWithSevillaFlag.is_youth, 'naam:', tournamentWithSevillaFlag.naam);
     console.log('🔍 Backend - Tournament rounds with Sevilla flags:', tournamentWithSevillaFlag.rounds.map(r => ({
       round_id: r.round_id,
       ronde_nummer: r.ronde_nummer,
@@ -132,6 +133,8 @@ export const addTournament = async (tournament: TournamentCreateInput) => {
         rondes: tournament.rondes,
         type: tournament.type,  
         is_youth: tournament.is_youth,
+        // Jeugdkampioenschappen gebruiken geen ELIO rating
+        rating_enabled: tournament.is_youth ? false : tournament.rating_enabled,
         participations: {
           create: tournament.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
         },
