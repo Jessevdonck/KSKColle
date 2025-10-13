@@ -11,6 +11,7 @@ interface StandingsProps {
     rondes: number
     type: "SWISS" | "ROUND_ROBIN"
     rating_enabled?: boolean
+    is_youth?: boolean
     participations: Array<{
       user: {
         user_id: number
