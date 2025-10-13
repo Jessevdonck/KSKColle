@@ -100,6 +100,16 @@ export default function ArticlesPage() {
     }
   }
 
+  const getTextPreview = (content: string, maxLength: number = 150) => {
+    // Strip HTML tags
+    const stripped = content.replace(/<[^>]*>/g, ' ')
+    // Remove extra whitespace
+    const cleaned = stripped.replace(/\s+/g, ' ').trim()
+    // Truncate to maxLength
+    if (cleaned.length <= maxLength) return cleaned
+    return cleaned.substring(0, maxLength).trim() + '...'
+  }
+
   const canCreate = canManageArticles(user)
   const canManage = canManageArticles(user)
 
@@ -109,7 +119,6 @@ export default function ArticlesPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Artikels</h1>
-            <p className="text-gray-600">Beheer alle artikels op de website</p>
           </div>
           
           {canCreate && (
@@ -199,23 +208,21 @@ export default function ArticlesPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="secondary">
-                          <Tag className="h-3 w-3 mr-1" />
-                          {getArticleTypeLabel(article.type)}
-                        </Badge>
-                        {article.published ? (
-                          <Badge variant="outline" className="text-green-600 border-green-600">
-                            <Eye className="h-3 w-3 mr-1" />
-                            Gepubliceerd
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-gray-600 border-gray-600">
-                            <EyeOff className="h-3 w-3 mr-1" />
-                            Concept
-                          </Badge>
-                        )}
-                      </div>
+                      {canManage && (
+                        <div className="flex items-center gap-2 mb-2">
+                          {article.published ? (
+                            <Badge variant="outline" className="text-green-600 border-green-600">
+                              <Eye className="h-3 w-3 mr-1" />
+                              Gepubliceerd
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-600 border-gray-600">
+                              <EyeOff className="h-3 w-3 mr-1" />
+                              Concept
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                       <CardTitle className="text-xl">
                         <Link 
                           href={`/articles/${article.article_id}`}
@@ -224,11 +231,9 @@ export default function ArticlesPage() {
                           {article.title}
                         </Link>
                       </CardTitle>
-                      {article.excerpt && (
-                        <CardDescription className="mt-2">
-                          {article.excerpt}
-                        </CardDescription>
-                      )}
+                      <CardDescription className="mt-2">
+                        {getTextPreview(article.content)}
+                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
