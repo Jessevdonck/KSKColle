@@ -109,21 +109,17 @@ export class SevillaImporterService {
       
       // Check if there are multiple groups (classes)
       if (groups.length > 1) {
-        console.log(`Found ${groups.length} groups/classes in Sevilla data`);
         const tournamentIds: number[] = [];
         
         // Import each group as a separate tournament with class_name
         for (const group of groups) {
-          console.log(`Importing group ${group.ID}: ${group.Name}`);
           const tournamentId = await this.importGroup(group, sevillaData, tournamentNameToUse, group.Name, incremental);
           tournamentIds.push(tournamentId);
         }
         
-        console.log(`Successfully imported ${groups.length} tournaments with classes`);
         return tournamentIds;
       } else {
         // Single group - import without class_name (backwards compatible)
-        console.log('Single group found, importing without class_name');
         const mainGroup = groups[0];
         if (!mainGroup) {
           throw new Error('No group found in Sevilla data');
@@ -169,18 +165,18 @@ export class SevillaImporterService {
         });
 
         if (tournament) {
-          console.log(`Found existing tournament: ${tournament.naam} (ID: ${tournament.tournament_id}) with ${tournament.rounds.length} rounds`);
-          
           // Update tournament info if needed
           if (latestRanking.Round > tournament.rondes) {
             await prisma.tournament.update({
               where: { tournament_id: tournament.tournament_id },
               data: { rondes: latestRanking.Round }
             });
-            console.log(`Updated tournament rounds from ${tournament.rondes} to ${latestRanking.Round}`);
           }
         } else {
           // Create new tournament if not found
+          // Automatically detect if it's a youth tournament based on name
+          const isYouthTournament = tournamentName.toLowerCase().includes('jeugd');
+          
           tournament = await prisma.tournament.create({
             data: {
               naam: tournamentName,
@@ -188,14 +184,16 @@ export class SevillaImporterService {
               type: 'SWISS',
               rating_enabled: true,
               finished: false,
-              is_youth: false,
+              is_youth: isYouthTournament,
               class_name: className,
             },
           });
-          console.log(`Created new tournament: ${tournament.naam}${className ? ` (${className})` : ''} (ID: ${tournament.tournament_id})`);
         }
       } else {
         // Original behavior - always create new tournament
+        // Automatically detect if it's a youth tournament based on name
+        const isYouthTournament = tournamentName.toLowerCase().includes('jeugd');
+        
         tournament = await prisma.tournament.create({
           data: {
             naam: tournamentName,
@@ -203,11 +201,10 @@ export class SevillaImporterService {
             type: 'SWISS',
             rating_enabled: true,
             finished: false,
-            is_youth: false,
+            is_youth: isYouthTournament,
             class_name: className,
           },
         });
-        console.log(`Created tournament: ${tournament.naam}${className ? ` (${className})` : ''} (ID: ${tournament.tournament_id})`);
       }
 
       // Import players from the History section (which contains all players with games)
@@ -217,9 +214,6 @@ export class SevillaImporterService {
         // History[0] = Round 1 only, History[1] = Rounds 1+2, History[n-1] = All rounds
         const lastHistoryEntry = historySection[historySection.length - 1];
         const playersWithGames = lastHistoryEntry?.Player || [];
-        console.log(`Found ${historySection.length} history entries, using the last one with all rounds`);
-        console.log(`About to import players and games from ${playersWithGames.length} players with games`);
-        console.log(`First few players with games:`, playersWithGames.slice(0, 3).map(p => ({ id: p.ID, name: p.Name, hasGame: !!p.Game, gameLength: p.Game?.length || 0 })));
         
         // Import players from the History section
         const playerMap = await this.importPlayers(playersWithGames, tournament.tournament_id, incremental);
@@ -227,16 +221,12 @@ export class SevillaImporterService {
         // Import rounds and games (pass the group instead of the whole sevillaData for better date parsing)
         await this.importRoundsAndGames(playersWithGames, tournament.tournament_id, playerMap, incremental, group);
       } else {
-        console.log('No history section found, using ranking section');
         // Fallback to ranking section if no history
         await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
       }
 
       // Always update participations with latest rating data, even for incremental imports
-      console.log('🔄 Updating participations with latest rating data...');
       await this.importPlayers(latestRanking.Player, tournament.tournament_id, incremental);
-
-      console.log(`Successfully imported tournament${className ? ` (${className})` : ''} with ${latestRanking.Player.length} players and ${latestRanking.Round} rounds`);
       
       return tournament.tournament_id;
     } catch (error) {
@@ -256,7 +246,6 @@ export class SevillaImporterService {
       
       // Check if we've already processed this player (by Sevilla ID, not name)
       if (processedSevillaIds.has(sevillaPlayer.ID)) {
-        console.log(`Skipping duplicate player by ID: "${sevillaPlayer.Name}" (Sevilla ID: ${sevillaPlayer.ID})`);
         continue;
       }
       processedSevillaIds.add(sevillaPlayer.ID);
@@ -265,8 +254,6 @@ export class SevillaImporterService {
       const nameParts = normalizedName.split(' ');
       const voornaam = nameParts[0] || 'Unknown';
       const achternaam = nameParts.slice(1).join(' ') || 'Unknown';
-
-      console.log(`Processing player: "${sevillaPlayer.Name}" -> normalized: "${normalizedName}" -> "${voornaam}" "${achternaam}"`);
 
       // Try to find existing user by name or create new one
       let user = await prisma.user.findFirst({
