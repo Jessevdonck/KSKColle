@@ -148,13 +148,16 @@ const HeroHomepage = () => {
         {!loading && articles.length > 0 && (
           <div className="max-w-7xl mx-auto">
 
-            {/* Desktop: Button aligned with last article */}
+            {/* Desktop: Title and Button aligned with articles */}
             <div className="hidden md:flex items-center gap-4 mb-8">
               <div className="w-12"></div>
               <div className="flex-1 grid gap-6" style={{
                 gridTemplateColumns: `repeat(${articlesPerView + 1}, 1fr)`
               }}>
-                {Array.from({ length: articlesPerView }, (_, i) => (
+                <div className="flex items-center">
+                  <h2 className="text-3xl font-bold text-white drop-shadow-lg">Newsfeed</h2>
+                </div>
+                {Array.from({ length: articlesPerView - 1 }, (_, i) => (
                   <div key={i}></div>
                 ))}
                 <div className="flex justify-end">

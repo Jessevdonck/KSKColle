@@ -302,7 +302,7 @@ export class SevillaImporterService {
             achternaam: achternaam,
             email: null, // No fake email - leave it empty
             tel_nummer: null, // No fake phone number either
-            schaakrating_elo: sevillaPlayer.Rating || 1200,
+            schaakrating_elo: sevillaPlayer.Rating || 0,
             schaakrating_difference: sevillaPlayer.RtgDif || 0,
             lid_sinds: new Date(),
             password_hash: "imported_user", // Placeholder for imported users
