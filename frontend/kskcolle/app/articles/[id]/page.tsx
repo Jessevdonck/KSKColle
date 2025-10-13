@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from "../../contexts/auth"
 import { getArticleById, deleteArticle } from "../../api/index"
 import { Article } from "../../../data/article"
-import { ArrowLeft, Edit, Trash2, Calendar, User, Tag } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, Calendar, User, Tag, Share2 } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
@@ -54,6 +54,26 @@ export default function ArticleDetailPage() {
     } finally {
       setDeleting(false)
     }
+  }
+
+  const handleShareToFacebookGroup = async () => {
+    if (!article) return
+
+    // Strip HTML tags from content but keep all text
+    const strippedContent = article.content.replace(/<[^>]*>/g, ' ')
+    const cleanedContent = strippedContent.replace(/\s+/g, ' ').trim()
+
+    const shareText = cleanedContent
+
+    try {
+      // Copy to clipboard silently
+      await navigator.clipboard.writeText(shareText)
+    } catch (error) {
+      console.error('Clipboard error:', error)
+    }
+    
+    // Open Facebook group in new tab
+    window.open('https://www.facebook.com/groups/KSKColleSintNiklaas', '_blank')
   }
 
   const getArticleTypeLabel = (type: string) => {
@@ -200,6 +220,15 @@ export default function ArticleDetailPage() {
           
           {canEdit && (
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShareToFacebookGroup}
+                className="bg-[#1877f2] text-white hover:bg-[#1664d8] border-[#1877f2] hover:border-[#1664d8]"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Delen
+              </Button>
               <Link href={`/articles/${article.article_id}/edit`}>
                 <Button variant="outline" size="sm">
                   <Edit className="h-4 w-4 mr-2" />
