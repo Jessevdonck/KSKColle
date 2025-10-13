@@ -25,7 +25,6 @@ import LoginSheet from "./LoginSheet"
 import { useAuth } from "../contexts/auth"
 import ProfileDropdown from "./ProfileDropdown"
 import NotificationBell from "../../components/NotificationBell"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export default function Navbar() {
   const { isAuthed } = useAuth()
@@ -68,76 +67,60 @@ export default function Navbar() {
           </Link>
 
           {/* About Us Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+          <div className="relative group">
+            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
               <Users size={12} />
               <span>Over Ons</span>
               <ChevronDown size={12} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/about" className="flex items-center">
-                  <span>Club Info</span>
+            </div>
+            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="py-1">
+                <Link href="/about" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Club Info
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/interviews" className="flex items-center">
-                  <span>Interviews</span>
+                <Link href="/interviews" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Interviews
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/photos" className="flex items-center">
-                  <span>Foto&apos;s</span>
+                <Link href="/photos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Foto&apos;s
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/articles" className="flex items-center">
-                  <span>Artikels</span>
+                <Link href="/articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Artikels
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/nationale-elo" className="flex items-center">
-                  <span>Nationale ELO</span>
+                <Link href="/nationale-elo" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Nationale ELO
                 </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </div>
+            </div>
+          </div>
 
           {/* Tournaments Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+          <div className="relative group">
+            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
               <Trophy size={12} />
               <span>Toernooien</span>
               <ChevronDown size={12} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien" className="flex items-center">
-                  <span>Huidige Toernooien</span>
+            </div>
+            <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="py-1">
+                <Link href="/toernooien" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Huidige Toernooien
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien/rapidtoernooi" className="flex items-center">
-                  <span>Rapidtoernooi</span>
+                <Link href="/toernooien/rapidtoernooi" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Rapidtoernooi
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/toernooien/reglement" className="flex items-center">
-                  <span>Reglementen</span>
+                <Link href="/toernooien/reglement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Reglementen
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <a href="https://www.schaakligaoostvlaanderen.be/ovic" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                  <span>Oost-Vlaamse Interclub</span>
+                <a href="https://www.schaakligaoostvlaanderen.be/ovic" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Oost-Vlaamse Interclub
                 </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                  <span>Interclub</span>
+                <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Interclub
                 </a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </div>
+            </div>
+          </div>
 
           {/* Schaaklessen */}
           <Link href="/schaaklessen" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
@@ -153,50 +136,38 @@ export default function Navbar() {
 
 
           {/* Jeugd werking */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
-                <PersonStanding size={12} />
-                <span>Jeugd</span>
-                <ChevronDown size={12} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/info" className="flex items-center">
-                    <span>Info</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/calendar" className="flex items-center">
-                    <span>Kalender</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/tournaments" className="flex items-center">
-                    <span>Jeugd Kampioenschap</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/zomerkampen" className="flex items-center">
-                    <span>Zomerkampen</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/info-ovjk-2025" className="flex items-center">
-                    <span>Info OVJK 2025</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <Link href="/youth/sponsoring-ovjk-2025" className="flex items-center">
-                    <span>Sponsoring OVJK 2025</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                    <span>Vlaams Jeugdschaakcriterium</span>
-                  </a>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="relative group">
+            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
+              <PersonStanding size={12} />
+              <span>Jeugd</span>
+              <ChevronDown size={12} />
+            </div>
+            <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="py-1">
+                <Link href="/youth/info" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Info
+                </Link>
+                <Link href="/youth/calendar" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Kalender
+                </Link>
+                <Link href="/youth/tournaments" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Jeugd Kampioenschap
+                </Link>
+                <Link href="/youth/zomerkampen" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Zomerkampen
+                </Link>
+                <Link href="/youth/info-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Info OVJK 2025
+                </Link>
+                <Link href="/youth/sponsoring-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Sponsoring OVJK 2025
+                </Link>
+                <a href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Vlaams Jeugdschaakcriterium
+                </a>
+              </div>
+            </div>
+          </div>
 
           {/* Spelers */}
           <Link href="/spelers" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
@@ -205,61 +176,51 @@ export default function Navbar() {
           </Link>
 
           {/* Historiek Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+          <div className="relative group">
+            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
               <History size={12} />
               <span>Historiek</span>
               <ChevronDown size={12} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/erelijsten" className="flex items-center">
-                  <span>Erelijsten</span>
+            </div>
+            <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="py-1">
+                <Link href="/erelijsten" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Erelijsten
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="hover:cursor-pointer">
-                <Link href="/historiek/documenten" className="flex items-center">
-                  <span>Historische Documenten</span>
+                <Link href="/historiek/documenten" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Historische Documenten
                 </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </div>
+            </div>
+          </div>
 
           {/* External Links Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
-                <Globe size={12} />
-                <span>Links</span>
-                <ChevronDown size={12} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://blog.frbe-kbsb-ksb.be/nl/" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                    <span>KBSB</span>
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://blog.frbe-kbsb-ksb.be/nl/kalender/" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                    <span>KBSB Toernooien</span>
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                    <span>FIDE</span>
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://www.vlaamseschaakfederatie.be/" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                    <span>VSF</span>
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="hover:cursor-pointer">
-                  <a href="https://www.schaakligaoostvlaanderen.be/" target="_blank" rel="noopener noreferrer" className="flex items-center">
-                    <span>Liga Oost-Vlaanderen</span>
-                  </a>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="relative group">
+            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
+              <Globe size={12} />
+              <span>Links</span>
+              <ChevronDown size={12} />
+            </div>
+            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <div className="py-1">
+                <a href="https://blog.frbe-kbsb-ksb.be/nl/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  KBSB
+                </a>
+                <a href="https://blog.frbe-kbsb-ksb.be/nl/kalender/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  KBSB Toernooien
+                </a>
+                <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  FIDE
+                </a>
+                <a href="https://www.vlaamseschaakfederatie.be/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  VSF
+                </a>
+                <a href="https://www.schaakligaoostvlaanderen.be/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Liga Oost-Vlaanderen
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="xl:hidden">
