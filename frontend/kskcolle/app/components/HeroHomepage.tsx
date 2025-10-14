@@ -196,14 +196,14 @@ const HeroHomepage = () => {
                     className="group"
                   >
                     <Card 
-                      className="bg-white/5 backdrop-blur-md hover:bg-white/15 transition-all duration-300 hover:shadow-2xl border-white/15 hover:border-mainAccent/50 h-full flex flex-col"
+                      className="bg-white/20 backdrop-blur-md hover:bg-white/30 transition-all duration-300 hover:shadow-2xl border-white/30 hover:border-mainAccent/50 h-full flex flex-col"
                     >
                       <CardHeader className="pb-2 flex-grow">
-                        <CardTitle className="text-lg leading-tight text-white mb-2 group-hover:text-mainAccent transition-colors">
+                        <CardTitle className="text-lg leading-tight text-white mb-3 group-hover:text-mainAccent transition-colors">
                           {article.title}
                         </CardTitle>
-                        <p className="text-sm text-white/80 line-clamp-2">
-                          {getTextPreview(article.content)}
+                        <p className="text-sm text-white/80 line-clamp-6">
+                          {article.excerpt || getTextPreview(article.content)}
                         </p>
                       </CardHeader>
                       

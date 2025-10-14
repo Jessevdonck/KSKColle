@@ -206,6 +206,7 @@ model Article {
   title         String      @db.Text
   content       String      @db.LongText
   excerpt       String?     @db.Text
+  image_urls    Json?       
   type          ArticleType @default(NEWS)
   author_id     Int
   published     Boolean     @default(false)

@@ -9,6 +9,7 @@ export interface Article {
   title: string
   content: string
   excerpt?: string
+  image_urls?: string[]
   type: ArticleType
   author_id: number
   author: {
@@ -27,6 +28,7 @@ export interface CreateArticleRequest {
   title: string
   content: string
   excerpt?: string
+  image_urls?: string[]
   type: ArticleType
   published?: boolean
   featured?: boolean
@@ -36,6 +38,7 @@ export interface UpdateArticleRequest {
   title?: string
   content?: string
   excerpt?: string
+  image_urls?: string[]
   type?: ArticleType
   published?: boolean
   featured?: boolean

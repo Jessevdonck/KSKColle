@@ -231,8 +231,8 @@ export default function ArticlesPage() {
                           {article.title}
                         </Link>
                       </CardTitle>
-                      <CardDescription className="mt-2">
-                        {getTextPreview(article.content)}
+                      <CardDescription className="mt-3 line-clamp-4 text-base">
+                        {article.excerpt || getTextPreview(article.content)}
                       </CardDescription>
                     </div>
                   </div>

@@ -24,10 +24,11 @@ import ImageUpload from "./ImageUpload"
 interface RichTextEditorProps {
   content: string
   onChange: (content: string) => void
+  onImageAdd?: (imageUrl: string) => void
   placeholder?: string
 }
 
-export default function RichTextEditor({ content, onChange, placeholder = "Begin met schrijven..." }: RichTextEditorProps) {
+export default function RichTextEditor({ content, onChange, onImageAdd, placeholder = "Begin met schrijven..." }: RichTextEditorProps) {
   const [showImageUpload, setShowImageUpload] = useState(false)
   
   const editor = useEditor({
@@ -72,8 +73,15 @@ export default function RichTextEditor({ content, onChange, placeholder = "Begin
   })
 
   const handleImageSelect = (imageUrl: string) => {
-    editor?.chain().focus().setImage({ src: imageUrl }).run()
-    setShowImageUpload(false)
+    // If onImageAdd callback is provided, use it instead of adding to editor
+    if (onImageAdd) {
+      onImageAdd(imageUrl)
+      setShowImageUpload(false)
+    } else {
+      // Default behavior: add image to editor
+      editor?.chain().focus().setImage({ src: imageUrl }).run()
+      setShowImageUpload(false)
+    }
   }
 
 

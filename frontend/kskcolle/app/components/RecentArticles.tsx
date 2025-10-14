@@ -56,6 +56,16 @@ export default function RecentArticles() {
     }
   }
 
+  const getTextPreview = (content: string, maxLength: number = 100) => {
+    // Strip HTML tags
+    const stripped = content.replace(/<[^>]*>/g, ' ')
+    // Remove extra whitespace
+    const cleaned = stripped.replace(/\s+/g, ' ').trim()
+    // Truncate to maxLength
+    if (cleaned.length <= maxLength) return cleaned
+    return cleaned.substring(0, maxLength).trim() + '...'
+  }
+
 
   if (loading) {
     return (
@@ -111,7 +121,7 @@ export default function RecentArticles() {
                     {getArticleTypeLabel(article.type)}
                   </Badge>
                 </div>
-                <CardTitle className="text-lg leading-tight">
+                <CardTitle className="text-lg leading-tight mb-3">
                   <Link 
                     href={`/articles/${article.article_id}`}
                     className="hover:text-mainAccent transition-colors"
@@ -119,6 +129,9 @@ export default function RecentArticles() {
                     {article.title}
                   </Link>
                 </CardTitle>
+                <CardDescription className="text-sm line-clamp-5 min-h-[5.5rem]">
+                  {article.excerpt || getTextPreview(article.content)}
+                </CardDescription>
               </CardHeader>
               
               <CardContent className="pt-0">

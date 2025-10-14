@@ -22,12 +22,37 @@ export default function ArticleDetailPage() {
   const [article, setArticle] = useState<Article | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [contentWithoutImages, setContentWithoutImages] = useState("")
+  const [extractedImages, setExtractedImages] = useState<string[]>([])
 
   useEffect(() => {
     const fetchArticle = async () => {
       try {
         const data = await getArticleById(parseInt(params.id as string))
         setArticle(data)
+        
+        // Extract images from content
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(data.content, 'text/html')
+        const images = Array.from(doc.querySelectorAll('img'))
+        const imageSrcs = images.map(img => img.src)
+        
+        // Remove images from content
+        images.forEach(img => img.remove())
+        const contentWithoutImgs = doc.body.innerHTML
+        
+        // Combine images from content and from image_urls field
+        const allImages = [...imageSrcs]
+        if (data.image_urls && data.image_urls.length > 0) {
+          data.image_urls.forEach(url => {
+            if (!allImages.includes(url)) {
+              allImages.push(url)
+            }
+          })
+        }
+        
+        setExtractedImages(allImages)
+        setContentWithoutImages(contentWithoutImgs)
       } catch (error) {
         console.error("Error fetching article:", error)
         router.push("/articles")
@@ -286,11 +311,26 @@ export default function ArticleDetailPage() {
               <div 
                 className="article-content"
                 dangerouslySetInnerHTML={{ 
-                  __html: article.content 
+                  __html: contentWithoutImages 
                 }}
               />
             </CardContent>
           </Card>
+
+          {/* Extracted Images from content - Always at the bottom */}
+          {extractedImages.length > 0 && (
+            <div className="mt-8 space-y-4">
+              {extractedImages.map((imgSrc, index) => (
+                <div key={index} className="flex justify-center">
+                  <img 
+                    src={imgSrc} 
+                    alt={`${article.title} - afbeelding ${index + 1}`}
+                    className="max-w-full max-h-[600px] h-auto rounded-lg shadow-lg object-contain"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Comments Section */}
           <div className="mt-8">

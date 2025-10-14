@@ -243,7 +243,8 @@ createArticle.validationScheme = {
   body: {
     title: Joi.string().required(),
     content: Joi.string().required(),
-    excerpt: Joi.string().allow('').optional(),
+    excerpt: Joi.string().max(200).allow('').optional(),
+    image_urls: Joi.array().items(Joi.string().uri()).optional(),
     type: Joi.string().valid('NEWS', 'TOURNAMENT_REPORT', 'GENERAL').optional(),
     published: Joi.boolean().default(false),
     featured: Joi.boolean().default(false),
@@ -286,7 +287,8 @@ updateArticle.validationScheme = {
   body: {
     title: Joi.string().optional(),
     content: Joi.string().optional(),
-    excerpt: Joi.string().allow('').optional(),
+    excerpt: Joi.string().max(200).allow('').optional(),
+    image_urls: Joi.array().items(Joi.string().uri()).optional(),
     type: Joi.string().valid('NEWS', 'TOURNAMENT_REPORT', 'GENERAL').optional(),
     published: Joi.boolean().optional(),
     featured: Joi.boolean().optional(),

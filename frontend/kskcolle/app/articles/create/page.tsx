@@ -28,13 +28,54 @@ export default function CreateArticlePage() {
     published: false,
     featured: true, // Always true, no option to change
   })
+  const [contentWithoutImages, setContentWithoutImages] = useState("")
+  const [extractedImages, setExtractedImages] = useState<string[]>([])
+
+  const MAX_EXCERPT_LENGTH = 200
+
+  const removeImage = (index: number) => {
+    setExtractedImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleInputChange = (field: string, value: any) => {
+    if (field === 'content') {
+      // Extract and remove images from content
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(value, 'text/html')
+      const images = Array.from(doc.querySelectorAll('img'))
+      const imageSrcs = images.map(img => img.src)
+      
+      // Remove images from content
+      images.forEach(img => img.remove())
+      const contentWithoutImgs = doc.body.innerHTML
+      
+      // Update extracted images - only add new ones (avoid duplicates)
+      if (imageSrcs.length > 0) {
+        setExtractedImages(prev => {
+          const newImages = imageSrcs.filter(src => !prev.includes(src))
+          return [...prev, ...newImages]
+        })
+      }
+      
+      // Save content without images
+      setFormData(prev => ({ ...prev, [field]: contentWithoutImgs }))
+      setContentWithoutImages(contentWithoutImgs)
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }))
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      await createArticle(formData)
+      // Add extracted images to the form data
+      const submitData = {
+        ...formData,
+        image_urls: extractedImages.length > 0 ? extractedImages : undefined
+      }
+      await createArticle(submitData)
       router.push("/articles")
     } catch (error) {
       console.error("Error creating article:", error)
@@ -46,9 +87,6 @@ export default function CreateArticlePage() {
     }
   }
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
 
   // Check if user has permission to create articles
   if (!canManageArticles(user)) {
@@ -116,13 +154,67 @@ export default function CreateArticlePage() {
                   </div>
 
                   <div>
+                    <Label htmlFor="excerpt">Samenvatting</Label>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Een korte samenvatting die wordt weergegeven op de artikel kaartjes (max {MAX_EXCERPT_LENGTH} karakters)
+                    </p>
+                    <Textarea
+                      id="excerpt"
+                      value={formData.excerpt}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (value.length <= MAX_EXCERPT_LENGTH) {
+                          handleInputChange("excerpt", value)
+                        }
+                      }}
+                      placeholder="Schrijf een korte samenvatting van je artikel..."
+                      rows={3}
+                      className="resize-none"
+                    />
+                    <div className="flex justify-end mt-1">
+                      <span className={`text-sm ${formData.excerpt.length >= MAX_EXCERPT_LENGTH ? 'text-red-500' : 'text-gray-500'}`}>
+                        {formData.excerpt.length}/{MAX_EXCERPT_LENGTH}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
                     <Label htmlFor="content">Inhoud *</Label>
                     <RichTextEditor
                       content={formData.content}
                       onChange={(content) => handleInputChange("content", content)}
+                      onImageAdd={(imageUrl) => {
+                        // Add image directly to extracted images without putting it in editor
+                        setExtractedImages(prev => [...prev, imageUrl])
+                      }}
                       placeholder="Schrijf hier de volledige inhoud van je artikel..."
                     />
                   </div>
+
+                  {/* Preview: Images at bottom */}
+                  {extractedImages.length > 0 && (
+                    <div className="mt-4 p-4 border border-slate-200 bg-slate-50 rounded-lg">
+                      <div className="space-y-3">
+                        {extractedImages.map((imgSrc, index) => (
+                          <div key={index} className="relative group flex justify-center">
+                            <img 
+                              src={imgSrc} 
+                              alt={`Preview ${index + 1}`}
+                              className="max-w-full max-h-[600px] h-auto rounded-lg shadow-lg object-contain"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Verwijder afbeelding"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

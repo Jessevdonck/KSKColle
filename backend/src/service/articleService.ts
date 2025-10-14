@@ -17,6 +17,7 @@ export const createArticle = async (authorId: number, articleData: CreateArticle
         title: articleData.title,
         content: articleData.content,
         excerpt: articleData.excerpt ?? null,
+        image_urls: articleData.image_urls ?? null,
         type: articleData.type || ArticleType.NEWS,
         author_id: authorId,
         published: articleData.published || false,
