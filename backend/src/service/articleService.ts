@@ -17,7 +17,7 @@ export const createArticle = async (authorId: number, articleData: CreateArticle
         title: articleData.title,
         content: articleData.content,
         excerpt: articleData.excerpt ?? null,
-        image_urls: articleData.image_urls ?? null,
+        image_urls: articleData.image_urls ? articleData.image_urls as any : null,
         type: articleData.type || ArticleType.NEWS,
         author_id: authorId,
         published: articleData.published || false,
@@ -35,7 +35,10 @@ export const createArticle = async (authorId: number, articleData: CreateArticle
       }
     })
 
-    return article
+    return {
+      ...article,
+      image_urls: article.image_urls as string[] | null
+    } as ArticleWithAuthor
   } catch (error) {
     throw handleDBError(error)
   }
@@ -58,7 +61,12 @@ export const getArticleById = async (articleId: number): Promise<ArticleWithAuth
       }
     })
 
-    return article
+    if (!article) return null
+
+    return {
+      ...article,
+      image_urls: article.image_urls as string[] | null
+    } as ArticleWithAuthor
   } catch (error) {
     throw handleDBError(error)
   }
@@ -124,7 +132,10 @@ export const getArticles = async (params: GetArticlesRequest = {}): Promise<GetA
     const totalPages = Math.ceil(total / pageSize)
 
     return {
-      items: articles,
+      items: articles.map(article => ({
+        ...article,
+        image_urls: article.image_urls as string[] | null
+      })) as ArticleWithAuthor[],
       total,
       page,
       pageSize,
@@ -157,7 +168,10 @@ export const getRecentArticles = async (limit: number = 5): Promise<ArticleWithA
       }
     })
 
-    return articles
+    return articles.map(article => ({
+      ...article,
+      image_urls: article.image_urls as string[] | null
+    })) as ArticleWithAuthor[]
   } catch (error) {
     throw handleDBError(error)
   }
@@ -219,7 +233,10 @@ export const updateArticle = async (articleId: number, authorId: number, userRol
       }
     })
 
-    return updatedArticle
+    return {
+      ...updatedArticle,
+      image_urls: updatedArticle.image_urls as string[] | null
+    } as ArticleWithAuthor
   } catch (error) {
     throw handleDBError(error)
   }
