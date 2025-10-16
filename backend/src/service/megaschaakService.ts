@@ -44,7 +44,7 @@ const calculateTPR = async (playerId: number): Promise<number> => {
 /**
  * Calculate megaschaak cost using the Excel formulas
  */
-export const calculatePlayerCost = async (playerId: number, className: string, tournamentIds: number[]): Promise<number> => {
+export const calculatePlayerCost = async (playerId: number, className: string, _tournamentIds: number[]): Promise<number> => {
   try {
     // Get player rating
     const player = await prisma.user.findUnique({
