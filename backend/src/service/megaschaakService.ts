@@ -1393,3 +1393,74 @@ export const getBestValuePlayers = async (tournamentId: number) => {
   }
 };
 
+/**
+ * Get all teams for a tournament (admin only)
+ */
+export const getAllTeamsForTournament = async (tournamentId: number) => {
+  try {
+    const teams = await prisma.megaschaakTeam.findMany({
+      where: {
+        tournament_id: tournamentId
+      },
+      include: {
+        user: {
+          select: {
+            user_id: true,
+            voornaam: true,
+            achternaam: true,
+            email: true
+          }
+        },
+        players: {
+          include: {
+            player: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+                schaakrating_elo: true
+              }
+            }
+          }
+        },
+        reserve_player: {
+          select: {
+            user_id: true,
+            voornaam: true,
+            achternaam: true,
+            schaakrating_elo: true
+          }
+        }
+      },
+      orderBy: [
+        { created_at: 'desc' }
+      ]
+    });
+
+    return teams;
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+/**
+ * Delete a team (admin only - bypasses user ownership check)
+ */
+export const adminDeleteTeam = async (teamId: number) => {
+  try {
+    const team = await prisma.megaschaakTeam.findUnique({
+      where: { team_id: teamId }
+    });
+
+    if (!team) {
+      throw ServiceError.notFound('Team niet gevonden');
+    }
+
+    await prisma.megaschaakTeam.delete({
+      where: { team_id: teamId }
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+

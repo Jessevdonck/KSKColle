@@ -469,7 +469,7 @@ export default function MegaschaakPage() {
               <p className="leading-relaxed"><strong>•</strong> Een ploeg moet bestaan uit <strong>exact 10 schakers</strong></p>
               <p className="leading-relaxed"><strong>•</strong> Daarnaast mag je één reservespeler selecteren ter waarde van <strong>max. 100 punten</strong></p>
               <p className="leading-relaxed"><strong>•</strong> Bij uitval wordt de reservespeler automatisch vervangen (score vanaf moment van vervanging)</p>
-              <p className="leading-relaxed"><strong>•</strong> Spelerswaarden zijn evenredig aan het aantal maximum te behalen punten</p>
+              <p className="leading-relaxed"><strong>•</strong> De waarde van elke schaker staat hieronder vermeld alsook in welke afdeling ze spelen.</p>
               <p className="leading-relaxed"><strong>•</strong> <strong>Winst = 1 punt</strong>, <strong>Remise = 0,5 punt</strong>, <strong>Verlies = 0 punt</strong></p>
               <p className="leading-relaxed"><strong>•</strong> Deelname kost <strong>€2,50</strong> per ingestuurde ploeg, meerdere ploegen per persoon zijn toegestaan</p>
               <p className="leading-relaxed"><strong>•</strong> Prijzen voor de <strong>top 3</strong> uit de ingezamelde bijdragen</p>
@@ -899,9 +899,54 @@ export default function MegaschaakPage() {
                     ))}
                   </div>
 
+                  {/* Reserve Speler Section */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="mb-3">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-1 flex items-center gap-2">
+                        <UserPlus className="h-4 w-4 text-blue-600" />
+                        Reservespeler
+                      </h4>
+                      <p className="text-xs text-gray-600">
+                        Max 100 punten. Wordt automatisch ingewisseld bij een algemeen forfait.
+                      </p>
+                    </div>
+
+                    {reservePlayer ? (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                            R
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-800">
+                              {reservePlayer.voornaam} {reservePlayer.achternaam}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Rating: {reservePlayer.schaakrating_elo} | Kost: {reservePlayer.cost} pts
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setReservePlayer(null)}
+                          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
+                        <UserPlus className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                        <p className="text-xs">Geen reservespeler geselecteerd</p>
+                        <p className="text-xs mt-1">Selecteer een speler uit de lijst (≤100 pts)</p>
+                      </div>
+                    )}
+                  </div>
+
                   <Button
                     onClick={handleSaveTeam}
-                    className="w-full bg-mainAccent hover:bg-mainAccentDark"
+                    className="w-full bg-mainAccent hover:bg-mainAccentDark mt-4"
                     disabled={remainingBudget < 0}
                   >
                     <Save className="h-4 w-4 mr-2" />
@@ -914,51 +959,6 @@ export default function MegaschaakPage() {
                     </p>
                   )}
                 </>
-              )}
-            </div>
-
-            {/* Reserve Speler */}
-            <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-mainAccent" />
-                  Reservespeler (Optioneel)
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">
-                  Selecteer één reservespeler (max 100 punten). Deze wordt automatisch ingewisseld bij een algemeen forfait.
-                </p>
-              </div>
-
-              {reservePlayer ? (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
-                      R
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-800">
-                        {reservePlayer.voornaam} {reservePlayer.achternaam}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Rating: {reservePlayer.schaakrating_elo} | Kost: {reservePlayer.cost} pts
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setReservePlayer(null)}
-                    className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
-                  <UserPlus className="h-10 w-10 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">Geen reservespeler geselecteerd</p>
-                  <p className="text-xs mt-1">Selecteer een speler uit de lijst</p>
-                </div>
               )}
             </div>
           </div>

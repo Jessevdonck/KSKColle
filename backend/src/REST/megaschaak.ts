@@ -268,6 +268,40 @@ getValuePlayers.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /megaschaak/tournament/:tournamentId/all-teams Get all teams for tournament (admin only)
+ * @apiName GetAllTeams
+ * @apiGroup Megaschaak
+ */
+const getAllTeams = async (ctx: KoaContext) => {
+  const tournamentId = Number(ctx.params.tournamentId);
+  const teams = await megaschaakService.getAllTeamsForTournament(tournamentId);
+  ctx.body = { items: teams };
+};
+
+getAllTeams.validationScheme = {
+  params: {
+    tournamentId: Joi.number().integer().positive().required(),
+  },
+};
+
+/**
+ * @api {delete} /megaschaak/admin/team/:teamId Delete team as admin
+ * @apiName AdminDeleteTeam
+ * @apiGroup Megaschaak
+ */
+const adminDeleteTeam = async (ctx: KoaContext) => {
+  const teamId = Number(ctx.params.teamId);
+  await megaschaakService.adminDeleteTeam(teamId);
+  ctx.status = 204;
+};
+
+adminDeleteTeam.validationScheme = {
+  params: {
+    teamId: Joi.number().integer().positive().required(),
+  },
+};
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/megaschaak',
@@ -292,6 +326,8 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   // Admin only routes
   router.patch('/tournament/:tournamentId/toggle', requireAuthentication, requireAdmin, validate(toggleMegaschaak.validationScheme), toggleMegaschaak);
   router.patch('/tournament/:tournamentId/deadline', requireAuthentication, requireAdmin, validate(setMegaschaakDeadline.validationScheme), setMegaschaakDeadline);
+  router.get('/tournament/:tournamentId/all-teams', requireAuthentication, requireAdmin, validate(getAllTeams.validationScheme), getAllTeams);
+  router.delete('/admin/team/:teamId', requireAuthentication, requireAdmin, validate(adminDeleteTeam.validationScheme), adminDeleteTeam);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

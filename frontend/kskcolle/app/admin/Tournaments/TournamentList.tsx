@@ -7,8 +7,8 @@ import { useToast } from "@/hooks/use-toast"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
 import { getAll, deleteById } from "../../api/index"
-import type { Toernooi } from "@/data/types"
-import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock } from "lucide-react"
+import type { Toernooi, MegaschaakTeam } from "@/data/types"
+import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X } from "lucide-react"
 import CloseTournamentDialog from "./components/CloseTournamentDialog"
 import { axios } from "../../api/index"
 import {
@@ -33,11 +33,36 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
   const [deadlineDialogOpen, setDeadlineDialogOpen] = useState(false)
   const [selectedTournamentForDeadline, setSelectedTournamentForDeadline] = useState<{ ids: number[], name: string, currentDeadline: string | null } | null>(null)
   const [deadlineValue, setDeadlineValue] = useState("")
+  const [teamsDialogOpen, setTeamsDialogOpen] = useState(false)
+  const [selectedTournamentForTeams, setSelectedTournamentForTeams] = useState<{ ids: number[], name: string } | null>(null)
+  const [teamSearchQuery, setTeamSearchQuery] = useState("")
   
   // Haal alleen actieve toernooien op (finished = false)
   const { data: tournaments, error, mutate } = useSWR<Toernooi[]>(
     "tournament?active=true", 
     () => getAll("tournament", { active: "true" })
+  )
+
+  // Fetch teams for selected tournaments (all classes combined)
+  const { data: megaschaakTeams = [], mutate: mutateTeams } = useSWR<MegaschaakTeam[]>(
+    selectedTournamentForTeams ? `/megaschaak-teams-${selectedTournamentForTeams.ids.join('-')}` : null,
+    async () => {
+      if (!selectedTournamentForTeams) return []
+      
+      // Fetch teams for all tournament IDs (all classes)
+      const allTeamsPromises = selectedTournamentForTeams.ids.map(id =>
+        axios.get(`/megaschaak/tournament/${id}/all-teams`).then(res => res.data.items)
+      )
+      
+      const allTeamsArrays = await Promise.all(allTeamsPromises)
+      // Flatten and deduplicate teams by team_id
+      const allTeams = allTeamsArrays.flat()
+      const uniqueTeams = Array.from(
+        new Map(allTeams.map(team => [team.team_id, team])).values()
+      )
+      
+      return uniqueTeams
+    }
   )
   const { trigger: deleteTournament, isMutating: isDeleting } = useSWRMutation(
     "tournament",
@@ -203,6 +228,46 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
       toast({
         title: "Error",
         description: "Kon deadline niet instellen.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleOpenTeamsDialog = (tournamentIds: number[], tournamentName: string) => {
+    setSelectedTournamentForTeams({ ids: tournamentIds, name: tournamentName })
+    setTeamSearchQuery("") // Reset search when opening
+    setTeamsDialogOpen(true)
+  }
+
+  // Filter teams based on search query
+  const filteredTeams = React.useMemo(() => {
+    if (!teamSearchQuery.trim()) return megaschaakTeams
+    
+    const query = teamSearchQuery.toLowerCase()
+    return megaschaakTeams.filter(team => {
+      const userName = `${team.user.voornaam} ${team.user.achternaam}`.toLowerCase()
+      const email = team.user.email?.toLowerCase() || ""
+      const teamName = team.team_name.toLowerCase()
+      
+      return userName.includes(query) || email.includes(query) || teamName.includes(query)
+    })
+  }, [megaschaakTeams, teamSearchQuery])
+
+  const handleDeleteTeam = async (teamId: number, teamName: string) => {
+    if (!confirm(`Weet je zeker dat je het team "${teamName}" wilt verwijderen?`)) return
+
+    try {
+      await axios.delete(`/megaschaak/admin/team/${teamId}`)
+      toast({
+        title: "Success",
+        description: `Team "${teamName}" verwijderd!`
+      })
+      mutateTeams()
+    } catch (err) {
+      console.error("Fout met team verwijderen:", err)
+      toast({
+        title: "Error",
+        description: "Kon team niet verwijderen.",
         variant: "destructive"
       })
     }
@@ -430,18 +495,33 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                           }
                         </span>
                       </div>
-                      <Button
-                        onClick={() => handleOpenDeadlineDialog(
-                          group.tournaments.map(t => t.tournament_id),
-                          group.name,
-                          group.tournaments[0].megaschaak_deadline || null
-                        )}
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 text-xs text-mainAccent hover:bg-mainAccent/10"
-                      >
-                        Wijzig
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          onClick={() => handleOpenDeadlineDialog(
+                            group.tournaments.map(t => t.tournament_id),
+                            group.name,
+                            group.tournaments[0].megaschaak_deadline || null
+                          )}
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 text-xs text-mainAccent hover:bg-mainAccent/10"
+                        >
+                          Wijzig
+                        </Button>
+                        <Button
+                          onClick={() => handleOpenTeamsDialog(
+                            group.tournaments.map(t => t.tournament_id),
+                            group.name
+                          )}
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 text-xs text-blue-600 hover:bg-blue-50"
+                          title="Bekijk en beheer teams"
+                        >
+                          <Settings className="h-3 w-3 mr-1" />
+                          Teams
+                        </Button>
+                      </div>
                     </div>
                   )}
                   
@@ -456,6 +536,134 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
           </div>
         )}
       </div>
+
+      {/* Teams Management Dialog */}
+      <Dialog open={teamsDialogOpen} onOpenChange={setTeamsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Megaschaak Teams - {selectedTournamentForTeams?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {megaschaakTeams.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Trophy className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <p>Nog geen teams aangemaakt voor dit toernooi</p>
+              </div>
+            ) : (
+              <>
+                {/* Search Bar */}
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Zoek op team naam, manager of email..."
+                    value={teamSearchQuery}
+                    onChange={(e) => setTeamSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                  <Eye className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  {teamSearchQuery && (
+                    <button
+                      onClick={() => setTeamSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Results count */}
+                <div className="text-sm text-gray-600">
+                  {filteredTeams.length} {filteredTeams.length === 1 ? 'team' : 'teams'} 
+                  {teamSearchQuery && ` gevonden voor "${teamSearchQuery}"`}
+                </div>
+
+                {/* Teams List */}
+                {filteredTeams.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Trophy className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p>Geen teams gevonden voor "{teamSearchQuery}"</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredTeams.map((team) => (
+                  <div
+                    key={team.team_id}
+                    className="border rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold text-gray-900">{team.team_name}</h3>
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                            {team.players.length} spelers
+                          </span>
+                          {team.reserve_player && (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              + Reserve
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-600 mb-3">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span>
+                              {team.user.voornaam} {team.user.achternaam}
+                              {team.user.email && ` (${team.user.email})`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                          {team.players.map((tp) => (
+                            <div
+                              key={tp.id}
+                              className="text-xs bg-gray-50 rounded p-2"
+                            >
+                              <div className="font-medium truncate">
+                                {tp.player.voornaam} {tp.player.achternaam}
+                              </div>
+                              <div className="text-gray-500">
+                                {tp.player.schaakrating_elo} ELO • {tp.cost} pts
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {team.reserve_player && (
+                          <div className="mt-2 pt-2 border-t">
+                            <div className="text-xs text-gray-600 mb-1">Reservespeler:</div>
+                            <div className="text-xs bg-green-50 rounded p-2 inline-block">
+                              <div className="font-medium">
+                                {team.reserve_player.voornaam} {team.reserve_player.achternaam}
+                              </div>
+                              <div className="text-gray-500">
+                                {team.reserve_player.schaakrating_elo} ELO • {team.reserve_cost} pts
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        onClick={() => handleDeleteTeam(team.team_id, team.team_name)}
+                        size="sm"
+                        variant="outline"
+                        className="ml-4 border-red-200 text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setTeamsDialogOpen(false)} variant="outline">
+              Sluiten
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
     </>
   )
