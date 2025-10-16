@@ -162,6 +162,8 @@ export type Toernooi = {
   participations: Participation[];
   finished: boolean;
   rating_enabled: boolean;
+  megaschaak_enabled: boolean;
+  megaschaak_deadline?: string | null;
   rounds: Round[];
   class_name?: string | null;
 };
@@ -198,4 +200,49 @@ export interface GameWithRoundAndTournament {
       rondes: number;
     };
   };
+}
+
+export interface MegaschaakPlayer {
+  user_id: number;
+  voornaam: string;
+  achternaam: string;
+  schaakrating_elo: number;
+  is_youth: boolean;
+  avatar_url?: string;
+  cost: number;
+  class_name?: string;
+}
+
+export interface MegaschaakTeamPlayer {
+  id: number;
+  player_id: number;
+  cost: number;
+  player: {
+    user_id: number;
+    voornaam: string;
+    achternaam: string;
+    schaakrating_elo: number;
+    is_youth: boolean;
+    avatar_url?: string;
+  };
+}
+
+export interface MegaschaakTeam {
+  team_id: number;
+  user_id: number;
+  tournament_id: number;
+  team_name: string;
+  reserve_player_id?: number | null;
+  reserve_cost?: number | null;
+  created_at: string;
+  updated_at: string;
+  players: MegaschaakTeamPlayer[];
+  reserve_player?: {
+    user_id: number;
+    voornaam: string;
+    achternaam: string;
+    schaakrating_elo: number;
+    is_youth: boolean;
+    avatar_url?: string;
+  } | null;
 }

@@ -18,6 +18,7 @@ import {
   Mail,
   BookOpen,
   History,
+  Swords,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect } from "react"
 import Image from "next/image"
@@ -105,6 +106,9 @@ export default function Navbar() {
               <div className="py-1">
                 <Link href="/toernooien" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Huidige Toernooien
+                </Link>
+                <Link href="/toernooien/megaschaak" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Megaschaak
                 </Link>
                 <Link href="/toernooien/rapidtoernooi" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Rapidtoernooi
@@ -329,7 +333,14 @@ export default function Navbar() {
                     Huidige Toernooien
                   </Link>
                   <Link
-                    href="/toernooien"
+                    href="/toernooien/megaschaak"
+                    className="block font-medium hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Megaschaak
+                  </Link>
+                  <Link
+                    href="/toernooien/rapidtoernooi"
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

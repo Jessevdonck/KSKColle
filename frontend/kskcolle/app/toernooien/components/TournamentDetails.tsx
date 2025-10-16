@@ -5,9 +5,10 @@ import { useParams } from "next/navigation"
 import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
+import MegaschaakTab from "./MegaschaakTab"
 import { getById, getAll, getAllTournamentRounds, undoPostponeGame, reportAbsence } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
-import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX, Clock } from "lucide-react"
+import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX, Clock, Swords } from "lucide-react"
 import { useState, useEffect } from "react"
 import PostponeGameButton from './PostponeGameButton'
 import { Button } from '@/components/ui/button'
@@ -39,6 +40,7 @@ type Tournament = {
   rondes: number
   type: "SWISS" | "ROUND_ROBIN"
   rating_enabled?: boolean
+  megaschaak_enabled?: boolean
   is_youth?: boolean
   participations: Array<{
     user: {
@@ -60,7 +62,7 @@ export default function TournamentDetails() {
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] })[]
   >([])
   const [reportingAbsence, setReportingAbsence] = useState(false)
-  const [activeTab, setActiveTab] = useState<'rounds' | 'standings'>('rounds')
+  const [activeTab, setActiveTab] = useState<'rounds' | 'standings' | 'megaschaak'>('rounds')
   const [selectedClassId, setSelectedClassId] = useState<number>(tournamentId)
   const { user: currentUser } = useAuth()
 
@@ -451,6 +453,42 @@ export default function TournamentDetails() {
         </div>
       )}
 
+      {/* Desktop Tabs - Only visible on desktop */}
+      {tournament.megaschaak_enabled && (
+        <div className="hidden xl:block bg-white border-b border-neutral-200">
+          <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('rounds')}
+                className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'rounds'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Rondes & Stand
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('megaschaak')}
+                className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'megaschaak'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Swords className="h-4 w-4" />
+                  Megaschaak
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Tabs - Only visible on mobile */}
       <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">
         <div className="max-w-[90rem] mx-auto px-6">
@@ -481,13 +519,49 @@ export default function TournamentDetails() {
                 Stand
               </div>
             </button>
+            {tournament.megaschaak_enabled && (
+              <button
+                onClick={() => setActiveTab('megaschaak')}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'megaschaak'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Swords className="h-4 w-4" />
+                  Megaschaak
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-4">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        {/* Megaschaak Tab - Full Width */}
+        {tournament.megaschaak_enabled && activeTab === 'megaschaak' && (
+          <div className="xl:hidden">
+            <MegaschaakTab 
+              tournamentId={selectedClassId} 
+              tournamentName={tournament.naam}
+            />
+          </div>
+        )}
+
+        {/* Desktop Megaschaak Tab - Only show if megaschaak enabled and active */}
+        {tournament.megaschaak_enabled && activeTab === 'megaschaak' && (
+          <div className="hidden xl:block">
+            <MegaschaakTab 
+              tournamentId={selectedClassId} 
+              tournamentName={tournament.naam}
+            />
+          </div>
+        )}
+
+        {/* Regular Layout - Rounds and Standings */}
+        <div className={`grid grid-cols-1 xl:grid-cols-3 gap-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
           {/* Rounds & Makeup Days with Navigation */}
           <div className={`xl:col-span-2 order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">

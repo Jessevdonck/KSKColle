@@ -63,6 +63,9 @@ model User {
   articles           Article[]
   comments           Comment[]
   notifications      Notification[]
+  megaschaakTeams    MegaschaakTeam[]
+  megaschaakTeamPlayers MegaschaakTeamPlayer[]
+  reserveTeams       MegaschaakTeam[] @relation("ReservePlayer")
 
   @@index([is_youth])
 }
@@ -76,11 +79,14 @@ model Tournament {
   finished           Boolean         @default(false) 
   is_youth           Boolean         @default(false)
   class_name         String?        // Voor toernooien met meerdere klasses (bv. "Eerste Klasse", "Tweede Klasse")
+  megaschaak_enabled Boolean         @default(false) // Voor fantasy schaak teams
+  megaschaak_deadline DateTime?      // Deadline voor megaschaak team registratie
   
   participations     Participation[]  
   rounds             Round[]          
   makeupDays         MakeupDay[]    
   calendarEvents     CalendarEvent[] // Calendar events gerelateerd aan dit toernooi
+  megaschaakTeams    MegaschaakTeam[]
 
   @@index([is_youth])  
 }
@@ -265,4 +271,38 @@ model Notification {
   @@index([user_id])
   @@index([is_read])
   @@index([created_at])
+}
+
+model MegaschaakTeam {
+  team_id        Int      @id @default(autoincrement())
+  user_id        Int
+  tournament_id  Int
+  team_name      String   @default("Mijn Team")
+  reserve_player_id Int?  // Optional reserve player (max 100 cost)
+  reserve_cost   Int?     // Cost of reserve player
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  
+  user           User                    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  tournament     Tournament              @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
+  players        MegaschaakTeamPlayer[]
+  reserve_player User?                   @relation("ReservePlayer", fields: [reserve_player_id], references: [user_id], onDelete: SetNull)
+  
+  @@index([user_id])
+  @@index([tournament_id])
+  @@index([user_id, tournament_id])
+  @@index([reserve_player_id])
+}
+
+model MegaschaakTeamPlayer {
+  id        Int      @id @default(autoincrement())
+  team_id   Int
+  player_id Int
+  cost      Int      // Cost in budget points when player was selected
+  
+  team      MegaschaakTeam @relation(fields: [team_id], references: [team_id], onDelete: Cascade)
+  player    User           @relation(fields: [player_id], references: [user_id], onDelete: Cascade)
+  
+  @@unique([team_id, player_id])
+  @@index([team_id])
 } 
