@@ -237,6 +237,12 @@ export interface MegaschaakTeam {
   created_at: string;
   updated_at: string;
   players: MegaschaakTeamPlayer[];
+  user?: {
+    user_id: number;
+    voornaam: string;
+    achternaam: string;
+    email?: string;
+  };
   reserve_player?: {
     user_id: number;
     voornaam: string;

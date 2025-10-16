@@ -1,7 +1,6 @@
 import Router from '@koa/router';
 import * as megaschaakService from '../service/megaschaakService';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
-import type { IdParams } from '../types/common';
 import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
@@ -34,7 +33,7 @@ const getAvailablePlayers = async (ctx: KoaContext) => {
  */
 const getMyTeams = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId;
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   
   const teams = await megaschaakService.getUserTeams(userId, tournamentId);
   ctx.body = { items: teams };
@@ -53,7 +52,7 @@ getMyTeams.validationScheme = {
  */
 const getTeam = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId;
-  const teamId = Number(ctx.params.teamId);
+  const teamId = Number((ctx.params as { teamId: string }).teamId);
   
   const team = await megaschaakService.getTeamById(teamId, userId);
   ctx.body = team;
@@ -72,7 +71,7 @@ getTeam.validationScheme = {
  */
 const createTeam = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId;
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const { playerIds, teamName, reservePlayerId } = ctx.request.body as { playerIds: number[], teamName: string, reservePlayerId?: number };
   
   const team = await megaschaakService.createTeam(userId, tournamentId, playerIds, teamName, reservePlayerId);
@@ -98,7 +97,7 @@ createTeam.validationScheme = {
  */
 const updateTeam = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId;
-  const teamId = Number(ctx.params.teamId);
+  const teamId = Number((ctx.params as { teamId: string }).teamId);
   const { playerIds, teamName, reservePlayerId } = ctx.request.body as { playerIds: number[], teamName?: string, reservePlayerId?: number | null };
   
   const team = await megaschaakService.updateTeam(teamId, userId, playerIds, teamName, reservePlayerId);
@@ -123,7 +122,7 @@ updateTeam.validationScheme = {
  */
 const deleteTeamHandler = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId;
-  const teamId = Number(ctx.params.teamId);
+  const teamId = Number((ctx.params as { teamId: string }).teamId);
   
   await megaschaakService.deleteTeam(teamId, userId);
   ctx.status = 204;
@@ -141,7 +140,7 @@ deleteTeamHandler.validationScheme = {
  * @apiGroup Megaschaak
  */
 const toggleMegaschaak = async (ctx: KoaContext) => {
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const { enabled } = ctx.request.body as { enabled: boolean };
   
   const tournament = await megaschaakService.toggleMegaschaak(tournamentId, enabled);
@@ -163,7 +162,7 @@ toggleMegaschaak.validationScheme = {
  * @apiGroup Megaschaak
  */
 const setMegaschaakDeadline = async (ctx: KoaContext) => {
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const { deadline } = ctx.request.body as { deadline: string | null };
   
   const deadlineDate = deadline ? new Date(deadline) : null;
@@ -186,7 +185,7 @@ setMegaschaakDeadline.validationScheme = {
  * @apiGroup Megaschaak
  */
 const getTeamStandings = async (ctx: KoaContext) => {
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   
   const standings = await megaschaakService.getTeamStandings(tournamentId);
   ctx.body = { items: standings };
@@ -204,7 +203,7 @@ getTeamStandings.validationScheme = {
  * @apiGroup Megaschaak
  */
 const getCrossTable = async (ctx: KoaContext) => {
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   
   const crossTable = await megaschaakService.getCrossTableData(tournamentId);
   ctx.body = crossTable;
@@ -222,7 +221,7 @@ getCrossTable.validationScheme = {
  * @apiGroup Megaschaak
  */
 const getTeamDetails = async (ctx: KoaContext) => {
-  const teamId = Number(ctx.params.teamId);
+  const teamId = Number((ctx.params as { teamId: string }).teamId);
   
   const details = await megaschaakService.getTeamDetailedScores(teamId);
   ctx.body = details;
@@ -240,7 +239,7 @@ getTeamDetails.validationScheme = {
  * @apiGroup Megaschaak
  */
 const getPopularPlayers = async (ctx: KoaContext) => {
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const players = await megaschaakService.getMostPopularPlayers(tournamentId);
   ctx.body = { items: players };
 };
@@ -257,7 +256,7 @@ getPopularPlayers.validationScheme = {
  * @apiGroup Megaschaak
  */
 const getValuePlayers = async (ctx: KoaContext) => {
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const players = await megaschaakService.getBestValuePlayers(tournamentId);
   ctx.body = { items: players };
 };
@@ -274,7 +273,7 @@ getValuePlayers.validationScheme = {
  * @apiGroup Megaschaak
  */
 const getAllTeams = async (ctx: KoaContext) => {
-  const tournamentId = Number(ctx.params.tournamentId);
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const teams = await megaschaakService.getAllTeamsForTournament(tournamentId);
   ctx.body = { items: teams };
 };
@@ -291,7 +290,7 @@ getAllTeams.validationScheme = {
  * @apiGroup Megaschaak
  */
 const adminDeleteTeam = async (ctx: KoaContext) => {
-  const teamId = Number(ctx.params.teamId);
+  const teamId = Number((ctx.params as { teamId: string }).teamId);
   await megaschaakService.adminDeleteTeam(teamId);
   ctx.status = 204;
 };

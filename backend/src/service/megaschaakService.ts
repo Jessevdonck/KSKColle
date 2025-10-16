@@ -31,7 +31,7 @@ const getBonusPointsByClass = (className: string): number => {
  * Simplified version: for now just return the player's current rating
  * In the future this could be enhanced with actual tournament performance
  */
-const calculateTPR = async (playerId: number, tournamentIds: number[]): Promise<number> => {
+const calculateTPR = async (playerId: number): Promise<number> => {
   // For now, just return the player's current rating
   // This matches the Excel formula where TPR is used but not explicitly calculated
   const player = await prisma.user.findUnique({
@@ -60,7 +60,7 @@ export const calculatePlayerCost = async (playerId: number, className: string, t
     const bonusPoints = getBonusPointsByClass(className);
 
     // 2. Calculate TPR
-    const tpr = await calculateTPR(playerId, tournamentIds);
+    const tpr = await calculateTPR(playerId);
 
     // 3. Pt(ELO) = (Rating + TPR) / 2
     const ptELO = (rating + tpr) / 2;
@@ -822,7 +822,6 @@ export const getCrossTableData = async (tournamentId: number) => {
 
     // Get all unique players across all teams with their class
     const playersMap = new Map();
-    const classesMap = new Map();
     
     for (const tournament of allClassesTournaments) {
       const className = tournament.class_name || 'Hoofdtoernooi';
@@ -1133,7 +1132,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
     // Calculate scores per player per round
     const playerScoresByRound = team.players.map(tp => {
       const roundScores = Array.from(gamesByRound.entries()).map(([rondeNummer, games]) => {
-        const score = games.reduce((sum, game) => {
+        const score = games.reduce((sum: number, game: any) => {
           return sum + calculateGameScore(game, tp.player_id);
         }, 0);
 
