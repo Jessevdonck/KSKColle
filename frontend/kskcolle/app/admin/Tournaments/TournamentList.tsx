@@ -555,7 +555,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                 <div className="relative">
                   <Input
                     type="text"
-                    placeholder="Zoek op team naam, manager of email..."
+                    placeholder="Zoek op team naam, gebruiker of email..."
                     value={teamSearchQuery}
                     onChange={(e) => setTeamSearchQuery(e.target.value)}
                     className="pl-10"
