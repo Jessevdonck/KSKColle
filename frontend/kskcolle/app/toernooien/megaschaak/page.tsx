@@ -386,7 +386,6 @@ export default function MegaschaakPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-textColor">Megaschaak</h1>
-                <p className="text-gray-600 mt-1">Fantasy Schaak Team</p>
               </div>
             </div>
           </div>
