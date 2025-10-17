@@ -731,101 +731,134 @@ export default function MegaschaakPage() {
                 />
               </div>
 
-              <div className="space-y-4 max-h-[500px] overflow-y-auto">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto">
                 {playersByClass.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     {searchTerm ? 'Geen spelers gevonden' : 'Geen spelers beschikbaar'}
                   </div>
                 ) : (
-                  playersByClass.map(([className, players]) => (
-                    <div key={className} className="space-y-2">
-                      {/* Class Header */}
-                      <div className="sticky top-0 bg-gradient-to-r from-mainAccent to-mainAccentDark text-white px-3 py-2 rounded-lg shadow-sm z-10">
-                        <h4 className="font-bold text-sm">{className}</h4>
-                        <p className="text-xs opacity-90">{players.length} spelers</p>
-                      </div>
-                      
-                      {/* Players in this class */}
-                      {players.map((player) => {
-                        const selected = isPlayerSelected(player.user_id)
-                        const canAdd = canAddPlayer(player)
+                  playersByClass.map(([className, players], classIndex) => {
+                    // Calculate color intensity based on class index (darker to lighter)
+                    const getClassColor = (index: number) => {
+                      const intensities = [
+                        'bg-mainAccent/15 border-mainAccent/40',      // Hoofdtoernooi - darkest
+                        'bg-mainAccent/13 border-mainAccent/35',      // Eerste Klasse
+                        'bg-mainAccent/11 border-mainAccent/30',      // Tweede Klasse
+                        'bg-mainAccent/9 border-mainAccent/25',       // Derde Klasse
+                        'bg-mainAccent/7 border-mainAccent/20',       // Vierde Klasse
+                        'bg-mainAccent/6 border-mainAccent/18',       // Vijfde Klasse
+                        'bg-mainAccent/5 border-mainAccent/15',       // Zesde Klasse
+                        'bg-mainAccent/4 border-mainAccent/12',       // Zevende Klasse
+                        'bg-mainAccent/3 border-mainAccent/10',       // Achtste Klasse - lightest
+                      ]
+                      return intensities[index] || intensities[intensities.length - 1]
+                    }
+                    
+                    const classColors = getClassColor(classIndex)
+                    
+                    return (
+                      <div key={className} className="space-y-1.5">
+                        {/* Class Header */}
+                        <div className="sticky top-0 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-3 py-1.5 rounded-md shadow-sm z-10">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-bold text-sm">{className}</h4>
+                            <span className="text-xs opacity-80">{players.length} spelers</span>
+                          </div>
+                        </div>
+                        
+                        {/* Players in this class - All info on one line */}
+                        {players.map((player) => {
+                          const selected = isPlayerSelected(player.user_id)
+                          const canAdd = canAddPlayer(player)
+                          const isReserveCandidate = player.cost <= 100
+                          const isSelectedAsReserve = reservePlayer?.user_id === player.user_id
 
-                        return (
-                          <div
-                            key={player.user_id}
-                            className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-                              selected
-                                ? 'bg-mainAccent/10 border-mainAccent/30'
-                                : canAdd
-                                ? 'bg-white border-gray-200 hover:border-mainAccent/30 hover:shadow-sm'
-                                : 'bg-gray-50 border-gray-200 opacity-50'
-                            }`}
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <div className="font-medium text-gray-800">
+                          return (
+                            <div
+                              key={player.user_id}
+                              className={`flex items-center gap-2 px-2 py-1.5 rounded border transition-all ${
+                                selected
+                                  ? 'bg-green-50 border-green-300'
+                                  : isSelectedAsReserve
+                                  ? 'bg-blue-50 border-blue-300'
+                                  : canAdd
+                                  ? `${classColors} hover:shadow-sm`
+                                  : 'bg-gray-50 border-gray-200 opacity-50'
+                              }`}
+                            >
+                              {/* Player Info - All on one line */}
+                              <div className="flex-1 flex items-center gap-3 min-w-0">
+                                <div className="font-medium text-sm text-gray-800 truncate">
                                   {player.voornaam} {player.achternaam}
                                 </div>
-                                {player.class_name && (
-                                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-mainAccent/10 text-mainAccent border border-mainAccent/20">
-                                    {player.class_name}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                <span>Rating: {player.schaakrating_elo}</span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <div className="text-right">
-                                <div className="text-sm font-semibold text-mainAccent">
+                                <div className="text-xs text-gray-600 flex-shrink-0">
+                                  Elo: {player.schaakrating_elo}
+                                </div>
+                                <div className="text-sm font-semibold text-mainAccent flex-shrink-0">
                                   {player.cost} pts
                                 </div>
                               </div>
-                              {selected ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => removePlayer(player.user_id)}
-                                  className="h-8 border-red-200 text-red-600 hover:bg-red-50"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              ) : (
-                                <>
+
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {selected ? (
                                   <Button
                                     size="sm"
-                                    onClick={() => addPlayer(player)}
-                                    disabled={!canAdd}
-                                    className="h-8 bg-mainAccent hover:bg-mainAccentDark disabled:opacity-50"
+                                    variant="outline"
+                                    onClick={() => removePlayer(player.user_id)}
+                                    className="h-7 px-2 border-red-200 text-red-600 hover:bg-red-50"
+                                    title="Verwijder uit team"
                                   >
-                                    <Plus className="h-4 w-4" />
+                                    <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
-                                  {player.cost <= 100 && (
+                                ) : isSelectedAsReserve ? (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                                      Reserve
+                                    </span>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => setAsReserve(player)}
-                                      disabled={reservePlayer?.user_id === player.user_id}
-                                      className={`h-8 ${
-                                        reservePlayer?.user_id === player.user_id 
-                                          ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                                          : 'border-blue-200 text-blue-600 hover:bg-blue-50'
-                                      }`}
-                                      title="Stel in als reservespeler"
+                                      onClick={() => setReservePlayer(null)}
+                                      className="h-7 px-2 border-red-200 text-red-600 hover:bg-red-50"
+                                      title="Verwijder reservespeler"
                                     >
-                                      <UserPlus className="h-4 w-4" />
+                                      <X className="h-3.5 w-3.5" />
                                     </Button>
-                                  )}
-                                </>
-                              )}
+                                  </div>
+                                ) : (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addPlayer(player)}
+                                      disabled={!canAdd}
+                                      className="h-7 px-2 bg-mainAccent hover:bg-mainAccentDark disabled:opacity-50"
+                                      title="Voeg toe aan team"
+                                    >
+                                      <Plus className="h-3.5 w-3.5 mr-1" />
+                                      <span className="text-xs">Team</span>
+                                    </Button>
+                                    {isReserveCandidate && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setAsReserve(player)}
+                                        className="h-7 px-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+                                        title="Stel in als reservespeler (max 100 pts)"
+                                      >
+                                        <UserPlus className="h-3.5 w-3.5 mr-1" />
+                                        <span className="text-xs">Reserve</span>
+                                      </Button>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ))
+                          )
+                        })}
+                      </div>
+                    )
+                  })
                 )}
               </div>
             </div>
@@ -899,14 +932,16 @@ export default function MegaschaakPage() {
                   </div>
 
                   {/* Reserve Speler Section */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="mb-3">
-                      <h4 className="text-sm font-semibold text-gray-800 mb-1 flex items-center gap-2">
-                        <UserPlus className="h-4 w-4 text-blue-600" />
-                        Reservespeler
+                  <div className="mt-4 pt-4 border-t-2 border-blue-200">
+                    <div className="mb-3 bg-blue-50 rounded-lg p-3 border border-blue-200">
+                      <h4 className="text-sm font-bold text-blue-900 mb-1.5 flex items-center gap-2">
+                        <UserPlus className="h-5 w-5 text-blue-700" />
+                        Reservespeler (Optioneel)
                       </h4>
-                      <p className="text-xs text-gray-600">
-                        Max 100 punten. Wordt automatisch ingewisseld bij een algemeen forfait.
+                      <p className="text-xs text-blue-800 leading-relaxed">
+                        <strong>Let op:</strong> Dit is een extra speler (niet 1 van de 10). Max 100 punten. 
+                        Wordt automatisch ingewisseld bij een algemeen forfait. 
+                        Klik op <span className="bg-blue-200 px-1.5 py-0.5 rounded font-semibold">+ Reserve</span> bij een speler uit de lijst.
                       </p>
                     </div>
 

@@ -290,7 +290,6 @@ model MegaschaakTeam {
   
   @@index([user_id])
   @@index([tournament_id])
-  @@index([user_id, tournament_id])
   @@index([reserve_player_id])
 }
 
