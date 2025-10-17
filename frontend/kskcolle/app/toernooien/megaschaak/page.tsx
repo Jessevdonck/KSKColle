@@ -772,6 +772,8 @@ export default function MegaschaakPage() {
                           const canAdd = canAddPlayer(player)
                           const isReserveCandidate = player.cost <= 100
                           const isSelectedAsReserve = reservePlayer?.user_id === player.user_id
+                          // Keep reserve candidates visible even if team is full
+                          const shouldBeVisible = canAdd || (isReserveCandidate && !reservePlayer) || isSelectedAsReserve
 
                           return (
                             <div
@@ -781,7 +783,7 @@ export default function MegaschaakPage() {
                                   ? 'bg-green-50 border-green-300'
                                   : isSelectedAsReserve
                                   ? 'bg-blue-50 border-blue-300'
-                                  : canAdd
+                                  : shouldBeVisible
                                   ? `${classColors} hover:shadow-sm`
                                   : 'bg-gray-50 border-gray-200 opacity-50'
                               }`}
