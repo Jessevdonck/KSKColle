@@ -759,7 +759,7 @@ export default function MegaschaakPage() {
                     return (
                       <div key={className} className="space-y-1.5">
                         {/* Class Header */}
-                        <div className="sticky top-0 bg-gradient-to-r from-gray-700 to-gray-800 text-white px-3 py-1.5 rounded-md shadow-sm z-10">
+                        <div className="sticky top-0 bg-gradient-to-r from-mainAccent to-mainAccentDark text-white px-3 py-1.5 rounded-md shadow-sm z-10">
                           <div className="flex items-center justify-between">
                             <h4 className="font-bold text-sm">{className}</h4>
                             <span className="text-xs opacity-80">{players.length} spelers</span>
