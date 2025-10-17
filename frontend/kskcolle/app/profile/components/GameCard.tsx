@@ -68,7 +68,12 @@ export function GameCard({ game, playerId }: GameCardProps) {
 function getGameResult(game: GameWithRoundAndTournament, playerId: number): string {
   if (!game.result || game.result === '...') return 'Nog te spelen'
   if (game.result === 'uitgesteld') return 'Uitgesteld'
-  if (game.result === '½-½') return '½-½'
+  
+  // Check for draw/remise (multiple formats due to encoding issues)
+  if (game.result === '½-½' || game.result === '1/2-1/2' || game.result === '�-�') {
+    return '½-½'
+  }
+  
   if (
     (game.result === '1-0' && game.speler1_id === playerId) ||
     (game.result === '0-1' && game.speler2_id === playerId)

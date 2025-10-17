@@ -304,7 +304,7 @@ function calculateStandingsBeforeRound(
           scoreMap[p1] += 1
         } else if (result === "0-1" && p2) {
           scoreMap[p2] += 1
-        } else if (result === "½-½" || result === "1/2-1/2") {
+        } else if (result === "½-½" || result === "1/2-1/2" || result === "�-�") {
           scoreMap[p1] += 0.5
           if (p2) scoreMap[p2] += 0.5
         } else if (result === "0.5-0") {

@@ -121,7 +121,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           score = isPlayer1 ? 1 : 0
         } else if (playerGame.result === "0-1") {
           score = isPlayer1 ? 0 : 1
-        } else if (playerGame.result === "½-½" || playerGame.result === "1/2-1/2") {
+        } else if (playerGame.result === "½-½" || playerGame.result === "1/2-1/2" || playerGame.result === "�-�") {
           score = 0.5
         } else if (playerGame.result === "0.5-0") {
           // Absent with message - player gets 0.5 points
@@ -547,7 +547,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
             scoreMap[p1] += 1
           } else if (result === "0-1" && p2) {
             scoreMap[p2] += 1
-          } else if (result === "½-½" || result === "1/2-1/2") {
+          } else if (result === "½-½" || result === "1/2-1/2" || result === "�-�") {
             scoreMap[p1] += 0.5
             if (p2) scoreMap[p2] += 0.5
           } else if (result === "0.5-0") {
@@ -600,7 +600,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
         sbMap[p1] += scoreMap[p2]
       } else if (result === "0-1" && p2) {
         sbMap[p2] += scoreMap[p1]
-      } else if ((result === "½-½" || result === "1/2-1/2") && p2) {
+      } else if ((result === "½-½" || result === "1/2-1/2" || result === "�-�") && p2) {
         sbMap[p1] += scoreMap[p2] * 0.5
         sbMap[p2] += scoreMap[p1] * 0.5
       }
