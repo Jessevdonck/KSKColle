@@ -747,15 +747,16 @@ export class SevillaImporterService {
       const whitePlayerId = whiteSevillaPlayer ? playerMap.get(whiteSevillaPlayer.ID) || null : null;
       const blackPlayerId = blackSevillaPlayer ? playerMap.get(blackSevillaPlayer.ID) || null : null;
       
-      // The result is always from white's perspective: "1-0" = white wins, "0-1" = black wins, "1/2-1/2" = draw
+      // The result is always from white's perspective: "1-0" = white wins, "0-1" = black wins, "1/2-1/2" or "½-½" or "�-�" = draw
       if (playerGame.Res === '1-0') {
         // White wins
         winnaarId = whitePlayerId;
       } else if (playerGame.Res === '0-1') {
         // Black wins
         winnaarId = blackPlayerId;
-      } else if (playerGame.Res === '1/2-1/2') {
+      } else if (playerGame.Res === '1/2-1/2' || playerGame.Res === '½-½' || playerGame.Res === '�-�') {
         winnaarId = null; // Draw
+        result = '1/2-1/2'; // Normalize to standard format
       } else {
         // Handle other results or incomplete games
         winnaarId = null;
