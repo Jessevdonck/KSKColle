@@ -79,9 +79,6 @@ export default function TournamentDetails() {
     },
   )
 
-  // Debug logging
-  console.log('🎯 Youth TournamentDetails - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);
-
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<Round[]>(
     tournamentId ? `tournamentRounds?tournament_id=${tournamentId}` : null,

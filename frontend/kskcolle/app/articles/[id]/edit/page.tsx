@@ -142,21 +142,6 @@ export default function EditArticlePage() {
     article.author_id === user.user_id
   )
   
-  // Debug logging
-  useEffect(() => {
-    if (user && article) {
-      console.log('Edit page - Permission check:', {
-        userId: user.user_id,
-        userRoles: user.roles,
-        articleAuthorId: article.author_id,
-        isAdmin: isAdmin(user),
-        isBoardMember: isBoardMember(user),
-        isOwnArticle: article.author_id === user.user_id,
-        canEdit
-      })
-    }
-  }, [user, article, canEdit])
-
   if (loading) {
     return (
       <main className="container mx-auto px-4 py-6">

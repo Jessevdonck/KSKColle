@@ -273,13 +273,11 @@ export class SevillaImporterService {
       // Check if this user is already mapped to another Sevilla player
       const existingMapping = Array.from(playerMap.entries()).find(([_, userId]) => userId === user?.user_id);
       if (existingMapping && existingMapping[0] !== sevillaPlayer.ID) {
-        console.log(`User ${user?.voornaam} ${user?.achternaam} is already mapped to Sevilla ID ${existingMapping[0]}, skipping Sevilla ID ${sevillaPlayer.ID}`);
         continue; // Skip this player
       }
 
       if (!user) {
-        // Create new user if they don't exist in the database
-        console.log(`Creating new user for player "${sevillaPlayer.Name}"`);
+
         
         // Don't generate fake emails - leave email empty for imported users
         // Admins can add proper email addresses later if needed
@@ -297,12 +295,7 @@ export class SevillaImporterService {
           },
         });
         
-        console.log(`Created new user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
-      } else {
-        // User exists - no rating update during import
-        console.log(`Found existing user: ${user.voornaam} ${user.achternaam} (Sevilla ID: ${sevillaPlayer.ID} -> Database ID: ${user.user_id})`);
-        // Note: Rating updates are only done when tournament is closed, not during import
-      }
+      } 
 
       // Check if participation already exists
       const existingParticipation = await prisma.participation.findUnique({
@@ -313,8 +306,6 @@ export class SevillaImporterService {
           }
         }
       });
-
-      console.log(`🔍 Processing ${user.voornaam} ${user.achternaam}: RtgDif=${sevillaPlayer.RtgDif}, IRtg=${sevillaPlayer.IRtg}, Rating=${sevillaPlayer.Rating}`);
 
       if (!existingParticipation) {
         // Create participation (store Sevilla rating data in dedicated fields)
@@ -330,7 +321,6 @@ export class SevillaImporterService {
             sevilla_rating_change: sevillaPlayer.RtgDif, // Rating difference from Sevilla
           },
         });
-        console.log(`Created participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId} with RtgDif=${sevillaPlayer.RtgDif}`);
       } else {
         // Update existing participation with latest score and rating data
         await prisma.participation.update({

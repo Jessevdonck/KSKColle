@@ -4,14 +4,10 @@ import * as path from 'path';
 
 async function importSevillaTournament() {
   try {
-    console.log('Starting Sevilla tournament import...');
     
     // Read the Sevilla JSON file
     const sevillaFilePath = path.join(__dirname, '../data/sevilla/Herfstcompetitie_2024.json');
     const sevillaData = JSON.parse(fs.readFileSync(sevillaFilePath, 'utf8'));
-    
-    console.log(`Loaded Sevilla data: ${sevillaData.Name}`);
-    console.log(`Groups: ${sevillaData.GroupReport.length}`);
     
     // Validate the data
     const importer = new SevillaImporterService();
@@ -22,13 +18,8 @@ async function importSevillaTournament() {
       process.exit(1);
     }
     
-    console.log('Sevilla data is valid, proceeding with import...');
-    
     // Import the tournament
-    const tournamentId = await importer.importTournament(sevillaData, 'Herfstcompetitie 2024 (Sevilla Import)');
-    
-    console.log(`✅ Successfully imported tournament with ID: ${tournamentId}`);
-    console.log('You can now view the tournament in your application.');
+    await importer.importTournament(sevillaData, 'Herfstcompetitie 2024 (Sevilla Import)');
     
   } catch (error) {
     console.error('❌ Error importing Sevilla tournament:', error);

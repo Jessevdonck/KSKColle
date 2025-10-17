@@ -22,7 +22,6 @@ export class RatingService {
    * Update ratings for all players in a tournament using Sevilla data
    */
   async updateRatingsForTournament(tournamentId: number): Promise<void> {
-    console.log(`Starting rating update for tournament ${tournamentId}`);
 
     // Get tournament to find the Sevilla data
     const tournament = await prisma.tournament.findUnique({
@@ -41,8 +40,6 @@ export class RatingService {
       },
     });
 
-    console.log(`Found ${participations.length} participations`);
-
     // Update ratings using Sevilla rating data
     for (const participation of participations) {
       // Check if we have Sevilla rating data
@@ -60,13 +57,9 @@ export class RatingService {
           },
         });
 
-        console.log(`✅ Updated rating for ${participation.user.voornaam} ${participation.user.achternaam}: ${currentRating} -> ${newRating} (change: ${ratingChange > 0 ? '+' : ''}${ratingChange})`);
-      } else {
-        console.log(`⏭️  No Sevilla rating data for ${participation.user.voornaam} ${participation.user.achternaam}, skipping`);
-      }
+      } 
     }
 
-    console.log(`✅ Rating update completed for tournament ${tournamentId}`);
   }
 }
 

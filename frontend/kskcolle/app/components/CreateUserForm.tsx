@@ -84,9 +84,6 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
     setLoading(true);
     setError(null);
 
-    // Debug: log the form data
-    console.log('Form data before processing:', data);
-    console.log('is_youth value:', data.is_youth);
 
     try {
       // Process roles according to the new logic
