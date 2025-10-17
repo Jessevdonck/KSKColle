@@ -59,11 +59,11 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
 
-  // Debug logging
-  console.log('🎮 RoundPairings - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);
 
-  // Calculate player scores if tournament data is available
-  const playerScores = tournament && allRounds ? calculateStandings(tournament, allRounds) : []
+  // Calculate player scores BEFORE this round (up to but not including current round)
+  const playerScores = tournament && allRounds 
+    ? calculateStandingsBeforeRound(tournament, allRounds, round.ronde_nummer) 
+    : []
   const getPlayerScore = (userId: number) => {
     const player = playerScores.find(p => p.user_id === userId)
     return player ? player.score : 0
@@ -398,30 +398,37 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
   )
 }
 
-function calculateStandings(tournament: RoundPairingsProps["tournament"], rounds: RoundPairingsProps["allRounds"]): PlayerScore[] {
+/**
+ * Calculate standings BEFORE a specific round (i.e., scores at the time of pairing)
+ * This shows what the score was when the pairings were made, not the current score
+ */
+function calculateStandingsBeforeRound(
+  tournament: RoundPairingsProps["tournament"], 
+  rounds: RoundPairingsProps["allRounds"],
+  beforeRoundNumber: number
+): PlayerScore[] {
   if (!tournament || !rounds) return []
 
   // 1) init
   const scoreMap: Record<number, number> = {}
   const gamesPlayed: Record<number, number> = {}
-  const buchholzList: Record<number, number[]> = {}
-  const sbMap: Record<number, number> = {}
 
   // deelnemers
   tournament.participations.forEach(({ user }) => {
     scoreMap[user.user_id] = 0
     gamesPlayed[user.user_id] = 0
-    buchholzList[user.user_id] = []
-    sbMap[user.user_id] = 0
   })
 
-  // 2) score & gamesPlayed
-  rounds.forEach(({ games, type: roundType }) => {
+  // 2) score & gamesPlayed - only for rounds BEFORE the current round
+  rounds.forEach(({ games, type: roundType, ronde_nummer }) => {
     // Skip makeup rounds for points calculation - they don't count for standings
     const isMakeupRound = roundType === 'MAKEUP'
     if (isMakeupRound) return
     
-    // First, process all games with results (only for regular rounds)
+    // Only count rounds that happened BEFORE this round
+    if (ronde_nummer >= beforeRoundNumber) return
+    
+    // Process all games with results (only for regular rounds before current)
     games.forEach(({ speler1, speler2, result }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
@@ -452,34 +459,7 @@ function calculateStandings(tournament: RoundPairingsProps["tournament"], rounds
     })
   })
 
-  // 3) buchholz & sonneborn-berger (only for regular rounds)
-  rounds.forEach(({ games, type: roundType }) => {
-    const isMakeupRound = roundType === 'MAKEUP'
-    if (isMakeupRound) return // Skip makeup rounds
-    
-    games.forEach(({ speler1, speler2, result }) => {
-      const p1 = speler1.user_id
-      const p2 = speler2?.user_id ?? null
-
-      if (result && p2) {
-        const p1Score = scoreMap[p1]
-        const p2Score = scoreMap[p2]
-
-        // Buchholz: sum of opponents' scores
-        buchholzList[p1].push(p2Score)
-        buchholzList[p2].push(p1Score)
-
-        // Sonneborn-Berger: sum of (opponent's score * result)
-        const p1Result = result === "1-0" ? 1 : result === "0-1" ? 0 : 0.5
-        const p2Result = result === "1-0" ? 0 : result === "0-1" ? 1 : 0.5
-
-        sbMap[p1] += p2Score * p1Result
-        sbMap[p2] += p1Score * p2Result
-      }
-    })
-  })
-
-  // 4) final standings
+  // 3) return standings
   return tournament.participations
     .map(({ user }) => ({
       user_id: user.user_id,
@@ -487,12 +467,6 @@ function calculateStandings(tournament: RoundPairingsProps["tournament"], rounds
       achternaam: user.achternaam,
       score: scoreMap[user.user_id] || 0,
       gamesPlayed: gamesPlayed[user.user_id] || 0,
-      tieBreak: sbMap[user.user_id] || 0,
+      tieBreak: 0, // Not needed for pairing display
     }))
-    .sort((a, b) => {
-      // Primary: score (descending)
-      if (b.score !== a.score) return b.score - a.score
-      // Secondary: tiebreak (descending)
-      return b.tieBreak - a.tieBreak
-    })
 }
