@@ -45,6 +45,11 @@ interface SevillaGame {
   OrgPos: number;
   Venue: string;
   GameTime: string;
+  // Additional fields from RoundHist
+  WhiteNr?: number;
+  BlackNr?: number;
+  WhiteMinor?: number;
+  BlackMinor?: number;
 }
 
 interface SevillaGroup {
@@ -68,7 +73,18 @@ interface SevillaGroup {
     ID: number;
     Name: string;
     Date: string;
-    Game: SevillaGame[];
+    Game: Array<{
+      Round: number;
+      WhiteNr: number;
+      BlackNr: number;
+      White: string;
+      Black: string;
+      Res: string;
+      WhiteMinor: number;
+      BlackMinor: number;
+      Venue: string;
+      GameTime: string;
+    }>;
   }[];
 }
 
@@ -367,6 +383,24 @@ export class SevillaImporterService {
     // Collect makeup game updates to batch at the end
     const makeupGameUpdates: Array<{ game_id: number; winnaar_id: number | null; result: string }> = [];
     
+    // Create a map of round games from RoundHist for proper board ordering
+    const roundHistGames = new Map<number, Map<string, number>>(); // round -> gameKey -> boardPosition
+    
+    if (group?.RoundHist) {
+      for (const roundHist of group.RoundHist) {
+        if (roundHist.Game && Array.isArray(roundHist.Game)) {
+          const roundGames = new Map<string, number>();
+          roundHist.Game.forEach((game, index) => {
+            // Create a unique key for each game using player numbers
+            const gameKey = `${Math.min(game.WhiteNr, game.BlackNr)}-${Math.max(game.WhiteNr, game.BlackNr)}`;
+            roundGames.set(gameKey, index + 1); // Board position is 1-based
+          });
+          roundHistGames.set(roundHist.ID, roundGames);
+          console.log(`📋 Mapped ${roundGames.size} games for round ${roundHist.ID} from RoundHist`);
+        }
+      }
+    }
+    
     // Parse round dates from Sevilla data if available
     const roundDates = new Map<number, Date>();
     if (group) {
@@ -642,7 +676,7 @@ export class SevillaImporterService {
       }
 
       // Import games for this round
-      await this.importGamesForRound(players, round.round_id, roundNumber, playerMap, makeupRounds, makeupGameUpdates);
+      await this.importGamesForRound(players, round.round_id, roundNumber, playerMap, makeupRounds, makeupGameUpdates, roundHistGames);
       
       // Import absent players with scores for this round
       await this.importAbsentPlayers(players, round.round_id, roundNumber, playerMap);
@@ -690,7 +724,7 @@ export class SevillaImporterService {
     return sevillaRoundNumber;
   }
 
-  private async importGamesForRound(players: SevillaPlayer[], roundId: number, roundNumber: number, playerMap: Map<number, number>, makeupRounds: any[] = [], makeupGameUpdates: any[] = []) {
+  private async importGamesForRound(players: SevillaPlayer[], roundId: number, roundNumber: number, playerMap: Map<number, number>, makeupRounds: any[] = [], makeupGameUpdates: any[] = [], roundHistGames?: Map<number, Map<string, number>>) {
     const gamesInRound = new Set<string>(); // To avoid duplicates
     let gamesFound = 0;
 
@@ -720,6 +754,31 @@ export class SevillaImporterService {
       
       if (gamesInRound.has(gameId)) continue;
       gamesInRound.add(gameId);
+
+      // Determine board position from RoundHist if available
+      let boardPosition = playerGame.Pos || (gamesInRound.size + 1); // Default fallback
+      
+      if (roundHistGames && roundHistGames.has(roundNumber)) {
+        const roundGames = roundHistGames.get(roundNumber)!;
+        // Create a key using the Sevilla player numbers for matching
+        // We need to find the correct player numbers from the RoundHist data
+        const whiteSevillaPlayer = players.find(p => p.Name === playerGame.White);
+        const blackSevillaPlayer = players.find(p => p.Name === playerGame.Black);
+        
+        if (whiteSevillaPlayer && blackSevillaPlayer) {
+          const sevillaGameKey = `${Math.min(whiteSevillaPlayer.ID, blackSevillaPlayer.ID)}-${Math.max(whiteSevillaPlayer.ID, blackSevillaPlayer.ID)}`;
+          const roundHistPosition = roundGames.get(sevillaGameKey);
+          
+          if (roundHistPosition) {
+            boardPosition = roundHistPosition;
+            console.log(`🎯 Using RoundHist board position ${boardPosition} for game ${sevillaGameKey} in round ${roundNumber}`);
+          } else {
+            console.log(`⚠️ No RoundHist position found for game ${sevillaGameKey} in round ${roundNumber}, using fallback ${boardPosition}`);
+          }
+        } else {
+          console.log(`⚠️ Could not find Sevilla players for game ${playerGame.White} vs ${playerGame.Black} in round ${roundNumber}`);
+        }
+      }
 
       // Determine winner and result first
       let winnaarId: number | null = null;
@@ -772,7 +831,7 @@ export class SevillaImporterService {
           data: {
             winnaar_id: winnaarId,
             result: result,
-            board_position: playerGame.Pos || existingGame.board_position, // Update with Sevilla board position if available
+            board_position: boardPosition, // Update with RoundHist board position if available
             // Remove uitgestelde_datum if game now has a real result
             ...(hasRealResult ? { uitgestelde_datum: null } : 
                 existingGame.uitgestelde_datum ? { uitgestelde_datum: existingGame.uitgestelde_datum } : {})
@@ -794,7 +853,7 @@ export class SevillaImporterService {
           speler2_id: blackPlayerId || opponentUserId, // Use black player as speler2, fallback to original logic
           winnaar_id: winnaarId,
           result: result,
-          board_position: playerGame.Pos || (gamesInRound.size + 1), // Use Sevilla board position (Pos field)
+          board_position: boardPosition, // Use RoundHist board position if available
         },
       });
     }
