@@ -1,13 +1,27 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink } from "lucide-react"
+import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink, X } from "lucide-react"
 import Image from "next/image"
 import OVJKParticipants from "../info/components/OVJKParticipants"
 
 export default function InfoOVJK2025Page() {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+
+  const sponsors = [
+    { src: "/images/sponsoring/Sponsor6.png", alt: "Sponsor 6" },
+    { src: "/images/sponsoring/Sponsor1.png", alt: "Sponsor 1" },
+    { src: "/images/sponsoring/Sponsor2.png", alt: "Sponsor 2" },
+    { src: "/images/sponsoring/Sponsor3.png", alt: "Sponsor 3" },
+    { src: "/images/sponsoring/Sponsor4.png", alt: "Sponsor 4" },
+    { src: "/images/sponsoring/Sponsor5.jpg", alt: "Sponsor 5" },
+    { src: "/images/sponsoring/Sponsor7.jpg", alt: "Sponsor 7" },
+    { src: "/images/sponsoring/Sponsor8.png", alt: "Sponsor 8" }
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -526,42 +540,61 @@ export default function InfoOVJK2025Page() {
           </Card>
         </div>
 
-        {/* Logos */}
+        {/* Sponsors */}
         <div className="mt-12">
           <Card className="border-mainAccent/20 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center text-mainAccent">
+                <Trophy className="mr-2" size={24} />
+                Onze Sponsors
+              </CardTitle>
+            </CardHeader>
             <CardContent className="py-8">
-              <div className="flex flex-col md:flex-row items-center justify-center space-y-6 md:space-y-0 md:space-x-12">
-                <div className="flex items-center">
-                  <Image
-                    src="/images/sponsoring/KSKColle.png"
-                    alt="KSK Colle Logo"
-                    width={120}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <Image
-                    src="/images/sponsoring/OostVlLiga.png"
-                    alt="Liga Oost Vlaanderen V.S.F. Logo"
-                    width={120}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <Image
-                    src="/images/sponsoring/LSVChesspirant.png"
-                    alt="CHESSPIRANT Logo"
-                    width={120}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 items-center justify-items-center">
+                {sponsors.map((sponsor, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setSelectedImage(sponsor.src)}
+                  >
+                    <Image
+                      src={sponsor.src}
+                      alt={sponsor.alt}
+                      width={120}
+                      height={80}
+                      className="object-contain max-h-20"
+                    />
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Image Modal */}
+        {selectedImage && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="relative max-w-4xl max-h-full">
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+              >
+                <X size={32} />
+              </button>
+              <Image
+                src={selectedImage}
+                alt="Sponsor in full size"
+                width={800}
+                height={600}
+                className="max-w-full max-h-full object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
