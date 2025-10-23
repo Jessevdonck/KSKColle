@@ -140,7 +140,7 @@ export default function RoundExport({
           // Handle different result types
           let result = ""
           if (game.uitgestelde_datum) {
-            result = "Uitgesteld"
+            result = "..."
           } else if (game.result) {
             if (game.result.startsWith("ABS-")) {
               result = "Abs with msg"
@@ -150,7 +150,7 @@ export default function RoundExport({
               result = game.result
             }
           } else {
-            result = "Nog niet gespeeld"
+            result = "..."
           }
           
           pdf.text(boardNumber.toString(), 15, yPosition)
