@@ -1,14 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Pencil, Trash2, Calendar, FileText, Tag, User, Users, Clock, Info, BookOpen } from "lucide-react"
+import { Pencil, Trash2, Calendar, FileText, Tag, User, Users, Clock, Info, BookOpen, Plus, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { CalendarEvent } from "../../../data/types"
 import { deleteById } from "@/app/api"
-import CalendarEventForm from "./CalenderEventForm"
 import { KeyedMutator } from "swr"
 
 interface CalendarEventListProps {
@@ -16,13 +15,17 @@ interface CalendarEventListProps {
   mutate: KeyedMutator<CalendarEvent[]>;
   showYouth: boolean;
   setShowYouth: (showYouth: boolean) => void;
+  typeFilter: string;
+  setTypeFilter: (type: string) => void;
+  uniqueTypes: string[];
+  onEditEvent: (event: CalendarEvent) => void;
+  onAddEvent: () => void;
 }
 
-const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, showYouth, setShowYouth }) => {
-  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, showYouth, setShowYouth, typeFilter, setTypeFilter, uniqueTypes, onEditEvent, onAddEvent }) => {
 
   const handleEdit = (event: CalendarEvent) => {
-    setEditingEvent(event)
+    onEditEvent(event)
   }
 
  const handleDelete = async (id: number) => {
@@ -44,9 +47,6 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, s
 };
 
 
-  const handleCancel = () => {
-    setEditingEvent(null)
-  }
 
   const getEventTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
@@ -114,48 +114,68 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({ events, mutate, s
 
   return (
     <div className="space-y-8">
-      {editingEvent && (
-        <CalendarEventForm
-          event={editingEvent}
-          mutate={async () => { await mutate(); setEditingEvent(null) }}
-          onCancel={handleCancel}
-        />
-      )}
-
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Calendar className="h-6 w-6" />
-                Evenementen Overzicht
-              </h2>
-              <p className="text-white/80 mt-1">{events.length} evenementen gepland</p>
-            </div>
-            
-            {/* Toggle Switch */}
-            <div className="flex items-center gap-3">
-              <span className={`text-sm font-medium ${!showYouth ? 'text-white' : 'text-white/60'}`}>
-                <User className="h-4 w-4 inline mr-1" />
-                Normaal
-              </span>
-              <button
-                onClick={() => setShowYouth(!showYouth)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-mainAccent ${
-                  showYouth ? 'bg-white' : 'bg-white/30'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
-                    showYouth ? 'translate-x-6 bg-mainAccent' : 'translate-x-1 bg-white'
-                  }`}
-                />
-              </button>
-              <span className={`text-sm font-medium ${showYouth ? 'text-white' : 'text-white/60'}`}>
-                <Users className="h-4 w-4 inline mr-1" />
-                Jeugd
-              </span>
-            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <Calendar className="h-6 w-6" />
+                  Evenementen Overzicht
+                </h2>
+                <p className="text-white/80 mt-1">{events.length} evenementen gepland</p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={onAddEvent}
+                  className="bg-white text-mainAccent hover:bg-white/90 transition-colors"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nieuw Evenement
+                </Button>
+                
+                {/* Type Filter */}
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-white" />
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-40 bg-white/20 border-white/30 text-white">
+                      <SelectValue placeholder="Filter op type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Alle types</SelectItem>
+                      {uniqueTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Toggle Switch */}
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-medium ${!showYouth ? 'text-white' : 'text-white/60'}`}>
+                    <User className="h-4 w-4 inline mr-1" />
+                    Normaal
+                  </span>
+                  <button
+                    onClick={() => setShowYouth(!showYouth)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-mainAccent ${
+                      showYouth ? 'bg-white' : 'bg-white/30'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                        showYouth ? 'translate-x-6 bg-mainAccent' : 'translate-x-1 bg-white'
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-sm font-medium ${showYouth ? 'text-white' : 'text-white/60'}`}>
+                    <Users className="h-4 w-4 inline mr-1" />
+                    Jeugd
+                  </span>
+                </div>
+              </div>
           </div>
         </div>
 

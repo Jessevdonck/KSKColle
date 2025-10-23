@@ -113,15 +113,24 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
   }, [form.watch("instructors")])
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Plus className="h-6 w-6" />
-          {event ? "Evenement Bewerken" : "Nieuw Evenement Toevoegen"}
-        </h2>
-      </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Plus className="h-6 w-6" />
+              {event ? "Evenement Bewerken" : "Nieuw Evenement Toevoegen"}
+            </h2>
+            <button
+              onClick={onCancel}
+              className="text-white hover:text-gray-200 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
 
-      <div className="p-8">
+        <div className="p-8">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Event Details */}
           <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
@@ -350,6 +359,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
             </Button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   )

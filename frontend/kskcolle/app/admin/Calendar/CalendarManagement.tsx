@@ -9,8 +9,19 @@ import { Calendar, Settings, Users, User } from "lucide-react"
 
 const CalendarManagement = () => {
   const [showYouth, setShowYouth] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [typeFilter, setTypeFilter] = useState<string>("all")
   const apiUrl = showYouth ? "calendar?is_youth=true" : "calendar?is_youth=false"
   const { data: events, error, mutate } = useSWR<CalendarEvent[]>(apiUrl, getAll)
+
+  // Filter events by type
+  const filteredEvents = events?.filter(event => 
+    typeFilter === "all" || event.type.toLowerCase().includes(typeFilter.toLowerCase())
+  ) || []
+
+  // Get unique types for filter dropdown
+  const uniqueTypes = Array.from(new Set(events?.map(event => event.type) || []))
 
   if (error) {
     return (
@@ -57,15 +68,41 @@ const CalendarManagement = () => {
       {/* Main Content */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-          <CalendarEventForm mutate={mutate} onCancel={() => {}} />
           <CalendarEventList 
-            events={events} 
+            events={filteredEvents} 
             mutate={mutate} 
             showYouth={showYouth}
             setShowYouth={setShowYouth}
+            typeFilter={typeFilter}
+            setTypeFilter={setTypeFilter}
+            uniqueTypes={uniqueTypes}
+            onEditEvent={(event) => {
+              setEditingEvent(event)
+              setShowForm(true)
+            }}
+            onAddEvent={() => {
+              setEditingEvent(null)
+              setShowForm(true)
+            }}
           />
         </div>
       </div>
+
+      {/* Modal Forms */}
+      {showForm && (
+        <CalendarEventForm 
+          event={editingEvent}
+          mutate={async () => { 
+            await mutate()
+            setShowForm(false)
+            setEditingEvent(null)
+          }} 
+          onCancel={() => {
+            setShowForm(false)
+            setEditingEvent(null)
+          }} 
+        />
+      )}
     </div>
   )
 }
