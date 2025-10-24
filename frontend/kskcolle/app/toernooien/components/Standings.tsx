@@ -188,6 +188,12 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   const getResultDisplay = (result: string | null, score: number) => {
     if (!result || result === '...') return "Nog te spelen"
     if (result === 'uitgesteld') return "Uitgesteld"
+    if (result.endsWith("R") && score === 1) {
+      return "Gewonnen FF"
+    }
+    if (result.endsWith("R") && score === 0) {
+      return "Verloren FF"
+    }
     if (score === 1) return "Winst"
     if (score === 0.5) {
       // Check if it's absent with message or draw

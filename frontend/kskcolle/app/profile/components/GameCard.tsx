@@ -79,6 +79,12 @@ function getGameResult(game: GameWithRoundAndTournament, playerId: number): stri
   const isWhite = game.speler1_id === playerId;
   const isBlack = game.speler2_id === playerId;
 
+  if((result === '1-0R' && isWhite)) {
+    return 'Gewonnen FF';
+  } 
+  if((result === '1-0R' && isBlack)) {
+    return 'Verloren FF';
+  }
   // Gewonnen
   if ((result.startsWith('1-0') && isWhite) || (result.startsWith('0-1') && isBlack)) {
     return 'Gewonnen';
