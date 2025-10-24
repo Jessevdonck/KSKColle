@@ -440,18 +440,16 @@ function calculateStandingsBeforeRound(
         gamesPlayed[p1]++
         if (p2) gamesPlayed[p2]++
 
-        if (result === "1-0") {
+        if (result?.startsWith("1-0")) {
           scoreMap[p1] += 1
-        } else if (result === "0-1" && p2) {
+        } else if (result?.startsWith("0-1") && p2) {
           scoreMap[p2] += 1
-        } else if (result === "½-½" || result === "1/2-1/2" || result === "�-�") {
+        } else if (["½-½", "1/2-1/2", "�-�"].includes(result)) {
           scoreMap[p1] += 0.5
           if (p2) scoreMap[p2] += 0.5
         } else if (result === "0.5-0") {
-          // Absent with message - player gets 0.5 points
           scoreMap[p1] += 0.5
-        } else if (result && result.startsWith("ABS-")) {
-          // Absent with message from Sevilla import - extract score
+        } else if (result?.startsWith("ABS-")) {
           const absScore = parseFloat(result.substring(4)) || 0
           scoreMap[p1] += absScore
         }
