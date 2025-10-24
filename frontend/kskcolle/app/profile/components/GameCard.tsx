@@ -66,22 +66,32 @@ export function GameCard({ game, playerId }: GameCardProps) {
 }
 
 function getGameResult(game: GameWithRoundAndTournament, playerId: number): string {
-  if (!game.result || game.result === '...') return 'Nog te spelen'
-  if (game.result === 'uitgesteld') return 'Uitgesteld'
-  
-  // Check for draw/remise (multiple formats due to encoding issues)
-  if (game.result === '½-½' || game.result === '1/2-1/2' || game.result === '�-�') {
-    return '½-½'
+  const result = game.result?.trim() ?? '';
+
+  if (result === '' || result === '...') return 'Nog te spelen';
+  if (result.toLowerCase() === 'uitgesteld') return 'Uitgesteld';
+
+  // Remise (verschillende formaten)
+  if (['½-½', '1/2-1/2', '�-�'].includes(result)) {
+    return '½-½';
   }
-  
-  if (
-    (game.result === '1-0' && game.speler1_id === playerId) ||
-    (game.result === '0-1' && game.speler2_id === playerId)
-  ) {
-    return 'Gewonnen'
+
+  const isWhite = game.speler1_id === playerId;
+  const isBlack = game.speler2_id === playerId;
+
+  // Gewonnen
+  if ((result.startsWith('1-0') && isWhite) || (result.startsWith('0-1') && isBlack)) {
+    return 'Gewonnen';
   }
-  return 'Verloren'
+
+  // Verloren
+  if ((result.startsWith('0-1') && isWhite) || (result.startsWith('1-0') && isBlack)) {
+    return 'Verloren';
+  }
+
+  return result; // fallback voor ongewone codes
 }
+
 
 function getResultColor(result: string): string {
   switch (result) {

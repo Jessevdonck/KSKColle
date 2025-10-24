@@ -10,36 +10,57 @@ import { useAuth } from "../../contexts/auth"
 
 export default function PlayerProfile({ name }: { name: string }) {
   const { user: currentUser } = useAuth()
+
+  // Split name into first and last
   const [voornaam, ...achternaamParts] = name
     .split("_")
-    .map((part) => decodeURIComponent(part.charAt(0).toUpperCase() + part.slice(1)))
+    .map(part => decodeURIComponent(part.charAt(0).toUpperCase() + part.slice(1)))
   const achternaam = achternaamParts.join(" ")
 
-  // Use public endpoint if user is not logged in, authenticated endpoint if logged in
-  const userEndpoint = currentUser 
+  // Endpoint for player
+  const userEndpoint = currentUser
     ? `users/by-name?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`
     : `users/by-name/public?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`
 
-  const { data: player, error: playerError } = useSWR<User>(["player", voornaam, achternaam, currentUser?.user_id], () =>
-    getById(userEndpoint),
+  const { data: player, error: playerError } = useSWR<User>(
+    ["player", voornaam, achternaam, currentUser?.user_id],
+    () => getById(userEndpoint)
   )
 
-  const { data: recentGames = [] } = useSWR<GameWithRoundAndTournament[]>(
-    player ? ["recentGames", player.user_id, currentUser?.user_id] : null,
-    () => {
-      if (!player) return null;
-      
-      // Use public endpoint if user is not logged in, authenticated endpoint if logged in
-      const gamesEndpoint = currentUser 
-        ? `spel/speler/${player.user_id}`
-        : `spel/speler/${player.user_id}/public`
-      
-      return getById(gamesEndpoint);
+  // Endpoint for recent games
+  const gamesEndpoint = player
+    ? currentUser
+      ? `spel/speler/${player.user_id}`
+      : `spel/speler/${player.user_id}/public`
+    : null
+
+  const { data: recentGamesData, error: recentGamesError } = useSWR<any>(
+    gamesEndpoint ? ["recentGames", gamesEndpoint] : null,
+    async () => {
+      if (!player) return { items: [] }
+      const data = await getById(gamesEndpoint!)
+      return data
     },
+    { revalidateOnFocus: false }
   )
 
   const isLoading = !player && !playerError
-  const error = playerError
+  const error = playerError || recentGamesError
+
+  // Debug: log de data structuur
+  console.log("recentGamesData:", recentGamesData)
+
+  // Always ensure array
+  const recentGames: GameWithRoundAndTournament[] = Array.isArray(recentGamesData?.items)
+    ? recentGamesData.items
+    : []
+
+  console.log("recentGames na parsing:", recentGames)
+
+  // Deduplicate games by game_id eerst (behoud eerste match)
+  const uniqueGames = Array.from(new Map(recentGames.map(game => [game.game_id, game])).values())
+
+  console.log("uniqueGames na deduplicatie:", uniqueGames)
 
   return (
     <AsyncData loading={isLoading} error={error}>
@@ -47,8 +68,7 @@ export default function PlayerProfile({ name }: { name: string }) {
         <div className="container mx-auto px-4 py-8 min-h-screen">
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <PlayerHeader player={player} />
-
-            <RecentGames games={recentGames} playerId={player.user_id} />
+            <RecentGames games={uniqueGames} playerId={player.user_id} />
           </div>
         </div>
       )}

@@ -58,11 +58,16 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
           { speler1_id: playerId },
           { speler2_id: playerId },
         ],
+        speler2_id: { not: null }, // geen BYE-games
         round: {
-          type: 'REGULAR', // Alleen reguliere rondes, geen inhaaldagen
+          type: 'REGULAR',
+          OR: [
+            { label: null },
+            { label: '' },
+          ],
         },
-        speler2_id: { not: null }, // Geen BYE games of games zonder tegenstander
       },
+      distinct: ['game_id'], // voorkomt dubbele resultaten
       include: {
         round: {
           include: {
@@ -100,6 +105,7 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
     throw handleDBError(error);
   }
 };
+
 
 export const getSpellenByTournamentId = async (tournament_id: number): Promise<Spel[]> => {
   try {
