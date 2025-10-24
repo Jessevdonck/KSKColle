@@ -38,29 +38,34 @@ export default function PlayerProfile({ name }: { name: string }) {
     gamesEndpoint ? ["recentGames", gamesEndpoint] : null,
     async () => {
       if (!player) return { items: [] }
-      const data = await getById(gamesEndpoint!)
-      return data
+      try {
+        const data = await getById(gamesEndpoint!)
+        return data
+      } catch (error) {
+        // Als er geen games zijn, return een lege array in plaats van een error
+        console.log("No games found for player, returning empty array")
+        return { items: [] }
+      }
     },
     { revalidateOnFocus: false }
   )
 
   const isLoading = !player && !playerError
-  const error = playerError || recentGamesError
-
-  // Debug: log de data structuur
-  console.log("recentGamesData:", recentGamesData)
+  // Don't treat missing games as an error
+  const error = playerError
 
   // Always ensure array
   const recentGames: GameWithRoundAndTournament[] = Array.isArray(recentGamesData?.items)
     ? recentGamesData.items
     : []
 
-  console.log("recentGames na parsing:", recentGames)
+  // Filter out test tournaments (Board Order)
+  const filteredGames = recentGames.filter(game => 
+    !game.round?.tournament?.naam?.includes("Board Order")
+  )
 
-  // Deduplicate games by game_id eerst (behoud eerste match)
-  const uniqueGames = Array.from(new Map(recentGames.map(game => [game.game_id, game])).values())
-
-  console.log("uniqueGames na deduplicatie:", uniqueGames)
+  // Deduplicate games by game_id (behoud eerste match)
+  const uniqueGames = Array.from(new Map(filteredGames.map(game => [game.game_id, game])).values())
 
   return (
     <AsyncData loading={isLoading} error={error}>
