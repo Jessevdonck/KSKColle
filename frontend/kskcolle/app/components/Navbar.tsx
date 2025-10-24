@@ -110,9 +110,6 @@ export default function Navbar() {
                 <Link href="/toernooien/megaschaak" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Megaschaak
                 </Link>
-                <Link href="/toernooien/rapidtoernooi" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
-                  Rapidtoernooi
-                </Link>
                 <Link href="/toernooien/reglement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Reglementen
                 </Link>
@@ -338,13 +335,6 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Megaschaak
-                  </Link>
-                  <Link
-                    href="/toernooien/rapidtoernooi"
-                    className="block font-medium hover:text-mainAccent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Rapidtoernooi
                   </Link>
                   <Link
                     href="/toernooien/reglement"
