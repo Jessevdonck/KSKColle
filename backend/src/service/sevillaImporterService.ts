@@ -797,10 +797,10 @@ export class SevillaImporterService {
       const blackPlayerId = blackSevillaPlayer ? playerMap.get(blackSevillaPlayer.ID) || null : null;
       
       // The result is always from white's perspective: "1-0" = white wins, "0-1" = black wins, "1/2-1/2" or "½-½" or "�-�" = draw
-      if (playerGame.Res === '1-0') {
+      if (playerGame.Res === '1-0' || playerGame.Res === '1-0R') {
         // White wins
         winnaarId = whitePlayerId;
-      } else if (playerGame.Res === '0-1') {
+      } else if (playerGame.Res === '0-1' || playerGame.Res === '0-1R') {
         // Black wins
         winnaarId = blackPlayerId;
       } else if (playerGame.Res === '1/2-1/2' || playerGame.Res === '½-½' || playerGame.Res === '�-�') {

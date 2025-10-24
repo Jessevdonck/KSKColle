@@ -117,9 +117,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
         const opponent = isPlayer1 ? playerGame.speler2 : playerGame.speler1
 
         let score = 0
-        if (playerGame.result === "1-0") {
+        if (playerGame.result === "1-0" || playerGame.result === "1-0R") {
           score = isPlayer1 ? 1 : 0
-        } else if (playerGame.result === "0-1") {
+        } else if (playerGame.result === "0-1" || playerGame.result === "0-1R") {
           score = isPlayer1 ? 0 : 1
         } else if (playerGame.result === "½-½" || playerGame.result === "1/2-1/2" || playerGame.result === "�-�") {
           score = 0.5
@@ -150,7 +150,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           // No opponent - check if result contains ABS
           if (playerGame.result && playerGame.result.includes("ABS")) {
             opponentDisplay = "Abs with msg"
-          } else if (playerGame.result === "1-0" && score === 1) {
+          } else if (playerGame.result === "1-0" || playerGame.result === "1-0R" && score === 1) {
             // This is a real BYE (player gets 1 point)
             opponentDisplay = null // Will be displayed as "BYE" in UI
             isRealBye = true
@@ -543,9 +543,9 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
           gamesPlayed[p1]++
           if (p2) gamesPlayed[p2]++
 
-          if (result === "1-0") {
+          if (result === "1-0" || result === "1-0R") {
             scoreMap[p1] += 1
-          } else if (result === "0-1" && p2) {
+          } else if (result === "0-1" || result === "0-1R" && p2) {
             scoreMap[p2] += 1
           } else if (result === "½-½" || result === "1/2-1/2" || result === "�-�") {
             scoreMap[p1] += 0.5
