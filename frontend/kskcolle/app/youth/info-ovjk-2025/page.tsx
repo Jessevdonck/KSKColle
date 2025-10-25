@@ -142,112 +142,125 @@ export default function InfoOVJK2025Page() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
-                    <thead>
-                      <tr className="bg-mainAccent/10">
-                        <th className="border border-gray-300 p-3 text-left font-semibold">Dag</th>
-                        <th className="border border-gray-300 p-3 text-left font-semibold">Tijd</th>
-                        <th className="border border-gray-300 p-3 text-left font-semibold">A, B, C & D</th>
-                        <th className="border border-gray-300 p-3 text-left font-semibold">E en F</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="border border-gray-300 p-3 font-semibold" rowSpan={5}>25/10</td>
-                        <td className="border border-gray-300 p-3">10:00</td>
-                        <td className="border border-gray-300 p-3">AFSLUITEN AANMELDINGEN</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">10:10</td>
-                        <td className="border border-gray-300 p-3">RONDE 1</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">12:45</td>
-                        <td className="border border-gray-300 p-3">RONDE 2</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">15:00</td>
-                        <td className="border border-gray-300 p-3">RONDE 3</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">17:15</td>
-                        <td className="border border-gray-300 p-3">RONDE 4</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3 font-semibold" rowSpan={12}>26/10</td>
-                        <td className="border border-gray-300 p-3">10:00</td>
-                        <td className="border border-gray-300 p-3">AFSLUITEN AANMELDINGEN</td>
-                        <td className="border border-gray-300 p-3">AFSLUITEN AANMELDINGEN</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">10:10</td>
-                        <td className="border border-gray-300 p-3">RONDE 5</td>
-                        <td className="border border-gray-300 p-3">RONDE 1</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">11:00</td>
-                        <td className="border border-gray-300 p-3">RONDE 6</td>
-                        <td className="border border-gray-300 p-3">RONDE 2</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">11:50</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">RONDE 3</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">12:40</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">RONDE 4</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">13:40</td>
-                        <td className="border border-gray-300 p-3">RONDE 7</td>
-                        <td className="border border-gray-300 p-3">RONDE 5</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">14:00</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">RONDE 6</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">14:50</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">RONDE 7</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">15:40</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">RONDE 8</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">16:00</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">RONDE 9</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">16:30</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 p-3">17:20</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                        <td className="border border-gray-300 p-3">-</td>
-                      </tr>
-                      <tr className="bg-yellow-50">
-                        <td className="border border-gray-300 p-3 font-semibold">Beide dagen</td>
-                        <td className="border border-gray-300 p-3 font-semibold">18:30</td>
-                        <td className="border border-gray-300 p-3 font-semibold">PRIJSUITREIKING</td>
-                        <td className="border border-gray-300 p-3 font-semibold">PRIJSUITREIKING</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div className="space-y-6">
+                  {/* A, B, C & D Reeksen Schema */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">A, B, C & D Reeksen</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-mainAccent/10">
+                            <th className="border border-gray-300 p-3 text-left font-semibold">Dag</th>
+                            <th className="border border-gray-300 p-3 text-left font-semibold">Tijd</th>
+                            <th className="border border-gray-300 p-3 text-left font-semibold">Activiteit</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="border border-gray-300 p-3 font-semibold" rowSpan={5}>25/10</td>
+                            <td className="border border-gray-300 p-3">10:00</td>
+                            <td className="border border-gray-300 p-3">AANMELDEN TOT</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">10:10</td>
+                            <td className="border border-gray-300 p-3">RONDE 1</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">12:45</td>
+                            <td className="border border-gray-300 p-3">RONDE 2</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">15:00</td>
+                            <td className="border border-gray-300 p-3">RONDE 3</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">17:15</td>
+                            <td className="border border-gray-300 p-3">RONDE 4</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3 font-semibold" rowSpan={4}>26/10</td>
+                            <td className="border border-gray-300 p-3">11:00</td>
+                            <td className="border border-gray-300 p-3">RONDE 5</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">13:40</td>
+                            <td className="border border-gray-300 p-3">RONDE 6</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">16:00</td>
+                            <td className="border border-gray-300 p-3">RONDE 7</td>
+                          </tr>
+                          <tr className="bg-yellow-50">
+                            <td className="border border-gray-300 p-3 font-semibold">18:30</td>
+                            <td className="border border-gray-300 p-3 font-semibold">PRIJSUITREIKING</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* E & F Reeksen Schema */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">E & F Reeksen</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-mainAccent/10">
+                            <th className="border border-gray-300 p-3 text-left font-semibold">Dag</th>
+                            <th className="border border-gray-300 p-3 text-left font-semibold">Tijd</th>
+                            <th className="border border-gray-300 p-3 text-left font-semibold">Activiteit</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="border border-gray-300 p-3 font-semibold" rowSpan={11}>26/10</td>
+                            <td className="border border-gray-300 p-3">10:00</td>
+                            <td className="border border-gray-300 p-3">AANMELDEN TOT</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">10:10</td>
+                            <td className="border border-gray-300 p-3">RONDE 1</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">11:00</td>
+                            <td className="border border-gray-300 p-3">RONDE 2</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">11:50</td>
+                            <td className="border border-gray-300 p-3">RONDE 3</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">12:40</td>
+                            <td className="border border-gray-300 p-3">RONDE 4</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">14:00</td>
+                            <td className="border border-gray-300 p-3">RONDE 5</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">14:50</td>
+                            <td className="border border-gray-300 p-3">RONDE 6</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">15:40</td>
+                            <td className="border border-gray-300 p-3">RONDE 7</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">16:30</td>
+                            <td className="border border-gray-300 p-3">RONDE 8</td>
+                          </tr>
+                          <tr>
+                            <td className="border border-gray-300 p-3">17:20</td>
+                            <td className="border border-gray-300 p-3">RONDE 9</td>
+                          </tr>
+                          <tr className="bg-yellow-50">
+                            <td className="border border-gray-300 p-3 font-semibold">18:30</td>
+                            <td className="border border-gray-300 p-3 font-semibold">PRIJSUITREIKING</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
