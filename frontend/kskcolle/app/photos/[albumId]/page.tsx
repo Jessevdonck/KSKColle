@@ -30,7 +30,6 @@ const ImageWithLoader = ({ src, alt, className, width, height, priority = false,
       loading={priority ? "eager" : "lazy"}
       style={{
         imageRendering: "auto",
-        WebkitImageSmoothing: true,
         ...style,
       }}
       {...props}
