@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronRight, Calendar, User, ArrowRight, ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { getRecentArticles } from "../api/index"
 import { Article } from "../../data/article"
 import { format } from "date-fns"
@@ -196,14 +197,29 @@ const HeroHomepage = () => {
                     className="group"
                   >
                     <Card 
-                      className="bg-white/20 backdrop-blur-md hover:bg-white/30 transition-all duration-300 hover:shadow-2xl border-white/30 hover:border-mainAccent/50 h-full flex flex-col"
+                      className="bg-white/20 backdrop-blur-md hover:bg-white/30 transition-all duration-300 hover:shadow-2xl border-white/30 hover:border-mainAccent/50 h-full flex flex-col overflow-hidden"
                     >
+                      {/* Image Section */}
+                      {article.image_urls && article.image_urls.length > 0 && (
+                        <div className="relative w-full h-48 overflow-hidden">
+                          <Image
+                            src={article.image_urls[0]}
+                            alt={article.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            quality={80}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        </div>
+                      )}
+                      
                       <CardHeader className="pb-2 flex-grow">
                         <CardTitle className="text-lg leading-tight text-white mb-3 group-hover:text-mainAccent transition-colors">
                           {article.title}
                         </CardTitle>
-                        <p className="text-sm text-white/80 line-clamp-6">
-                          {article.excerpt || getTextPreview(article.content)}
+                        <p className="text-sm text-white/80 line-clamp-4">
+                          {article.excerpt || getTextPreview(article.content, 100)}
                         </p>
                       </CardHeader>
                       
