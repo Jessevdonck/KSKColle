@@ -35,6 +35,82 @@ export default function InfoOVJK2025Page() {
           </div>
         </div>
 
+        {/* Results Links */}
+        <div className="mb-8">
+          <Card className="border-mainAccent/20 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center text-mainAccent">
+                <Trophy className="mr-2" size={24} />
+                Uitslagen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <a 
+                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00019704-%7B79d92300-748c-496d-92c8-2ae7fccc048c%7D.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all group"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Trophy className="text-blue-700" size={18} />
+                    <span className="font-semibold text-gray-800">Groep A</span>
+                  </div>
+                  <ExternalLink className="text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                </a>
+                <a 
+                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-0002e1bf-%7B734b1d9b-d7e6-4b6a-8662-e2ba00064aa4%7D.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg hover:from-green-100 hover:to-green-200 transition-all group"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Trophy className="text-green-700" size={18} />
+                    <span className="font-semibold text-gray-800">Groep B</span>
+                  </div>
+                  <ExternalLink className="text-green-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                </a>
+                <a 
+                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00035835-%7Bf45d423a-5e17-49f9-b4ef-ed2e49c585dc%7D.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all group"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Trophy className="text-purple-700" size={18} />
+                    <span className="font-semibold text-gray-800">Groep C</span>
+                  </div>
+                  <ExternalLink className="text-purple-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                </a>
+                <a 
+                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-000390c6-%7B57f2d65b-c71d-4ec2-87cf-f53b5dd83d01%7D.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg hover:from-yellow-100 hover:to-yellow-200 transition-all group"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Trophy className="text-yellow-700" size={18} />
+                    <span className="font-semibold text-gray-800">Groep D</span>
+                  </div>
+                  <ExternalLink className="text-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                </a>
+                <a 
+                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00035491-%7Bbd543f46-4663-4b77-b9e9-eda3adce9cbb%7D.html" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg hover:from-orange-100 hover:to-orange-200 transition-all group"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Trophy className="text-orange-700" size={18} />
+                    <span className="font-semibold text-gray-800">Groep E & F</span>
+                  </div>
+                  <ExternalLink className="text-orange-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - 2/3 width */}
