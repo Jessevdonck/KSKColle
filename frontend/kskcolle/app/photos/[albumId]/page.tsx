@@ -24,7 +24,7 @@ const ImageWithLoader = ({ src, alt, className, width, height, priority = false,
       height={height}
       className={className}
       priority={priority}
-      onLoad={onLoad}
+      onLoad={onLoad || undefined}
       quality={isGoogleDrive ? 100 : 70}
       unoptimized={isGoogleDrive}
       loading={priority ? "eager" : "lazy"}
