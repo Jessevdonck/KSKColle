@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
-const ImageWithLoader = ({ src, alt, className, width, height, priority = false, onLoad, style = {}, ...props }) => {
+const ImageWithLoader = ({ src, alt, className, width, height, priority = false, onLoad, style = {}, ...props }: any) => {
   // Check if it's a Google Drive URL - if so, skip optimization for speed
   const isGoogleDrive = src && (src.includes('drive.google.com') || src.includes('googleusercontent.com'))
   
