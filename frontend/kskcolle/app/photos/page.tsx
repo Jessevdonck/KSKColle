@@ -41,11 +41,12 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
               </div>
             ) : firstPhoto && !photoError ? (
               <Image
-                src={firstPhoto.downloadUrl || firstPhoto.thumbnail || "/placeholder.svg"}
+                src={firstPhoto.optimizedUrl || firstPhoto.thumbnail || firstPhoto.downloadUrl || "/placeholder.svg"}
                 alt={`${album.name} preview`}
                 fill
                 className="object-cover hover:scale-110 transition-transform duration-300"
-                quality={70}
+                quality={100}
+                unoptimized
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 loading="eager"
                 priority

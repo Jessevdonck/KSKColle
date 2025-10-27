@@ -22,7 +22,12 @@ export async function listPhotos(albumId: string) {
   return (res.data.files || []).map(f => ({
     id: f.id!,
     title: f.name,
-    thumbnail: f.thumbnailLink!,
-    downloadUrl: f.webContentLink!
+    // Use thumbnail with sz parameter to get larger version
+    thumbnail: f.thumbnailLink?.replace('=s220', '=s600') || f.thumbnailLink!, // 600px thumbnail
+    downloadUrl: f.webContentLink!,
+    // Use 600px for grid (fast and decent quality)
+    optimizedUrl: `https://drive.google.com/uc?export=view&id=${f.id!}&w=600`,
+    // Use 800px for lightbox (good quality, reasonably fast)
+    highQualityUrl: `https://drive.google.com/uc?export=view&id=${f.id!}&w=800`
   }));
 }

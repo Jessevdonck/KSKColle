@@ -12,7 +12,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
-const ImageWithLoader = ({ src, alt, className, width, height, priority = false, onLoad, style, ...props }) => {
+const ImageWithLoader = ({ src, alt, className, width, height, priority = false, onLoad, style = {}, ...props }) => {
+  // Check if it's a Google Drive URL - if so, skip optimization for speed
+  const isGoogleDrive = src && (src.includes('drive.google.com') || src.includes('googleusercontent.com'))
+  
   return (
     <Image
       src={src}
@@ -22,7 +25,8 @@ const ImageWithLoader = ({ src, alt, className, width, height, priority = false,
       className={className}
       priority={priority}
       onLoad={onLoad}
-      quality={70}
+      quality={isGoogleDrive ? 100 : 70}
+      unoptimized={isGoogleDrive}
       loading={priority ? "eager" : "lazy"}
       style={{
         imageRendering: "auto",
@@ -174,7 +178,7 @@ export default function PhotoAlbumPage() {
                   <CardContent className="p-0">
                     <div className="aspect-square bg-gray-200 rounded-t-lg overflow-hidden">
                       <ImageWithLoader
-                        src={p.downloadUrl || p.thumbnail || "/placeholder.svg"}
+                        src={p.thumbnail || p.optimizedUrl || p.downloadUrl || "/placeholder.svg"}
                         alt={p.title}
                         width={400}
                         height={400}
@@ -261,13 +265,13 @@ export default function PhotoAlbumPage() {
                   {/* Main Image */}
                   <div className="relative w-full h-full flex items-center justify-center p-4 md:p-8">
                     <div className="relative max-w-full max-h-full flex items-center justify-center">
+                      {/* Show thumbnail for instant display */}
                       <ImageWithLoader
-                        src={selectedPhoto.downloadUrl || selectedPhoto.thumbnail || "/placeholder.svg"}
+                        src={selectedPhoto.thumbnail || "/placeholder.svg"}
                         alt={selectedPhoto.title}
-                        width={1920}
-                        height={1080}
+                        width={1200}
+                        height={800}
                         sizes="100vw"
-                        quality={85}
                         className="max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] w-auto h-auto object-contain"
                         priority={true}
                         onLoad={handleLightboxImageLoad}
