@@ -16,11 +16,22 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
     const fetchFirstPhoto = async () => {
       try {
         setIsLoadingPhoto(true)
+        setPhotoError(false)
+        
+        // Haal foto's op voor dit album
         const photos = await getAll(`photos/albums/${album.id}`)
+        
+        console.log('Photos response:', photos) // Debug log
+        
         if (photos && photos.length > 0) {
-          setFirstPhoto(photos[0])
+          const photo = photos[0]
+          console.log('First photo:', photo) // Debug log
+          setFirstPhoto(photo)
+        } else {
+          setPhotoError(true)
         }
       } catch (error) {
+        console.error('Error fetching photo:', error) // Debug log
         setPhotoError(true)
       } finally {
         setIsLoadingPhoto(false)
@@ -29,6 +40,24 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
 
     fetchFirstPhoto()
   }, [album.id])
+
+  // Bepaal de juiste image URL
+  const getImageUrl = () => {
+    if (!firstPhoto) return null
+    
+    // Probeer verschillende mogelijke URL properties
+    return (
+      firstPhoto.optimizedUrl ||
+      firstPhoto.thumbnail ||
+      firstPhoto.thumbnailUrl ||
+      firstPhoto.url ||
+      firstPhoto.downloadUrl ||
+      firstPhoto.src ||
+      null
+    )
+  }
+
+  const imageUrl = getImageUrl()
 
   return (
     <Link href={`/photos/${album.id}`}>
@@ -39,19 +68,15 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
               <div className="absolute inset-0 flex items-center justify-center">
                 <Loader2 className="animate-spin text-gray-400" size={32} />
               </div>
-            ) : firstPhoto && !photoError ? (
-              <Image
-                src={firstPhoto.optimizedUrl || firstPhoto.thumbnail || firstPhoto.downloadUrl || "/placeholder.svg"}
+            ) : imageUrl && !photoError ? (
+              <img
+                src={imageUrl}
                 alt={`${album.name} preview`}
-                fill
-                className="object-cover hover:scale-110 transition-transform duration-300"
-                quality={100}
-                unoptimized
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                 loading="eager"
-                priority
-                style={{
-                  imageRendering: "auto",
+                onError={() => {
+                  console.error('Image failed to load:', imageUrl)
+                  setPhotoError(true)
                 }}
               />
             ) : (
