@@ -52,6 +52,8 @@ export default function PlayerHeader({ player }: { player: User }) {
                       alt={`${player.voornaam} ${player.achternaam}`}
                       width={160}
                       height={160}
+                      quality={70}
+                      priority
                       className="h-full w-full object-cover"
                     />
                   ) : (

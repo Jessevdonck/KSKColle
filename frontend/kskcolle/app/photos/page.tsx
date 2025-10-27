@@ -45,7 +45,10 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
                 alt={`${album.name} preview`}
                 fill
                 className="object-cover hover:scale-110 transition-transform duration-300"
-                quality={85}
+                quality={70}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                loading="eager"
+                priority
                 style={{
                   imageRendering: "auto",
                 }}

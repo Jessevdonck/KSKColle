@@ -13,45 +13,24 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 
 const ImageWithLoader = ({ src, alt, className, width, height, priority = false, onLoad, style, ...props }) => {
-  const [isLoading, setIsLoading] = useState(true)
-  const [hasError, setHasError] = useState(false)
-
-  const handleLoad = (e) => {
-    setIsLoading(false)
-    if (onLoad) onLoad(e)
-  }
-
-  const handleError = () => {
-    setIsLoading(false)
-    setHasError(true)
-  }
-
   return (
-    <div className="relative w-full h-full">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
-          <Loader2 className="animate-spin text-gray-400" size={24} />
-        </div>
-      )}
-
-      <Image
-        src={hasError ? "/placeholder.svg" : src}
-        alt={alt}
-        width={width}
-        height={height}
-        className={`${className} ${isLoading ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
-        priority={priority}
-        onLoad={handleLoad}
-        onError={handleError}
-        quality={90}
-        style={{
-          imageRendering: "auto",
-          WebkitImageSmoothing: true,
-          ...style,
-        }}
-        {...props}
-      />
-    </div>
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      priority={priority}
+      onLoad={onLoad}
+      quality={70}
+      loading={priority ? "eager" : "lazy"}
+      style={{
+        imageRendering: "auto",
+        WebkitImageSmoothing: true,
+        ...style,
+      }}
+      {...props}
+    />
   )
 }
 
@@ -200,10 +179,8 @@ export default function PhotoAlbumPage() {
                         width={400}
                         height={400}
                         className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                        style={{
-                          imageRendering: "auto",
-                          WebkitImageSmoothing: true,
-                        }} onLoad={undefined}                      />
+                        priority={index < 20}
+                      />
                     </div>
 
                     <div className="p-4">
@@ -287,9 +264,10 @@ export default function PhotoAlbumPage() {
                       <ImageWithLoader
                         src={selectedPhoto.downloadUrl || selectedPhoto.thumbnail || "/placeholder.svg"}
                         alt={selectedPhoto.title}
-                        width={0}
-                        height={0}
+                        width={1920}
+                        height={1080}
                         sizes="100vw"
+                        quality={85}
                         className="max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] w-auto h-auto object-contain"
                         priority={true}
                         onLoad={handleLightboxImageLoad}
