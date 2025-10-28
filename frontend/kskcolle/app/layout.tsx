@@ -9,7 +9,7 @@ import Navbar from "./components/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Schaakclub KSK Colle in Sint-Niklaas",
+  title: "KSK Colle",
   description: "Officiële website van KSK Colle schaakclub",
   keywords: "schaken, schaakclub, KSK Colle, toernooi, competitie, Sint-Niklaas, Waasland, België, Waasland Schaakvereniging Colle",
   authors: [{ name: "KSK Colle" }],
