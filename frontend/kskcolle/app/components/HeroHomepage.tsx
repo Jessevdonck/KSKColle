@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronRight, Calendar, User, ArrowRight, ChevronLeft } from "lucide-react"
+import { ChevronRight, Calendar, User, ArrowRight, ChevronLeft, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { getRecentArticles } from "../api/index"
+import { getRecentArticles, getComments } from "../api/index"
 import { Article } from "../../data/article"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
@@ -16,6 +16,7 @@ const HeroHomepage = () => {
   const [loading, setLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  const [commentCounts, setCommentCounts] = useState<Record<number, number>>({})
 
   useEffect(() => {
     fetchRecentArticles()
@@ -47,6 +48,20 @@ const HeroHomepage = () => {
     try {
       const data = await getRecentArticles(12) // Fetch more articles for carousel
       setArticles(data)
+      // Fetch comment counts for these articles in parallel
+      try {
+        const counts = await Promise.all(
+          data.map(async (a) => {
+            const res = await getComments(a.article_id, { limit: 1 })
+            return [a.article_id, res.total as number] as const
+          })
+        )
+        const mapping: Record<number, number> = {}
+        counts.forEach(([id, total]) => { mapping[id] = total })
+        setCommentCounts(mapping)
+      } catch (e) {
+        // Silently ignore comment count errors to not block homepage
+      }
     } catch (error) {
       console.error("Error fetching recent articles:", error)
     } finally {
@@ -237,6 +252,10 @@ const HeroHomepage = () => {
                                 : format(new Date(article.created_at), "dd MMM", { locale: nl })
                               }
                             </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MessageSquare className="h-3 w-3" />
+                            <span>{commentCounts[article.article_id] ?? 0}</span>
                           </div>
                         </div>
                       </CardContent>
