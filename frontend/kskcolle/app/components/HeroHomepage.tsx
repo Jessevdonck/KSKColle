@@ -116,11 +116,11 @@ const HeroHomepage = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/40"></div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 relative z-10 pt-20 pb-16">
+      <div className="container mx-auto px-4 relative z-10 pt-12 pb-6">
         {/* Welcome Section - Naar boven verplaatst */}
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-16">
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-6">
           <div className="mb-8">
-            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-7xl tracking-tight leading-tight drop-shadow-2xl">
+            <h1 className="text-4xl font-extrabold sm:text-5xl lg:text-5xl tracking-tight leading-tight drop-shadow-2xl">
               Welkom bij{" "}
               <span
                 className="block mt-4 text-mainAccent font-black"
@@ -129,21 +129,21 @@ const HeroHomepage = () => {
                 KSK Colle
               </span>
             </h1>
-            <p className="mt-8 text-xl sm:text-2xl text-white font-medium drop-shadow-lg">
+            <p className="mt-4 text-lg sm:text-xl text-white font-medium drop-shadow-lg">
               De gezelligste schaakclub van het Waasland!
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Link href={"#contact"}>
               <Button
                 size="lg"
-                className="bg-mainAccent text-white hover:bg-mainAccentDark font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform-gpu"
+                className="bg-mainAccent text-white hover:bg-mainAccentDark font-semibold px-6 py-3 text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform-gpu"
                 data-cy="contact"
               >
                 Contact
-                <ChevronRight className="ml-2 h-5 w-5" />
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
 
@@ -151,7 +151,7 @@ const HeroHomepage = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-black/50 border-2 border-white/60 hover:border-mainAccent text-white hover:bg-mainAccent hover:text-white font-semibold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform-gpu"
+                className="bg-black/50 border-2 border-white/60 hover:border-mainAccent text-white hover:bg-mainAccent hover:text-white font-semibold px-6 py-3 text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform-gpu"
                 data-cy="about"
               >
                 Over ons
@@ -165,13 +165,13 @@ const HeroHomepage = () => {
           <div className="max-w-7xl mx-auto">
 
             {/* Desktop: Title and Button aligned with articles */}
-            <div className="hidden md:flex items-center gap-4 mb-8">
+            <div className="hidden md:flex items-center gap-3 mb-3">
               <div className="w-12"></div>
-              <div className="flex-1 grid gap-6" style={{
+              <div className="flex-1 grid gap-4" style={{
                 gridTemplateColumns: `repeat(${articlesPerView + 1}, 1fr)`
               }}>
                 <div className="flex items-center">
-                  <h2 className="text-3xl font-bold text-white drop-shadow-lg">Newsfeed</h2>
+                  <h2 className="text-2xl font-bold text-white drop-shadow-lg">Newsfeed</h2>
                 </div>
                 {Array.from({ length: articlesPerView - 1 }, (_, i) => (
                   <div key={i}></div>
@@ -191,18 +191,18 @@ const HeroHomepage = () => {
               <div className="w-12"></div>
             </div>
 
-            <div className="flex items-center gap-4 px-4 md:px-0">
+            <div className="flex items-center gap-2 px-3 md:px-0">
               <Button
                 onClick={goToPrev}
                 disabled={articles.length <= articlesPerView}
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-12 w-12"
+                className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-5 w-5" />
               </Button>
 
-              <div className="flex-1 grid gap-6" style={{
+              <div className="flex-1 grid gap-4" style={{
                 gridTemplateColumns: `repeat(${articlesPerView}, 1fr)`
               }}>
                 {displayedArticles.map((article) => (
@@ -216,7 +216,7 @@ const HeroHomepage = () => {
                     >
                       {/* Image Section */}
                       {article.image_urls && article.image_urls.length > 0 && (
-                        <div className="relative w-full h-48 overflow-hidden">
+                        <div className="relative w-full h-36 overflow-hidden transition-opacity duration-300 group-hover:opacity-0">
                           <Image
                             src={article.image_urls[0]}
                             alt={article.title}
@@ -229,16 +229,31 @@ const HeroHomepage = () => {
                         </div>
                       )}
                       
-                      <CardHeader className="pb-2 flex-grow">
-                        <CardTitle className="text-lg leading-tight text-white mb-3 group-hover:text-mainAccent transition-colors">
-                          {article.title}
-                        </CardTitle>
-                        <p className="text-sm text-white/80 line-clamp-4">
-                          {article.excerpt || getTextPreview(article.content, 100)}
-                        </p>
-                      </CardHeader>
+                      {/* Content: slide-up only when there is an image */}
+                      {article.image_urls && article.image_urls.length > 0 ? (
+                        <div className="flex-grow transition-transform duration-300 group-hover:-translate-y-36">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-lg leading-tight text-white mb-2 group-hover:text-mainAccent transition-colors">
+                              {article.title}
+                            </CardTitle>
+                            <p className="text-sm text-white/80">
+                              {article.excerpt || getTextPreview(article.content, 300)}
+                            </p>
+                          </CardHeader>
+                        </div>
+                      ) : (
+                        <CardHeader className="pb-2 flex-grow">
+                          <CardTitle className="text-lg leading-tight text-white mb-2 group-hover:text-mainAccent transition-colors">
+                            {article.title}
+                          </CardTitle>
+                          <p className="text-sm text-white/80">
+                            {article.excerpt || getTextPreview(article.content, 140)}
+                          </p>
+                        </CardHeader>
+                      )}
                       
-                      <CardContent className="pt-0 pb-4 mt-auto">
+                      {/* Footer stays anchored at the bottom */}
+                      <CardContent className="pt-0 pb-2 mt-auto">
                         <div className="flex items-center gap-3 text-xs text-white/70">
                           <div className="flex items-center gap-1">
                             <User className="h-3 w-3" />
@@ -269,9 +284,9 @@ const HeroHomepage = () => {
                 disabled={articles.length <= articlesPerView}
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-12 w-12"
+                className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
           </div>
