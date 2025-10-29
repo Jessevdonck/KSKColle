@@ -1,7 +1,7 @@
 import axiosRoot from 'axios';
 import { JWT_TOKEN_KEY } from '../contexts/Auth.context';
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000/api';
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export const axios = axiosRoot.create({
   baseURL: baseUrl,
