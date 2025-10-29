@@ -73,21 +73,11 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
   const { trigger: closeTournament, isMutating: isClosing } = useSWRMutation(
     "tournament?active=true",
     async (url, { arg }: { arg: { id: number; updateRatings: boolean } }) => {
-      const response = await fetch(`http://localhost:9000/api/tournament/${arg.id}/close`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
-        },
-        body: JSON.stringify({ updateRatings: arg.updateRatings }),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to close tournament');
-      }
-      
-      return response.json();
+      const { data } = await axios.post(
+        `/tournament/${arg.id}/close`,
+        { updateRatings: arg.updateRatings }
+      );
+      return data;
     },
     { revalidate: false }
   )
