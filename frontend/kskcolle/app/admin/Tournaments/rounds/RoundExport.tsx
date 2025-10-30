@@ -140,7 +140,8 @@ export default function RoundExport({
           // Handle different result types
           let result = ""
           if (game.uitgestelde_datum) {
-            result = "..."
+            // Show "uitgesteld" on normal rounds, but keep "..." on inhaaldag
+            result = isMakeupRound ? "..." : "uitgesteld"
           } else if (game.result) {
             if (game.result.startsWith("ABS-")) {
               result = "Abs with msg"
