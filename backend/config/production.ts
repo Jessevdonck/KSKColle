@@ -30,9 +30,9 @@ export default {
     },
     argon: {
       hashLength: 32,
-      timeCost: 6,
-      memoryCost: 2 ** 17,
-  },
+      timeCost: 4,
+      memoryCost: 2 ** 12,
+    },
   },
   email: {
     resendApiKey: process.env.RESEND_API_KEY || '',

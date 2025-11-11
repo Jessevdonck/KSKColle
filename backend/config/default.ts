@@ -12,8 +12,8 @@ export default {
       maxDelay: 5000,
       argon: {
         hashLength: 32,
-        timeCost: 6,
-        memoryCost: 2 ** 17,
+        timeCost: 4,
+        memoryCost: 2 ** 12,
       },
       jwt: {
         audience: 'kskcolle.be',
