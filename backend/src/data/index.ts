@@ -4,11 +4,20 @@ import { getLogger } from '../core/logging';
 export const prisma = new PrismaClient();
 
 export async function initializeData(): Promise<void> {
-  getLogger().info('Initializing connection to the database');
+  const logger = getLogger();
+  
+  // Log database URL (mask password for security)
+  const databaseUrl = process.env.DATABASE_URL;
+  if (databaseUrl) {
+    const maskedUrl = databaseUrl.replace(/:([^:@]+)@/, ':****@');
+    logger.info('Connecting to database', { databaseUrl: maskedUrl });
+  } else {
+    logger.warn('DATABASE_URL environment variable is not set');
+  }
 
   await prisma.$connect();
 
-  getLogger().info('Succesfully connected to the database');
+  logger.info('Succesfully connected to the database');
 }
 
 export async function shutdownData(): Promise<void> {

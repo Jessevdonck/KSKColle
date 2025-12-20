@@ -20,6 +20,8 @@ interface StandingsProps {
         schaakrating_elo?: number
       }
       sevilla_rating_change?: number | null
+      tie_break?: number | null
+      score?: number | null
     }>
   }
   rounds: Array<{
@@ -507,18 +509,40 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
 function calculateStandings(tournament: StandingsProps["tournament"], rounds: StandingsProps["rounds"]): PlayerScore[] {
   // 1) init
+  // Use scores from participation table (Sevilla scores) for Buchholz calculation
   const scoreMap: Record<number, number> = {}
+  const calculatedScoreMap: Record<number, number> = {} // For display purposes
   const gamesPlayed: Record<number, number> = {}
   const buchholzList: Record<number, number[]> = {}
   const sbMap: Record<number, number> = {}
 
-  // deelnemers
-  tournament.participations.forEach(({ user }) => {
-    scoreMap[user.user_id] = 0
+  // Initialize with scores from participation table (Sevilla scores)
+  // Separate list for worst calculation (excludes forfeits)
+  const buchholzListForWorst: Record<number, number[]> = {}
+  tournament.participations.forEach(({ user, score }) => {
+    scoreMap[user.user_id] = score ?? 0 // Use Sevilla score for Buchholz
+    calculatedScoreMap[user.user_id] = 0 // Calculate for display
     gamesPlayed[user.user_id] = 0
     buchholzList[user.user_id] = []
+    buchholzListForWorst[user.user_id] = [] // For worst calculation (excludes forfeits)
     sbMap[user.user_id] = 0
   })
+
+  // Helper function: check if result represents a game that should count as played
+  // Excludes: null, "not_played", "...", "uitgesteld", absences ("ABS-", "0.5-0"), and invalid results ("0-0")
+  // Includes: regular games ("1-0", "0-1", "½-½", "1/2-1/2", "-"), forfeits ("1-0R", "0-1R")
+  const isPlayedGame = (result: string | null): boolean => {
+    if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
+    // Exclude absences with message (results starting with 'ABS-')
+    if (result.startsWith("ABS-")) return false;
+    // Exclude "0.5-0" which is an absence with message
+    if (result === "0.5-0") return false;
+    // Exclude "0-0" which is an invalid/unplayed result
+    if (result === "0-0") return false;
+    // Only count valid game results: wins, losses, draws, and forfeits
+    return result === "1-0" || result === "0-1" || result === "1-0R" || result === "0-1R" ||
+           result === "½-½" || result === "1/2-1/2" || result === "-";
+  };
 
   // 2) score & gamesPlayed
   rounds.forEach(({ games, type: roundType }) => {
@@ -535,23 +559,26 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
         const isPlayed = result && result !== "..." && result !== "uitgesteld" && result !== null
         
         if (isPlayed) {
-          gamesPlayed[p1]++
-          if (p2) gamesPlayed[p2]++
+          // Only count actual played games (not forfeits or absences) for gamesPlayed
+          if (isPlayedGame(result)) {
+            gamesPlayed[p1]++
+            if (p2) gamesPlayed[p2]++
+          }
 
           if (result === "1-0") {
-            scoreMap[p1] += 1
+            calculatedScoreMap[p1] += 1
           } else if (result === "0-1" && p2) {
-            scoreMap[p2] += 1
+            calculatedScoreMap[p2] += 1
           } else if (result === "½-½" || result === "1/2-1/2" || result === "�-�") {
-            scoreMap[p1] += 0.5
-            if (p2) scoreMap[p2] += 0.5
+            calculatedScoreMap[p1] += 0.5
+            if (p2) calculatedScoreMap[p2] += 0.5
           } else if (result === "0.5-0") {
             // Absent with message - player gets 0.5 points
-            scoreMap[p1] += 0.5
+            calculatedScoreMap[p1] += 0.5
           } else if (result && result.startsWith("ABS-")) {
             // Absent with message from Sevilla import - extract score
             const absScore = parseFloat(result.substring(4)) || 0
-            scoreMap[p1] += absScore
+            calculatedScoreMap[p1] += absScore
           }
         }
       })
@@ -569,7 +596,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       // Any participant who didn't play gets a BYE (0.5 points) - only for regular rounds
       tournament.participations.forEach(({ user }) => {
         if (!playersWhoPlayed.has(user.user_id)) {
-          scoreMap[user.user_id] += 0.5
+          calculatedScoreMap[user.user_id] += 0.5
           // Note: BYE doesn't count as a played game, so gamesPlayed stays the same
         }
       })
@@ -584,16 +611,29 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
 
-      // Bhlz-W: volledige score van tegenstander
-      if (p2) {
-        buchholzList[p1].push(scoreMap[p2])
-        buchholzList[p2].push(scoreMap[p1])
-      }
+      // Skip games that are not played (absences, postponed, etc.)
+      // IMPORTANT: Forfeits DO count for tie-breaks, only absences don't
+      if (!isPlayedGame(result)) return;
 
-      // SB-score
-      if (result === "1-0" && p2) {
+      // Skip BYE games (no opponent) - they should not count in Buchholz
+      if (p2 == null) return;
+
+      // Bhlz-W: volledige score van tegenstander (use Sevilla score from scoreMap)
+      // INCLUDE forfeit games in Buchholz calculation (matches Sevilla Bhlz)
+      // scoreMap contains the Sevilla scores from participation table
+      buchholzList[p1].push(scoreMap[p2])
+      buchholzList[p2].push(scoreMap[p1])
+      
+      // For Buchholz-worst: Use ALL games (including forfeits) for worst calculation
+      // Buchholz-worst = Buchholz (includes forfeits) minus laagste opponent-score (from ALL games)
+      // Standard definition: subtract the lowest opponent score from total Buchholz
+      buchholzListForWorst[p1].push(scoreMap[p2])
+      buchholzListForWorst[p2].push(scoreMap[p1])
+
+      // SB-score (also use Sevilla scores)
+      if ((result === "1-0" || result === "1-0R") && p2) {
         sbMap[p1] += scoreMap[p2]
-      } else if (result === "0-1" && p2) {
+      } else if ((result === "0-1" || result === "0-1R") && p2) {
         sbMap[p2] += scoreMap[p1]
       } else if ((result === "½-½" || result === "1/2-1/2" || result === "�-�") && p2) {
         sbMap[p1] += scoreMap[p2] * 0.5
@@ -603,17 +643,34 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
   })
 
   // 4) finally: bouw array met tieBreak
-  const players: PlayerScore[] = Object.entries(scoreMap).map(([uid, s]) => {
+  // Use tie_break from database if available (set by fix script), otherwise calculate
+  const players: PlayerScore[] = Object.entries(calculatedScoreMap).map(([uid, s]) => {
     const id = Number(uid)
+    // Find participation to get tie_break from database
+    const participation = tournament.participations.find(p => p.user.user_id === id)
     let tie: number
 
-    if (tournament.type === "SWISS") {
-      const opps = buchholzList[id]
-      const sum = opps.reduce((a, b) => a + b, 0)
-      const worst = opps.length > 0 ? Math.min(...opps) : 0
-      tie = sum - worst
+    // Use tie_break from database if available, otherwise calculate
+    if (participation?.tie_break !== null && participation?.tie_break !== undefined) {
+      // Use the value from database (set by fix script)
+      tie = participation.tie_break
     } else {
-      tie = Math.pow(sbMap[id], 2)
+      // Fallback: calculate tie_break if not in database
+      if (tournament.type === "SWISS") {
+        // Buchholz-worst: Buchholz (includes forfeits) minus de laagste opponent-score (from ALL games)
+        // Standard definition: subtract the lowest opponent score from total Buchholz
+        const opps = buchholzList[id] // Full Buchholz (includes forfeits)
+        const sum = opps.reduce((a, b) => a + b, 0)
+        if (opps.length > 0) {
+          // Find the worst opponent from ALL games (including forfeits)
+          const worst = Math.min(...opps)
+          tie = sum - worst
+        } else {
+          tie = 0
+        }
+      } else {
+        tie = Math.pow(sbMap[id], 2)
+      }
     }
 
     return {

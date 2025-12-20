@@ -17,6 +17,7 @@ interface SevillaPlayer {
   IRtg: number;        // Initial rating
   RtgDif: number;      // Rating difference
   RatedGames: number;
+  ModifiedMedian?: number; // Buchholz-worst from Sevilla
   Game: SevillaGame[];
   Abs?: {
     Round: number;
@@ -335,6 +336,9 @@ export class SevillaImporterService {
             sevilla_initial_rating: sevillaPlayer.IRtg, // Initial rating
             sevilla_final_rating: sevillaPlayer.Rating, // Final rating  
             sevilla_rating_change: sevillaPlayer.RtgDif, // Rating difference from Sevilla
+            // Don't use ModifiedMedian - it's not the same as Buchholz-worst
+            // We'll calculate Buchholz-worst separately in tieBreakService
+            tie_break: null,
           },
         });
       } else {
@@ -351,6 +355,9 @@ export class SevillaImporterService {
             sevilla_initial_rating: sevillaPlayer.IRtg, // Initial rating
             sevilla_final_rating: sevillaPlayer.Rating, // Final rating  
             sevilla_rating_change: sevillaPlayer.RtgDif, // Rating difference from Sevilla
+            // Don't use ModifiedMedian - it's not the same as Buchholz-worst
+            // We'll calculate Buchholz-worst separately in tieBreakService
+            // Don't overwrite existing tie_break if it was already calculated
           },
         });
         console.log(`Updated participation for ${user.voornaam} ${user.achternaam} in tournament ${tournamentId} with RtgDif=${sevillaPlayer.RtgDif}`);
