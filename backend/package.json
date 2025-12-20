@@ -94,9 +94,5 @@
   "prisma": {
     "schema": "src/data/schema.prisma",
     "seed": "tsx ./src/data/seed.ts"
-  },
-  "engines": {
-    "node": "22.18.0",
-    "npm": "10.9.3"
   }
 }
