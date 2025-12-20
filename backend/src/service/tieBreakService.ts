@@ -58,12 +58,6 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
            result === "½-½" || result === "1/2-1/2" || result === "-";
   };
 
-  // Helper function: check if result should give points (includes forfeits and absences with message)
-  const givesPoints = (result: string | null): boolean => {
-    if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
-    return true; // All other results give points
-  };
-
   // 4) Bereken winCount (scoreMap wordt al gevuld met scores uit participation tabel)
   // Note: Forfeits count as played games, only absences don't
   for (const { speler1_id: p1, speler2_id: p2, result } of games) {
