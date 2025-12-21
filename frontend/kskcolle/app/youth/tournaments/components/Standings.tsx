@@ -148,6 +148,16 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           // No opponent - check if result contains ABS
           if (playerGame.result && playerGame.result.includes("ABS")) {
             opponentDisplay = "Abs with msg"
+          } else if (playerGame.result && playerGame.result.endsWith("-0") && !playerGame.result.includes("ABS")) {
+            // This is a BYE (result format like "1-0" or "0.5-0" from "Pairing alloc bye")
+            // Extract the score from the result (e.g., "1-0" -> 1, "0.5-0" -> 0.5)
+            const byeScore = parseFloat(playerGame.result.split("-")[0]) || 0
+            if (Math.abs(byeScore - score) < 0.01) { // Check if score matches (accounting for floating point)
+              opponentDisplay = null // Will be displayed as "BYE" in UI
+              isRealBye = true
+            } else {
+              opponentDisplay = "Tegenstander onbekend"
+            }
           } else if (playerGame.result === "1-0" && score === 1) {
             // This is a real BYE (player gets 1 point)
             opponentDisplay = null // Will be displayed as "BYE" in UI
