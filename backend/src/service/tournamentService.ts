@@ -12,11 +12,185 @@ export const getAllTournaments = async (
   try {
     const where: Prisma.TournamentWhereInput = {};
 
+    // If filtering for active tournaments, we need special logic for herfstcompetitie and lentecompetitie
+    if (typeof active === 'boolean' && active === true) {
+      // First, get all tournaments (both finished and unfinished) to find the latest herfst/lente
+      const allTournaments = await prisma.tournament.findMany({
+        where: typeof is_youth === 'boolean' ? { is_youth } : {},
+        include: {
+          participations: { include: { user: true } },
+          rounds: { 
+            include: { 
+              games: { 
+                select: {
+                  game_id: true,
+                  round_id: true,
+                  speler1_id: true,
+                  speler2_id: true,
+                  winnaar_id: true,
+                  result: true,
+                  uitgestelde_datum: true,
+                  board_position: true,
+                  original_game_id: true,
+                  speler1: true,
+                  speler2: true,
+                  winnaar: true,
+                },
+              } 
+            },
+            orderBy: {
+              ronde_datum: 'desc'
+            }
+          },
+        },
+        orderBy: {
+          tournament_id: 'desc'
+        }
+      });
+
+      // Find the latest herfstcompetitie and lentecompetitie tournaments
+      // Use the last round date to determine which is the newest
+      let latestHerfst: Tournament | null = null;
+      let latestLente: Tournament | null = null;
+      let latestHerfstDate: Date | null = null;
+      let latestLenteDate: Date | null = null;
+
+      for (const tournament of allTournaments) {
+        const name = tournament.naam.toLowerCase();
+        const isHerfst = name.includes('herfst') || name.includes('herfstcompetitie');
+        const isLente = name.includes('lente') || name.includes('lentecompetitie');
+
+        // Get the last round date for this tournament
+        const lastRoundDate = tournament.rounds.length > 0 
+          ? tournament.rounds[0].ronde_datum 
+          : null;
+
+        if (isHerfst) {
+          if (!latestHerfst || (lastRoundDate && latestHerfstDate && lastRoundDate > latestHerfstDate)) {
+            latestHerfst = tournament;
+            latestHerfstDate = lastRoundDate;
+          } else if (!latestHerfstDate && lastRoundDate) {
+            // If we don't have a date yet, use this one
+            latestHerfst = tournament;
+            latestHerfstDate = lastRoundDate;
+          } else if (!latestHerfstDate && !lastRoundDate && tournament.tournament_id > (latestHerfst?.tournament_id || 0)) {
+            // Fallback to tournament_id if no dates available
+            latestHerfst = tournament;
+          }
+        }
+
+        if (isLente) {
+          if (!latestLente || (lastRoundDate && latestLenteDate && lastRoundDate > latestLenteDate)) {
+            latestLente = tournament;
+            latestLenteDate = lastRoundDate;
+          } else if (!latestLenteDate && lastRoundDate) {
+            // If we don't have a date yet, use this one
+            latestLente = tournament;
+            latestLenteDate = lastRoundDate;
+          } else if (!latestLenteDate && !lastRoundDate && tournament.tournament_id > (latestLente?.tournament_id || 0)) {
+            // Fallback to tournament_id if no dates available
+            latestLente = tournament;
+          }
+        }
+      }
+
+      // Get active tournaments (finished = false)
+      where.finished = false;
+      if (typeof is_youth === 'boolean') {
+        where.is_youth = is_youth;
+      }
+
+      const activeTournaments = await prisma.tournament.findMany({
+        where,
+        include: {
+          participations: { include: { user: true } },
+          rounds: { 
+            include: { 
+              games: { 
+                select: {
+                  game_id: true,
+                  round_id: true,
+                  speler1_id: true,
+                  speler2_id: true,
+                  winnaar_id: true,
+                  result: true,
+                  uitgestelde_datum: true,
+                  board_position: true,
+                  original_game_id: true,
+                  speler1: true,
+                  speler2: true,
+                  winnaar: true,
+                },
+              } 
+            },
+            orderBy: {
+              ronde_datum: 'desc'
+            }
+          },
+        },
+      });
+
+      // Check if there's a newer herfstcompetitie or lentecompetitie in active tournaments
+      // Compare by last round date, or tournament_id if no dates available
+      const hasNewerHerfst = activeTournaments.some(t => {
+        const name = t.naam.toLowerCase();
+        if (!(name.includes('herfst') || name.includes('herfstcompetitie'))) return false;
+        if (!latestHerfst) return false;
+        
+        const tLastRoundDate = t.rounds.length > 0 ? t.rounds[0].ronde_datum : null;
+        if (tLastRoundDate && latestHerfstDate) {
+          return tLastRoundDate > latestHerfstDate;
+        }
+        // Fallback to tournament_id comparison
+        return t.tournament_id > latestHerfst.tournament_id;
+      });
+
+      const hasNewerLente = activeTournaments.some(t => {
+        const name = t.naam.toLowerCase();
+        if (!(name.includes('lente') || name.includes('lentecompetitie'))) return false;
+        if (!latestLente) return false;
+        
+        const tLastRoundDate = t.rounds.length > 0 ? t.rounds[0].ronde_datum : null;
+        if (tLastRoundDate && latestLenteDate) {
+          return tLastRoundDate > latestLenteDate;
+        }
+        // Fallback to tournament_id comparison
+        return t.tournament_id > latestLente.tournament_id;
+      });
+
+      // Add latest herfstcompetitie if no newer one exists and it's not already in the list
+      const resultTournaments = [...activeTournaments];
+      if (latestHerfst && !hasNewerHerfst && !resultTournaments.find(t => t.tournament_id === latestHerfst!.tournament_id)) {
+        // Check is_youth filter
+        if (typeof is_youth === 'boolean' ? latestHerfst.is_youth === is_youth : true) {
+          resultTournaments.push(latestHerfst);
+        }
+      }
+
+      if (latestLente && !hasNewerLente && !resultTournaments.find(t => t.tournament_id === latestLente!.tournament_id)) {
+        // Check is_youth filter
+        if (typeof is_youth === 'boolean' ? latestLente.is_youth === is_youth : true) {
+          resultTournaments.push(latestLente);
+        }
+      }
+
+      // Add is_sevilla_imported flag to rounds and tournament for frontend sorting
+      return resultTournaments.map(tournament => ({
+        ...tournament,
+        is_sevilla_imported: tournament.rounds.some(round => round.type === 'REGULAR' && !round.label),
+        rounds: tournament.rounds.map(round => ({
+          ...round,
+          is_sevilla_imported: round.type === 'REGULAR' && !round.label,
+        }))
+      }));
+    }
+
+    // For inactive or all tournaments, use normal filtering
     if (typeof active === 'boolean') {
-      where.finished = !active;           // true -> finished=false, false -> finished=true
+      where.finished = !active;
     }
     if (typeof is_youth === 'boolean') {
-      where.is_youth = is_youth;          // true -> jeugd, false -> niet-jeugd
+      where.is_youth = is_youth;
     }
 
     const tournaments = await prisma.tournament.findMany({

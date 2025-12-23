@@ -335,7 +335,7 @@ export default function TournamentList() {
                     : 'bg-gray-100 text-gray-700 hover:bg-mainAccent hover:text-white hover:shadow-md'
                 }`}
               >
-                {section.title} ({section.tournaments.length})
+                {section.title}
               </button>
             ))}
           </div>
@@ -352,7 +352,6 @@ export default function TournamentList() {
             <Trophy className="mr-2 h-10 w-10 text-mainAccent" />
             KSK Colle Toernooien
           </h1>
-          <p className="text-xl text-[#2e2c2c]">Ontdek en neem deel aan onze spannende schaaktoernooien</p>
           
           {/* Filter Controls */}
           <div className="mt-8 space-y-4">
@@ -526,13 +525,13 @@ export default function TournamentList() {
                   <div className="mb-12 scroll-mt-24">
                     <h2 className="text-3xl font-bold text-[#2e2c2c] mb-6 border-b-2 border-mainAccent pb-2 flex items-center">
                       <Calendar className="mr-3 h-8 w-8 text-mainAccent" />
-                      Huidige - {[
+                      Interne toernooien{selectedType !== 'all' ? ` - ${[
                         { id: 'herfst', label: 'Herfstcompetitie' },
                         { id: 'lente', label: 'Lentecompetitie' },
                         { id: 'blitz', label: 'Snelschaakkampioenschap' },
                         { id: 'zomer', label: 'Zomertoernooi' },
                         { id: 'other', label: 'Nevenactiviteiten' }
-                      ].find(t => t.id === selectedType)?.label}
+                      ].find(t => t.id === selectedType)?.label}` : ''}
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -24,7 +24,6 @@ export default function TournamentList() {
             <Trophy className="mr-2 h-10 w-10 text-mainAccent" />
             KSK Colle Toernooien
           </h1>
-          <p className="text-xl text-[#2e2c2c]">Ontdek en neem deel aan onze spannende schaaktoernooien</p>
         </div>
         
         {isLoading ? (

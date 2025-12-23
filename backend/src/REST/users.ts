@@ -96,8 +96,16 @@ getPaginatedUsers.validationScheme = {
  */
 const getAllPublicUsers = async (ctx: KoaContext<GetAllPublicUserResponse>): Promise<PublicUser[]> => {
   const users =  await userService.getAllPublicUsers();
+  
+  // Map rating_difference to schaakrating_difference for frontend compatibility
+  // The frontend expects schaakrating_difference but backend uses rating_difference
+  const mappedUsers = users.map((user: any) => ({
+    ...user,
+    schaakrating_difference: user.rating_difference,
+  }));
+  
   ctx.body = {
-    items: users,
+    items: mappedUsers,
   };
 
   return users;

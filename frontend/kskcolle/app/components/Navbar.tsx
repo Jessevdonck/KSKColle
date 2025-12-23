@@ -20,12 +20,23 @@ import {
   History,
   Swords,
 } from "lucide-react"
-import { type ReactNode, useState, useEffect } from "react"
+import { type ReactNode, useState, useEffect, useMemo } from "react"
 import Image from "next/image"
 import LoginSheet from "./LoginSheet"
 import { useAuth } from "../contexts/auth"
 import ProfileDropdown from "./ProfileDropdown"
 import NotificationBell from "../../components/NotificationBell"
+import useSWR from "swr"
+import { getAll } from "../api/index"
+
+interface Tournament {
+  tournament_id: number
+  naam: string
+  finished: boolean
+  rounds: Array<{
+    ronde_datum: Date
+  }>
+}
 
 export default function Navbar() {
   const { isAuthed } = useAuth()
@@ -36,6 +47,65 @@ export default function Navbar() {
   const [isMobileTournamentOpen, setIsMobileTournamentOpen] = useState(false)
   const [isMobileLinksOpen, setIsMobileLinksOpen] = useState(false)
   const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false)
+
+  // Fetch tournaments to find latest herfstcompetitie and lentecompetitie
+  const { data: tournaments = [] } = useSWR<Tournament[]>(
+    'tournament?active=true&is_youth=false',
+    getAll
+  )
+
+  // Find latest herfstcompetitie and lentecompetitie
+  const { latestHerfst, latestLente } = useMemo(() => {
+    let latestHerfst: Tournament | null = null
+    let latestLente: Tournament | null = null
+    let latestHerfstDate: Date | null = null
+    let latestLenteDate: Date | null = null
+
+    tournaments.forEach((tournament) => {
+      const name = tournament.naam.toLowerCase()
+      const isHerfst = name.includes('herfst') || name.includes('herfstcompetitie')
+      const isLente = name.includes('lente') || name.includes('lentecompetitie')
+
+      if (isHerfst || isLente) {
+        // Sort rounds by date to find the latest one
+        const sortedRounds = [...tournament.rounds].sort((a, b) => {
+          const dateA = new Date(a.ronde_datum).getTime()
+          const dateB = new Date(b.ronde_datum).getTime()
+          return dateB - dateA // Descending order
+        })
+        
+        const lastRoundDate = sortedRounds.length > 0 
+          ? new Date(sortedRounds[0].ronde_datum)
+          : null
+
+        if (isHerfst) {
+          if (!latestHerfst || (lastRoundDate && latestHerfstDate && lastRoundDate > latestHerfstDate)) {
+            latestHerfst = tournament
+            latestHerfstDate = lastRoundDate
+          } else if (!latestHerfstDate && lastRoundDate) {
+            latestHerfst = tournament
+            latestHerfstDate = lastRoundDate
+          } else if (!latestHerfstDate && !lastRoundDate && tournament.tournament_id > (latestHerfst?.tournament_id || 0)) {
+            latestHerfst = tournament
+          }
+        }
+
+        if (isLente) {
+          if (!latestLente || (lastRoundDate && latestLenteDate && lastRoundDate > latestLenteDate)) {
+            latestLente = tournament
+            latestLenteDate = lastRoundDate
+          } else if (!latestLenteDate && lastRoundDate) {
+            latestLente = tournament
+            latestLenteDate = lastRoundDate
+          } else if (!latestLenteDate && !lastRoundDate && tournament.tournament_id > (latestLente?.tournament_id || 0)) {
+            latestLente = tournament
+          }
+        }
+      }
+    })
+
+    return { latestHerfst, latestLente }
+  }, [tournaments])
 
   useEffect(() => {
     setIsClient(true)
@@ -108,7 +178,7 @@ export default function Navbar() {
             <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <div className="py-1">
                 <Link href="/toernooien" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
-                  Huidige Toernooien
+                  Interne toernooien
                 </Link>
                 <Link href="/toernooien/megaschaak" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Megaschaak
@@ -122,6 +192,21 @@ export default function Navbar() {
                 <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Interclub
                 </a>
+                {(latestHerfst || latestLente) && (
+                  <>
+                    <div className="border-t border-gray-200 my-1"></div>
+                    {latestHerfst && (
+                      <Link href={`/toernooien/${latestHerfst.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                        Herfstcompetitie
+                      </Link>
+                    )}
+                    {latestLente && (
+                      <Link href={`/toernooien/${latestLente.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                        Lentecompetitie
+                      </Link>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -337,7 +422,7 @@ export default function Navbar() {
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Huidige Toernooien
+                    Interne toernooien
                   </Link>
                   <Link
                     href="/toernooien/megaschaak"
@@ -372,6 +457,29 @@ export default function Navbar() {
                   >
                     Interclub
                   </a>
+                  {(latestHerfst || latestLente) && (
+                    <>
+                      <div className="border-t border-gray-200 my-2"></div>
+                      {latestHerfst && (
+                        <Link
+                          href={`/toernooien/${latestHerfst.tournament_id}`}
+                          className="block font-medium hover:text-mainAccent transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Herfstcompetitie
+                        </Link>
+                      )}
+                      {latestLente && (
+                        <Link
+                          href={`/toernooien/${latestLente.tournament_id}`}
+                          className="block font-medium hover:text-mainAccent transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Lentecompetitie
+                        </Link>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
