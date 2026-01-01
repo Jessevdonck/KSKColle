@@ -21,7 +21,6 @@ import {
   Swords,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect, useMemo } from "react"
-import Image from "next/image"
 import LoginSheet from "./LoginSheet"
 import { useAuth } from "../contexts/auth"
 import ProfileDropdown from "./ProfileDropdown"
@@ -120,7 +119,7 @@ export default function Navbar() {
     <nav className="bg-neutral-50 text-textColor p-4 shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Image 
+          <img 
             src="/images/logo.png" 
             alt="KSK Colle Logo" 
             width={32} 
