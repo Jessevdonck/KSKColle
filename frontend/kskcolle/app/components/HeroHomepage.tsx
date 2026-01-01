@@ -116,7 +116,7 @@ const HeroHomepage = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/40"></div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 relative z-10 pt-12 pb-6">
+      <div className="container mx-auto px-4 relative z-10 flex flex-col justify-center min-h-[calc(100vh-5rem)] py-8">
         {/* Welcome Section - Naar boven verplaatst */}
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-6">
           <div className="mb-8">
@@ -162,49 +162,66 @@ const HeroHomepage = () => {
 
         {/* Articles Section - Carousel */}
         {!loading && articles.length > 0 && (
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full flex justify-center">
+            <div className="flex flex-col items-center" style={{
+              maxWidth: 'calc(100vw - 2rem)'
+            }}>
 
-            {/* Desktop: Title and Button aligned with articles */}
-            <div className="hidden md:flex items-center gap-3 mb-3">
-              <div className="w-12"></div>
-              <div className="flex-1 grid gap-4" style={{
-                gridTemplateColumns: `repeat(${articlesPerView + 1}, 1fr)`
-              }}>
-                <div className="flex items-center">
-                  <h2 className="text-2xl font-bold text-white drop-shadow-lg">Newsfeed</h2>
-                </div>
-                {Array.from({ length: articlesPerView - 1 }, (_, i) => (
-                  <div key={i}></div>
-                ))}
-                <div className="flex justify-end">
-                  <Link href="/articles">
-                    <Button 
-                      variant="outline" 
-                      className="bg-white/5 backdrop-blur-md border-white/15 text-white hover:bg-white/15 hover:border-mainAccent/50 hover:text-mainAccent transition-all duration-300"
-                    >
-                      Alle artikels
+              {/* Desktop: Title and Button aligned with articles */}
+              <div className="hidden md:flex items-center gap-2 mb-3 w-full">
+                <div className="w-10 shrink-0"></div>
+                <div className="flex-1 grid gap-4" style={{
+                  gridTemplateColumns: `repeat(${articlesPerView}, 1fr)`
+                }}>
+                  <div className="flex items-center">
+                    <h2 className="text-2xl font-bold text-white drop-shadow-lg">Newsfeed</h2>
+                  </div>
+                  {Array.from({ length: articlesPerView - 2 }, (_, i) => (
+                    <div key={i}></div>
+                  ))}
+                  <div className="flex justify-end">
+                    <Link href="/articles">
+                      <Button 
+                        variant="outline" 
+                        className="bg-white/5 backdrop-blur-md border-white/15 text-white hover:bg-white/15 hover:border-mainAccent/50 hover:text-mainAccent transition-all duration-300"
+                      >
+                        Alle artikels
                       <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </Link>
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
+                <div className="w-10 shrink-0"></div>
               </div>
-              <div className="w-12"></div>
-            </div>
 
-            <div className="flex items-center gap-2 px-3 md:px-0">
-              <Button
-                onClick={goToPrev}
-                disabled={articles.length <= articlesPerView}
-                variant="ghost"
-                size="icon"
-                className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
+              {/* Mobile: Title and Button */}
+              <div className="md:hidden flex items-center justify-between mb-3 px-3 w-full">
+                <h2 className="text-2xl font-bold text-white drop-shadow-lg">Newsfeed</h2>
+                <Link href="/articles">
+                  <Button 
+                    variant="outline" 
+                    className="bg-white/5 backdrop-blur-md border-white/15 text-white hover:bg-white/15 hover:border-mainAccent/50 hover:text-mainAccent transition-all duration-300"
+                  >
+                    Alle artikels
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
 
-              <div className="flex-1 grid gap-4" style={{
-                gridTemplateColumns: `repeat(${articlesPerView}, 1fr)`
-              }}>
+              <div className="flex items-center gap-2 w-full">
+                <Button
+                  onClick={goToPrev}
+                  disabled={articles.length <= articlesPerView}
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+
+                <div className="flex-1 grid gap-4" style={{
+                  gridTemplateColumns: `repeat(${articlesPerView}, 1fr)`
+                }}>
                 {displayedArticles.map((article) => (
                   <Link 
                     key={article.article_id} 
@@ -288,6 +305,7 @@ const HeroHomepage = () => {
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
+            </div>
             </div>
           </div>
         )}
