@@ -100,7 +100,7 @@ const calculateTPR = async (playerId: number, tournamentType?: 'herfst' | 'lente
     let latestDate: Date | null = null;
 
     for (const tournament of allTournaments) {
-      if (tournament.rounds.length > 0) {
+      if (tournament.rounds.length > 0 && tournament.rounds[0]) {
         const lastRoundDate = tournament.rounds[0].ronde_datum;
         if (!latestDate || lastRoundDate > latestDate) {
           latestTournament = tournament;
@@ -209,7 +209,7 @@ const calculateTPR = async (playerId: number, tournamentType?: 'herfst' | 'lente
       } else if (game.result && game.result.includes("ABS")) {
         // Absent with message - extract score if possible
         const absMatch = game.result.match(/ABS-?(\d+\.?\d*)/);
-        if (absMatch) {
+        if (absMatch && absMatch[1]) {
           actual = parseFloat(absMatch[1]) || 0;
         }
       }
