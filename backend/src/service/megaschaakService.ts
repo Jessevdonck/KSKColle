@@ -28,23 +28,226 @@ const getBonusPointsByClass = (className: string): number => {
 
 /**
  * Calculate TPR (Tournament Performance Rating) for a player
- * Simplified version: for now just return the player's current rating
- * In the future this could be enhanced with actual tournament performance
+ * Based on performance in the latest Herfstcompetitie or Lentecompetitie tournament
+ * @param playerId - The player's user ID
+ * @param tournamentType - 'herfst' for Herfstcompetitie, 'lente' for Lentecompetitie, or undefined to auto-detect
  */
-const calculateTPR = async (playerId: number): Promise<number> => {
-  // For now, just return the player's current rating
-  // This matches the Excel formula where TPR is used but not explicitly calculated
-  const player = await prisma.user.findUnique({
-    where: { user_id: playerId },
-    select: { schaakrating_elo: true }
-  });
-  return player?.schaakrating_elo || 1500;
+const calculateTPR = async (playerId: number, tournamentType?: 'herfst' | 'lente'): Promise<number> => {
+  try {
+    // Get player's current rating as fallback
+    const player = await prisma.user.findUnique({
+      where: { user_id: playerId },
+      select: { schaakrating_elo: true }
+    });
+    const fallbackRating = player?.schaakrating_elo || 1500;
+
+    // Determine which tournament type to use
+    const useHerfst = tournamentType === 'herfst' || tournamentType === undefined;
+    const useLente = tournamentType === 'lente' || tournamentType === undefined;
+
+    // Build OR conditions for tournament search
+    const orConditions: any[] = [];
+    if (useHerfst) {
+      orConditions.push(
+        { naam: { contains: 'herfst', mode: 'insensitive' } },
+        { naam: { contains: 'herfstcompetitie', mode: 'insensitive' } }
+      );
+    }
+    if (useLente) {
+      orConditions.push(
+        { naam: { contains: 'lente', mode: 'insensitive' } },
+        { naam: { contains: 'lentecompetitie', mode: 'insensitive' } }
+      );
+    }
+
+    // Find the latest Herfstcompetitie or Lentecompetitie tournament
+    const allTournaments = await prisma.tournament.findMany({
+      where: {
+        OR: orConditions
+      },
+      include: {
+        rounds: {
+          include: {
+            games: {
+              where: {
+                OR: [
+                  { speler1_id: playerId },
+                  { speler2_id: playerId }
+                ]
+              },
+              include: {
+                speler1: {
+                  select: { schaakrating_elo: true }
+                },
+                speler2: {
+                  select: { schaakrating_elo: true }
+                }
+              }
+            }
+          },
+          orderBy: {
+            ronde_datum: 'desc'
+          }
+        }
+      },
+      orderBy: {
+        tournament_id: 'desc'
+      }
+    });
+
+    // Find the tournament with the latest round date
+    let latestTournament: typeof allTournaments[0] | null = null;
+    let latestDate: Date | null = null;
+
+    for (const tournament of allTournaments) {
+      if (tournament.rounds.length > 0) {
+        const lastRoundDate = tournament.rounds[0].ronde_datum;
+        if (!latestDate || lastRoundDate > latestDate) {
+          latestTournament = tournament;
+          latestDate = lastRoundDate;
+        }
+      } else if (!latestTournament) {
+        // Fallback to tournament_id if no rounds
+        latestTournament = tournament;
+      }
+    }
+
+    if (!latestTournament) {
+      // No tournament found, return current rating
+      return fallbackRating;
+    }
+
+    // Get the player's participation to find their initial rating
+    const participation = await prisma.participation.findUnique({
+      where: {
+        user_id_tournament_id: {
+          user_id: playerId,
+          tournament_id: latestTournament.tournament_id
+        }
+      },
+      select: {
+        sevilla_initial_rating: true
+      }
+    });
+
+    // If player didn't participate in the tournament, TPR = ELO
+    if (!participation) {
+      return fallbackRating;
+    }
+
+    // Use initial rating from tournament if available, otherwise use current rating
+    const playerRatingAtTournament = participation.sevilla_initial_rating || fallbackRating;
+
+    // Get all games for this player in the latest tournament
+    const allGames = latestTournament.rounds.flatMap(round => round.games);
+    
+    if (allGames.length === 0) {
+      // No games played, return current rating (TPR = ELO)
+      return fallbackRating;
+    }
+
+    // Get all participations for this tournament to get opponent ratings at tournament start
+    const allParticipations = await prisma.participation.findMany({
+      where: {
+        tournament_id: latestTournament.tournament_id
+      },
+      select: {
+        user_id: true,
+        sevilla_initial_rating: true
+      }
+    });
+
+    // Create a map of user_id -> initial rating
+    const initialRatings = new Map<number, number>();
+    for (const p of allParticipations) {
+      initialRatings.set(p.user_id, p.sevilla_initial_rating || fallbackRating);
+    }
+
+    // Calculate TPR: TPR = Ra + 400 * (Sa - Se)
+    // Where:
+    // - Ra = average opponent rating
+    // - Sa = actual score
+    // - Se = expected score
+
+    let totalOpponentRating = 0;
+    let actualScore = 0;
+    let expectedScore = 0;
+    let gamesCounted = 0;
+
+    for (const game of allGames) {
+      // Skip BYE games (no opponent)
+      if (!game.speler2_id || !game.speler2) {
+        continue;
+      }
+
+      const isPlayer1 = game.speler1_id === playerId;
+      const opponentId = isPlayer1 ? game.speler2_id : game.speler1_id;
+      
+      if (!opponentId) {
+        continue;
+      }
+
+      // Use opponent's initial rating from tournament if available, otherwise current rating
+      const opponentRating = initialRatings.get(opponentId) || 
+                             (isPlayer1 ? game.speler2?.schaakrating_elo : game.speler1?.schaakrating_elo) || 
+                             1500;
+
+      // Calculate expected score for this game
+      const ratingDiff = isPlayer1 
+        ? opponentRating - playerRatingAtTournament
+        : playerRatingAtTournament - opponentRating;
+      const expected = 1 / (1 + Math.pow(10, ratingDiff / 400));
+
+      // Calculate actual score
+      let actual = 0;
+      if (game.result === "1-0" || game.result === "1-0R") {
+        actual = isPlayer1 ? 1 : 0;
+      } else if (game.result === "0-1" || game.result === "0-1R") {
+        actual = isPlayer1 ? 0 : 1;
+      } else if (game.result === "1/2-1/2" || game.result === "½-½") {
+        actual = 0.5;
+      } else if (game.result && game.result.includes("ABS")) {
+        // Absent with message - extract score if possible
+        const absMatch = game.result.match(/ABS-?(\d+\.?\d*)/);
+        if (absMatch) {
+          actual = parseFloat(absMatch[1]) || 0;
+        }
+      }
+
+      totalOpponentRating += opponentRating;
+      actualScore += actual;
+      expectedScore += expected;
+      gamesCounted++;
+    }
+
+    if (gamesCounted === 0) {
+      // No valid games, return current rating (TPR = ELO)
+      return fallbackRating;
+    }
+
+    // Calculate average opponent rating
+    const averageOpponentRating = totalOpponentRating / gamesCounted;
+
+    // Calculate TPR
+    const tpr = averageOpponentRating + 400 * (actualScore - expectedScore);
+
+    // Return rounded TPR, with reasonable bounds
+    return Math.max(0, Math.min(3000, Math.round(tpr)));
+  } catch (error) {
+    console.error('Error calculating TPR:', error);
+    // Fallback to current rating
+    const player = await prisma.user.findUnique({
+      where: { user_id: playerId },
+      select: { schaakrating_elo: true }
+    });
+    return player?.schaakrating_elo || 1500;
+  }
 };
 
 /**
  * Calculate megaschaak cost using the Excel formulas
  */
-export const calculatePlayerCost = async (playerId: number, className: string, _tournamentIds: number[]): Promise<number> => {
+export const calculatePlayerCost = async (playerId: number, className: string, tournamentIds: number[]): Promise<number> => {
   try {
     // Get player rating
     const player = await prisma.user.findUnique({
@@ -56,11 +259,29 @@ export const calculatePlayerCost = async (playerId: number, className: string, _
 
     const rating = player.schaakrating_elo;
 
+    // Determine tournament type from tournamentIds
+    let tournamentType: 'herfst' | 'lente' | undefined = undefined;
+    if (tournamentIds.length > 0) {
+      const tournament = await prisma.tournament.findFirst({
+        where: { tournament_id: { in: tournamentIds } },
+        select: { naam: true }
+      });
+      
+      if (tournament) {
+        const name = tournament.naam.toLowerCase();
+        if (name.includes('herfst') || name.includes('herfstcompetitie')) {
+          tournamentType = 'herfst';
+        } else if (name.includes('lente') || name.includes('lentecompetitie')) {
+          tournamentType = 'lente';
+        }
+      }
+    }
+
     // 1. Bonus Pt(kl) based on class
     const bonusPoints = getBonusPointsByClass(className);
 
-    // 2. Calculate TPR
-    const tpr = await calculateTPR(playerId);
+    // 2. Calculate TPR based on tournament type
+    const tpr = await calculateTPR(playerId, tournamentType);
 
     // 3. Pt(ELO) = (Rating + TPR) / 2
     const ptELO = (rating + tpr) / 2;
