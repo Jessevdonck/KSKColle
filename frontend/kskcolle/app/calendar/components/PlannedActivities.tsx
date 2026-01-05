@@ -6,7 +6,7 @@ import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Calendar, Clock, Info, Search, ChevronDown, Archive } from "lucide-react"
+import { Calendar, Clock, Info, Search, ChevronDown, Archive, ChevronUp } from "lucide-react"
 
 const PlannedActivities = () => {
   const [showArchive, setShowArchive] = useState(false)
@@ -20,6 +20,22 @@ const PlannedActivities = () => {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Collapsible months state - track which months are expanded
+  // Initialize with all months expanded by default
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
+  
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(monthKey)) {
+        newSet.delete(monthKey)
+      } else {
+        newSet.add(monthKey)
+      }
+      return newSet
+    })
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -38,7 +54,7 @@ const PlannedActivities = () => {
   // Available filter options
   const eventTypes = [
     { value: "Interclub", label: "Interclub", color: "bg-blue-100 text-blue-800 border-blue-200" },
-    { value: "Oost-Vlaamse Interclub", label: "Oost-Vlaamse Interclub", color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
+    { value: "Oost-Vlaamse Interclub", label: "OVIC", color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
     { value: "Toernooi", label: "Toernooi", color: "bg-green-100 text-green-800 border-green-200" },
     { value: "Ronde", label: "Ronde", color: "bg-purple-100 text-purple-800 border-purple-200" },
     { value: "Inhaaldag", label: "Inhaaldag", color: "bg-amber-100 text-amber-800 border-amber-200" },
@@ -79,6 +95,23 @@ const PlannedActivities = () => {
       return typeMatch && searchMatch
     })
   }, [events, selectedTypes, searchQuery])
+
+  // Initialize expanded months when events are loaded - all months expanded by default
+  useEffect(() => {
+    if (filteredEvents && filteredEvents.length > 0) {
+      const monthKeys = new Set<string>()
+      filteredEvents.forEach(event => {
+        const eventDate = new Date(event.date)
+        const monthKey = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`
+        monthKeys.add(monthKey)
+      })
+      // Set all months as expanded by default
+      setExpandedMonths(monthKeys)
+    } else if (filteredEvents && filteredEvents.length === 0) {
+      // If no events, clear expanded months
+      setExpandedMonths(new Set())
+    }
+  }, [filteredEvents])
 
   const handleClearAll = () => {
     setSelectedTypes([])
@@ -129,6 +162,14 @@ const PlannedActivities = () => {
     }
   }
 
+  const getTypeDisplayLabel = (type: string) => {
+    const normalizedType = type.toLowerCase().trim()
+    if (normalizedType === "oost-vlaamse interclub" || normalizedType.includes("oost-vlaamse interclub")) {
+      return "OVIC"
+    }
+    return type
+  }
+
   /* const getEventIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case "interclub":
@@ -153,7 +194,7 @@ const PlannedActivities = () => {
   // Group events by month for month view
   const eventsByMonth = sortedEvents.reduce((acc, event) => {
     const eventDate = new Date(event.date)
-    const monthKey = `${eventDate.getFullYear()}-${eventDate.getMonth()}`
+    const monthKey = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`
     const monthName = format(eventDate, "MMMM yyyy", { locale: nl })
     
     if (!acc[monthKey]) {
@@ -330,18 +371,36 @@ const PlannedActivities = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {monthEntries.map(([monthKey, { monthName, events: monthEvents }]) => (
+            {monthEntries.map(([monthKey, { monthName, events: monthEvents }]) => {
+              const isExpanded = expandedMonths.has(monthKey)
+              
+              return (
               <div key={monthKey} className="bg-white rounded-lg shadow-md overflow-hidden">
-                {/* Month Header */}
-                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {monthName}
-                  </h2>
-                  <p className="text-white/80 mt-0.5 text-xs">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
+                {/* Month Header - Clickable */}
+                <div 
+                  className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2 cursor-pointer hover:from-mainAccentDark hover:to-mainAccent transition-all"
+                  onClick={() => toggleMonth(monthKey)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        {monthName}
+                      </h2>
+                      <p className="text-white/80 mt-0.5 text-xs">{monthEvents.length} activiteit{monthEvents.length !== 1 ? 'en' : ''}</p>
+                    </div>
+                    <div className="flex items-center">
+                      {isExpanded ? (
+                        <ChevronUp className="h-5 w-5 text-white" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Desktop Table */}
+                {/* Desktop Table - Only show if expanded */}
+                {isExpanded && (
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
@@ -431,7 +490,7 @@ const PlannedActivities = () => {
                                 event.type,
                               )}`}
                             >
-                              {event.type}
+                              {getTypeDisplayLabel(event.type)}
                             </span>
                           </td>
                         </tr>
@@ -439,8 +498,10 @@ const PlannedActivities = () => {
                     </tbody>
                   </table>
                 </div>
+                )}
 
-                {/* Mobile Cards */}
+                {/* Mobile Cards - Only show if expanded */}
+                {isExpanded && (
                 <div className="md:hidden p-2 space-y-2">
                   {monthEvents.map((event) => (
                     <div
@@ -466,7 +527,7 @@ const PlannedActivities = () => {
                         <span
                           className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}
                         >
-                          {event.type}
+                          {getTypeDisplayLabel(event.type)}
                         </span>
                       </div>
 
@@ -508,8 +569,10 @@ const PlannedActivities = () => {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

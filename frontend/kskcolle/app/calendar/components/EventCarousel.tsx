@@ -54,6 +54,14 @@ export default function EventCarousel({ events }: CarouselProps) {
     }
   }
 
+  const getTypeDisplayLabel = (type: string) => {
+    const normalizedType = type.toLowerCase().trim()
+    if (normalizedType === "oost-vlaamse interclub" || normalizedType.includes("oost-vlaamse interclub")) {
+      return "OVIC"
+    }
+    return type
+  }
+
   if (visibleEvents.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -163,7 +171,7 @@ export default function EventCarousel({ events }: CarouselProps) {
                         event.type,
                       )}`}
                     >
-                      {event.type}
+                      {getTypeDisplayLabel(event.type)}
                     </span>
                   </td>
                 </tr>

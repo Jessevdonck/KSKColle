@@ -1,6 +1,6 @@
 "use client"
 import useSWR from "swr"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import CalendarEventForm from "./CalenderEventForm"
@@ -12,16 +12,117 @@ const CalendarManagement = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [showPastEvents, setShowPastEvents] = useState(false)
+  const [monthFilter, setMonthFilter] = useState<string>("all")
+  const [yearFilter, setYearFilter] = useState<string>("all")
   const apiUrl = showYouth ? "calendar?is_youth=true" : "calendar?is_youth=false"
   const { data: events, error, mutate } = useSWR<CalendarEvent[]>(apiUrl, getAll)
 
-  // Filter events by type
-  const filteredEvents = events?.filter(event => 
-    typeFilter === "all" || event.type.toLowerCase().includes(typeFilter.toLowerCase())
-  ) || []
-
-  // Get unique types for filter dropdown
+  // Get unique types, months, and years for filter dropdowns
   const uniqueTypes = Array.from(new Set(events?.map(event => event.type) || []))
+  
+  const uniqueMonths = useMemo(() => {
+    // Return all 12 months
+    const monthNames = [
+      { value: "1", label: "Januari" },
+      { value: "2", label: "Februari" },
+      { value: "3", label: "Maart" },
+      { value: "4", label: "April" },
+      { value: "5", label: "Mei" },
+      { value: "6", label: "Juni" },
+      { value: "7", label: "Juli" },
+      { value: "8", label: "Augustus" },
+      { value: "9", label: "September" },
+      { value: "10", label: "Oktober" },
+      { value: "11", label: "November" },
+      { value: "12", label: "December" }
+    ]
+    return monthNames
+  }, [])
+
+  const uniqueYears = useMemo(() => {
+    if (!events) return []
+    const years = new Set<string>()
+    events.forEach(event => {
+      const date = new Date(event.date)
+      years.add(String(date.getFullYear()))
+    })
+    return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a)) // Most recent first
+  }, [events])
+
+  // Auto-enable showPastEvents if a past year is selected
+  const currentYear = new Date().getFullYear()
+  const shouldShowPastEvents = useMemo(() => {
+    if (yearFilter !== "all") {
+      const selectedYear = parseInt(yearFilter)
+      return selectedYear < currentYear
+    }
+    return showPastEvents
+  }, [yearFilter, showPastEvents, currentYear])
+
+  // Filter and sort events
+  const filteredEvents = useMemo(() => {
+    if (!events) return []
+    
+    const now = new Date()
+    now.setHours(0, 0, 0, 0) // Reset time to start of day for comparison
+
+    let filtered = events.filter(event => {
+      const eventDate = new Date(event.date)
+      eventDate.setHours(0, 0, 0, 0)
+      
+      // Filter by past/future - use shouldShowPastEvents instead of showPastEvents
+      if (!shouldShowPastEvents && eventDate < now) {
+        return false
+      }
+      
+      // Filter by type
+      if (typeFilter !== "all" && !event.type.toLowerCase().includes(typeFilter.toLowerCase())) {
+        return false
+      }
+      
+      // Filter by month (just the month number, 1-12)
+      if (monthFilter !== "all") {
+        const eventMonth = eventDate.getMonth() + 1 // getMonth() returns 0-11
+        if (String(eventMonth) !== monthFilter) {
+          return false
+        }
+      }
+      
+      // Filter by year
+      if (yearFilter !== "all") {
+        if (String(eventDate.getFullYear()) !== yearFilter) {
+          return false
+        }
+      }
+      
+      return true
+    })
+
+    // Sort chronologically: future events first (ascending), then past events (descending)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date)
+      const dateB = new Date(b.date)
+      const now = new Date()
+      now.setHours(0, 0, 0, 0)
+      
+      const aIsFuture = dateA >= now
+      const bIsFuture = dateB >= now
+      
+      if (aIsFuture && bIsFuture) {
+        // Both future: ascending order
+        return dateA.getTime() - dateB.getTime()
+      } else if (!aIsFuture && !bIsFuture) {
+        // Both past: descending order
+        return dateB.getTime() - dateA.getTime()
+      } else {
+        // Future before past
+        return aIsFuture ? -1 : 1
+      }
+    })
+
+    return filtered
+  }, [events, shouldShowPastEvents, typeFilter, monthFilter, yearFilter])
 
   if (error) {
     return (
@@ -76,6 +177,15 @@ const CalendarManagement = () => {
             typeFilter={typeFilter}
             setTypeFilter={setTypeFilter}
             uniqueTypes={uniqueTypes}
+            showPastEvents={shouldShowPastEvents}
+            setShowPastEvents={setShowPastEvents}
+            isAutoPastEvents={yearFilter !== "all" && parseInt(yearFilter) < currentYear}
+            monthFilter={monthFilter}
+            setMonthFilter={setMonthFilter}
+            yearFilter={yearFilter}
+            setYearFilter={setYearFilter}
+            uniqueMonths={uniqueMonths}
+            uniqueYears={uniqueYears}
             onEditEvent={(event) => {
               setEditingEvent(event)
               setShowForm(true)

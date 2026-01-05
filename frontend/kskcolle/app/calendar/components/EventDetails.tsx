@@ -31,6 +31,14 @@ export default function EventDetails({ date, events }: EventDetailsProps) {
     }
   }
 
+  const getTypeDisplayLabel = (type: string) => {
+    const normalizedType = type.toLowerCase().trim()
+    if (normalizedType === "oost-vlaamse interclub" || normalizedType.includes("oost-vlaamse interclub")) {
+      return "OVIC"
+    }
+    return type
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-8">
       <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
@@ -126,7 +134,7 @@ export default function EventDetails({ date, events }: EventDetailsProps) {
                               event.type,
                             )}`}
                           >
-                            {event.type}
+                            {getTypeDisplayLabel(event.type)}
                           </span>
                         </td>
                       </tr>
