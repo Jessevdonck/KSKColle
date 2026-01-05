@@ -246,26 +246,6 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
     })
   }, [megaschaakTeams, teamSearchQuery])
 
-  const handleDeleteTeam = async (teamId: number, teamName: string) => {
-    if (!confirm(`Weet je zeker dat je het team "${teamName}" wilt verwijderen?`)) return
-
-    try {
-      await axios.delete(`/megaschaak/admin/team/${teamId}`)
-      toast({
-        title: "Success",
-        description: `Team "${teamName}" verwijderd!`
-      })
-      mutateTeams()
-    } catch (err) {
-      console.error("Fout met team verwijderen:", err)
-      toast({
-        title: "Error",
-        description: "Kon team niet verwijderen.",
-        variant: "destructive"
-      })
-    }
-  }
-
   // Groepeer toernooien op naam
   const groupedTournaments = React.useMemo(() => {
     if (!tournaments) return []
@@ -305,9 +285,9 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
 
       {/* Deadline Dialog */}
       <Dialog open={deadlineDialogOpen} onOpenChange={setDeadlineDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle>Megaschaak Inschrijvingsdeadline</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Megaschaak Inschrijvingsdeadline</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -340,18 +320,18 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
       </Dialog>
       
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Trophy className="h-6 w-6" />
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 sm:px-6 py-3 sm:py-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <Trophy className="h-5 w-5 sm:h-6 sm:w-6" />
             Actieve Toernooien
           </h2>
-          <p className="text-white/80 mt-1">
+          <p className="text-white/80 mt-1 text-sm sm:text-base">
             {groupedTournaments.length} {groupedTournaments.length === 1 ? 'toernooi' : 'toernooien'} 
             ({tournaments.length} totaal met klasses)
           </p>
         </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {tournaments.length === 0 ? (
           <div className="text-center py-12">
             <div className="bg-mainAccent/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
@@ -361,42 +341,42 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
             <p className="text-gray-500">Maak een nieuw toernooi aan om te beginnen.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-cy="tournament">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" data-cy="tournament">
             {groupedTournaments.map((group) => (
               <div
                 key={group.name}
-                className="border border-neutral-200 rounded-lg p-6 hover:border-mainAccent/30 hover:shadow-md transition-all duration-200"
+                className="border border-neutral-200 rounded-lg p-4 sm:p-6 hover:border-mainAccent/30 hover:shadow-md transition-all duration-200"
               >
                 {/* Hoofdtitel */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-textColor mb-2" data-cy="tournament_name">
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-textColor mb-1 sm:mb-2 truncate" data-cy="tournament_name">
                       {group.name}
                     </h3>
                     {group.tournaments.length > 1 && (
-                      <p className="text-xs text-gray-500 mb-3">
+                      <p className="text-xs text-gray-500 mb-2 sm:mb-3">
                         {group.tournaments.length} klasses
                       </p>
                     )}
                   </div>
-                  <div className="bg-mainAccent/10 p-2 rounded-lg">
-                    <Trophy className="h-5 w-5 text-mainAccent" />
+                  <div className="bg-mainAccent/10 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
+                    <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-mainAccent" />
                   </div>
                 </div>
 
                 {/* Klasses */}
-                <div className="space-y-3 mb-4">
+                <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                   {group.tournaments.map((t) => (
                     <div
                       key={t.tournament_id}
-                      className="border-l-2 border-mainAccent/30 pl-3 py-1"
+                      className="border-l-2 border-mainAccent/30 pl-2 sm:pl-3 py-1"
                     >
                       {t.class_name && (
-                        <p className="text-sm font-medium text-mainAccent mb-1">
+                        <p className="text-xs sm:text-sm font-medium text-mainAccent mb-1">
                           {t.class_name}
                         </p>
                       )}
-                      <div className="flex items-center gap-3 text-xs text-gray-600">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-gray-600">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           <span>{t.rondes} rondes</span>
@@ -408,24 +388,26 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                       </div>
                       
                       {/* Action buttons per klasse */}
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
                         <Button
                           onClick={() => onSelectTournament(t)}
                           size="sm"
-                          className="h-7 text-xs bg-mainAccent hover:bg-mainAccentDark"
+                          className="h-7 sm:h-8 text-xs bg-mainAccent hover:bg-mainAccentDark flex-1 sm:flex-initial min-w-[80px]"
                           data-cy="tournament_manage_button"
                         >
                           <Eye className="h-3 w-3 mr-1" />
-                          Beheer
+                          <span className="hidden xs:inline">Beheer</span>
+                          <span className="xs:hidden">Beheer</span>
                         </Button>
                         {!t.finished && (
                           <Button
                             onClick={() => handleClose(t.tournament_id, `${t.naam}${t.class_name ? ` (${t.class_name})` : ''}`, t.rating_enabled)}
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
+                            className="h-7 sm:h-8 text-xs border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
                             disabled={isClosing}
                             data-cy="tournament_close_button"
+                            title="Sluit toernooi"
                           >
                             <CheckCircle className="h-3 w-3" />
                           </Button>
@@ -434,9 +416,10 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                           onClick={() => handleDelete(t.tournament_id)}
                           size="sm"
                           variant="outline"
-                          className="h-7 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                          className="h-7 sm:h-8 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
                           disabled={isDeleting}
                           data-cy="tournament_delete_button"
+                          title="Verwijder toernooi"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -447,10 +430,10 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
 
                 {/* Megaschaak Toggle - Once per tournament group */}
                 <div className="border-t border-neutral-200 pt-3 mt-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Swords className={`h-4 w-4 ${group.tournaments.some(t => t.megaschaak_enabled) ? 'text-mainAccent' : 'text-gray-400'}`} />
-                      <span className="text-sm font-medium text-gray-700">Megaschaak</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Swords className={`h-4 w-4 flex-shrink-0 ${group.tournaments.some(t => t.megaschaak_enabled) ? 'text-mainAccent' : 'text-gray-400'}`} />
+                      <span className="text-xs sm:text-sm font-medium text-gray-700">Megaschaak</span>
                       {group.tournaments.some(t => t.megaschaak_enabled) && (
                         <span className="px-2 py-0.5 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
                           Actief
@@ -464,7 +447,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                       )}
                       size="sm"
                       variant="outline"
-                      className={`h-8 text-xs ${
+                      className={`h-8 text-xs whitespace-nowrap ${
                         group.tournaments.some(t => t.megaschaak_enabled)
                           ? 'border-mainAccent/30 text-mainAccent hover:bg-mainAccent/10 hover:border-mainAccent' 
                           : 'border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -477,68 +460,66 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                   
                   {/* Deadline Section */}
                   {group.tournaments.some(t => t.megaschaak_enabled) && (
-                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2 mt-2">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3 text-gray-600" />
-                        <span className="text-xs text-gray-700">
-                          Deadline: {
-                            group.tournaments[0].megaschaak_deadline 
-                              ? format(new Date(group.tournaments[0].megaschaak_deadline), "dd/MM/yyyy HH:mm")
-                              : "Geen deadline"
-                          }
-                        </span>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          onClick={() => {
-                            setSelectedTournamentForConfig({ 
-                              id: group.tournaments[0].tournament_id, 
-                              name: group.name 
-                            })
-                            setConfigDialogOpen(true)
-                          }}
-                          size="sm"
-                          variant="ghost"
-                          className="text-mainAccent hover:bg-mainAccent/10"
-                          title="Formule configuratie bewerken"
-                        >
-                          <Calculator className="h-3 w-3 mr-1" />
-                          Formule
-                        </Button>
-                        <Button
-                          onClick={() => handleOpenDeadlineDialog(
-                            group.tournaments.map(t => t.tournament_id),
-                            group.name,
-                            group.tournaments[0].megaschaak_deadline || null
-                          )}
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 text-xs text-mainAccent hover:bg-mainAccent/10"
-                        >
-                          Wijzig
-                        </Button>
-                        <Button
-                          onClick={() => handleOpenTeamsDialog(
-                            group.tournaments.map(t => t.tournament_id),
-                            group.name
-                          )}
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 text-xs text-blue-600 hover:bg-blue-50"
-                          title="Bekijk en beheer teams"
-                        >
-                          <Settings className="h-3 w-3 mr-1" />
-                          Teams
-                        </Button>
+                    <div className="bg-gray-50 rounded-lg p-2 mt-2">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3 w-3 text-gray-600 flex-shrink-0" />
+                          <span className="text-xs text-gray-700">
+                            Deadline: {
+                              group.tournaments[0].megaschaak_deadline 
+                                ? format(new Date(group.tournaments[0].megaschaak_deadline), "dd/MM/yyyy HH:mm")
+                                : "Geen deadline"
+                            }
+                          </span>
+                        </div>
+                        <div className="flex gap-1 flex-wrap">
+                          <Button
+                            onClick={() => {
+                              setSelectedTournamentForConfig({ 
+                                id: group.tournaments[0].tournament_id, 
+                                name: group.name 
+                              })
+                              setConfigDialogOpen(true)
+                            }}
+                            size="sm"
+                            variant="ghost"
+                            className="text-mainAccent hover:bg-mainAccent/10 whitespace-nowrap"
+                            title="Formule configuratie bewerken"
+                          >
+                            <Calculator className="h-3 w-3 mr-1" />
+                            Formule
+                          </Button>
+                          <Button
+                            onClick={() => handleOpenDeadlineDialog(
+                              group.tournaments.map(t => t.tournament_id),
+                              group.name,
+                              group.tournaments[0].megaschaak_deadline || null
+                            )}
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 text-xs text-mainAccent hover:bg-mainAccent/10 whitespace-nowrap"
+                          >
+                            Wijzig
+                          </Button>
+                          <Button
+                            onClick={() => handleOpenTeamsDialog(
+                              group.tournaments.map(t => t.tournament_id),
+                              group.name
+                            )}
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 text-xs text-blue-600 hover:bg-blue-50 whitespace-nowrap"
+                            title="Bekijk en beheer teams"
+                          >
+                            <Settings className="h-3 w-3 mr-1" />
+                            Teams
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
                   
-                  {group.tournaments.length > 1 && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Geldt voor alle {group.tournaments.length} klasses
-                    </p>
-                  )}
+
                 </div>
               </div>
             ))}
@@ -548,9 +529,9 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
 
       {/* Teams Management Dialog */}
       <Dialog open={teamsDialogOpen} onOpenChange={setTeamsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle>Megaschaak Teams - {selectedTournamentForTeams?.name}</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Megaschaak Teams - {selectedTournamentForTeams?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {megaschaakTeams.length === 0 ? (
@@ -621,7 +602,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                             </span>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                           {team.players.map((tp) => (
                             <div
                               key={tp.id}
@@ -630,7 +611,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                               <div className="font-medium truncate">
                                 {tp.player.voornaam} {tp.player.achternaam}
                               </div>
-                              <div className="text-gray-500">
+                              <div className="text-gray-500 text-[10px] sm:text-xs">
                                 {tp.player.schaakrating_elo} ELO • {tp.cost} pts
                               </div>
                             </div>
@@ -676,9 +657,9 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
 
       {/* Megaschaak Config Dialog */}
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle>Megaschaak Formule Configuratie - {selectedTournamentForConfig?.name}</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Megaschaak Formule Configuratie - {selectedTournamentForConfig?.name}</DialogTitle>
           </DialogHeader>
           {selectedTournamentForConfig && (
             <MegaschaakConfigForm
