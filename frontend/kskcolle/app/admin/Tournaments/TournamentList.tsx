@@ -85,6 +85,67 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
     { revalidate: false }
   )
 
+  // Filter teams based on search query (must be before early returns)
+  const filteredTeams = React.useMemo(() => {
+    if (!teamSearchQuery.trim()) return megaschaakTeams
+    
+    const query = teamSearchQuery.toLowerCase()
+    return megaschaakTeams.filter(team => {
+      const userName = `${team.user.voornaam} ${team.user.achternaam}`.toLowerCase()
+      const email = team.user.email?.toLowerCase() || ""
+      const teamName = team.team_name.toLowerCase()
+      
+      return userName.includes(query) || email.includes(query) || teamName.includes(query)
+    })
+  }, [megaschaakTeams, teamSearchQuery])
+
+  // Groepeer toernooien op naam (must be before early returns)
+  const groupedTournaments = React.useMemo(() => {
+    if (!tournaments) return []
+    
+    const groups = new Map<string, Toernooi[]>()
+    
+    tournaments.forEach(tournament => {
+      const groupKey = tournament.naam
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, [])
+      }
+      groups.get(groupKey)!.push(tournament)
+    })
+    
+    return Array.from(groups.entries()).map(([name, tournaments]) => ({
+      name,
+      tournaments: tournaments.sort((a, b) => {
+        // Sorteer op class_name als die bestaat
+        if (!a.class_name && !b.class_name) return 0
+        if (!a.class_name) return 1
+        if (!b.class_name) return -1
+        return a.class_name.localeCompare(b.class_name)
+      })
+    }))
+  }, [tournaments])
+
+  // Define handleDeleteTeam before early returns
+  const handleDeleteTeam = async (teamId: number, teamName: string) => {
+    if (!confirm(`Weet je zeker dat je het team "${teamName}" wilt verwijderen?`)) return
+
+    try {
+      await axios.delete(`/megaschaak/admin/team/${teamId}`)
+      toast({
+        title: "Success",
+        description: `Team "${teamName}" verwijderd!`
+      })
+      mutateTeams()
+    } catch (err) {
+      console.error("Fout met team verwijderen:", err)
+      toast({
+        title: "Error",
+        description: "Kon team niet verwijderen.",
+        variant: "destructive"
+      })
+    }
+  }
+
   if (error) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
@@ -231,46 +292,6 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
     setTeamSearchQuery("") // Reset search when opening
     setTeamsDialogOpen(true)
   }
-
-  // Filter teams based on search query
-  const filteredTeams = React.useMemo(() => {
-    if (!teamSearchQuery.trim()) return megaschaakTeams
-    
-    const query = teamSearchQuery.toLowerCase()
-    return megaschaakTeams.filter(team => {
-      const userName = `${team.user.voornaam} ${team.user.achternaam}`.toLowerCase()
-      const email = team.user.email?.toLowerCase() || ""
-      const teamName = team.team_name.toLowerCase()
-      
-      return userName.includes(query) || email.includes(query) || teamName.includes(query)
-    })
-  }, [megaschaakTeams, teamSearchQuery])
-
-  // Groepeer toernooien op naam
-  const groupedTournaments = React.useMemo(() => {
-    if (!tournaments) return []
-    
-    const groups = new Map<string, Toernooi[]>()
-    
-    tournaments.forEach(tournament => {
-      const groupKey = tournament.naam
-      if (!groups.has(groupKey)) {
-        groups.set(groupKey, [])
-      }
-      groups.get(groupKey)!.push(tournament)
-    })
-    
-    return Array.from(groups.entries()).map(([name, tournaments]) => ({
-      name,
-      tournaments: tournaments.sort((a, b) => {
-        // Sorteer op class_name als die bestaat
-        if (!a.class_name && !b.class_name) return 0
-        if (!a.class_name) return 1
-        if (!b.class_name) return -1
-        return a.class_name.localeCompare(b.class_name)
-      })
-    }))
-  }, [tournaments])
 
   return (
     <>
@@ -571,7 +592,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                 {filteredTeams.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <Trophy className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                    <p>Geen teams gevonden voor "{teamSearchQuery}"</p>
+                    <p>Geen teams gevonden voor &quot;{teamSearchQuery}&quot;</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -580,27 +601,34 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                     key={team.team_id}
                     className="border rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-gray-900">{team.team_name}</h3>
-                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{team.team_name}</h3>
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium whitespace-nowrap">
                             {team.players.length} spelers
                           </span>
                           {team.reserve_player && (
-                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium whitespace-nowrap">
                               + Reserve
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-600 mb-3">
+                        <div className="text-xs sm:text-sm text-gray-600 mb-3">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span>
+                            <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                            <span className="break-words">
                               {team.user.voornaam} {team.user.achternaam}
-                              {team.user.email && ` (${team.user.email})`}
+                              {team.user.email && (
+                                <span className="hidden sm:inline"> ({team.user.email})</span>
+                              )}
                             </span>
                           </div>
+                          {team.user.email && (
+                            <div className="sm:hidden text-xs text-gray-500 mt-1 ml-5 truncate">
+                              {team.user.email}
+                            </div>
+                          )}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                           {team.players.map((tp) => (
@@ -635,7 +663,8 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                         onClick={() => handleDeleteTeam(team.team_id, team.team_name)}
                         size="sm"
                         variant="outline"
-                        className="ml-4 border-red-200 text-red-600 hover:bg-red-50"
+                        className="sm:ml-4 border-red-200 text-red-600 hover:bg-red-50 self-start sm:self-auto"
+                        title="Verwijder team"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
