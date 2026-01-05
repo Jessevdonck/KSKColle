@@ -7,23 +7,103 @@ import handleDBError from "./handleDBError";
  * Formula: Base cost based on rating with some logic
  */
 /**
- * Calculate bonus points based on class
+ * Default megaschaak formula configuration
  */
-const getBonusPointsByClass = (className: string): number => {
-  const classMap: { [key: string]: number } = {
+export interface MegaschaakConfig {
+  classBonusPoints: { [key: string]: number };
+  roundsPerClass: { [key: string]: number }; // Number of rounds per class
+  correctieMultiplier: number; // Default: 1.5
+  correctieSubtract: number; // Default: 1800
+  minCost: number; // Default: 1
+  maxCost: number; // Default: 200
+}
+
+const DEFAULT_CONFIG: MegaschaakConfig = {
+  classBonusPoints: {
     'Eerste Klasse': 0,
     'Tweede Klasse': 110,
     'Derde Klasse': 190,
     'Vierde Klasse': 270,
     'Vijfde Klasse': 330,
-    'Vierde en Vijfde Klasse': 330, // Fallback for combined classes
+    'Vierde en Vijfde Klasse': 330,
     'Zesde Klasse': 330,
     'Zevende Klasse': 330,
     'Achtste Klasse': 330,
-    'Hoofdtoernooi': 0 // Default fallback
-  };
-  
-  return classMap[className] || 0;
+    'Hoofdtoernooi': 0
+  },
+  roundsPerClass: {},
+  correctieMultiplier: 1.5,
+  correctieSubtract: 1800,
+  minCost: 1,
+  maxCost: 200
+};
+
+/**
+ * Get megaschaak configuration for a tournament, with defaults
+ */
+const getMegaschaakConfig = async (tournamentIds: number[], className?: string): Promise<MegaschaakConfig> => {
+  if (tournamentIds.length === 0) {
+    return DEFAULT_CONFIG;
+  }
+
+  try {
+    // Get all tournaments to determine default rounds per class
+    const tournaments = await prisma.tournament.findMany({
+      where: { tournament_id: { in: tournamentIds } },
+      select: { 
+        megaschaak_config: true,
+        rondes: true,
+        class_name: true
+      }
+    });
+
+    // Build default roundsPerClass from tournament data
+    const defaultRoundsPerClass: { [key: string]: number } = {};
+    tournaments.forEach(t => {
+      if (t.class_name && t.rondes) {
+        defaultRoundsPerClass[t.class_name] = t.rondes;
+      }
+    });
+
+    // If a specific class is requested and we have its tournament, use its rounds
+    if (className) {
+      const classTournament = tournaments.find(t => t.class_name === className);
+      if (classTournament && classTournament.rondes) {
+        defaultRoundsPerClass[className] = classTournament.rondes;
+      }
+    }
+
+    // Find the first tournament with a config (config should be the same for all tournaments with same name)
+    const tournamentWithConfig = tournaments.find(t => t.megaschaak_config !== null) || tournaments[0];
+    if (tournamentWithConfig?.megaschaak_config) {
+      const config = tournamentWithConfig.megaschaak_config as any;
+      return {
+        classBonusPoints: { ...DEFAULT_CONFIG.classBonusPoints, ...(config.classBonusPoints || {}) },
+        roundsPerClass: { ...defaultRoundsPerClass, ...(config.roundsPerClass || {}) },
+        correctieMultiplier: config.correctieMultiplier ?? DEFAULT_CONFIG.correctieMultiplier,
+        correctieSubtract: config.correctieSubtract ?? DEFAULT_CONFIG.correctieSubtract,
+        minCost: config.minCost ?? DEFAULT_CONFIG.minCost,
+        maxCost: config.maxCost ?? DEFAULT_CONFIG.maxCost
+      };
+    }
+
+    // Return config with default rounds from tournaments
+    return {
+      ...DEFAULT_CONFIG,
+      roundsPerClass: defaultRoundsPerClass
+    };
+  } catch (error) {
+    console.error('Error loading megaschaak config:', error);
+  }
+
+  return DEFAULT_CONFIG;
+};
+
+/**
+ * Calculate bonus points based on class using configuration
+ */
+const getBonusPointsByClass = (className: string, config: MegaschaakConfig): number => {
+  return config.classBonusPoints[className] || 0;
 };
 
 /**
@@ -45,25 +125,26 @@ const calculateTPR = async (playerId: number, tournamentType?: 'herfst' | 'lente
     const useHerfst = tournamentType === 'herfst' || tournamentType === undefined;
     const useLente = tournamentType === 'lente' || tournamentType === undefined;
 
-    // Build OR conditions for tournament search
-    const orConditions: any[] = [];
+    // Build search terms (MySQL doesn't support case-insensitive mode, so we'll filter in JavaScript)
+    const searchTerms: string[] = [];
     if (useHerfst) {
-      orConditions.push(
-        { naam: { contains: 'herfst', mode: 'insensitive' } },
-        { naam: { contains: 'herfstcompetitie', mode: 'insensitive' } }
-      );
+      searchTerms.push("herfst", "herfstcompetitie");
     }
     if (useLente) {
-      orConditions.push(
-        { naam: { contains: 'lente', mode: 'insensitive' } },
-        { naam: { contains: 'lentecompetitie', mode: 'insensitive' } }
-      );
+      searchTerms.push("lente", "lentecompetitie");
     }
 
-    // Find the latest Herfstcompetitie or Lentecompetitie tournament
-    const allTournaments = await prisma.tournament.findMany({
+    if (searchTerms.length === 0) {
+      // No tournament type specified, return current rating
+      return fallbackRating;
+    }
+
+    // Find all tournaments (MySQL doesn't support case-insensitive contains, so we'll filter in JavaScript)
+    const allTournamentsRaw = await prisma.tournament.findMany({
       where: {
-        OR: orConditions
+        OR: searchTerms.map(term => ({
+          naam: { contains: term }
+        }))
       },
       include: {
         rounds: {
@@ -93,6 +174,12 @@ const calculateTPR = async (playerId: number, tournamentType?: 'herfst' | 'lente
       orderBy: {
         tournament_id: 'desc'
       }
+    });
+
+    // Filter tournaments case-insensitively in JavaScript (MySQL limitation)
+    const allTournaments = allTournamentsRaw.filter((tournament: any) => {
+      const naamLower = tournament.naam.toLowerCase();
+      return searchTerms.some((term: string) => naamLower.includes(term.toLowerCase()));
     });
 
     // Find the tournament with the latest round date
@@ -259,6 +346,9 @@ export const calculatePlayerCost = async (playerId: number, className: string, t
 
     const rating = player.schaakrating_elo;
 
+    // Get megaschaak configuration (pass className to get correct rounds)
+    const config = await getMegaschaakConfig(tournamentIds, className);
+
     // Determine tournament type from tournamentIds
     let tournamentType: 'herfst' | 'lente' | undefined = undefined;
     if (tournamentIds.length > 0) {
@@ -277,8 +367,8 @@ export const calculatePlayerCost = async (playerId: number, className: string, t
       }
     }
 
-    // 1. Bonus Pt(kl) based on class
-    const bonusPoints = getBonusPointsByClass(className);
+    // 1. Bonus Pt(kl) based on class (using config)
+    const bonusPoints = getBonusPointsByClass(className, config);
 
     // 2. Calculate TPR based on tournament type
     const tpr = await calculateTPR(playerId, tournamentType);
@@ -289,14 +379,20 @@ export const calculatePlayerCost = async (playerId: number, className: string, t
     // 4. Pt(tot) = Bonus Pt(kl) + Pt(ELO)
     const ptTot = bonusPoints + ptELO;
 
-    // 5. Correctie = Pt(tot) * 1.5 - 1800
-    const correctie = ptTot * 1.5 - 1800;
+    // 5. Correctie = Pt(tot) * multiplier - subtract (using config)
+    const correctie = ptTot * config.correctieMultiplier - config.correctieSubtract;
 
-    // 6. Megaschaak kost = MROUND(Correctie, 10) / 10
-    const megaschaakCost = Math.round(correctie / 10) * 10 / 10;
+    // 6. Get number of rounds for this class (from config or tournament default)
+    const numberOfRounds = config.roundsPerClass[className] || 10; // Default to 10 if not configured
 
-    // Ensure minimum cost of 1 and reasonable maximum
-    return Math.max(1, Math.min(200, megaschaakCost));
+    // 7. Megaschaak kost = MROUND(Correctie, 10) / aantal_rondes (afgerond naar geheel getal)
+    const megaschaakCost = Math.round(correctie / 10) * 10 / numberOfRounds;
+
+    // Round to nearest whole number
+    const roundedCost = Math.round(megaschaakCost);
+
+    // Ensure cost is within configured bounds
+    return Math.max(config.minCost, Math.min(config.maxCost, roundedCost));
   } catch (error) {
     console.error('Error calculating player cost:', error);
     // Fallback to simple rating-based calculation
@@ -1679,6 +1775,79 @@ export const adminDeleteTeam = async (teamId: number) => {
     await prisma.megaschaakTeam.delete({
       where: { team_id: teamId }
     });
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+/**
+ * Get megaschaak configuration for a tournament (admin only)
+ */
+export const getMegaschaakConfiguration = async (tournamentId: number): Promise<MegaschaakConfig> => {
+  try {
+    const tournament = await prisma.tournament.findUnique({
+      where: { tournament_id: tournamentId },
+      select: { megaschaak_config: true }
+    });
+
+    if (!tournament) {
+      throw ServiceError.notFound('Toernooi niet gevonden');
+    }
+
+    return await getMegaschaakConfig([tournamentId]);
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+/**
+ * Update megaschaak configuration for a tournament (admin only)
+ */
+export const updateMegaschaakConfiguration = async (
+  tournamentId: number,
+  config: Partial<MegaschaakConfig>
+): Promise<MegaschaakConfig> => {
+  try {
+    const tournament = await prisma.tournament.findUnique({
+      where: { tournament_id: tournamentId }
+    });
+
+    if (!tournament) {
+      throw ServiceError.notFound('Toernooi niet gevonden');
+    }
+
+    // Get current config and merge with new values
+    const currentConfig = await getMegaschaakConfig([tournamentId]);
+    const updatedConfig: MegaschaakConfig = {
+      classBonusPoints: { ...currentConfig.classBonusPoints, ...(config.classBonusPoints || {}) },
+      roundsPerClass: { ...currentConfig.roundsPerClass, ...(config.roundsPerClass || {}) },
+      correctieMultiplier: config.correctieMultiplier ?? currentConfig.correctieMultiplier,
+      correctieSubtract: config.correctieSubtract ?? currentConfig.correctieSubtract,
+      minCost: config.minCost ?? currentConfig.minCost,
+      maxCost: config.maxCost ?? currentConfig.maxCost
+    };
+
+    // Find all tournaments with the same name (all classes should share the same config)
+    const allClassesTournaments = await prisma.tournament.findMany({
+      where: {
+        naam: tournament.naam
+      },
+      select: {
+        tournament_id: true
+      }
+    });
+
+    // Update all tournaments with the same name with the new config
+    await prisma.tournament.updateMany({
+      where: {
+        tournament_id: { in: allClassesTournaments.map(t => t.tournament_id) }
+      },
+      data: {
+        megaschaak_config: updatedConfig as any
+      }
+    });
+
+    return updatedConfig;
   } catch (error) {
     throw handleDBError(error);
   }

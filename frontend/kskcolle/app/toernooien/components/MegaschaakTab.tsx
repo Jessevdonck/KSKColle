@@ -25,13 +25,25 @@ export default function MegaschaakTab({ tournamentId, tournamentName }: Megascha
   const [selectedPlayers, setSelectedPlayers] = useState<MegaschaakPlayer[]>([])
 
   // Fetch available players
-  const { data: availablePlayers = [], isLoading: playersLoading } = useSWR<MegaschaakPlayer[]>(
+  const { data: availablePlayers = [], isLoading: playersLoading, mutate: mutatePlayers } = useSWR<MegaschaakPlayer[]>(
     'megaschaak/players',
     async () => {
       const response = await axios.get('/megaschaak/players')
       return response.data.items
     }
   )
+
+  // Listen for config updates and refresh players
+  React.useEffect(() => {
+    const handleConfigUpdate = () => {
+      mutatePlayers(undefined, { revalidate: true })
+    }
+    
+    window.addEventListener('megaschaak-config-updated', handleConfigUpdate)
+    return () => {
+      window.removeEventListener('megaschaak-config-updated', handleConfigUpdate)
+    }
+  }, [mutatePlayers])
 
   // Fetch user's current team
   const { data: currentTeam, mutate: mutateTeam } = useSWR<MegaschaakTeam | null>(

@@ -301,6 +301,49 @@ adminDeleteTeam.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /megaschaak/tournament/:tournamentId/config Get megaschaak formula configuration (admin only)
+ * @apiName GetMegaschaakConfig
+ * @apiGroup Megaschaak
+ */
+const getMegaschaakConfig = async (ctx: KoaContext) => {
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
+  const config = await megaschaakService.getMegaschaakConfiguration(tournamentId);
+  ctx.body = config;
+};
+
+getMegaschaakConfig.validationScheme = {
+  params: {
+    tournamentId: Joi.number().integer().positive().required(),
+  },
+};
+
+/**
+ * @api {patch} /megaschaak/tournament/:tournamentId/config Update megaschaak formula configuration (admin only)
+ * @apiName UpdateMegaschaakConfig
+ * @apiGroup Megaschaak
+ */
+const updateMegaschaakConfig = async (ctx: KoaContext) => {
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
+  const config = ctx.request.body as any;
+  const updatedConfig = await megaschaakService.updateMegaschaakConfiguration(tournamentId, config);
+  ctx.body = updatedConfig;
+};
+
+updateMegaschaakConfig.validationScheme = {
+  params: {
+    tournamentId: Joi.number().integer().positive().required(),
+  },
+  body: {
+    classBonusPoints: Joi.object().optional(),
+    roundsPerClass: Joi.object().optional(),
+    correctieMultiplier: Joi.number().optional(),
+    correctieSubtract: Joi.number().optional(),
+    minCost: Joi.number().optional(),
+    maxCost: Joi.number().optional(),
+  },
+};
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/megaschaak',
@@ -327,6 +370,8 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.patch('/tournament/:tournamentId/deadline', requireAuthentication, requireAdmin, validate(setMegaschaakDeadline.validationScheme), setMegaschaakDeadline);
   router.get('/tournament/:tournamentId/all-teams', requireAuthentication, requireAdmin, validate(getAllTeams.validationScheme), getAllTeams);
   router.delete('/admin/team/:teamId', requireAuthentication, requireAdmin, validate(adminDeleteTeam.validationScheme), adminDeleteTeam);
+  router.get('/tournament/:tournamentId/config', requireAuthentication, requireAdmin, validate(getMegaschaakConfig.validationScheme), getMegaschaakConfig);
+  router.patch('/tournament/:tournamentId/config', requireAuthentication, requireAdmin, validate(updateMegaschaakConfig.validationScheme), updateMegaschaakConfig);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };

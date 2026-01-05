@@ -8,7 +8,8 @@ import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
 import { getAll, deleteById } from "../../api/index"
 import type { Toernooi, MegaschaakTeam } from "@/data/types"
-import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X } from "lucide-react"
+import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X, Calculator } from "lucide-react"
+import MegaschaakConfigForm from "./components/MegaschaakConfigForm"
 import CloseTournamentDialog from "./components/CloseTournamentDialog"
 import { axios } from "../../api/index"
 import {
@@ -36,6 +37,8 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
   const [teamsDialogOpen, setTeamsDialogOpen] = useState(false)
   const [selectedTournamentForTeams, setSelectedTournamentForTeams] = useState<{ ids: number[], name: string } | null>(null)
   const [teamSearchQuery, setTeamSearchQuery] = useState("")
+  const [configDialogOpen, setConfigDialogOpen] = useState(false)
+  const [selectedTournamentForConfig, setSelectedTournamentForConfig] = useState<{ id: number, name: string } | null>(null)
   
   // Haal alleen actieve toernooien op (finished = false)
   const { data: tournaments, error, mutate } = useSWR<Toernooi[]>(
@@ -487,6 +490,22 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                       </div>
                       <div className="flex gap-1">
                         <Button
+                          onClick={() => {
+                            setSelectedTournamentForConfig({ 
+                              id: group.tournaments[0].tournament_id, 
+                              name: group.name 
+                            })
+                            setConfigDialogOpen(true)
+                          }}
+                          size="sm"
+                          variant="ghost"
+                          className="text-mainAccent hover:bg-mainAccent/10"
+                          title="Formule configuratie bewerken"
+                        >
+                          <Calculator className="h-3 w-3 mr-1" />
+                          Formule
+                        </Button>
+                        <Button
                           onClick={() => handleOpenDeadlineDialog(
                             group.tournaments.map(t => t.tournament_id),
                             group.name,
@@ -652,6 +671,21 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
               Sluiten
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Megaschaak Config Dialog */}
+      <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Megaschaak Formule Configuratie - {selectedTournamentForConfig?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedTournamentForConfig && (
+            <MegaschaakConfigForm
+              tournamentId={selectedTournamentForConfig.id}
+              tournamentName={selectedTournamentForConfig.name}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

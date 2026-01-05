@@ -207,9 +207,21 @@ registerUser.validationScheme = {
 const getUserById = async (
   ctx: KoaContext<GetUserByIdResponse, GetUserRequest>, 
 ) => {
-  const user = await userService.getUserById(
-    ctx.params.id === 'me' ? ctx.state.session.userId : ctx.params.id,
-  );
+  let userId: number;
+  
+  if (ctx.params.id === 'me') {
+    if (!ctx.state.session?.userId) {
+      return ctx.throw(401, 'You need to be authenticated', { code: 'UNAUTHORIZED' });
+    }
+    userId = ctx.state.session.userId;
+  } else {
+    userId = Number(ctx.params.id);
+    if (isNaN(userId)) {
+      return ctx.throw(400, 'Invalid user ID', { code: 'BAD_REQUEST' });
+    }
+  }
+  
+  const user = await userService.getUserById(userId);
   ctx.status = 200;
   ctx.body = user;
 };
@@ -437,6 +449,10 @@ removeUser.validationScheme = {
 };
 
 const checkUserId = (ctx: KoaContext<unknown, GetUserRequest>, next: Next) => {
+  if (!ctx.state.session) {
+    return ctx.throw(401, 'You need to be authenticated', { code: 'UNAUTHORIZED' });
+  }
+  
   const { userId, roles } = ctx.state.session;
   const { id } = ctx.params;
 

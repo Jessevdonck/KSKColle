@@ -41,13 +41,25 @@ export default function MegaschaakPage() {
     : false
 
   // Fetch available players (all participants from all classes of the active tournament)
-  const { data: availablePlayers = [], isLoading: playersLoading } = useSWR<MegaschaakPlayer[]>(
+  const { data: availablePlayers = [], isLoading: playersLoading, mutate: mutatePlayers } = useSWR<MegaschaakPlayer[]>(
     activeTournament ? 'megaschaak/players' : null,
     async () => {
       const response = await axios.get('/megaschaak/players')
       return response.data.items
     }
   )
+
+  // Listen for config updates and refresh players
+  React.useEffect(() => {
+    const handleConfigUpdate = () => {
+      mutatePlayers(undefined, { revalidate: true })
+    }
+    
+    window.addEventListener('megaschaak-config-updated', handleConfigUpdate)
+    return () => {
+      window.removeEventListener('megaschaak-config-updated', handleConfigUpdate)
+    }
+  }, [mutatePlayers])
 
   // Fetch user's teams for this tournament
   const { data: myTeams = [], mutate: mutateTeams } = useSWR<MegaschaakTeam[]>(

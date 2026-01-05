@@ -81,6 +81,7 @@ model Tournament {
   class_name         String?        // Voor toernooien met meerdere klasses (bv. "Eerste Klasse", "Tweede Klasse")
   megaschaak_enabled Boolean         @default(false) // Voor fantasy schaak teams
   megaschaak_deadline DateTime?      // Deadline voor megaschaak team registratie
+  megaschaak_config  Json?           // Configuratie voor megaschaak formule (bonus points per klasse, correctie multiplier, etc.)
   
   participations     Participation[]  
   rounds             Round[]          
