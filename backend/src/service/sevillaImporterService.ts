@@ -325,7 +325,8 @@ export class SevillaImporterService {
       // Check if this user is already mapped to another Sevilla player
       // Only check if user exists
       if (user) {
-        const existingMapping = Array.from(playerMap.entries()).find(([_, userId]) => userId === user.user_id);
+        const userId = user.user_id; // Store in local variable for type narrowing
+        const existingMapping = Array.from(playerMap.entries()).find(([_, mappedUserId]) => mappedUserId === userId);
         if (existingMapping && existingMapping[0] !== sevillaPlayer.ID) {
           const conflictingSevillaPlayer = players.find(p => p.ID === existingMapping[0]);
           console.warn(`⚠️ User ID=${user.user_id} (${user.voornaam} ${user.achternaam}) is already mapped to Sevilla player ID=${existingMapping[0]} (${conflictingSevillaPlayer?.Name || 'unknown'})`);
