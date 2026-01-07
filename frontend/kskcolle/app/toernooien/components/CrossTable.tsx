@@ -131,13 +131,13 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
       {/* Desktop Table */}
       <div className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-xs">
+          <table className="w-full border-collapse text-xs table-fixed">
             <thead>
               <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark">
                 <th className="sticky left-0 z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-2 py-2 text-center font-semibold text-white w-[40px]">
                   #
                 </th>
-                <th className="sticky left-[40px] z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-3 py-2 text-left font-semibold text-white w-[180px]">
+                <th className="sticky left-[40px] z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-3 py-2 text-left font-semibold text-white w-[280px]">
                   Naam
                 </th>
                 <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white w-[35px]">
@@ -175,10 +175,11 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       {rowIndex + 1}
                     </td>
                     {/* Player name */}
-                    <td className="sticky left-[40px] z-10 bg-inherit border-r border-gray-200 px-3 py-2 font-medium text-gray-900 w-[180px]">
+                    <td className="sticky left-[40px] z-10 bg-inherit border-r border-gray-200 px-3 py-2 font-medium text-gray-900 w-[280px]">
                       <Link
                         href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
-                        className="hover:text-mainAccent transition-colors"
+                        className="hover:text-mainAccent transition-colors truncate block"
+                        title={`${player.voornaam} ${player.achternaam}`}
                       >
                         {player.voornaam} {player.achternaam}
                       </Link>
