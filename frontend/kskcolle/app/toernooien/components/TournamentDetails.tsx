@@ -49,7 +49,11 @@ type Tournament = {
       user_id: number
       voornaam: string
       achternaam: string
+      schaakrating_elo?: number
     }
+    sevilla_rating_change?: number | null
+    tie_break?: number | null
+    score?: number | null
   }>
   rounds: Round[]
   is_sevilla_imported?: boolean
@@ -570,107 +574,189 @@ export default function TournamentDetails() {
         )}
 
         {/* Regular Layout - Rounds and Standings */}
-        <div className={`grid grid-cols-1 xl:grid-cols-3 gap-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
-          {/* Rounds & Makeup Days with Navigation */}
-          <div className={`xl:col-span-2 order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Rondes & Inhaaldagen
-                  </h2>
+        {isLentecompetitie ? (
+          /* For Lentecompetitie: Rounds and CrossTable full width, stacked */
+          <div className={`space-y-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+            {/* Rounds & Makeup Days with Navigation */}
+            <div className={`${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Rondes & Inhaaldagen
+                    </h2>
 
-                  {/* Navigation Controls */}
-                  {timeline.length > 1 && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={goToPrevious}
-                        className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
-                        {currentEntry?.kind === "round"
-                          ? `Ronde ${currentEntry.round.ronde_nummer}`
-                          : `Inhaaldag ${currentEntry?.day.makeupDayNumber}`}
+                    {/* Navigation Controls */}
+                    {timeline.length > 1 && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={goToPrevious}
+                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
+                          {currentEntry?.kind === "round"
+                            ? `Ronde ${currentEntry.round.ronde_nummer}`
+                            : `Inhaaldag ${currentEntry?.day.makeupDayNumber}`}
+                        </div>
+                        <button
+                          onClick={goToNext}
+                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
                       </div>
-                      <button
-                        onClick={goToNext}
-                        className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                    )}
+                  </div>
+
+                  {/* Round Indicators */}
+                  {timeline.length > 1 && (
+                    <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
+                      {timeline.map((entry, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentIndex(index)}
+                          className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            index === currentIndex
+                              ? "bg-white text-mainAccent"
+                              : "bg-white/20 text-white hover:bg-white/30"
+                          }`}
+                        >
+                          {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.day.makeupDayNumber}`}
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {/* Round Indicators */}
-                {timeline.length > 1 && (
-                  <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
-                    {timeline.map((entry, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentIndex(index)}
-                        className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
-                          index === currentIndex
-                            ? "bg-white text-mainAccent"
-                            : "bg-white/20 text-white hover:bg-white/30"
-                        }`}
-                      >
-                        {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.day.makeupDayNumber}`}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Current Round/Makeup Day Content */}
-              <div className="p-4 min-h-[300px]">
-                {currentEntry ? (
-                  currentEntry.kind === "round" ? (
-                    <RoundPairings 
-                      round={currentEntry.round} 
-                      tournament={tournament}
-                      allRounds={allRounds}
-                    />
+                {/* Current Round/Makeup Day Content */}
+                <div className="p-4 min-h-[300px]">
+                  {currentEntry ? (
+                    currentEntry.kind === "round" ? (
+                      <RoundPairings 
+                        round={currentEntry.round} 
+                        tournament={tournament}
+                        allRounds={allRounds}
+                      />
+                    ) : (
+                      <MakeupPairings round={currentEntry.day} games={currentEntry.games} onGameUndone={goToRound} currentUser={currentUser} />
+                    )
                   ) : (
-                    <MakeupPairings round={currentEntry.day} games={currentEntry.games} onGameUndone={goToRound} currentUser={currentUser} />
-                  )
-                ) : (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">Geen rondes beschikbaar</p>
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500">Geen rondes beschikbaar</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Cross Table - Full width below rounds for Lentecompetitie, only on rounds tab */}
+            {activeTab === 'rounds' && (
+             
+                
+                <div className="p-4">
+                  <CrossTable tournament={tournament} rounds={allRounds} />
+                </div>
+             
+            )}
+          </div>
+        ) : (
+          /* For other tournaments: Rounds and Standings side by side */
+          <div className={`grid grid-cols-1 xl:grid-cols-3 gap-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+            {/* Rounds & Makeup Days with Navigation */}
+            <div className={`xl:col-span-2 order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Rondes & Inhaaldagen
+                    </h2>
+
+                    {/* Navigation Controls */}
+                    {timeline.length > 1 && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={goToPrevious}
+                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
+                          {currentEntry?.kind === "round"
+                            ? `Ronde ${currentEntry.round.ronde_nummer}`
+                            : `Inhaaldag ${currentEntry?.day.makeupDayNumber}`}
+                        </div>
+                        <button
+                          onClick={goToNext}
+                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Round Indicators */}
+                  {timeline.length > 1 && (
+                    <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
+                      {timeline.map((entry, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentIndex(index)}
+                          className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            index === currentIndex
+                              ? "bg-white text-mainAccent"
+                              : "bg-white/20 text-white hover:bg-white/30"
+                          }`}
+                        >
+                          {entry.kind === "round" ? `R${entry.round.ronde_nummer}` : `I${entry.day.makeupDayNumber}`}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Current Round/Makeup Day Content */}
+                <div className="p-4 min-h-[300px]">
+                  {currentEntry ? (
+                    currentEntry.kind === "round" ? (
+                      <RoundPairings 
+                        round={currentEntry.round} 
+                        tournament={tournament}
+                        allRounds={allRounds}
+                      />
+                    ) : (
+                      <MakeupPairings round={currentEntry.day} games={currentEntry.games} onGameUndone={goToRound} currentUser={currentUser} />
+                    )
+                  ) : (
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500">Geen rondes beschikbaar</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Standings */}
+            <div className={`xl:col-span-1 order-1 xl:order-2 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Trophy className="h-4 w-4" />
+                    Stand
+                  </h2>
+                </div>
+                <div className="p-3">
+                  <StandingsWithModal tournament={tournament} rounds={allRounds} />
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Standings */}
-          <div className={`xl:col-span-1 order-1 xl:order-2 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  Stand
-                </h2>
-              </div>
-              <div className="p-3">
-                <StandingsWithModal tournament={tournament} rounds={allRounds} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Cross Table - Full width below rounds and standings for Lentecompetitie, only on rounds tab */}
-        {isLentecompetitie && activeTab === 'rounds' && (
-         
-            
-            <div className="p-4">
-              <CrossTable tournament={tournament} rounds={allRounds} />
-            </div>
-         
         )}
       </div>
     </div>
