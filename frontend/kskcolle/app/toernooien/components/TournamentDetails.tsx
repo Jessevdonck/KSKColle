@@ -6,6 +6,7 @@ import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
 import MegaschaakTab from "./MegaschaakTab"
+import CrossTable from "./CrossTable"
 import { getById, getAll, getAllTournamentRounds, undoPostponeGame, reportAbsence } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX, Clock, Swords } from "lucide-react"
@@ -62,7 +63,7 @@ export default function TournamentDetails() {
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] })[]
   >([])
   const [reportingAbsence, setReportingAbsence] = useState(false)
-  const [activeTab, setActiveTab] = useState<'rounds' | 'standings' | 'megaschaak'>('rounds')
+  const [activeTab, setActiveTab] = useState<'rounds' | 'standings' | 'megaschaak' | 'crosstable'>('rounds')
   const [selectedClassId, setSelectedClassId] = useState<number>(tournamentId)
   const { user: currentUser } = useAuth()
 
@@ -80,6 +81,9 @@ export default function TournamentDetails() {
       dedupingInterval: 0, // Disable deduplication to force fresh data
     },
   )
+
+  // Check if this is a Lentecompetitie tournament
+  const isLentecompetitie = tournament?.naam.toLowerCase().includes('lentecompetitie') || false
 
   // Debug logging
   console.log('🎯 Tournament type check - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);
@@ -454,7 +458,7 @@ export default function TournamentDetails() {
       )}
 
       {/* Desktop Tabs - Only visible on desktop */}
-      {tournament.megaschaak_enabled && (
+      {(tournament.megaschaak_enabled || isLentecompetitie) && (
         <div className="hidden xl:block bg-white border-b border-neutral-200">
           <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
             <div className="flex gap-2">
@@ -471,19 +475,36 @@ export default function TournamentDetails() {
                   Rondes & Stand
                 </div>
               </button>
-              <button
-                onClick={() => setActiveTab('megaschaak')}
-                className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                  activeTab === 'megaschaak'
-                    ? 'text-mainAccent border-mainAccent'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Swords className="h-4 w-4" />
-                  Megaschaak
-                </div>
-              </button>
+              {isLentecompetitie && (
+                <button
+                  onClick={() => setActiveTab('crosstable')}
+                  className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                    activeTab === 'crosstable'
+                      ? 'text-mainAccent border-mainAccent'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4" />
+                    Kruistabel
+                  </div>
+                </button>
+              )}
+              {tournament.megaschaak_enabled && (
+                <button
+                  onClick={() => setActiveTab('megaschaak')}
+                  className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                    activeTab === 'megaschaak'
+                      ? 'text-mainAccent border-mainAccent'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Swords className="h-4 w-4" />
+                    Megaschaak
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -519,6 +540,21 @@ export default function TournamentDetails() {
                 Stand
               </div>
             </button>
+            {isLentecompetitie && (
+              <button
+                onClick={() => setActiveTab('crosstable')}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'crosstable'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  Kruistabel
+                </div>
+              </button>
+            )}
             {tournament.megaschaak_enabled && (
               <button
                 onClick={() => setActiveTab('megaschaak')}
@@ -560,8 +596,15 @@ export default function TournamentDetails() {
           </div>
         )}
 
+        {/* Cross Table Tab - Only show for Lentecompetitie */}
+        {isLentecompetitie && activeTab === 'crosstable' && (
+          <div>
+            <CrossTable tournament={tournament} rounds={allRounds} />
+          </div>
+        )}
+
         {/* Regular Layout - Rounds and Standings */}
-        <div className={`grid grid-cols-1 xl:grid-cols-3 gap-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+        <div className={`grid grid-cols-1 xl:grid-cols-3 gap-4 ${activeTab === 'megaschaak' || activeTab === 'crosstable' ? 'hidden' : ''}`}>
           {/* Rounds & Makeup Days with Navigation */}
           <div className={`xl:col-span-2 order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
