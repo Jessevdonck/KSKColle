@@ -134,31 +134,31 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark">
-                <th className="sticky left-0 z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-2 py-2 text-center font-semibold text-white min-w-[40px]">
+                <th className="sticky left-0 z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-2 py-2 text-center font-semibold text-white w-[40px]">
                   #
                 </th>
-                <th className="sticky left-[40px] z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-3 py-2 text-left font-semibold text-white min-w-[150px]">
+                <th className="sticky left-[40px] z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-3 py-2 text-left font-semibold text-white w-[180px]">
                   Naam
                 </th>
-                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white min-w-[30px]">
+                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white w-[35px]">
                   PT
                 </th>
-                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white min-w-[30px]">
+                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white w-[35px]">
                   Part
                 </th>
                 {!tournament.is_youth && (
-                  <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white min-w-[40px]">
-                    ELO
+                  <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white w-[50px]">
+                    ELIO
                   </th>
                 )}
-                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white min-w-[40px]">
+                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white w-[50px]">
                   SB²
                 </th>
                 {/* Column headers with numbers */}
                 {standings.map((_, index) => (
                   <th
                     key={index}
-                    className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white min-w-[35px] last:border-r-0"
+                    className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white w-[35px] last:border-r-0"
                   >
                     {index + 1}
                   </th>
@@ -171,11 +171,11 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                 return (
                   <tr key={player.user_id} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                     {/* Position number */}
-                    <td className="sticky left-0 z-10 bg-inherit border-r border-gray-200 px-2 py-2 text-center font-bold text-gray-700">
+                    <td className="sticky left-0 z-10 bg-inherit border-r border-gray-200 px-2 py-2 text-center font-bold text-gray-700 w-[40px]">
                       {rowIndex + 1}
                     </td>
                     {/* Player name */}
-                    <td className="sticky left-[40px] z-10 bg-inherit border-r border-gray-200 px-3 py-2 font-medium text-gray-900">
+                    <td className="sticky left-[40px] z-10 bg-inherit border-r border-gray-200 px-3 py-2 font-medium text-gray-900 w-[180px]">
                       <Link
                         href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
                         className="hover:text-mainAccent transition-colors"
@@ -184,21 +184,21 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       </Link>
                     </td>
                     {/* Points */}
-                    <td className="border-r border-gray-200 px-1 py-2 text-center font-bold text-gray-900">
+                    <td className="border-r border-gray-200 px-1 py-2 text-center font-bold text-gray-900 w-[35px]">
                       {player.score}
                     </td>
                     {/* Games played */}
-                    <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700">
+                    <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700 w-[35px]">
                       {player.gamesPlayed}
                     </td>
-                    {/* ELO */}
+                    {/* ELIO */}
                     {!tournament.is_youth && (
-                      <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700">
+                      <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700 w-[50px]">
                         {player.schaakrating_elo || '-'}
                       </td>
                     )}
                     {/* SB² */}
-                    <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700">
+                    <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700 w-[50px]">
                       {player.tieBreak.toFixed(2)}
                     </td>
                     {/* Game results */}
@@ -207,7 +207,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                         return (
                           <td
                             key={opponent.user_id}
-                            className="border-r border-gray-200 px-1 py-2 text-center bg-green-50 last:border-r-0"
+                            className="border-r border-gray-200 px-1 py-2 text-center bg-green-50 w-[35px] last:border-r-0"
                           >
                             <span className="text-gray-400">-</span>
                           </td>
@@ -217,7 +217,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       return (
                         <td
                           key={opponent.user_id}
-                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result ?? null)}`}
+                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium w-[35px] last:border-r-0 ${getResultClass(result ?? null)}`}
                         >
                           {result !== null && result !== undefined ? result : "-"}
                         </td>
@@ -252,7 +252,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                     <div className="flex gap-4 mt-1 text-sm text-gray-600">
                       <span>PT: {player.score}</span>
                       <span>Part: {player.gamesPlayed}</span>
-                      {!tournament.is_youth && <span>ELO: {player.schaakrating_elo || '-'}</span>}
+                      {!tournament.is_youth && <span>ELIO: {player.schaakrating_elo || '-'}</span>}
                       <span>SB²: {player.tieBreak.toFixed(2)}</span>
                     </div>
                   </div>
