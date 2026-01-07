@@ -43,6 +43,7 @@ type Tournament = {
   rating_enabled?: boolean
   megaschaak_enabled?: boolean
   is_youth?: boolean
+  megaschaak_deadline?: string | null
   participations: Array<{
     user: {
       user_id: number
@@ -552,6 +553,7 @@ export default function TournamentDetails() {
             <MegaschaakTab 
               tournamentId={selectedClassId} 
               tournamentName={tournament.naam}
+              megaschaakDeadline={tournament.megaschaak_deadline}
             />
           </div>
         )}
@@ -562,6 +564,7 @@ export default function TournamentDetails() {
             <MegaschaakTab 
               tournamentId={selectedClassId} 
               tournamentName={tournament.naam}
+              megaschaakDeadline={tournament.megaschaak_deadline}
             />
           </div>
         )}

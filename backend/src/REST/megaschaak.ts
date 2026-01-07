@@ -5,6 +5,7 @@ import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
+import { getLogger } from '../core/logging';
 
 /**
  * @api {get} /megaschaak/active-tournament Get the active megaschaak tournament
@@ -73,6 +74,18 @@ const createTeam = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId;
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const { playerIds, teamName, reservePlayerId } = ctx.request.body as { playerIds: number[], teamName: string, reservePlayerId?: number };
+  
+  // Debug logging to identify user mismatch issue
+  const logger = getLogger();
+  logger.info('Creating megaschaak team', {
+    userId,
+    tournamentId,
+    teamName,
+    playerIdsCount: playerIds?.length,
+    sessionUserId: ctx.state.session?.userId,
+    sessionRoles: ctx.state.session?.roles,
+    authorizationHeader: ctx.headers.authorization ? 'present (first 20 chars: ' + ctx.headers.authorization.substring(0, 20) + '...)' : 'missing'
+  });
   
   const team = await megaschaakService.createTeam(userId, tournamentId, playerIds, teamName, reservePlayerId);
   ctx.status = 201;

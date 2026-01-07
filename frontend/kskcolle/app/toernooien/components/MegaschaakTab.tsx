@@ -5,26 +5,40 @@ import { useState } from "react"
 import useSWR from "swr"
 import { axios } from "../../api/index"
 import type { MegaschaakPlayer, MegaschaakTeam } from "@/data/types"
-import { Swords, Users, Search, Plus, Trash2, Save, TrendingUp, Trophy, X } from "lucide-react"
+import { Swords, Users, Search, Plus, Trash2, Save, TrendingUp, Trophy, X, Clock, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
+import { format, isPast } from "date-fns"
 
 interface MegaschaakTabProps {
   tournamentId: number
   tournamentName: string
+  megaschaakDeadline?: string | null
 }
 
 const MAX_PLAYERS = 10
 const MAX_BUDGET = 1000
 
-export default function MegaschaakTab({ tournamentId, tournamentName }: MegaschaakTabProps) {
+export default function MegaschaakTab({ tournamentId, tournamentName, megaschaakDeadline }: MegaschaakTabProps) {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [teamName, setTeamName] = useState("Mijn Team")
   const [selectedPlayers, setSelectedPlayers] = useState<MegaschaakPlayer[]>([])
 
-  // Fetch available players
+  // Check if deadline has passed
+  const isDeadlinePassed = megaschaakDeadline ? isPast(new Date(megaschaakDeadline)) : false
+
+  // Fetch standings if deadline has passed
+  const { data: standings = [], isLoading: standingsLoading } = useSWR<any[]>(
+    isDeadlinePassed ? `megaschaak/tournament/${tournamentId}/standings` : null,
+    async () => {
+      const response = await axios.get(`/megaschaak/tournament/${tournamentId}/standings`)
+      return response.data.items
+    }
+  )
+
+  // Fetch available players (only if deadline hasn't passed)
   const { data: availablePlayers = [], isLoading: playersLoading, mutate: mutatePlayers } = useSWR<MegaschaakPlayer[]>(
     'megaschaak/players',
     async () => {
@@ -176,6 +190,103 @@ export default function MegaschaakTab({ tournamentId, tournamentName }: Megascha
         variant: "destructive"
       })
     }
+  }
+
+  // Show deadline message if deadline hasn't passed
+  if (!isDeadlinePassed) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl text-center">
+          <Clock className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-blue-800 mb-2">Megaschaak deadline is nog niet verstreken</h3>
+          {megaschaakDeadline && (
+            <p className="text-sm text-blue-700">
+              De deadline is op <strong>{format(new Date(megaschaakDeadline), "dd/MM/yyyy 'om' HH:mm")}</strong>.
+              Na deze datum kun je hier de megaschaak standen bekijken.
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Show standings if deadline has passed
+  if (isDeadlinePassed) {
+    if (standingsLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
+            <p className="text-gray-600">Stand laden...</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (standings.length === 0) {
+      return (
+        <div className="bg-white rounded-lg shadow-md p-12 text-center">
+          <Trophy className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Nog geen teams</h3>
+          <p className="text-gray-500">Er zijn nog geen teams aangemaakt voor dit toernooi.</p>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-6">
+        
+
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Trophy className="h-5 w-5" />
+              Megaschaak Stand
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              {standings.map((team, index) => (
+                <div
+                  key={team.team_id}
+                  className={`flex items-center justify-between p-4 rounded-lg border-2 ${
+                    index === 0
+                      ? 'bg-yellow-50 border-yellow-300'
+                      : index === 1
+                      ? 'bg-gray-50 border-gray-300'
+                      : index === 2
+                      ? 'bg-orange-50 border-orange-300'
+                      : 'bg-white border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+                      index === 0
+                        ? 'bg-yellow-500'
+                        : index === 1
+                        ? 'bg-gray-400'
+                        : index === 2
+                        ? 'bg-orange-500'
+                        : 'bg-gray-300'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">{team.team_name}</div>
+                      <div className="text-sm text-gray-600">{team.players?.length || 0} spelers</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-mainAccent">{(team.totalScore || team.total_score || 0).toFixed(1)}</div>
+                    <div className="text-xs text-gray-500">punten</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (playersLoading) {

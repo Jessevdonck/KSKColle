@@ -40,6 +40,13 @@ export default function MegaschaakPage() {
     ? isPast(new Date(activeTournament.megaschaak_deadline))
     : false
 
+  // Reset to 'team' view if deadline hasn't passed and user tries to access other views
+  React.useEffect(() => {
+    if (!isRegistrationClosed && activeView !== 'team') {
+      setActiveView('team')
+    }
+  }, [isRegistrationClosed, activeView])
+
   // Fetch available players (all participants from all classes of the active tournament)
   const { data: availablePlayers = [], isLoading: playersLoading, mutate: mutatePlayers } = useSWR<MegaschaakPlayer[]>(
     activeTournament ? 'megaschaak/players' : null,
@@ -71,9 +78,9 @@ export default function MegaschaakPage() {
     }
   )
 
-  // Fetch standings
+  // Fetch standings (only if deadline has passed)
   const { data: standings = [], isLoading: standingsLoading } = useSWR<any[]>(
-    activeTournament ? `megaschaak/tournament/${activeTournament.tournament_id}/standings` : null,
+    activeTournament && isRegistrationClosed ? `megaschaak/tournament/${activeTournament.tournament_id}/standings` : null,
     async () => {
       if (!activeTournament) return []
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/standings`)
@@ -81,9 +88,9 @@ export default function MegaschaakPage() {
     }
   )
 
-  // Fetch cross-table data
+  // Fetch cross-table data (only if deadline has passed)
   const { data: crossTableData, isLoading: crossTableLoading } = useSWR<any>(
-    activeTournament ? `megaschaak/tournament/${activeTournament.tournament_id}/crosstable` : null,
+    activeTournament && isRegistrationClosed ? `megaschaak/tournament/${activeTournament.tournament_id}/crosstable` : null,
     async () => {
       if (!activeTournament) return null
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/crosstable`)
@@ -91,9 +98,9 @@ export default function MegaschaakPage() {
     }
   )
 
-  // Fetch popular players
+  // Fetch popular players (only if deadline has passed)
   const { data: popularPlayersData, isLoading: popularPlayersLoading } = useSWR<any>(
-    activeTournament ? `megaschaak/tournament/${activeTournament.tournament_id}/popular-players` : null,
+    activeTournament && isRegistrationClosed ? `megaschaak/tournament/${activeTournament.tournament_id}/popular-players` : null,
     async () => {
       if (!activeTournament) return null
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/popular-players`)
@@ -101,9 +108,9 @@ export default function MegaschaakPage() {
     }
   )
 
-  // Fetch value players
+  // Fetch value players (only if deadline has passed)
   const { data: valuePlayersData, isLoading: valuePlayersLoading } = useSWR<any>(
-    activeTournament ? `megaschaak/tournament/${activeTournament.tournament_id}/value-players` : null,
+    activeTournament && isRegistrationClosed ? `megaschaak/tournament/${activeTournament.tournament_id}/value-players` : null,
     async () => {
       if (!activeTournament) return null
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/value-players`)
@@ -506,65 +513,75 @@ export default function MegaschaakPage() {
                 Mijn Team
               </div>
             </button>
-            <button
-              onClick={() => setActiveView('standings')}
-              className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                activeView === 'standings'
-                  ? 'text-mainAccent border-mainAccent'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Trophy className="h-4 w-4" />
-                Stand
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveView('crosstable')}
-              className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                activeView === 'crosstable'
-                  ? 'text-mainAccent border-mainAccent'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Table2 className="h-4 w-4" />
-                Kruistabel
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveView('value')}
-              className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                activeView === 'value'
-                  ? 'text-mainAccent border-mainAccent'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Beste Waarde
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveView('popular')}
-              className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                activeView === 'popular'
-                  ? 'text-mainAccent border-mainAccent'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4" />
-                Populairste
-              </div>
-            </button>
+            {isRegistrationClosed && (
+              <>
+                <button
+                  onClick={() => setActiveView('standings')}
+                  className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+                    activeView === 'standings'
+                      ? 'text-mainAccent border-mainAccent'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4" />
+                    Stand
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveView('crosstable')}
+                  className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+                    activeView === 'crosstable'
+                      ? 'text-mainAccent border-mainAccent'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Table2 className="h-4 w-4" />
+                    Kruistabel
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveView('value')}
+                  className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+                    activeView === 'value'
+                      ? 'text-mainAccent border-mainAccent'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Beste Waarde
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveView('popular')}
+                  className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+                    activeView === 'popular'
+                      ? 'text-mainAccent border-mainAccent'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4" />
+                    Populairste
+                  </div>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className={`${activeView === 'crosstable' ? 'max-w-[95vw]' : 'max-w-7xl'} mx-auto px-6 sm:px-8 lg:px-12 py-8`}>
-        {activeView === 'popular' ? (
+        {!isRegistrationClosed && activeView !== 'team' ? (
+          // If deadline hasn't passed and user tries to access other views, show message
+          <div className="text-center py-12">
+            <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Deze tab is alleen beschikbaar na de deadline.</p>
+          </div>
+        ) : activeView === 'popular' ? (
           <PopularPlayersView 
             players={popularPlayersData?.items || []}
             isLoading={popularPlayersLoading}
@@ -950,7 +967,7 @@ export default function MegaschaakPage() {
                     <div className="mb-3 bg-blue-50 rounded-lg p-3 border border-blue-200">
                       <h4 className="text-sm font-bold text-blue-900 mb-1.5 flex items-center gap-2">
                         <UserPlus className="h-5 w-5 text-blue-700" />
-                        Reservespeler (Optioneel)
+                        Reservespeler
                       </h4>
                       <p className="text-xs text-blue-800 leading-relaxed">
                         <strong>Let op:</strong> Dit is een extra speler (niet 1 van de 10). Max 100 punten. 
@@ -1034,16 +1051,7 @@ function MyTeamsOverview({ myTeams }: { myTeams: MegaschaakTeam[] }) {
 
   return (
     <div className="space-y-6">
-      {/* Registration Closed Banner */}
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-        <div>
-          <h3 className="font-semibold text-red-800 mb-1">Inschrijvingen Gesloten</h3>
-          <p className="text-sm text-red-700">
-            Hieronder zie je je {myTeams.length === 1 ? 'team' : 'teams'} en de behaalde scores.
-          </p>
-        </div>
-      </div>
+     
 
       {/* Teams Grid */}
       <div className="space-y-4">

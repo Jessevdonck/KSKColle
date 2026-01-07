@@ -642,6 +642,11 @@ export const createTeam = async (
       throw ServiceError.validationFailed('Je moet precies 10 spelers selecteren');
     }
 
+    // Validate reserve player is required
+    if (!reservePlayerId) {
+      throw ServiceError.validationFailed('Je moet nog een reservespeler selecteren!');
+    }
+
     // Check if tournament exists and has megaschaak enabled
     const tournament = await prisma.tournament.findUnique({
       where: { tournament_id: tournamentId }
@@ -823,6 +828,11 @@ export const updateTeam = async (
     // Validate exactly 10 players
     if (playerIds.length !== 10) {
       throw ServiceError.validationFailed('Je moet precies 10 spelers selecteren');
+    }
+
+    // Validate reserve player is required
+    if (!reservePlayerId) {
+      throw ServiceError.validationFailed('Je moet nog een reservespeler selecteren!');
     }
 
     // Check if tournament deadline has passed
