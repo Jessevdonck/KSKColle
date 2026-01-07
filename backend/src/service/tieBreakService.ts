@@ -27,6 +27,18 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     },
   });
 
+  // 2.5) Haal het toernooitype op (SWISS of ROUND_ROBIN) en naam
+  const tour = await prisma.tournament.findUnique({
+    where: { tournament_id },
+    select: { type: true, naam: true },
+  });
+  if (!tour) {
+    throw ServiceError.notFound("Toernooi niet gevonden");
+  }
+
+  // Check if this is a Lentecompetitie tournament
+  const isLentecompetitie = tour.naam.toLowerCase().includes('lentecompetitie');
+
   // 3) Initialiseer maps
   // Gebruik de scores uit de participation tabel (zoals Sevilla ze berekent)
   const scoreMap: Record<number, number> = {};
@@ -139,19 +151,7 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     }
   }
 
-  // 6) Haal het toernooitype op (SWISS of ROUND_ROBIN) en naam
-  const tour = await prisma.tournament.findUnique({
-    where: { tournament_id },
-    select: { type: true, naam: true },
-  });
-  if (!tour) {
-    throw ServiceError.notFound("Toernooi niet gevonden");
-  }
-
-  // Check if this is a Lentecompetitie tournament
-  const isLentecompetitie = tour.naam.toLowerCase().includes('lentecompetitie')
-
-  // 7) Update alle deelnames in één transaction
+  // 6) Update alle deelnames in één transaction
   await prisma.$transaction(
     parts.map(({ user_id, tie_break }) => {
       // If tie_break is already set (from Sevilla import with ModifiedMedian), don't recalculate
