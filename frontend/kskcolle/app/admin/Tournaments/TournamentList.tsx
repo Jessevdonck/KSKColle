@@ -8,9 +8,10 @@ import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
 import { getAll, deleteById } from "../../api/index"
 import type { Toernooi, MegaschaakTeam } from "@/data/types"
-import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X, Calculator } from "lucide-react"
+import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X, Calculator, Plus } from "lucide-react"
 import MegaschaakConfigForm from "./components/MegaschaakConfigForm"
 import CloseTournamentDialog from "./components/CloseTournamentDialog"
+import AdminCreateTeamDialog from "./components/AdminCreateTeamDialog"
 import { axios } from "../../api/index"
 import {
   Dialog,
@@ -39,6 +40,8 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
   const [teamSearchQuery, setTeamSearchQuery] = useState("")
   const [configDialogOpen, setConfigDialogOpen] = useState(false)
   const [selectedTournamentForConfig, setSelectedTournamentForConfig] = useState<{ id: number, name: string } | null>(null)
+  const [createTeamDialogOpen, setCreateTeamDialogOpen] = useState(false)
+  const [selectedTournamentForCreateTeam, setSelectedTournamentForCreateTeam] = useState<Toernooi | null>(null)
   
   // Haal alleen actieve toernooien op (finished = false)
   const { data: tournaments, error, mutate } = useSWR<Toernooi[]>(
@@ -510,7 +513,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                   {group.tournaments.some(t => t.megaschaak_enabled) && (
                     <div className="bg-gray-50 rounded-lg p-2 mt-2">
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Clock className="h-3 w-3 text-gray-600 flex-shrink-0" />
                           <span className="text-xs text-gray-700">
                             Deadline: {
@@ -519,24 +522,6 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                                 : "Geen deadline"
                             }
                           </span>
-                        </div>
-                        <div className="flex gap-1 flex-wrap">
-                          <Button
-                            onClick={() => {
-                              setSelectedTournamentForConfig({ 
-                                id: group.tournaments[0].tournament_id, 
-                                name: group.name 
-                              })
-                              setConfigDialogOpen(true)
-                            }}
-                            size="sm"
-                            variant="ghost"
-                            className="text-mainAccent hover:bg-mainAccent/10 whitespace-nowrap"
-                            title="Formule configuratie bewerken"
-                          >
-                            <Calculator className="h-3 w-3 mr-1" />
-                            Formule
-                          </Button>
                           <Button
                             onClick={() => handleOpenDeadlineDialog(
                               group.tournaments.map(t => t.tournament_id),
@@ -548,6 +533,24 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                             className="h-6 text-xs text-mainAccent hover:bg-mainAccent/10 whitespace-nowrap"
                           >
                             Wijzig
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <Button
+                            onClick={() => {
+                              setSelectedTournamentForConfig({ 
+                                id: group.tournaments[0].tournament_id, 
+                                name: group.name 
+                              })
+                              setConfigDialogOpen(true)
+                            }}
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 text-xs text-mainAccent hover:bg-mainAccent/10 whitespace-nowrap"
+                            title="Formule configuratie bewerken"
+                          >
+                            <Calculator className="h-3 w-3 mr-1" />
+                            Formule
                           </Button>
                           <Button
                             onClick={() => handleOpenTeamsDialog(
@@ -582,6 +585,24 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
             <DialogTitle className="text-lg sm:text-xl">Megaschaak Teams - {selectedTournamentForTeams?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Create Team Button */}
+            {selectedTournamentForTeams && tournaments && (
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    const tournament = tournaments.find(t => selectedTournamentForTeams.ids.includes(t.tournament_id))
+                    if (tournament) {
+                      setSelectedTournamentForCreateTeam(tournament)
+                      setCreateTeamDialogOpen(true)
+                    }
+                  }}
+                  className="bg-mainAccent hover:bg-mainAccentDark"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Team Aanmaken voor Gebruiker
+                </Button>
+              </div>
+            )}
             {megaschaakTeams.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Trophy className="h-12 w-12 mx-auto mb-3 text-gray-300" />
@@ -725,6 +746,20 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Admin Create Team Dialog */}
+      {selectedTournamentForCreateTeam && (
+        <AdminCreateTeamDialog
+          open={createTeamDialogOpen}
+          onOpenChange={setCreateTeamDialogOpen}
+          tournament={selectedTournamentForCreateTeam}
+          onTeamCreated={() => {
+            mutateTeams()
+            setCreateTeamDialogOpen(false)
+            setSelectedTournamentForCreateTeam(null)
+          }}
+        />
+      )}
     </div>
     </>
   )

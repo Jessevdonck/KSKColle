@@ -803,6 +803,176 @@ export const createTeam = async (
 };
 
 /**
+ * Create a megaschaak team for a user (admin only, bypasses deadline check)
+ */
+export const adminCreateTeam = async (
+  targetUserId: number,
+  tournamentId: number,
+  playerIds: number[],
+  teamName: string,
+  reservePlayerId?: number
+) => {
+  try {
+    // Validate exactly 10 players
+    if (playerIds.length !== 10) {
+      throw ServiceError.validationFailed('Je moet precies 10 spelers selecteren');
+    }
+
+    // Validate reserve player is required
+    if (!reservePlayerId) {
+      throw ServiceError.validationFailed('Je moet nog een reservespeler selecteren!');
+    }
+
+    // Check if tournament exists and has megaschaak enabled
+    const tournament = await prisma.tournament.findUnique({
+      where: { tournament_id: tournamentId }
+    });
+
+    if (!tournament) {
+      throw ServiceError.notFound('Toernooi niet gevonden');
+    }
+
+    if (!tournament.megaschaak_enabled) {
+      throw ServiceError.validationFailed('Megaschaak is niet ingeschakeld voor dit toernooi');
+    }
+
+    // Admin bypass: Skip deadline check
+
+    // Get all tournaments with the same name (all classes)
+    const allClassesTournaments = await prisma.tournament.findMany({
+      where: { naam: tournament.naam }
+    });
+    const tournamentIds = allClassesTournaments.map(t => t.tournament_id);
+
+    // Get all players and calculate total cost
+    const players = await prisma.user.findMany({
+      where: {
+        user_id: { in: playerIds }
+      },
+      select: {
+        user_id: true,
+        schaakrating_elo: true
+      }
+    });
+
+    // Get class information for each player
+    const participations = await prisma.participation.findMany({
+      where: {
+        user_id: { in: playerIds },
+        tournament_id: { in: tournamentIds }
+      },
+      include: {
+        tournament: {
+          select: {
+            class_name: true
+          }
+        }
+      }
+    });
+
+    const playerClassMap = new Map();
+    for (const participation of participations) {
+      if (!playerClassMap.has(participation.user_id)) {
+        playerClassMap.set(participation.user_id, participation.tournament.class_name || 'Hoofdtoernooi');
+      }
+    }
+
+    let totalCost = 0;
+    for (const player of players) {
+      const className = playerClassMap.get(player.user_id) || 'Hoofdtoernooi';
+      const cost = await calculatePlayerCost(player.user_id, className, tournamentIds);
+      totalCost += cost;
+    }
+
+    // Validate budget (max 1000 points)
+    if (totalCost > 1000) {
+      throw ServiceError.validationFailed(`Budget overschreden! Totaal: ${totalCost} punten (max 1000)`);
+    }
+
+    // Validate reserve player if provided
+    let reserveCost = 0;
+    if (reservePlayerId) {
+      // Get reserve player's class
+      const reserveParticipation = await prisma.participation.findFirst({
+        where: {
+          user_id: reservePlayerId,
+          tournament_id: { in: tournamentIds }
+        },
+        include: {
+          tournament: {
+            select: {
+              class_name: true
+            }
+          }
+        }
+      });
+
+      if (!reserveParticipation) {
+        throw ServiceError.validationFailed('Reservespeler niet gevonden in het toernooi');
+      }
+
+      const reserveClassName = reserveParticipation.tournament.class_name || 'Hoofdtoernooi';
+      reserveCost = await calculatePlayerCost(reservePlayerId, reserveClassName, tournamentIds);
+
+      if (reserveCost > 100) {
+        throw ServiceError.validationFailed(`Reservespeler mag maximaal 100 punten kosten (huidige kost: ${reserveCost})`);
+      }
+    }
+
+    // Create new team (multiple teams per user allowed)
+    const team = await prisma.megaschaakTeam.create({
+      data: {
+        user_id: targetUserId,
+        tournament_id: tournamentId,
+        team_name: teamName || 'Mijn Team',
+        reserve_player_id: reservePlayerId || null,
+        reserve_cost: reserveCost || null,
+        players: {
+          create: await Promise.all(players.map(async player => {
+            const className = playerClassMap.get(player.user_id) || 'Hoofdtoernooi';
+            const cost = await calculatePlayerCost(player.user_id, className, tournamentIds);
+            return {
+              player_id: player.user_id,
+              cost
+            };
+          }))
+        }
+      },
+      include: {
+        players: {
+          include: {
+            player: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+                schaakrating_elo: true,
+                is_youth: true,
+                avatar_url: true,
+              }
+            }
+          }
+        },
+        reserve_player: {
+          select: {
+            user_id: true,
+            voornaam: true,
+            achternaam: true,
+            schaakrating_elo: true,
+            is_youth: true,
+            avatar_url: true,
+          }
+        }
+      }
+    });
+
+    return team;
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+/**
  * Update an existing megaschaak team
  */
 export const updateTeam = async (

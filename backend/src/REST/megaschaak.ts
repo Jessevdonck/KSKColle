@@ -298,6 +298,43 @@ getAllTeams.validationScheme = {
 };
 
 /**
+ * @api {post} /megaschaak/admin/tournament/:tournamentId/team Create team for a user (admin only)
+ * @apiName AdminCreateTeam
+ * @apiGroup Megaschaak
+ */
+const adminCreateTeam = async (ctx: KoaContext) => {
+  const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
+  const { playerIds, teamName, reservePlayerId, userId } = ctx.request.body as { 
+    playerIds: number[], 
+    teamName: string, 
+    reservePlayerId?: number,
+    userId: number 
+  };
+  
+  if (!userId) {
+    ctx.status = 400;
+    ctx.body = { message: 'userId is verplicht' };
+    return;
+  }
+  
+  const team = await megaschaakService.adminCreateTeam(userId, tournamentId, playerIds, teamName, reservePlayerId);
+  ctx.status = 201;
+  ctx.body = team;
+};
+
+adminCreateTeam.validationScheme = {
+  params: {
+    tournamentId: Joi.number().integer().positive().required(),
+  },
+  body: {
+    playerIds: Joi.array().items(Joi.number().integer().positive()).max(10).required(),
+    teamName: Joi.string().max(100).required(),
+    reservePlayerId: Joi.number().integer().positive().optional(),
+    userId: Joi.number().integer().positive().required(),
+  },
+};
+
+/**
  * @api {delete} /megaschaak/admin/team/:teamId Delete team as admin
  * @apiName AdminDeleteTeam
  * @apiGroup Megaschaak
@@ -382,6 +419,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.patch('/tournament/:tournamentId/toggle', requireAuthentication, requireAdmin, validate(toggleMegaschaak.validationScheme), toggleMegaschaak);
   router.patch('/tournament/:tournamentId/deadline', requireAuthentication, requireAdmin, validate(setMegaschaakDeadline.validationScheme), setMegaschaakDeadline);
   router.get('/tournament/:tournamentId/all-teams', requireAuthentication, requireAdmin, validate(getAllTeams.validationScheme), getAllTeams);
+  router.post('/admin/tournament/:tournamentId/team', requireAuthentication, requireAdmin, validate(adminCreateTeam.validationScheme), adminCreateTeam);
   router.delete('/admin/team/:teamId', requireAuthentication, requireAdmin, validate(adminDeleteTeam.validationScheme), adminDeleteTeam);
   router.get('/tournament/:tournamentId/config', requireAuthentication, requireAdmin, validate(getMegaschaakConfig.validationScheme), getMegaschaakConfig);
   router.patch('/tournament/:tournamentId/config', requireAuthentication, requireAdmin, validate(updateMegaschaakConfig.validationScheme), updateMegaschaakConfig);
