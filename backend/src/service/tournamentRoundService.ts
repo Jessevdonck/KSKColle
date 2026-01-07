@@ -149,7 +149,7 @@ export async function createMakeupRoundBetween(
         // Bepaal inhaaldag nummer voor dit toernooi
         const otherMakeupDayNumber = getMakeupDayNumber(otherExistingRounds);
 
-        // Maak de inhaaldag ronde aan
+        // Maak de inhaaldag ronde aan met hetzelfde calendar_event_id (delen hetzelfde event)
         await prisma.round.create({
           data: {
             tournament_id: otherTournament.tournament_id,
@@ -159,18 +159,11 @@ export async function createMakeupRoundBetween(
             type: RoundType.MAKEUP,
             label: label || `Inhaaldag ${otherMakeupDayNumber}`,
             is_sevilla_imported: false,
+            calendar_event_id: calendarEvent.event_id, // Deel hetzelfde calendar event
           },
         });
 
-        // Maak ook een calendar event voor dit toernooi
-        await calendarService.createEvent({
-          title: eventTitle,
-          description: `Inhaaldag voor uitgestelde partijen`,
-          type: "Inhaaldag",
-          date: date,
-          startuur: startuur,
-          tournament_id: otherTournament.tournament_id,
-        });
+        // Geen extra calendar event aanmaken - we delen hetzelfde event
       }
     }
 
@@ -408,7 +401,7 @@ export async function updateMakeupRoundDate(
       }
     });
 
-    // Update calendar event
+    // Update calendar event (maar 1 keer, alle klassen delen hetzelfde event)
     if (round.calendar_event_id) {
       const eventUpdateData: any = {
         date: new_date,
@@ -451,16 +444,7 @@ export async function updateMakeupRoundDate(
             data: updateData
           });
 
-          // Update ook het calendar event als dat bestaat
-          if (correspondingRound.calendar_event_id) {
-            const eventUpdateData: any = {
-              date: new_date,
-            };
-            if (new_startuur !== undefined) {
-              eventUpdateData.startuur = new_startuur;
-            }
-            await calendarService.updateEvent(correspondingRound.calendar_event_id, eventUpdateData);
-          }
+          // Calendar event is al geüpdatet hierboven, geen extra update nodig
         }
       }
     }
@@ -501,10 +485,7 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
     const originalDate = round.ronde_datum;
     const originalRoundNumber = round.ronde_nummer;
 
-    // Verwijder calendar event
-    if (round.calendar_event_id) {
-      await calendarService.deleteEvent(round.calendar_event_id);
-    }
+    const calendarEventId = round.calendar_event_id;
 
     // Verwijder de ronde (games worden automatisch verwijderd)
     await prisma.round.delete({
@@ -536,11 +517,6 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
         });
 
         if (correspondingRound) {
-          // Verwijder calendar event
-          if (correspondingRound.calendar_event_id) {
-            await calendarService.deleteEvent(correspondingRound.calendar_event_id);
-          }
-
           // Verwijder de ronde
           await prisma.round.delete({
             where: { round_id: correspondingRound.round_id }
@@ -549,6 +525,26 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
           // Verschuif rondes terug
           await shiftRoundsBack(otherTournament.tournament_id, originalRoundNumber);
         }
+      }
+
+      // Verwijder het calendar event maar 1 keer (alle klassen delen hetzelfde event)
+      if (calendarEventId) {
+        // Check of er nog andere rounds zijn die dit event gebruiken
+        const remainingRounds = await prisma.round.findFirst({
+          where: {
+            calendar_event_id: calendarEventId
+          }
+        });
+
+        // Alleen verwijderen als er geen andere rounds meer zijn die dit event gebruiken
+        if (!remainingRounds) {
+          await calendarService.deleteEvent(calendarEventId);
+        }
+      }
+    } else {
+      // Voor niet-Lentecompetitie: verwijder het calendar event als het bestaat
+      if (calendarEventId) {
+        await calendarService.deleteEvent(calendarEventId);
       }
     }
   } catch (error) {

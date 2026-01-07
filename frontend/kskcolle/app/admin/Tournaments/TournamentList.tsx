@@ -113,6 +113,20 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
       groups.get(groupKey)!.push(tournament)
     })
     
+    // Define class order for sorting
+    const classOrder = [
+      'Eerste Klasse',
+      'Tweede Klasse',
+      'Derde Klasse',
+      'Vierde Klasse',
+      'Vijfde Klasse',
+      'Vierde en Vijfde Klasse',
+      'Zesde Klasse',
+      'Zevende Klasse',
+      'Achtste Klasse',
+      'Hoofdtoernooi'
+    ]
+
     return Array.from(groups.entries()).map(([name, tournaments]) => ({
       name,
       tournaments: tournaments.sort((a, b) => {
@@ -120,6 +134,19 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
         if (!a.class_name && !b.class_name) return 0
         if (!a.class_name) return 1
         if (!b.class_name) return -1
+        
+        // Use class order for sorting
+        const aIndex = classOrder.indexOf(a.class_name)
+        const bIndex = classOrder.indexOf(b.class_name)
+        
+        // If both are in the order list, use their index
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+        
+        // If only one is in the list, prioritize it
+        if (aIndex !== -1) return -1
+        if (bIndex !== -1) return 1
+        
+        // If neither is in the list, use alphabetical
         return a.class_name.localeCompare(b.class_name)
       })
     }))

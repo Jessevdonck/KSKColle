@@ -87,7 +87,7 @@ export async function addMakeupDay(
         })
         const otherMakeupDayNumber = otherExistingMakeupDays.length + 1
 
-        // Maak de inhaaldag aan
+        // Maak de inhaaldag aan met hetzelfde calendar_event_id (delen hetzelfde event)
         await prisma.makeupDay.create({
           data: {
             tournament_id: otherTournament.tournament_id,
@@ -95,18 +95,11 @@ export async function addMakeupDay(
             date,
             startuur,
             label: `Inhaaldag ${otherMakeupDayNumber}`,
+            calendar_event_id: calendarEvent.event_id, // Deel hetzelfde calendar event
           },
         })
 
-        // Maak ook een calendar event voor dit toernooi
-        await calendarService.createEvent({
-          title: eventTitle,
-          description: `Inhaaldag voor uitgestelde partijen`,
-          type: "Inhaaldag",
-          date: date,
-          startuur: startuur,
-          tournament_id: otherTournament.tournament_id,
-        })
+        // Geen extra calendar event aanmaken - we delen hetzelfde event
       }
     }
 
@@ -149,7 +142,16 @@ export async function updateMakeupDay(
     // 3. Check of dit een Lentecompetitie is
     const isLentecompetitie = makeupDay.tournament.naam.toLowerCase().includes('lentecompetitie')
 
-    // 4. Als dit een Lentecompetitie is, update ook de corresponderende inhaaldagen in andere klassen
+    // 4. Update calendar event als dat bestaat (maar 1 keer, alle klassen delen hetzelfde event)
+    if (makeupDay.calendar_event_id && (data.date || data.startuur)) {
+      const eventUpdateData: any = {}
+      if (data.date) eventUpdateData.date = data.date
+      if (data.startuur) eventUpdateData.startuur = data.startuur
+      
+      await calendarService.updateEvent(makeupDay.calendar_event_id, eventUpdateData)
+    }
+
+    // 5. Als dit een Lentecompetitie is, update ook de corresponderende inhaaldagen in andere klassen
     if (isLentecompetitie && (data.date || data.startuur)) {
       const allTournaments = await prisma.tournament.findMany({
         where: { 
@@ -160,7 +162,6 @@ export async function updateMakeupDay(
       })
 
       // Vind corresponderende inhaaldagen in andere klassen (op basis van round_after en originele date)
-      
       for (const otherTournament of allTournaments) {
         const correspondingMakeupDay = await prisma.makeupDay.findFirst({
           where: {
@@ -181,11 +182,7 @@ export async function updateMakeupDay(
             data: updateData
           })
 
-          // Update ook het calendar event als dat bestaat
-          if (correspondingMakeupDay.calendar_event_id && (data.date || data.startuur)) {
-            // Calendar event update zou hier moeten gebeuren, maar calendarService heeft geen update functie
-            // Dit kan later worden toegevoegd indien nodig
-          }
+          // Calendar event is al geüpdatet hierboven, geen extra update nodig
         }
       }
     }
@@ -216,6 +213,7 @@ export async function removeMakeupDay(id: number): Promise<void> {
     const isLentecompetitie = makeupDay.tournament.naam.toLowerCase().includes('lentecompetitie')
     const roundAfter = makeupDay.round_after
     const date = makeupDay.date
+    const calendarEventId = makeupDay.calendar_event_id
 
     // 3. Verwijder de makeup day
     await prisma.makeupDay.delete({ where: { id } })
@@ -243,6 +241,26 @@ export async function removeMakeupDay(id: number): Promise<void> {
         if (correspondingMakeupDay) {
           await prisma.makeupDay.delete({ where: { id: correspondingMakeupDay.id } })
         }
+      }
+
+      // Verwijder het calendar event maar 1 keer (alle klassen delen hetzelfde event)
+      if (calendarEventId) {
+        // Check of er nog andere makeup days zijn die dit event gebruiken
+        const remainingMakeupDays = await prisma.makeupDay.findFirst({
+          where: {
+            calendar_event_id: calendarEventId
+          }
+        })
+
+        // Alleen verwijderen als er geen andere makeup days meer zijn die dit event gebruiken
+        if (!remainingMakeupDays) {
+          await calendarService.removeEvent(calendarEventId)
+        }
+      }
+    } else {
+      // Voor niet-Lentecompetitie: verwijder het calendar event als het bestaat
+      if (calendarEventId) {
+        await calendarService.removeEvent(calendarEventId)
       }
     }
   } catch (e) {
