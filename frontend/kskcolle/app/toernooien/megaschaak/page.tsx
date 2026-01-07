@@ -918,93 +918,81 @@ export default function MegaschaakPage() {
                 </div>
               ) : (
                 <>
-                  <div className="space-y-2 mb-4 max-h-[400px] overflow-y-auto">
+                  <div className="space-y-1.5 mb-3">
                     {selectedPlayers.map((player, index) => (
                       <div
                         key={player.user_id}
-                        className="flex items-center justify-between p-3 bg-mainAccent/10 border border-mainAccent/30 rounded-lg"
+                        className="flex items-center justify-between p-2 bg-mainAccent/10 border border-mainAccent/30 rounded-lg"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="bg-mainAccent text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
                             {index + 1}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className="font-medium text-gray-800">
-                                {player.voornaam} {player.achternaam}
-                              </div>
-                              {player.class_name && (
-                                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-white/80 text-mainAccent border border-mainAccent/30">
-                                  {player.class_name}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              Rating: {player.schaakrating_elo}
-                            </div>
+                          <div className="font-medium text-sm text-gray-800 truncate flex-shrink-0 min-w-[120px]">
+                            {player.voornaam} {player.achternaam}
+                          </div>
+                          {player.class_name && (
+                            <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-white/80 text-mainAccent border border-mainAccent/30 flex-shrink-0">
+                              {player.class_name}
+                            </span>
+                          )}
+                          <div className="text-xs text-gray-600 flex-shrink-0">
+                            Elo: {player.schaakrating_elo}
+                          </div>
+                          <div className="text-xs font-semibold text-mainAccent flex-shrink-0">
+                            {player.cost} pts
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <div className="text-sm font-semibold text-mainAccent">
-                            {player.cost} pts
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removePlayer(player.user_id)}
-                            className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removePlayer(player.user_id)}
+                          className="h-7 w-7 p-0 hover:bg-red-100 hover:text-red-600 flex-shrink-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
                       </div>
                     ))}
                   </div>
 
                   {/* Reserve Speler Section */}
-                  <div className="mt-4 pt-4 border-t-2 border-blue-200">
-                    <div className="mb-3 bg-blue-50 rounded-lg p-3 border border-blue-200">
-                      <h4 className="text-sm font-bold text-blue-900 mb-1.5 flex items-center gap-2">
-                        <UserPlus className="h-5 w-5 text-blue-700" />
-                        Reservespeler
+                  <div className="mt-3 pt-3 border-t border-blue-200">
+                    <div className="mb-2 bg-blue-50 rounded-lg p-2 border border-blue-200">
+                      <h4 className="text-xs font-bold text-blue-900 mb-1 flex items-center gap-1.5">
+                        <UserPlus className="h-4 w-4 text-blue-700" />
+                        Reservespeler (max 100 pts)
                       </h4>
-                      <p className="text-xs text-blue-800 leading-relaxed">
-                        <strong>Let op:</strong> Dit is een extra speler (niet 1 van de 10). Max 100 punten. 
-                        Wordt automatisch ingewisseld bij een algemeen forfait. 
-                        Klik op <span className="bg-blue-200 px-1.5 py-0.5 rounded font-semibold">+ Reserve</span> bij een speler uit de lijst.
-                      </p>
                     </div>
 
                     {reservePlayer ? (
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                      <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
                             R
                           </div>
-                          <div>
-                            <div className="font-medium text-gray-800">
-                              {reservePlayer.voornaam} {reservePlayer.achternaam}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              Rating: {reservePlayer.schaakrating_elo} | Kost: {reservePlayer.cost} pts
-                            </div>
+                          <div className="font-medium text-sm text-gray-800 truncate flex-shrink-0 min-w-[120px]">
+                            {reservePlayer.voornaam} {reservePlayer.achternaam}
+                          </div>
+                          <div className="text-xs text-gray-600 flex-shrink-0">
+                            Elo: {reservePlayer.schaakrating_elo}
+                          </div>
+                          <div className="text-xs font-semibold text-mainAccent flex-shrink-0">
+                            {reservePlayer.cost} pts
                           </div>
                         </div>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => setReservePlayer(null)}
-                          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                          className="h-7 w-7 p-0 hover:bg-red-100 hover:text-red-600 flex-shrink-0"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
                     ) : (
-                      <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
-                        <UserPlus className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <div className="text-center py-2 text-gray-500 bg-gray-50 rounded-lg">
                         <p className="text-xs">Geen reservespeler geselecteerd</p>
-                        <p className="text-xs mt-1">Selecteer een speler uit de lijst (≤100 pts)</p>
                       </div>
                     )}
                   </div>
