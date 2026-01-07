@@ -660,8 +660,8 @@ export default function TournamentDetails() {
           </div>
         </div>
 
-        {/* Cross Table - Full width below rounds and standings for Lentecompetitie */}
-        {isLentecompetitie && (
+        {/* Cross Table - Full width below rounds and standings for Lentecompetitie, only on rounds tab */}
+        {isLentecompetitie && activeTab === 'rounds' && (
           <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
