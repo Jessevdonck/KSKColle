@@ -272,32 +272,70 @@ export class SevillaImporterService {
       const voornaam = nameParts[0] || 'Unknown';
       const achternaam = nameParts.slice(1).join(' ') || 'Unknown';
 
-      // Try to find existing user by name or create new one
-      let user = await prisma.user.findFirst({
+      console.log(`🔍 Importing player: Sevilla ID=${sevillaPlayer.ID}, Name="${normalizedName}" (${voornaam} ${achternaam})`);
+
+      // Try to find existing user by name (case-insensitive exact match)
+      // MySQL doesn't support case-insensitive mode, so we fetch all and filter in JavaScript
+      const voornaamLower = voornaam.toLowerCase();
+      const achternaamLower = achternaam.toLowerCase();
+      
+      // Fetch potential matches (using exact match first for performance)
+      const potentialMatches = await prisma.user.findMany({
         where: {
           OR: [
-            { 
-              AND: [
-                { voornaam: voornaam },
-                { achternaam: achternaam }
-              ]
-            },
-            { email: sevillaPlayer.PlayerID && sevillaPlayer.PlayerID.includes('@') ? sevillaPlayer.PlayerID : `${sevillaPlayer.PlayerID || `sevilla_${sevillaPlayer.ID}`}@kskcolle.be` },
-          ],
+            { voornaam: voornaam }, // Exact match first
+            { achternaam: achternaam }
+          ]
         },
       });
+
+      // Filter case-insensitively in JavaScript
+      const allMatches = potentialMatches.filter(u => 
+        u.voornaam.toLowerCase() === voornaamLower && 
+        u.achternaam.toLowerCase() === achternaamLower
+      );
+      
+      let user = allMatches[0] || null;
+
+      // If multiple users found with same name, log warning and use first one
+      if (user) {
+        if (allMatches.length > 1) {
+          console.warn(`⚠️ Multiple users found with name "${voornaam} ${achternaam}": ${allMatches.map(u => `ID=${u.user_id} (${u.voornaam} ${u.achternaam})`).join(', ')}`);
+          console.warn(`   Using first match: ID=${user.user_id} (${user.voornaam} ${user.achternaam})`);
+        } else {
+          console.log(`✅ Found existing user: ID=${user.user_id} (${user.voornaam} ${user.achternaam})`);
+        }
+      }
+
+      // Also try email match if PlayerID is provided
+      if (!user && sevillaPlayer.PlayerID) {
+        const emailToMatch = sevillaPlayer.PlayerID.includes('@') 
+          ? sevillaPlayer.PlayerID 
+          : `${sevillaPlayer.PlayerID}@kskcolle.be`;
+        
+        user = await prisma.user.findFirst({
+          where: { email: emailToMatch },
+        });
+        
+        if (user) {
+          console.log(`✅ Found user by email: ID=${user.user_id} (${user.voornaam} ${user.achternaam}, email=${user.email})`);
+        }
+      }
 
       // Check if this user is already mapped to another Sevilla player
       const existingMapping = Array.from(playerMap.entries()).find(([_, userId]) => userId === user?.user_id);
       if (existingMapping && existingMapping[0] !== sevillaPlayer.ID) {
+        const conflictingSevillaPlayer = players.find(p => p.ID === existingMapping[0]);
+        console.warn(`⚠️ User ID=${user.user_id} (${user.voornaam} ${user.achternaam}) is already mapped to Sevilla player ID=${existingMapping[0]} (${conflictingSevillaPlayer?.Name || 'unknown'})`);
+        console.warn(`   Skipping Sevilla player ID=${sevillaPlayer.ID} (${normalizedName}) to avoid duplicate mapping`);
+        skippedCount++;
         continue; // Skip this player
       }
 
       if (!user) {
-
-        
         // Don't generate fake emails - leave email empty for imported users
         // Admins can add proper email addresses later if needed
+        console.log(`📝 Creating new user: ${voornaam} ${achternaam}`);
         user = await prisma.user.create({
           data: {
             voornaam: voornaam,
@@ -311,7 +349,7 @@ export class SevillaImporterService {
             roles: JSON.stringify(['user']),
           },
         });
-        
+        console.log(`✅ Created new user: ID=${user.user_id} (${user.voornaam} ${user.achternaam})`);
       } 
 
       // Check if participation already exists
@@ -364,9 +402,10 @@ export class SevillaImporterService {
       }
 
       playerMap.set(sevillaPlayer.ID, user.user_id);
+      console.log(`✅ Mapped Sevilla player ID=${sevillaPlayer.ID} ("${normalizedName}") -> User ID=${user.user_id} (${user.voornaam} ${user.achternaam})`);
     }
 
-    console.log(`Player import summary: ${playerMap.size} players found and mapped, ${skippedCount} players skipped (not found in database)`);
+    console.log(`\n📊 Player import summary: ${playerMap.size} players found and mapped, ${skippedCount} players skipped (duplicate mappings)`);
     return playerMap;
   }
 
