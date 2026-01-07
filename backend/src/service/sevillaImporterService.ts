@@ -323,13 +323,16 @@ export class SevillaImporterService {
       }
 
       // Check if this user is already mapped to another Sevilla player
-      const existingMapping = Array.from(playerMap.entries()).find(([_, userId]) => userId === user?.user_id);
-      if (existingMapping && existingMapping[0] !== sevillaPlayer.ID) {
-        const conflictingSevillaPlayer = players.find(p => p.ID === existingMapping[0]);
-        console.warn(`⚠️ User ID=${user.user_id} (${user.voornaam} ${user.achternaam}) is already mapped to Sevilla player ID=${existingMapping[0]} (${conflictingSevillaPlayer?.Name || 'unknown'})`);
-        console.warn(`   Skipping Sevilla player ID=${sevillaPlayer.ID} (${normalizedName}) to avoid duplicate mapping`);
-        skippedCount++;
-        continue; // Skip this player
+      // Only check if user exists
+      if (user) {
+        const existingMapping = Array.from(playerMap.entries()).find(([_, userId]) => userId === user.user_id);
+        if (existingMapping && existingMapping[0] !== sevillaPlayer.ID) {
+          const conflictingSevillaPlayer = players.find(p => p.ID === existingMapping[0]);
+          console.warn(`⚠️ User ID=${user.user_id} (${user.voornaam} ${user.achternaam}) is already mapped to Sevilla player ID=${existingMapping[0]} (${conflictingSevillaPlayer?.Name || 'unknown'})`);
+          console.warn(`   Skipping Sevilla player ID=${sevillaPlayer.ID} (${normalizedName}) to avoid duplicate mapping`);
+          skippedCount++;
+          continue; // Skip this player
+        }
       }
 
       if (!user) {
