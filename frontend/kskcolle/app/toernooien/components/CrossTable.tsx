@@ -1,7 +1,11 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { calculateStandings } from "./Standings"
+
+const createUrlFriendlyName = (voornaam: string, achternaam: string) =>
+  `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
 
 type Game = {
   game_id: number
@@ -172,7 +176,12 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                     </td>
                     {/* Player name */}
                     <td className="sticky left-[40px] z-10 bg-inherit border-r border-gray-200 px-3 py-2 font-medium text-gray-900">
-                      {player.voornaam} {player.achternaam}
+                      <Link
+                        href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                        className="hover:text-mainAccent transition-colors"
+                      >
+                        {player.voornaam} {player.achternaam}
+                      </Link>
                     </td>
                     {/* Points */}
                     <td className="border-r border-gray-200 px-1 py-2 text-center font-bold text-gray-900">
@@ -232,7 +241,13 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-bold text-gray-900 text-lg">
-                      {index + 1}. {player.voornaam} {player.achternaam}
+                      {index + 1}.{' '}
+                      <Link
+                        href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                        className="hover:text-mainAccent transition-colors"
+                      >
+                        {player.voornaam} {player.achternaam}
+                      </Link>
                     </h3>
                     <div className="flex gap-4 mt-1 text-sm text-gray-600">
                       <span>PT: {player.score}</span>
