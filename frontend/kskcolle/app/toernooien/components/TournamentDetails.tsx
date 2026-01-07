@@ -49,7 +49,11 @@ type Tournament = {
       user_id: number
       voornaam: string
       achternaam: string
+      schaakrating_elo?: number
     }
+    sevilla_rating_change?: number | null
+    tie_break?: number | null
+    score?: number | null
   }>
   rounds: Round[]
   is_sevilla_imported?: boolean
@@ -570,9 +574,9 @@ export default function TournamentDetails() {
         )}
 
         {/* Regular Layout - Rounds and Standings */}
-        <div className={`grid grid-cols-1 xl:grid-cols-3 gap-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+        <div className={`grid grid-cols-1 ${isLentecompetitie ? '' : 'xl:grid-cols-3'} gap-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
           {/* Rounds & Makeup Days with Navigation */}
-          <div className={`xl:col-span-2 order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
+          <div className={`${isLentecompetitie ? 'xl:col-span-1' : 'xl:col-span-2'} order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
                 <div className="flex items-center justify-between">
@@ -647,23 +651,25 @@ export default function TournamentDetails() {
             </div>
           </div>
 
-          {/* Standings */}
-          <div className={`xl:col-span-1 order-1 xl:order-2 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  Stand
-                </h2>
-              </div>
-              <div className="p-3">
-                <StandingsWithModal tournament={tournament} rounds={allRounds} />
+          {/* Standings - Only for non-Lentecompetitie */}
+          {!isLentecompetitie && (
+            <div className={`xl:col-span-1 order-1 xl:order-2 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Trophy className="h-4 w-4" />
+                    Stand
+                  </h2>
+                </div>
+                <div className="p-3">
+                  <StandingsWithModal tournament={tournament} rounds={allRounds} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Cross Table - Full width below rounds and standings for Lentecompetitie, only on rounds tab */}
+        {/* Cross Table - Full width below rounds for Lentecompetitie, only on rounds tab */}
         {isLentecompetitie && activeTab === 'rounds' && (
           <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
