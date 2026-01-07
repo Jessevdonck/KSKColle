@@ -106,18 +106,39 @@ const addGameToMakeupRound = async (
 const updateMakeupRoundDate = async (
   ctx: KoaContext<any, { round_id: string }>
 ) => {
-  const roundId = Number(ctx.params.round_id);
+  const roundIdParam = ctx.params.round_id;
+  if (!roundIdParam) {
+    ctx.throw(400, 'round_id parameter ontbreekt');
+  }
+
+  const roundId = Number(roundIdParam);
+  if (isNaN(roundId) || roundId <= 0) {
+    ctx.throw(400, `Ongeldig round_id: ${roundIdParam}`);
+  }
+
   const body = (ctx.request.body as any)?.arg ?? ctx.request.body;
 
   const { date, startuur } = body;
 
-  if (typeof date !== 'string') {
+  // Debug logging
+  console.log('updateMakeupRoundDate body:', body);
+  console.log('updateMakeupRoundDate date:', date, 'type:', typeof date);
+
+  // Check if date exists and is a valid type
+  if (date === undefined || date === null) {
+    ctx.throw(400, 'Datum ontbreekt in updateMakeupRoundDate PUT');
+  }
+
+  // Convert to string if it's not already
+  const dateString = typeof date === 'string' ? date : String(date);
+  
+  if (!dateString || dateString.trim() === '') {
     ctx.throw(400, 'Ongeldige datum in updateMakeupRoundDate PUT');
   }
 
-  const parsedDate = new Date(date);
+  const parsedDate = new Date(dateString);
   if (isNaN(parsedDate.getTime())) {
-    ctx.throw(400, `Ongeldige datum: ${date}`);
+    ctx.throw(400, `Ongeldige datum: ${dateString}`);
   }
 
   const updatedRound = await tournamentRoundService.updateMakeupRoundDate(

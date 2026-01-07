@@ -64,22 +64,34 @@ export async function createMakeupRoundBetween(
   label?: string
 ): Promise<TournamentRound> {
   try {
-    // 1. Haal alle bestaande rondes op
+    // 1. Haal het toernooi op om te checken of het een Lentecompetitie is
+    const tournament = await prisma.tournament.findUnique({
+      where: { tournament_id },
+      select: { naam: true }
+    });
+
+    if (!tournament) {
+      throw ServiceError.notFound(`Toernooi met ID ${tournament_id} niet gevonden`);
+    }
+
+    const isLentecompetitie = tournament.naam.toLowerCase().includes('lentecompetitie');
+
+    // 2. Haal alle bestaande rondes op
     const existingRounds = await prisma.round.findMany({
       where: { tournament_id },
       orderBy: { ronde_nummer: 'asc' }
     });
 
-    // 2. Bepaal het juiste ronde nummer
+    // 3. Bepaal het juiste ronde nummer
     const correctRoundNumber = determineMakeupRoundNumber(existingRounds, after_round_number);
 
-    // 3. Verschuif alle rondes na de inhaaldag
+    // 4. Verschuif alle rondes na de inhaaldag
     await shiftRoundsAfter(tournament_id, correctRoundNumber);
 
-    // 4. Bepaal het inhaaldag nummer
+    // 5. Bepaal het inhaaldag nummer
     const makeupDayNumber = getMakeupDayNumber(existingRounds);
 
-    // 5. Maak de inhaaldag ronde aan
+    // 6. Maak de inhaaldag ronde aan
     const makeupRound = await prisma.round.create({
       data: {
         tournament_id,
@@ -92,29 +104,74 @@ export async function createMakeupRoundBetween(
       },
     });
 
-    // 5. Maak calendar event aan
-    const tournament = await prisma.tournament.findUnique({
-      where: { tournament_id },
-      select: { naam: true }
+    // 7. Maak calendar event aan
+    const eventTitle = `${tournament.naam} - Inhaaldag ${makeupDayNumber}`;
+    
+    const calendarEvent = await calendarService.createEvent({
+      title: eventTitle,
+      description: `Inhaaldag voor uitgestelde partijen`,
+      type: "Inhaaldag",
+      date: date,
+      startuur: startuur,
+      tournament_id: tournament_id,
     });
 
-    if (tournament) {
-      const eventTitle = `${tournament.naam} - Inhaaldag ${makeupDayNumber}`;
-      
-      const calendarEvent = await calendarService.createEvent({
-        title: eventTitle,
-        description: `Inhaaldag voor uitgestelde partijen`,
-        type: "Inhaaldag",
-        date: date,
-        startuur: startuur,
-        tournament_id: tournament_id,
+    // 8. Update de ronde met calendar event ID
+    await prisma.round.update({
+      where: { round_id: makeupRound.round_id },
+      data: { calendar_event_id: calendarEvent.event_id }
+    });
+
+    // 9. Als dit een Lentecompetitie is, maak dezelfde inhaaldag aan voor alle andere klassen
+    if (isLentecompetitie) {
+      const allTournaments = await prisma.tournament.findMany({
+        where: { 
+          naam: tournament.naam,
+          tournament_id: { not: tournament_id }
+        },
+        select: { tournament_id: true }
       });
 
-      // Update de ronde met calendar event ID
-      await prisma.round.update({
-        where: { round_id: makeupRound.round_id },
-        data: { calendar_event_id: calendarEvent.event_id }
-      });
+      // Maak voor elk ander toernooi dezelfde inhaaldag aan
+      for (const otherTournament of allTournaments) {
+        // Haal bestaande rondes op voor dit toernooi
+        const otherExistingRounds = await prisma.round.findMany({
+          where: { tournament_id: otherTournament.tournament_id },
+          orderBy: { ronde_nummer: 'asc' }
+        });
+
+        // Bepaal het juiste ronde nummer voor dit toernooi
+        const otherCorrectRoundNumber = determineMakeupRoundNumber(otherExistingRounds, after_round_number);
+
+        // Verschuif rondes indien nodig
+        await shiftRoundsAfter(otherTournament.tournament_id, otherCorrectRoundNumber);
+
+        // Bepaal inhaaldag nummer voor dit toernooi
+        const otherMakeupDayNumber = getMakeupDayNumber(otherExistingRounds);
+
+        // Maak de inhaaldag ronde aan
+        await prisma.round.create({
+          data: {
+            tournament_id: otherTournament.tournament_id,
+            ronde_nummer: otherCorrectRoundNumber,
+            ronde_datum: date,
+            startuur,
+            type: RoundType.MAKEUP,
+            label: label || `Inhaaldag ${otherMakeupDayNumber}`,
+            is_sevilla_imported: false,
+          },
+        });
+
+        // Maak ook een calendar event voor dit toernooi
+        await calendarService.createEvent({
+          title: eventTitle,
+          description: `Inhaaldag voor uitgestelde partijen`,
+          type: "Inhaaldag",
+          date: date,
+          startuur: startuur,
+          tournament_id: otherTournament.tournament_id,
+        });
+      }
     }
 
     return {
@@ -310,12 +367,24 @@ export async function updateMakeupRoundDate(
   try {
     const round = await prisma.round.findUnique({
       where: { round_id },
-      select: { type: true, calendar_event_id: true }
+      select: {
+        type: true,
+        calendar_event_id: true,
+        ronde_datum: true,
+        ronde_nummer: true,
+        tournament: {
+          select: { naam: true, tournament_id: true }
+        }
+      }
     });
 
     if (!round || round.type !== RoundType.MAKEUP) {
       throw ServiceError.validationFailed(`Ronde ${round_id} is geen inhaaldag`);
     }
+
+    const isLentecompetitie = round.tournament.naam.toLowerCase().includes('lentecompetitie');
+    const originalDate = round.ronde_datum;
+    const originalRoundNumber = round.ronde_nummer;
 
     // Update de ronde
     const updateData: any = {
@@ -354,6 +423,48 @@ export async function updateMakeupRoundDate(
       await calendarService.updateEvent(round.calendar_event_id, eventUpdateData);
     }
 
+    // Als dit een Lentecompetitie is, update ook de corresponderende inhaaldagen in andere klassen
+    if (isLentecompetitie) {
+      const allTournaments = await prisma.tournament.findMany({
+        where: { 
+          naam: round.tournament.naam,
+          tournament_id: { not: round.tournament.tournament_id }
+        },
+        select: { tournament_id: true }
+      });
+
+      // Vind corresponderende inhaaldagen in andere klassen (op basis van ronde_nummer en originele date)
+      for (const otherTournament of allTournaments) {
+        const correspondingRound = await prisma.round.findFirst({
+          where: {
+            tournament_id: otherTournament.tournament_id,
+            ronde_nummer: originalRoundNumber,
+            ronde_datum: originalDate,
+            type: RoundType.MAKEUP
+          }
+        });
+
+        if (correspondingRound) {
+          // Update de corresponderende inhaaldag
+          await prisma.round.update({
+            where: { round_id: correspondingRound.round_id },
+            data: updateData
+          });
+
+          // Update ook het calendar event als dat bestaat
+          if (correspondingRound.calendar_event_id) {
+            const eventUpdateData: any = {
+              date: new_date,
+            };
+            if (new_startuur !== undefined) {
+              eventUpdateData.startuur = new_startuur;
+            }
+            await calendarService.updateEvent(correspondingRound.calendar_event_id, eventUpdateData);
+          }
+        }
+      }
+    }
+
     return {
       ...updatedRound,
       is_sevilla_imported: false,
@@ -371,12 +482,24 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
   try {
     const round = await prisma.round.findUnique({
       where: { round_id },
-      select: { type: true, tournament_id: true, ronde_nummer: true, calendar_event_id: true }
+      select: {
+        type: true,
+        calendar_event_id: true,
+        ronde_datum: true,
+        ronde_nummer: true,
+        tournament: {
+          select: { naam: true, tournament_id: true }
+        }
+      }
     });
 
     if (!round || round.type !== RoundType.MAKEUP) {
       throw ServiceError.validationFailed(`Ronde ${round_id} is geen inhaaldag`);
     }
+
+    const isLentecompetitie = round.tournament.naam.toLowerCase().includes('lentecompetitie');
+    const originalDate = round.ronde_datum;
+    const originalRoundNumber = round.ronde_nummer;
 
     // Verwijder calendar event
     if (round.calendar_event_id) {
@@ -389,7 +512,45 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
     });
 
     // Verschuif alle rondes na deze ronde terug
-    await shiftRoundsBack(round.tournament_id, round.ronde_nummer);
+    await shiftRoundsBack(round.tournament.tournament_id, originalRoundNumber);
+
+    // Als dit een Lentecompetitie is, verwijder ook de corresponderende inhaaldagen in andere klassen
+    if (isLentecompetitie) {
+      const allTournaments = await prisma.tournament.findMany({
+        where: { 
+          naam: round.tournament.naam,
+          tournament_id: { not: round.tournament.tournament_id }
+        },
+        select: { tournament_id: true }
+      });
+
+      // Vind en verwijder corresponderende inhaaldagen in andere klassen
+      for (const otherTournament of allTournaments) {
+        const correspondingRound = await prisma.round.findFirst({
+          where: {
+            tournament_id: otherTournament.tournament_id,
+            ronde_nummer: originalRoundNumber,
+            ronde_datum: originalDate,
+            type: RoundType.MAKEUP
+          }
+        });
+
+        if (correspondingRound) {
+          // Verwijder calendar event
+          if (correspondingRound.calendar_event_id) {
+            await calendarService.deleteEvent(correspondingRound.calendar_event_id);
+          }
+
+          // Verwijder de ronde
+          await prisma.round.delete({
+            where: { round_id: correspondingRound.round_id }
+          });
+
+          // Verschuif rondes terug
+          await shiftRoundsBack(otherTournament.tournament_id, originalRoundNumber);
+        }
+      }
+    }
   } catch (error) {
     throw handleDBError(error);
   }

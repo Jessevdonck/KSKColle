@@ -114,7 +114,12 @@ export const createMakeupRound = async (url, { arg }) => {
   return data;
 };
 
-export const addGameToMakeupRound = async (roundId, { arg }) => {
+export const addGameToMakeupRound = async (url, { arg }) => {
+  // Extract roundId from the arg object
+  const roundId = arg.round_id || arg.roundId;
+  if (!roundId) {
+    throw new Error('roundId is required but was undefined');
+  }
   const { data } = await axios.post(`${baseUrl}/tournamentRounds/${roundId}/games`, arg);
   return data;
 };
@@ -135,9 +140,22 @@ export const deleteMakeupRound = async (url, { arg }) => {
   await axios.delete(`${baseUrl}/tournamentRounds/${roundId}`);
 };
 
-export const updateMakeupRoundDate = async (roundId, { arg }) => {
-  const { data } = await axios.put(`${baseUrl}/tournamentRounds/${roundId}/date`, arg);
-  return data;
+export const updateMakeupRoundDate = async (url, { arg }) => {
+  // useSWRMutation passes { arg: { ... } } as the second parameter
+  const data = arg.arg || arg;
+  
+  // Extract roundId from the data object
+  const roundId = data.round_id || data.roundId;
+  
+  if (!roundId) {
+    throw new Error('roundId is required but was undefined');
+  }
+  
+  const { data: responseData } = await axios.put(`${baseUrl}/tournamentRounds/${roundId}/date`, {
+    date: data.date,
+    startuur: data.startuur,
+  });
+  return responseData;
 };
 
 export const postponeGameToMakeupRound = async (url, { arg }) => {

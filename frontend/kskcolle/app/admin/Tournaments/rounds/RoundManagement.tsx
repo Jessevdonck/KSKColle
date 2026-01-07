@@ -259,9 +259,11 @@ export default function RoundManagement({ tournament }: Props) {
   const handleSaveRoundDate = async (roundId: number) => {
     try {
       await updateDateMutation({
-        round_id: roundId,
-        date: editDate,
-        startuur: editStartuur,
+        arg: {
+          round_id: roundId,
+          date: editDate,
+          startuur: editStartuur,
+        }
       })
       
       refetchRounds()
