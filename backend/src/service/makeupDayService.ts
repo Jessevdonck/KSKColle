@@ -160,7 +160,6 @@ export async function updateMakeupDay(
       })
 
       // Vind corresponderende inhaaldagen in andere klassen (op basis van round_after en originele date)
-      const originalDate = data.date || makeupDay.date
       
       for (const otherTournament of allTournaments) {
         const correspondingMakeupDay = await prisma.makeupDay.findFirst({
