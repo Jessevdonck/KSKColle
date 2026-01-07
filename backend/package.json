@@ -18,6 +18,7 @@
     "sync-makeup-results": "tsx src/scripts/sync-makeup-results.ts",
     "undo-board-positions": "tsx src/scripts/undo-board-positions.ts",
     "update-leden": "tsx src/scripts/update-leden.ts",
+    "import-megaschaak-prijzen": "tsx src/scripts/import-megaschaak-prijzen.ts",
     "send-launch-email": "tsx src/scripts/send-launch-email.ts",
     "simulate-launch-email": "tsx src/scripts/simulate-launch-email.ts",
     "export-active-members": "tsx src/scripts/export-active-members.ts",

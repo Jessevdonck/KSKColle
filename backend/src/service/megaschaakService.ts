@@ -16,6 +16,7 @@ export interface MegaschaakConfig {
   correctieSubtract: number; // Default: 1800
   minCost: number; // Default: 1
   maxCost: number; // Default: 200
+  playerCosts?: { [playerId: number]: number }; // Handmatige prijzen per speler (optioneel)
 }
 
 const DEFAULT_CONFIG: MegaschaakConfig = {
@@ -83,7 +84,8 @@ const getMegaschaakConfig = async (tournamentIds: number[], className?: string):
         correctieMultiplier: config.correctieMultiplier ?? DEFAULT_CONFIG.correctieMultiplier,
         correctieSubtract: config.correctieSubtract ?? DEFAULT_CONFIG.correctieSubtract,
         minCost: config.minCost ?? DEFAULT_CONFIG.minCost,
-        maxCost: config.maxCost ?? DEFAULT_CONFIG.maxCost
+        maxCost: config.maxCost ?? DEFAULT_CONFIG.maxCost,
+        playerCosts: config.playerCosts || undefined // Include playerCosts if present
       };
     }
 
@@ -336,6 +338,18 @@ const calculateTPR = async (playerId: number, tournamentType?: 'herfst' | 'lente
  */
 export const calculatePlayerCost = async (playerId: number, className: string, tournamentIds: number[]): Promise<number> => {
   try {
+    // Get megaschaak configuration (pass className to get correct rounds)
+    const config = await getMegaschaakConfig(tournamentIds, className);
+    
+    // Check if there's a manual price set for this player (from Excel import)
+    // JSON keys are strings, so check both number and string key
+    if (config.playerCosts) {
+      const cost = config.playerCosts[playerId] ?? config.playerCosts[String(playerId)];
+      if (cost !== undefined && cost !== null) {
+        return Number(cost);
+      }
+    }
+    
     // Get player rating
     const player = await prisma.user.findUnique({
       where: { user_id: playerId },
@@ -345,9 +359,6 @@ export const calculatePlayerCost = async (playerId: number, className: string, t
     if (!player) return 50; // Default fallback
 
     const rating = player.schaakrating_elo;
-
-    // Get megaschaak configuration (pass className to get correct rounds)
-    const config = await getMegaschaakConfig(tournamentIds, className);
 
     // Determine tournament type from tournamentIds
     let tournamentType: 'herfst' | 'lente' | undefined = undefined;
