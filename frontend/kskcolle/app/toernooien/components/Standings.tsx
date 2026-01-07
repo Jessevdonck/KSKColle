@@ -531,7 +531,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   )
 }
 
-function calculateStandings(tournament: StandingsProps["tournament"], rounds: StandingsProps["rounds"]): PlayerScore[] {
+export function calculateStandings(tournament: StandingsProps["tournament"], rounds: StandingsProps["rounds"]): PlayerScore[] {
   // 1) init
   // Use scores from participation table (Sevilla scores) for Buchholz calculation
   const scoreMap: Record<number, number> = {}

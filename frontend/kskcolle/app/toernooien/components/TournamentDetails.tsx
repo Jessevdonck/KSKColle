@@ -683,7 +683,7 @@ export default function TournamentDetails() {
 
           {/* Standings */}
           <div className={`xl:col-span-1 order-1 xl:order-2 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden xl:sticky xl:top-4">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Trophy className="h-4 w-4" />
@@ -696,6 +696,21 @@ export default function TournamentDetails() {
             </div>
           </div>
         </div>
+
+        {/* Cross Table - Full width below rounds and standings for Lentecompetitie */}
+        {isLentecompetitie && (
+          <div className="mt-4 bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Kruistabel
+              </h2>
+            </div>
+            <div className="p-4">
+              <CrossTable tournament={tournament} rounds={allRounds} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Trophy } from "lucide-react"
 
 type Game = {
   game_id: number
@@ -34,6 +33,7 @@ type Tournament = {
       user_id: number
       voornaam: string
       achternaam: string
+      schaakrating_elo?: number
     }
   }>
   class_name?: string | null
@@ -51,9 +51,15 @@ type GameResult = {
 }
 
 export default function CrossTable({ tournament, rounds }: CrossTableProps) {
-  // Get all players from participations
+  // Get all players from participations, sorted by rating (high to low)
   const players = React.useMemo(() => {
-    return tournament.participations.map(p => p.user)
+    const playersList = tournament.participations.map(p => p.user)
+    // Sort by rating (high to low)
+    return playersList.sort((a, b) => {
+      const ratingA = a.schaakrating_elo || 0
+      const ratingB = b.schaakrating_elo || 0
+      return ratingB - ratingA
+    })
   }, [tournament.participations])
 
   // Build cross table data
@@ -153,18 +159,6 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark rounded-lg p-6 text-white">
-        <div className="flex items-center gap-3">
-          <div className="bg-white/20 p-3 rounded-lg">
-            <Trophy className="h-8 w-8" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Kruistabel</h2>
-            <p className="text-purple-100">Alle onderlinge resultaten tussen spelers</p>
-          </div>
-        </div>
-      </div>
 
       {/* Desktop Table */}
       <div className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
