@@ -576,7 +576,7 @@ export default function TournamentDetails() {
         {/* Regular Layout - Rounds and Standings */}
         {isLentecompetitie ? (
           /* For Lentecompetitie: Rounds and CrossTable full width, stacked */
-          <div className={`space-y-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+          <div className={`space-y-4 max-w-4xl mx-auto ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
             {/* Rounds & Makeup Days with Navigation */}
             <div className={`${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -655,12 +655,17 @@ export default function TournamentDetails() {
 
             {/* Cross Table - Full width below rounds for Lentecompetitie, only on rounds tab */}
             {activeTab === 'rounds' && (
-             
-                
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Kruistabel
+                  </h2>
+                </div>
                 <div className="p-4">
                   <CrossTable tournament={tournament} rounds={allRounds} />
                 </div>
-             
+              </div>
             )}
           </div>
         ) : (
