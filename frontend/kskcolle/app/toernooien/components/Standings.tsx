@@ -65,6 +65,9 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) =>
 export default function Standings({ tournament, rounds }: StandingsProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerScore | null>(null)
 
+  // Check if this is a Lentecompetitie tournament
+  const isLentecompetitie = tournament.naam.toLowerCase().includes('lentecompetitie')
+
   const getByeText = (result: string | null) => {
     // Always show "BYE" in player history modal
     return "BYE"
@@ -267,7 +270,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                       {player.score}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}: {player.tieBreak.toFixed(1)}
+                      {isLentecompetitie ? "SB²" : tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}: {player.tieBreak.toFixed(1)}
                     </div>
                   </div>
                 </div>
@@ -316,7 +319,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
             <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
             <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
-              {tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}
+              {isLentecompetitie ? "SB²" : tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}
             </div>
           </div>
         </div>
@@ -456,7 +459,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 <div className="text-center">
                   <div className="text-xl font-bold text-textColor">{selectedPlayer.tieBreak.toFixed(2)}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">
-                    {tournament.type === "SWISS" ? "Bh-W" : "SB²"}
+                    {isLentecompetitie ? "SB²" : tournament.type === "SWISS" ? "Bh-W" : "SB²"}
                   </div>
                 </div>
               </div>
@@ -536,6 +539,10 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
   const gamesPlayed: Record<number, number> = {}
   const buchholzList: Record<number, number[]> = {}
   const sbMap: Record<number, number> = {}
+  const sbSquaredMap: Record<number, number> = {} // Voor Lentecompetitie: ∑(resultaat)×(eindscore tegenstander)²
+  
+  // Check if this is a Lentecompetitie tournament
+  const isLentecompetitie = tournament.naam.toLowerCase().includes('lentecompetitie')
 
   // Initialize with scores from participation table (Sevilla scores)
   // Separate list for worst calculation (excludes forfeits)
@@ -547,6 +554,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     buchholzList[user.user_id] = []
     buchholzListForWorst[user.user_id] = [] // For worst calculation (excludes forfeits)
     sbMap[user.user_id] = 0
+    sbSquaredMap[user.user_id] = 0
   })
 
   // Helper function: check if result represents a game that should count as played
@@ -664,8 +672,23 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       // SB-score (also use Sevilla scores)
       if ((result === "1-0" || result === "1-0R") && p2) {
         sbMap[p1] += scoreMap[p2]
+        // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
+        if (isLentecompetitie) {
+          sbSquaredMap[p1] += 1 * Math.pow(scoreMap[p2], 2)
+          sbSquaredMap[p2] += 0
+        }
+        // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
+        if (isLentecompetitie) {
+          sbSquaredMap[p1] += 1 * Math.pow(scoreMap[p2], 2)
+          sbSquaredMap[p2] += 0
+        }
       } else if (result === "0-1" && p2) {
         sbMap[p2] += scoreMap[p1]
+        // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
+        if (isLentecompetitie) {
+          sbSquaredMap[p2] += 1 * Math.pow(scoreMap[p1], 2)
+          sbSquaredMap[p1] += 0
+        }
       } else if ((result === "½-½" || result === "1/2-1/2" || result === "�-�") && p2) {
         sbMap[p1] += scoreMap[p2] * 0.5
         sbMap[p2] += scoreMap[p1] * 0.5
@@ -687,7 +710,10 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       tie = participation.tie_break
     } else {
       // Fallback: calculate tie_break if not in database
-      if (tournament.type === "SWISS") {
+      if (isLentecompetitie) {
+        // Lentecompetitie: ∑(resultaat)×(eindscore tegenstander)²
+        tie = sbSquaredMap[id] ?? 0
+      } else if (tournament.type === "SWISS") {
         // Buchholz-worst: Buchholz (includes forfeits) minus de laagste opponent-score (from ALL games)
         // Standard definition: subtract the lowest opponent score from total Buchholz
         const opps = buchholzList[id] // Full Buchholz (includes forfeits)

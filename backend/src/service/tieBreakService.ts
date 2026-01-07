@@ -32,6 +32,7 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
   const scoreMap: Record<number, number> = {};
   const winCount: Record<number, number> = {};
   const sbMap: Record<number, number> = {};
+  const sbSquaredMap: Record<number, number> = {}; // Voor Lentecompetitie: ∑(resultaat)×(eindscore tegenstander)²
   const buchholzList: Record<number, number[]> = {}; // lijst van opponent-scores
 
   for (const { user_id, score } of parts) {
@@ -39,6 +40,7 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     scoreMap[user_id] = score ?? 0;
     winCount[user_id] = 0;
     sbMap[user_id] = 0;
+    sbSquaredMap[user_id] = 0;
     buchholzList[user_id] = [];
   }
 
@@ -105,22 +107,49 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     // Include forfeits in SB calculation
     if (result === "1-0" || result === "1-0R") {
       sbMap[p1]! += scoreMap[p2!] ?? 0;
+      // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
+      // Win = 1 × (eindscore tegenstander)²
+      if (isLentecompetitie) {
+        const opponentScore = scoreMap[p2!] ?? 0;
+        sbSquaredMap[p1]! += 1 * Math.pow(opponentScore, 2);
+        // Verliezer krijgt 0 × (eindscore tegenstander)² = 0
+        sbSquaredMap[p2!]! += 0;
+      }
     } else if ((result === "0-1" || result === "0-1R") && p2 != null) {
       sbMap[p2]! += scoreMap[p1] ?? 0;
+      // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
+      // Win = 1 × (eindscore tegenstander)²
+      if (isLentecompetitie) {
+        const opponentScore = scoreMap[p1] ?? 0;
+        sbSquaredMap[p2]! += 1 * Math.pow(opponentScore, 2);
+        // Verliezer krijgt 0 × (eindscore tegenstander)² = 0
+        sbSquaredMap[p1]! += 0;
+      }
     } else if (result === "½-½" || result === "1/2-1/2" || result === "-") {
       sbMap[p1]! += (scoreMap[p2!] ?? 0) * 0.5;
       sbMap[p2!]! += (scoreMap[p1] ?? 0) * 0.5;
+      // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
+      // Remise = 0.5 × (eindscore tegenstander)²
+      if (isLentecompetitie) {
+        const opponentScore1 = scoreMap[p2!] ?? 0;
+        const opponentScore2 = scoreMap[p1] ?? 0;
+        sbSquaredMap[p1]! += 0.5 * Math.pow(opponentScore1, 2);
+        sbSquaredMap[p2!]! += 0.5 * Math.pow(opponentScore2, 2);
+      }
     }
   }
 
-  // 6) Haal het toernooitype op (SWISS of ROUND_ROBIN)
+  // 6) Haal het toernooitype op (SWISS of ROUND_ROBIN) en naam
   const tour = await prisma.tournament.findUnique({
     where: { tournament_id },
-    select: { type: true },
+    select: { type: true, naam: true },
   });
   if (!tour) {
     throw ServiceError.notFound("Toernooi niet gevonden");
   }
+
+  // Check if this is a Lentecompetitie tournament
+  const isLentecompetitie = tour.naam.toLowerCase().includes('lentecompetitie')
 
   // 7) Update alle deelnames in één transaction
   await prisma.$transaction(
@@ -130,7 +159,10 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
       let tieValue: number | null = tie_break;
       
       // Always calculate tie_break (don't use ModifiedMedian from Sevilla)
-      if (tour.type === "SWISS") {
+      if (isLentecompetitie) {
+        // Lentecompetitie: ∑(resultaat)×(eindscore tegenstander)²
+        tieValue = sbSquaredMap[user_id] ?? 0;
+      } else if (tour.type === "SWISS") {
         // Buchholz-worst: Buchholz (includes forfeits) minus de laagste opponent-score (from ALL games)
         // Standard definition: subtract the lowest opponent score from total Buchholz
         const opps = buchholzList[user_id]; // Full Buchholz (includes forfeits)
