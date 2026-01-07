@@ -344,7 +344,8 @@ export const calculatePlayerCost = async (playerId: number, className: string, t
     // Check if there's a manual price set for this player (from Excel import)
     // JSON keys are strings, so check both number and string key
     if (config.playerCosts) {
-      const cost = config.playerCosts[playerId] ?? config.playerCosts[String(playerId)];
+      const playerCosts = config.playerCosts as Record<string | number, number>;
+      const cost = playerCosts[playerId] ?? playerCosts[String(playerId)];
       if (cost !== undefined && cost !== null) {
         return Number(cost);
       }

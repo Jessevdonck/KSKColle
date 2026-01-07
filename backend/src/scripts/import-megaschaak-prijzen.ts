@@ -22,9 +22,6 @@ const SHEET_NAME: string | undefined = undefined; // undefined = 1e sheet
 const COL_NAAM = 1; // Kolom B
 const COL_PRIJS = 11; // Kolom L
 
-// Belgische namen zijn meestal "Achternaam Voornaam" formaat
-const NAME_IS_LASTNAME_THEN_FIRSTNAME = true;
-
 /**
  * Parse prijs uit Excel cel
  */
@@ -123,15 +120,17 @@ async function findUserByFullName(
   
   // Als er maar 1 deel is, zoek alleen op achternaam
   if (nameParts.length === 1) {
-    const searchTerm = nameParts[0].toLowerCase();
+    const searchTerm = nameParts[0]?.toLowerCase();
+    if (!searchTerm) return null;
     const matches = tournamentParticipants.filter(u => 
       u.achternaam.toLowerCase() === searchTerm
     );
-    return matches[0] || null;
+    return matches[0] ?? null;
   }
   
   // Probeer "Voornaam Achternaam" formaat (meest waarschijnlijk in Excel)
   const voornaamFirst = nameParts[0];
+  if (!voornaamFirst) return null;
   const achternaamRest = nameParts.slice(1).join(' ');
   const voornaamFirstLower = voornaamFirst.toLowerCase();
   const achternaamRestLower = achternaamRest.toLowerCase();
@@ -142,10 +141,11 @@ async function findUserByFullName(
     u.achternaam.toLowerCase() === achternaamRestLower
   );
   
-  if (matches.length > 0) return matches[0];
+  if (matches.length > 0) return matches[0] ?? null;
   
   // Probeer "Achternaam Voornaam" formaat (Belgisch formaat)
   const achternaamFirst = nameParts[0];
+  if (!achternaamFirst) return null;
   const voornaamRest = nameParts.slice(1).join(' ');
   const achternaamFirstLower = achternaamFirst.toLowerCase();
   const voornaamRestLower = voornaamRest.toLowerCase();
@@ -155,10 +155,11 @@ async function findUserByFullName(
     u.voornaam.toLowerCase() === voornaamRestLower
   );
   
-  if (matches.length > 0) return matches[0];
+  if (matches.length > 0) return matches[0] ?? null;
   
   // Probeer met laatste deel als achternaam (voor namen met meerdere delen)
   const achternaamLast = nameParts[nameParts.length - 1];
+  if (!achternaamLast) return null;
   const voornaamAllButLast = nameParts.slice(0, -1).join(' ');
   const achternaamLastLower = achternaamLast.toLowerCase();
   const voornaamAllButLastLower = voornaamAllButLast.toLowerCase();
@@ -168,7 +169,7 @@ async function findUserByFullName(
     u.voornaam.toLowerCase() === voornaamAllButLastLower
   );
   
-  if (matches.length > 0) return matches[0];
+  if (matches.length > 0) return matches[0] ?? null;
   
   // Minder strikte matching: contains (voor namen met speciale karakters of kleine verschillen)
   matches = tournamentParticipants.filter(u => {
@@ -200,7 +201,7 @@ async function findUserByFullName(
     );
   });
   
-  if (matches.length > 0) return matches[0];
+  if (matches.length > 0) return matches[0] ?? null;
   
   return null;
 }
