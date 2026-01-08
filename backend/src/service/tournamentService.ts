@@ -364,14 +364,49 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
       where: {
         tournament_id,
       },
-      include: {
+      select: {
+        tournament_id: true,
+        naam: true,
+        rondes: true,
+        type: true,
+        rating_enabled: true,
+        finished: true,
+        is_youth: true,
+        class_name: true,
+        megaschaak_enabled: true,
+        megaschaak_deadline: true,
+        megaschaak_config: true,
         participations: {
-          include: {
-            user: true,
-          },
+          select: {
+            user_id: true,
+            tournament_id: true,
+            score: true,
+            buchholz: true,
+            sonnebornBerger: true,
+            tie_break: true,
+            wins: true,
+            bye_round: true,
+            user: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+                schaakrating_elo: true,
+                email: true,
+              }
+            }
+          }
         },
         rounds: {
-          include: {
+          select: {
+            round_id: true,
+            tournament_id: true,
+            ronde_nummer: true,
+            ronde_datum: true,
+            startuur: true,
+            type: true,
+            label: true,
+            calendar_event_id: true,
             games: {
               select: {
                 game_id: true,
@@ -383,9 +418,29 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
                 uitgestelde_datum: true,
                 board_position: true,
                 original_game_id: true,
-                speler1: true,
-                speler2: true,
-                winnaar: true,
+                speler1: {
+                  select: {
+                    user_id: true,
+                    voornaam: true,
+                    achternaam: true,
+                    schaakrating_elo: true,
+                  }
+                },
+                speler2: {
+                  select: {
+                    user_id: true,
+                    voornaam: true,
+                    achternaam: true,
+                    schaakrating_elo: true,
+                  }
+                },
+                winnaar: {
+                  select: {
+                    user_id: true,
+                    voornaam: true,
+                    achternaam: true,
+                  }
+                },
               },
             },
           },
@@ -473,11 +528,31 @@ export const updateTournament = async (tournament_id: number, changes: Tournamen
         tournament_id,
       },
       data: updateData,
-      include: {
+      select: {
+        tournament_id: true,
+        naam: true,
+        rondes: true,
+        type: true,
+        rating_enabled: true,
+        finished: true,
+        is_youth: true,
+        class_name: true,
+        megaschaak_enabled: true,
+        megaschaak_deadline: true,
+        megaschaak_config: true,
         participations: {
-          include: {
-            user: true,
-          },
+          select: {
+            user_id: true,
+            tournament_id: true,
+            score: true,
+            user: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+              }
+            }
+          }
         },
       },
     });

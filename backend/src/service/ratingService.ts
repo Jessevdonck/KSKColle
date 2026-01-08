@@ -32,11 +32,24 @@ export class RatingService {
       throw new Error(`Tournament ${tournamentId} not found`);
     }
 
-    // Get all participations with Sevilla rating data
+    // Get all participations with minimal user data (only what's needed for rating updates)
     const participations = await prisma.participation.findMany({
       where: { tournament_id: tournamentId },
-      include: {
-        user: true,
+      select: {
+        user_id: true,
+        tournament_id: true,
+        score: true,
+        sevilla_initial_rating: true,
+        sevilla_final_rating: true,
+        sevilla_rating_change: true,
+        user: {
+          select: {
+            user_id: true,
+            schaakrating_elo: true,
+            schaakrating_difference: true,
+            schaakrating_max: true,
+          }
+        }
       },
     });
 
