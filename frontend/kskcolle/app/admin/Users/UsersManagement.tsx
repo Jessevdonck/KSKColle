@@ -9,7 +9,8 @@ import type { User } from "@/data/types"
 import AddOrEditUser from "./components/AddOrEditUser"
 import UserList from "./UserList"
 import EditForm from "./components/forms/EditForm"
-import { Users, Settings } from "lucide-react"
+import { Users, Settings, Mail, Copy } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -21,6 +22,9 @@ export default function UsersManagement() {
     `users/paginated?page=${currentPage}&limit=${pageSize}`, 
     (url) => getPaginated(url)
   )
+
+  // Fetch all users for email copying (not paginated)
+  const { data: allUsers = [] } = useSWR('users', () => getAll('users'))
   
   const refreshUsers = (updatedUser?: User) => {
     if (updatedUser) {
@@ -69,6 +73,49 @@ export default function UsersManagement() {
     // It ensures the allUsers state in UserList is also updated
   }
 
+  const handleCopyActiveMemberEmails = async () => {
+    try {
+      // Filter for members with paid lidgeld (including youth who play in adult competitions)
+      const activeMembers = allUsers.filter((user: User) => {
+        // Must have email
+        if (!user.email) return false
+        
+        // Check if lidgeld is paid
+        return user.lidgeld_betaald === true
+      })
+      
+      // Extract email addresses
+      const emails = activeMembers
+        .map((user: User) => user.email)
+        .filter((email): email is string => Boolean(email))
+      
+      if (emails.length === 0) {
+        toast({
+          title: "Geen emailadressen",
+          description: "Geen actieve leden met emailadressen gevonden.",
+          variant: "destructive"
+        })
+        return
+      }
+      
+      // Copy to clipboard
+      const emailString = emails.join(', ')
+      await navigator.clipboard.writeText(emailString)
+      
+      toast({
+        title: "Emailadressen gekopieerd",
+        description: `${emails.length} emailadressen gekopieerd naar klembord.`,
+      })
+    } catch (error) {
+      console.error('Error copying emails:', error)
+      toast({
+        title: "Fout",
+        description: "Kon emailadressen niet kopiëren.",
+        variant: "destructive"
+      })
+    }
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
@@ -101,7 +148,7 @@ export default function UsersManagement() {
             <div className="bg-mainAccent/10 p-2 rounded-lg">
               <Settings className="h-6 w-6 text-mainAccent" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl font-bold text-textColor">Spelers Beheren</h1>
               <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
@@ -109,6 +156,17 @@ export default function UsersManagement() {
                   <span>{usersData.total} geregistreerde spelers</span>
                 </div>
               </div>
+            </div>
+            <div>
+              <Button
+                onClick={handleCopyActiveMemberEmails}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                <Copy className="h-4 w-4" />
+                Kopieer Emailadressen Actieve Leden
+              </Button>
             </div>
           </div>
         </div>
