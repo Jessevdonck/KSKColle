@@ -370,7 +370,7 @@ export default function ChessBoard({
             aspectRatio: '1',
             border: isSelected ? '3px solid #4a90e2' : 'none',
             cursor: draggable && piece ? 'grab' : draggable ? 'pointer' : 'default',
-            WebkitUserDrag: draggable && piece ? 'element' : 'none',
+            WebkitUserDrag: draggable && piece ? 'element' : 'none' as any,
             transition: 'background-color 0.15s ease',
             opacity: isDragging ? 0.3 : 1,
             boxSizing: 'border-box',
