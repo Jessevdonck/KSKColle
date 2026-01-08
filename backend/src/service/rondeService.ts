@@ -299,9 +299,12 @@ export const getNextRoundDate = async (
 
     // If no upcoming round, return the last round date
     if (rounds.length > 0) {
-      const lastRoundDate = new Date(rounds[rounds.length - 1].ronde_datum);
-      lastRoundDate.setHours(0, 0, 0, 0);
-      return lastRoundDate;
+      const lastRound = rounds[rounds.length - 1];
+      if (lastRound) {
+        const lastRoundDate = new Date(lastRound.ronde_datum);
+        lastRoundDate.setHours(0, 0, 0, 0);
+        return lastRoundDate;
+      }
     }
 
     return null;
