@@ -252,13 +252,13 @@ export const createPuzzle = async (puzzleData) => {
   return data;
 };
 
+export const deletePuzzle = async (puzzleId) => {
+  await axios.delete(`${baseUrl}/puzzles/${puzzleId}`);
+};
+
 export const updatePuzzle = async (puzzleId, puzzleData) => {
   const { data } = await axios.put(`${baseUrl}/puzzles/${puzzleId}`, puzzleData);
   return data;
-};
-
-export const deletePuzzle = async (puzzleId) => {
-  await axios.delete(`${baseUrl}/puzzles/${puzzleId}`);
 };
 
 export const savePuzzleAttempt = async (puzzleId, solveTimeMs) => {

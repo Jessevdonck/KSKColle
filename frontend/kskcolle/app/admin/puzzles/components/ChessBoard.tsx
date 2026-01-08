@@ -13,6 +13,7 @@ interface ChessBoardProps {
   errorSquare?: string | null // Square with an error indicator
   freePlacement?: boolean // If true, allow placing pieces anywhere without move validation
   showPiecePalette?: boolean // If true, show a palette to add new pieces
+  customContentBeforePalette?: React.ReactNode // Custom content to render before the piece palette
 }
 
 // Unicode chess pieces
@@ -30,11 +31,15 @@ export default function ChessBoard({
   highlightedSquares = [],
   errorSquare = null,
   freePlacement = false,
-  showPiecePalette = false
+  showPiecePalette = false,
+  customContentBeforePalette
 }: ChessBoardProps) {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
   const [dragSquare, setDragSquare] = useState<string | null>(null)
   const [draggedOverSquare, setDraggedOverSquare] = useState<string | null>(null)
+  const [validMoves, setValidMoves] = useState<string[]>([])
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null)
+  const [draggedPiece, setDraggedPiece] = useState<{ symbol: string; color: string } | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
   
   // Normalize FEN string to ensure it's valid (must have 6 space-delimited fields)
@@ -83,6 +88,36 @@ export default function ChessBoard({
   
   const normalizedFen = normalizeFen(fen)
   const gameRef = useRef<Chess>(new Chess(normalizedFen))
+  const hiddenDragImageRef = useRef<HTMLDivElement | null>(null)
+
+  // Create a persistent hidden element for drag image
+  useEffect(() => {
+    if (!hiddenDragImageRef.current) {
+      const hiddenDiv = document.createElement('div')
+      hiddenDiv.id = 'chess-board-hidden-drag-image'
+      hiddenDiv.style.position = 'absolute'
+      hiddenDiv.style.top = '-9999px'
+      hiddenDiv.style.left = '-9999px'
+      hiddenDiv.style.width = '1px'
+      hiddenDiv.style.height = '1px'
+      hiddenDiv.style.opacity = '0'
+      hiddenDiv.style.pointerEvents = 'none'
+      hiddenDiv.style.visibility = 'hidden'
+      hiddenDiv.style.border = 'none'
+      hiddenDiv.style.background = 'transparent'
+      hiddenDiv.style.zIndex = '-9999'
+      document.body.appendChild(hiddenDiv)
+      hiddenDragImageRef.current = hiddenDiv
+    }
+    
+    return () => {
+      // Clean up on unmount
+      if (hiddenDragImageRef.current && document.body.contains(hiddenDragImageRef.current)) {
+        document.body.removeChild(hiddenDragImageRef.current)
+        hiddenDragImageRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     try {
@@ -100,6 +135,8 @@ export default function ChessBoard({
   }, [fen])
 
   const getSquareColor = (row: number, col: number): string => {
+    // Calculate color based on the actual square position
+    // Colors stay the same regardless of orientation - only rows/cols are flipped
     const isLight = (row + col) % 2 === 0
     return isLight ? '#f0d9b5' : '#b58863'
   }
@@ -123,6 +160,16 @@ export default function ChessBoard({
     return symbol ? { symbol, color: piece.color } : null
   }
 
+  const getValidMoves = (square: string): string[] => {
+    if (freePlacement) return []
+    try {
+      const moves = gameRef.current.moves({ square: square as any, verbose: true })
+      return moves.map((move: any) => move.to)
+    } catch (e) {
+      return []
+    }
+  }
+
   const handleSquareClick = (square: string) => {
     if (!draggable) return
 
@@ -130,11 +177,13 @@ export default function ChessBoard({
       // In free placement mode, just select/deselect squares
       if (selectedSquare === square) {
         setSelectedSquare(null)
+        setValidMoves([])
         return
       }
       const piece = gameRef.current.get(square as any)
       if (piece) {
         setSelectedSquare(square)
+        setValidMoves([])
       } else if (selectedSquare) {
         // Move piece from selected square to this empty square
         const fromPiece = gameRef.current.get(selectedSquare as any)
@@ -146,6 +195,7 @@ export default function ChessBoard({
           const newFen = gameRef.current.fen()
           onFenChange?.(newFen)
           setSelectedSquare(null)
+          setValidMoves([])
         }
       }
       return
@@ -154,6 +204,7 @@ export default function ChessBoard({
     // Normal mode with move validation
     if (selectedSquare === square) {
       setSelectedSquare(null)
+      setValidMoves([])
       return
     }
 
@@ -171,20 +222,34 @@ export default function ChessBoard({
           onFenChange?.(newFen)
           onMove?.(selectedSquare, square)
           setSelectedSquare(null)
+          setValidMoves([])
         } else {
           // Invalid move, select new square if it has a piece
           const piece = gameRef.current.get(square as any)
-          setSelectedSquare(piece ? square : null)
+          if (piece) {
+            setSelectedSquare(square)
+            setValidMoves(getValidMoves(square))
+          } else {
+            setSelectedSquare(null)
+            setValidMoves([])
+          }
         }
       } catch (e) {
         // Invalid move
         const piece = gameRef.current.get(square as any)
-        setSelectedSquare(piece ? square : null)
+        if (piece) {
+          setSelectedSquare(square)
+          setValidMoves(getValidMoves(square))
+        } else {
+          setSelectedSquare(null)
+          setValidMoves([])
+        }
       }
     } else {
       const piece = gameRef.current.get(square as any)
       if (piece) {
         setSelectedSquare(square)
+        setValidMoves(getValidMoves(square))
       }
     }
   }
@@ -196,18 +261,99 @@ export default function ChessBoard({
     }
     const piece = gameRef.current.get(square as any)
     if (piece) {
+      const pieceSymbol = PIECE_SYMBOLS[`${piece.color === 'w' ? 'w' : 'b'}${piece.type.toUpperCase()}`]
       setDragSquare(square)
+      setValidMoves(getValidMoves(square))
+      setDraggedPiece({ symbol: pieceSymbol || '', color: piece.color })
+      setDragPosition({ x: e.clientX, y: e.clientY })
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData('application/x-chess-square', square)
       e.dataTransfer.setData('text/plain', square) // Fallback for some browsers
+      
+      // Use the persistent hidden element
+      if (hiddenDragImageRef.current) {
+        try {
+          e.dataTransfer.setDragImage(hiddenDragImageRef.current, 0, 0)
+        } catch (err) {
+          // Fallback: create a new hidden element
+          const dragImage = document.createElement('div')
+          dragImage.style.position = 'absolute'
+          dragImage.style.top = '-9999px'
+          dragImage.style.left = '-9999px'
+          dragImage.style.width = '1px'
+          dragImage.style.height = '1px'
+          dragImage.style.opacity = '0'
+          dragImage.style.pointerEvents = 'none'
+          dragImage.style.visibility = 'hidden'
+          document.body.appendChild(dragImage)
+          try {
+            e.dataTransfer.setDragImage(dragImage, 0, 0)
+          } catch (err2) {
+            // Last resort: transparent image
+            const emptyImg = new Image()
+            emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+            e.dataTransfer.setDragImage(emptyImg, 0, 0)
+          }
+          setTimeout(() => {
+            if (document.body.contains(dragImage)) {
+              document.body.removeChild(dragImage)
+            }
+          }, 0)
+        }
+      }
     } else {
       e.preventDefault()
     }
   }
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (dragSquare) {
+        setDragPosition({ x: e.clientX, y: e.clientY })
+      }
+    }
+
+    const handleDragOver = (e: DragEvent) => {
+      if (dragSquare && e.clientX && e.clientY) {
+        setDragPosition({ x: e.clientX, y: e.clientY })
+      }
+    }
+
+    const handleMouseUp = () => {
+      // Clean up on mouse up (in case dragEnd doesn't fire)
+      if (dragSquare) {
+        setDragSquare(null)
+        setDragPosition(null)
+        setDraggedPiece(null)
+        setValidMoves([])
+      }
+    }
+
+    if (dragSquare) {
+      document.body.style.userSelect = 'none'
+      
+      // Use capture phase to ensure we catch events even if they're stopped
+      document.addEventListener('mousemove', handleMouseMove, true)
+      document.addEventListener('dragover', handleDragOver, true)
+      document.addEventListener('mouseup', handleMouseUp, true)
+      
+      return () => {
+        document.body.style.userSelect = ''
+        document.removeEventListener('mousemove', handleMouseMove, true)
+        document.removeEventListener('dragover', handleDragOver, true)
+        document.removeEventListener('mouseup', handleMouseUp, true)
+      }
+    }
+  }, [dragSquare])
 
   const handleDragOver = (e: React.DragEvent, square: string) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    // Update drag position during dragover
+    if (dragSquare) {
+      setDragPosition({ x: e.clientX, y: e.clientY })
+    }
     
     if (freePlacement) {
       // In free placement mode, always allow drop
@@ -261,6 +407,7 @@ export default function ChessBoard({
         console.error("Error placing piece from palette:", err)
       }
       setDragSquare(null)
+      setValidMoves([])
       return
     }
 
@@ -288,6 +435,7 @@ export default function ChessBoard({
         onFenChange?.(newFen)
       }
       setDragSquare(null)
+      setValidMoves([])
       return
     }
 
@@ -303,6 +451,7 @@ export default function ChessBoard({
         const newFen = gameRef.current.fen()
         onFenChange?.(newFen)
         onMove?.(sourceSquare, targetSquare)
+        setValidMoves([])
       }
     } catch (err) {
       // Invalid move
@@ -310,6 +459,7 @@ export default function ChessBoard({
     }
 
     setDragSquare(null)
+    setValidMoves([])
   }
 
   const handleDragEnd = (e: React.DragEvent) => {
@@ -332,13 +482,19 @@ export default function ChessBoard({
     
     setDragSquare(null)
     setDraggedOverSquare(null)
+    setValidMoves([])
+    setDragPosition(null)
+    setDraggedPiece(null)
   }
 
   const squares = []
   const rows = orientation === "white" ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
+  const cols = orientation === "white" ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
 
-  for (const row of rows) {
-    for (let col = 0; col < 8; col++) {
+  for (let visualRow = 0; visualRow < 8; visualRow++) {
+    for (let visualCol = 0; visualCol < 8; visualCol++) {
+      const row = rows[visualRow]
+      const col = cols[visualCol]
       const squareName = getSquareName(row, col)
       const isSelected = selectedSquare === squareName
       const isHighlighted = highlightedSquares.includes(squareName)
@@ -346,6 +502,7 @@ export default function ChessBoard({
       const piece = getPiece(row, col)
       const isDragging = dragSquare === squareName
       const hasError = errorSquare === squareName
+      const isValidMove = validMoves.includes(squareName) && !piece && (selectedSquare || dragSquare)
 
       squares.push(
         <div
@@ -358,14 +515,13 @@ export default function ChessBoard({
                 ? '#baca44'
                 : isSelected 
                   ? '#baca44' 
-                  : getSquareColor(row, col),
+                  : getSquareColor(visualRow, visualCol),
             width: '100%',
             height: '100%',
             aspectRatio: '1',
             border: isSelected ? '3px solid #4a90e2' : 'none',
             cursor: draggable && piece ? 'grab' : draggable ? 'pointer' : 'default',
             transition: 'background-color 0.15s ease',
-            opacity: isDragging ? 0.3 : 1,
             boxSizing: 'border-box',
             position: 'relative',
             margin: 0,
@@ -380,7 +536,7 @@ export default function ChessBoard({
           onDragEnd={(e) => handleDragEnd(e)}
           draggable={draggable && !!piece}
         >
-          {piece && (
+          {piece && !isDragging && (
             <span 
               className="text-5xl md:text-6xl font-normal leading-none"
               style={{ 
@@ -397,6 +553,19 @@ export default function ChessBoard({
             >
               {piece.symbol}
             </span>
+          )}
+          {isValidMove && (
+            <div
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
+              <div
+                className="w-4 h-4 rounded-full bg-gray-600 opacity-60"
+                style={{
+                  width: '25%',
+                  height: '25%',
+                }}
+              />
+            </div>
           )}
           {hasError && (
             <div
@@ -544,8 +713,41 @@ export default function ChessBoard({
         }
       </div>
       
+      {/* Custom content before palette */}
+      {customContentBeforePalette}
+      
       {/* Piece Palette */}
       {renderPiecePalette()}
+      
+      {/* Dragged piece visual */}
+      {dragPosition && draggedPiece && (
+        <div
+          className="fixed pointer-events-none z-50"
+          style={{
+            left: `${dragPosition.x}px`,
+            top: `${dragPosition.y}px`,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <span 
+            className="text-5xl md:text-6xl font-normal leading-none"
+            style={{ 
+              userSelect: 'none',
+              pointerEvents: 'none',
+              display: 'block',
+              lineHeight: '1',
+              color: draggedPiece.color === 'w' ? '#ffffff' : '#1a1a1a',
+              textShadow: draggedPiece.color === 'w' 
+                ? '2px 2px 3px rgba(0,0,0,0.7)' 
+                : '1px 1px 1px rgba(255,255,255,0.4)',
+              WebkitTextStroke: draggedPiece.color === 'w' ? '0.5px rgba(0,0,0,0.3)' : 'none',
+              opacity: 0.9,
+            }}
+          >
+            {draggedPiece.symbol}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

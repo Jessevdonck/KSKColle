@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { createPuzzle } from "../../api/index"
 import { useToast } from "@/hooks/use-toast"
 import { Chess } from "chess.js"
-import { ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react"
+import { ArrowRight, ArrowLeft, Check, Loader2, RotateCcw } from "lucide-react"
 
 type Step = 1 | 2 | 3
 
@@ -33,6 +33,9 @@ export default function PuzzleCreationPage() {
   
   // Step 3: Name
   const [puzzleName, setPuzzleName] = useState("")
+  
+  // Board orientation for step 1 and 2
+  const [boardOrientation, setBoardOrientation] = useState<"white" | "black">("white")
 
   // Check access
   if (!isPuzzleMaster(user)) {
@@ -282,24 +285,38 @@ export default function PuzzleCreationPage() {
               </p>
 
               <div className="mb-6">
-                <ChessBoard
-                  key={`start-board-${startFen}`}
-                  fen={startFen}
-                  onFenChange={handleStartPositionChange}
-                  draggable={true}
-                  freePlacement={true}
-                  showPiecePalette={true}
-                />
-              </div>
-
-              <div className="flex justify-center mt-4">
-                <Button
-                  variant="outline"
-                  onClick={handleResetBoard}
-                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300"
-                >
-                  Reset Bord
-                </Button>
+                <div className="flex justify-center">
+                  <ChessBoard
+                    key={`start-board-${startFen}`}
+                    fen={startFen}
+                    onFenChange={handleStartPositionChange}
+                    draggable={true}
+                    freePlacement={true}
+                    showPiecePalette={true}
+                    orientation={boardOrientation}
+                    customContentBeforePalette={
+                      <div className="flex justify-end gap-2 mb-6 mt-6">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setBoardOrientation(boardOrientation === "white" ? "black" : "white")}
+                          title="Draai bord"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Draai bord
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleResetBoard}
+                          className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300"
+                        >
+                          Reset Bord
+                        </Button>
+                      </div>
+                    }
+                  />
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -380,23 +397,39 @@ export default function PuzzleCreationPage() {
                 Sleep stukken om de oplossing te creëren. Zetten worden in volgorde toegevoegd.
               </p>
 
-              <div className="mb-6">
+              <div className="mb-6 relative">
                 {currentGame ? (
-                  <ChessBoard
-                    key={`solution-board-${solution.length}-${currentGame.fen()}`}
-                    fen={currentGame.fen()}
-                    onFenChange={(newFen) => {
-                      try {
-                        const game = new Chess(newFen)
-                        setCurrentGame(game)
-                      } catch (e) {
-                        // Invalid FEN during solution building
-                        console.error("Invalid FEN:", newFen)
-                      }
-                    }}
-                    onMove={handleMove}
-                    draggable={true}
-                  />
+                  <>
+                    <div className="absolute top-2 right-2 z-10">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBoardOrientation(boardOrientation === "white" ? "black" : "white")}
+                        className="bg-white/90 hover:bg-white shadow-sm"
+                        title="Draai bord"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex justify-center">
+                      <ChessBoard
+                        key={`solution-board-${solution.length}-${currentGame.fen()}`}
+                        fen={currentGame.fen()}
+                        onFenChange={(newFen) => {
+                          try {
+                            const game = new Chess(newFen)
+                            setCurrentGame(game)
+                          } catch (e) {
+                            // Invalid FEN during solution building
+                            console.error("Invalid FEN:", newFen)
+                          }
+                        }}
+                        onMove={handleMove}
+                        draggable={true}
+                        orientation={boardOrientation}
+                      />
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
                     <p className="font-medium">Ongeldige startpositie</p>
@@ -409,6 +442,14 @@ export default function PuzzleCreationPage() {
                 <div className="flex items-center justify-between mb-2">
                   <Label>Oplossing ({solution.length} zetten)</Label>
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBoardOrientation(boardOrientation === "white" ? "black" : "white")}
+                      title="Draai bord"
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
