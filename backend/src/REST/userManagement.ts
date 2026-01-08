@@ -146,7 +146,7 @@ createUser.validationScheme = {
     adres_postcode: Joi.string().allow('').optional(),
     adres_gemeente: Joi.string().allow('').optional(),
     adres_land: Joi.string().allow('').optional(),
-    roles: Joi.array().items(Joi.string().valid('admin', 'bestuurslid', 'author', 'exlid', 'user')).optional(),
+    roles: Joi.array().items(Joi.string().valid('admin', 'bestuurslid', 'author', 'exlid', 'user', 'puzzlemaster')).optional(),
   },
 };
 

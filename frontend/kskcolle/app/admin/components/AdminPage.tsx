@@ -9,11 +9,10 @@ import TournamentsManagement from "../Tournaments/TournamentsManagement"
 import CalendarManagement from "../Calendar/CalendarManagement"
 import SevillaImportPage from "../SevillaImport/page"
 import ColorSettings from "../Settings/ColorSettings"
-import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload, Palette, Euro } from "lucide-react"
+import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload, Palette, Euro, Puzzle } from "lucide-react"
 import { getAll } from "../../api/index"
 import { useAuth } from "../../contexts/auth"
-import { isAdmin } from "@/lib/roleUtils"
-import { isBoardMember } from "@/lib/roleUtils"
+import { isAdmin, isBoardMember, isPuzzleMaster } from "@/lib/roleUtils"
 import Link from "next/link"
 
 const AdminPage = () => {
@@ -38,17 +37,22 @@ const AdminPage = () => {
   }).length
 
   const tabs = [
-    { value: "dashboard", label: "Dashboard", icon: BarChart3, adminOnly: false },
-    { value: "users", label: "Leden", icon: Users, adminOnly: true },
-    { value: "lidgeld", label: "Lidgeld", icon: Euro, adminOnly: false },
-    { value: "tournaments", label: "Toernooien", icon: Trophy, adminOnly: true },
-    { value: "calendar", label: "Kalender", icon: CalendarDays, adminOnly: true },
-    { value: "sevilla", label: "Sevilla Import", icon: Upload, adminOnly: true },
-    { value: "settings", label: "Instellingen", icon: Palette, adminOnly: true },
+    { value: "dashboard", label: "Dashboard", icon: BarChart3, adminOnly: false, puzzleMasterOnly: false },
+    { value: "users", label: "Leden", icon: Users, adminOnly: true, puzzleMasterOnly: false },
+    { value: "lidgeld", label: "Lidgeld", icon: Euro, adminOnly: false, puzzleMasterOnly: false },
+    { value: "tournaments", label: "Toernooien", icon: Trophy, adminOnly: true, puzzleMasterOnly: false },
+    { value: "calendar", label: "Kalender", icon: CalendarDays, adminOnly: true, puzzleMasterOnly: false },
+    { value: "puzzles", label: "Puzzels", icon: Puzzle, adminOnly: false, puzzleMasterOnly: true },
+    { value: "sevilla", label: "Sevilla Import", icon: Upload, adminOnly: true, puzzleMasterOnly: false },
+    { value: "settings", label: "Instellingen", icon: Palette, adminOnly: true, puzzleMasterOnly: false },
   ].filter(tab => {
     // Bestuursleden zien alleen dashboard en lidgeld
     if (currentUser && isBoardMember(currentUser) && !isAdmin(currentUser)) {
-      return !tab.adminOnly
+      return !tab.adminOnly && !tab.puzzleMasterOnly
+    }
+    // Puzzle master only tabs
+    if (tab.puzzleMasterOnly) {
+      return currentUser && (isAdmin(currentUser) || isPuzzleMaster(currentUser))
     }
     // Admins zien alles
     return !tab.adminOnly || (currentUser && isAdmin(currentUser))
@@ -282,6 +286,20 @@ const AdminPage = () => {
           </TabsContent>
           <TabsContent value="calendar" className="mt-0">
             <CalendarManagement />
+          </TabsContent>
+          <TabsContent value="puzzles" className="mt-0">
+            <Link href="/admin/puzzles">
+              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Puzzle className="h-8 w-8 text-mainAccent" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Puzzel Maker</h3>
+                <p className="text-gray-600 mb-4">Maak nieuwe schaakpuzzels aan</p>
+                <button className="bg-mainAccent text-white px-6 py-2 rounded-lg hover:bg-mainAccentDark transition-colors">
+                  Open Puzzel Maker
+                </button>
+              </div>
+            </Link>
           </TabsContent>
           <TabsContent value="sevilla" className="mt-0">
             <SevillaImportPage />

@@ -21,6 +21,7 @@ import installArticlesRouter from './articles';
 import installCommentsRouter from './comments';
 import installNotificationsRouter from './notifications';
 import installMegaschaakRouter from './megaschaak';
+import installPuzzlesRouter from './puzzles';
 import type { ChessAppContext, ChessAppState, KoaApplication } from '../types/koa';
 import installSessionRouter from './session';
 
@@ -129,6 +130,7 @@ export default (app: KoaApplication) => {
   installCommentsRouter(router);
   installNotificationsRouter(router);
   installMegaschaakRouter(router);
+  installPuzzlesRouter(router);
 
   app.use(router.routes()).use(router.allowedMethods());
 };

@@ -240,6 +240,48 @@ export const getRoundsByDateForExport = async (tournamentId, date) => {
   return data;
 };
 
+// Puzzle functions
+export const getAllPuzzles = async () => {
+  const { data } = await axios.get(`${baseUrl}/puzzles`);
+  return data.items;
+};
+
+export const getPuzzleById = async (puzzleId) => {
+  const { data } = await axios.get(`${baseUrl}/puzzles/${puzzleId}`);
+  return data;
+};
+
+export const createPuzzle = async (puzzleData) => {
+  const { data } = await axios.post(`${baseUrl}/puzzles`, puzzleData);
+  return data;
+};
+
+export const updatePuzzle = async (puzzleId, puzzleData) => {
+  const { data } = await axios.put(`${baseUrl}/puzzles/${puzzleId}`, puzzleData);
+  return data;
+};
+
+export const deletePuzzle = async (puzzleId) => {
+  await axios.delete(`${baseUrl}/puzzles/${puzzleId}`);
+};
+
+export const savePuzzleAttempt = async (puzzleId, solveTimeMs) => {
+  const { data } = await axios.post(`${baseUrl}/puzzles/${puzzleId}/attempt`, {
+    solve_time_ms: solveTimeMs,
+  });
+  return data;
+};
+
+export const getPuzzleLeaderboard = async (puzzleId) => {
+  const { data } = await axios.get(`${baseUrl}/puzzles/${puzzleId}/leaderboard`);
+  return data.items;
+};
+
+export const getUserPuzzleAttempt = async (puzzleId) => {
+  const { data } = await axios.get(`${baseUrl}/puzzles/${puzzleId}/attempt`);
+  return data;
+};
+
 // Game postpone functions
 export const postponeGame = async (url, { arg: { game_id, makeup_round_id } }) => {
   const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { 

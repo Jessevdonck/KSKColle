@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, User, Mail, Phone, Trophy, Calendar, Shield, Key, MapPin, Hash, Building, Globe, LandPlot, Mailbox, PenTool } from "lucide-react"
+import { CheckCircle2, User, Mail, Phone, Trophy, Calendar, Shield, Key, MapPin, Hash, Building, Globe, LandPlot, Mailbox, PenTool, Puzzle } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 
 const EMPTY_USER = {
@@ -604,6 +604,30 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
                 <Label htmlFor="isAuthor" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <PenTool className="h-3 w-3" />
                   Auteur
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="isPuzzlemaster"
+                  data-cy="puzzlemaster"
+                  checked={watch("roles").includes("puzzlemaster")}
+                  onCheckedChange={(checked) => {
+                    const currentRoles = getValues("roles")
+                    if (checked) {
+                      setValue("roles", [...currentRoles, "puzzlemaster"])
+                    } else {
+                      setValue(
+                        "roles",
+                        currentRoles.filter((role) => role !== "puzzlemaster"),
+                      )
+                    }
+                  }}
+                  className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
+                />
+                <Label htmlFor="isPuzzlemaster" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Puzzle className="h-3 w-3" />
+                  Puzzlemaster
                 </Label>
               </div>
               

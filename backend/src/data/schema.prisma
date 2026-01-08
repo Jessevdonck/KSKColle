@@ -66,6 +66,8 @@ model User {
   megaschaakTeams    MegaschaakTeam[]
   megaschaakTeamPlayers MegaschaakTeamPlayer[]
   reserveTeams       MegaschaakTeam[] @relation("ReservePlayer")
+  puzzleAttempts     PuzzleAttempt[]
+  createdPuzzles     Puzzle[]         @relation("PuzzleCreator")
 
   @@index([is_youth])
 }
@@ -305,4 +307,37 @@ model MegaschaakTeamPlayer {
   
   @@unique([team_id, player_id])
   @@index([team_id])
+}
+
+model Puzzle {
+  puzzle_id      Int      @id @default(autoincrement())
+  name           String
+  start_position String   // FEN notation of starting position
+  active_color   String   // "white" or "black" - whose turn it is
+  solution       Json     // Array of moves in order: [{from: "e2", to: "e4"}, ...]
+  created_by     Int
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  
+  creator        User     @relation("PuzzleCreator", fields: [created_by], references: [user_id], onDelete: Cascade)
+  attempts       PuzzleAttempt[]
+  
+  @@index([created_by])
+  @@index([created_at])
+}
+
+model PuzzleAttempt {
+  attempt_id     Int      @id @default(autoincrement())
+  puzzle_id      Int
+  user_id        Int
+  solve_time_ms  Int      // Time in milliseconds to solve the puzzle
+  completed_at   DateTime @default(now())
+  
+  puzzle         Puzzle   @relation(fields: [puzzle_id], references: [puzzle_id], onDelete: Cascade)
+  user           User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  
+  @@unique([puzzle_id, user_id]) // One attempt per user per puzzle (best time)
+  @@index([puzzle_id])
+  @@index([user_id])
+  @@index([solve_time_ms])
 } 

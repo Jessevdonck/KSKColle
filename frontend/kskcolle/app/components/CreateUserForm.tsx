@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { createUserWithPassword } from '../api';
 import { CreateUserRequest } from '../../data/types';
-import { Calendar, UserPlus, CheckCircle, AlertCircle, User, Mail, Trophy, Shield, MapPin, Building, PenTool } from 'lucide-react';
+import { Calendar, UserPlus, CheckCircle, AlertCircle, User, Mail, Trophy, Shield, MapPin, Building, PenTool, Puzzle } from 'lucide-react';
 
 const validationRules = {
   voornaam: {
@@ -457,6 +457,30 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
             <Label htmlFor="is_author" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
               <PenTool className="h-3 w-3" />
               Auteur
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="is_puzzlemaster"
+              checked={watch("roles").includes("puzzlemaster")}
+              disabled={watch("roles").includes("exlid")}
+              onCheckedChange={(checked) => {
+                const currentRoles = getValues("roles")
+                if (checked) {
+                  setValue("roles", [...currentRoles, "puzzlemaster"])
+                } else {
+                  setValue(
+                    "roles",
+                    currentRoles.filter((role) => role !== "puzzlemaster"),
+                  )
+                }
+              }}
+              data-cy="create_user_is_puzzlemaster_checkbox"
+            />
+            <Label htmlFor="is_puzzlemaster" className={`text-sm font-medium flex items-center gap-2 ${watch("roles").includes("exlid") ? "text-gray-400" : "text-gray-700"}`}>
+              <Puzzle className="h-3 w-3" />
+              Puzzlemaster
             </Label>
           </div>
           

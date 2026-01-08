@@ -19,6 +19,7 @@ import {
   BookOpen,
   History,
   Swords,
+  Puzzle,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect, useMemo } from "react"
 import LoginSheet from "./LoginSheet"
@@ -215,6 +216,14 @@ export default function Navbar() {
             <BookOpen size={12} />
             <span>Schaaklessen</span>
           </Link>
+
+          {/* Puzzels */}
+          {isAuthed && (
+            <Link href="/puzzels" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
+              <Puzzle size={12} />
+              <span>Puzzels</span>
+            </Link>
+          )}
 
           {/* Kalender */}
           <Link href="/calendar" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
@@ -485,6 +494,11 @@ export default function Navbar() {
 
             {/* Mobile Schaaklessen */}
             <NavItem href="/schaaklessen" icon={<BookOpen size={18} />} text="Schaaklessen" onClick={() => setIsMobileMenuOpen(false)} />
+
+            {/* Mobile Puzzels */}
+            {isAuthed && (
+              <NavItem href="/puzzels" icon={<Puzzle size={18} />} text="Puzzels" onClick={() => setIsMobileMenuOpen(false)} />
+            )}
 
             {/* Mobile Kalender */}
             <NavItem href="/calendar" icon={<CalendarDays size={18} />} text="Kalender" onClick={() => setIsMobileMenuOpen(false)} />

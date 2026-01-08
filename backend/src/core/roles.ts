@@ -4,4 +4,5 @@ export default {
   BESTUURSLID: "bestuurslid",
   AUTHOR: "author",
   EXLID: "exlid",
+  PUZZLEMASTER: "puzzlemaster",
 };

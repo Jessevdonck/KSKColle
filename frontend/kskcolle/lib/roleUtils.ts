@@ -109,3 +109,12 @@ export function isAuthor(user: User | null | undefined): boolean {
 export function canManageArticles(user: User | null | undefined): boolean {
   return hasRole(user, ['admin', 'bestuurslid', 'author'])
 }
+
+/**
+ * Check if a user is a puzzle master
+ * @param user - The user object to check
+ * @returns true if user is puzzlemaster or admin
+ */
+export function isPuzzleMaster(user: User | null | undefined): boolean {
+  return hasRole(user, ['puzzlemaster', 'admin'])
+}

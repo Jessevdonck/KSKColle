@@ -6,10 +6,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, LogOut, Settings, Lock, FileText } from 'lucide-react'
+import { User, LogOut, Settings, Lock, FileText, Puzzle } from 'lucide-react'
 import { useAuth } from "../contexts/auth"
 import { useRouter } from 'next/navigation'
 import { parseRoles } from "@/lib/utils"
+import { isPuzzleMaster } from "@/lib/roleUtils"
 import Image from 'next/image'
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
@@ -40,6 +41,7 @@ export default function ProfileDropdown() {
   const isAdmin = roles.includes('admin');
   const isBoardMember = roles.includes('bestuurslid');
   const hasAdminAccess = isAdmin || isBoardMember;
+  const isPuzzlemaster = isPuzzleMaster(user);
 
   return (
     <DropdownMenu>
@@ -76,6 +78,12 @@ export default function ProfileDropdown() {
               <span>Artikels beheren</span>
             </DropdownMenuItem>
           </>
+        )}
+        {isPuzzlemaster && !hasAdminAccess && (
+          <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/admin/puzzles')}>
+            <Puzzle className="mr-2 h-4 w-4" />
+            <span>Puzzels aanmaken</span>
+          </DropdownMenuItem>
         )}
 
       <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/change-password')}>
