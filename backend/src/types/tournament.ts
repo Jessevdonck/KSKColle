@@ -20,12 +20,17 @@ export type TournamentCreateInput = {
   is_youth: boolean; 
 };
 
-export interface TournamentUpdateInput extends TournamentCreateInput {}
+export interface TournamentUpdateInput {
+  naam: string;      
+  rondes: number;  
+  type: TournamentType;
+  rating_enabled: boolean;
+  participations: number[];   
+  is_youth: boolean; 
+}
 
-export interface CreateTournamentRequest extends TournamentCreateInput {}
 export interface UpdateTournamentRequest extends TournamentUpdateInput {}
 
 export interface GetAllTournamentenResponse extends ListResponse<Tournament> {}
 export interface GetTournamentByIdResponse extends Tournament {}
-export interface CreateTournamentResponse extends GetTournamentByIdResponse {}
 export interface UpdateTournamentResponse extends GetTournamentByIdResponse {}

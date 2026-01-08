@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import * as tournamentService from '../service/tournamentService';
-import type { CreateTournamentRequest, CreateTournamentResponse, GetAllTournamentenResponse, GetTournamentByIdResponse, UpdateTournamentRequest, UpdateTournamentResponse } from '../types/tournament';
+import type { GetAllTournamentenResponse, GetTournamentByIdResponse, UpdateTournamentRequest, UpdateTournamentResponse } from '../types/tournament';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
 import Joi from 'joi';
@@ -38,38 +38,6 @@ getAllTournament.validationScheme = {
   },
 };
 
-
-/**
- * @api {post} /tournament Create a new tournament
- * @apiName CreateTournament
- * @apiGroup Tournament
- * 
- * @apiBody {String} naam The name of the tournament.
- * @apiBody {Number} rondes The number of rounds in the tournament.
- * @apiBody {Number[]} participations Array of participant IDs.
- * 
- * @apiSuccess {Object} tournament The created tournament object.
- * @apiError (400) BadRequest Invalid data provided.
- * @apiError (401) Unauthorized You need to be authenticated to access this resource.
- * @apiError (403) Forbidden You don't have access to this resource.
- * @apiError (404) NotFound The requested resource could not be found.
- */
-const createTournament = async (ctx: KoaContext<CreateTournamentResponse, void, CreateTournamentRequest>) => {
-  
-  const newSpeler: any = await tournamentService.addTournament(ctx.request.body);
-  console.log('BODY:', ctx.request.body)
-  ctx.status = 201; 
-  ctx.body = newSpeler;
-};
-createTournament.validationScheme = {
-  body: {
-    naam: Joi.string(),
-    rondes: Joi.number().integer().positive(),
-    type: Joi.string().valid('SWISS', 'ROUND_ROBIN'),
-    participations: Joi.array().items(Joi.number().integer().positive()),
-    is_youth: Joi.boolean().optional(), 
-  },
-};
 
 /**
  * @api {get} /tournament/:id Get tournament by ID
@@ -199,7 +167,6 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   router.get('/', validate(getAllTournament.validationScheme), getAllTournament);
   router.get('/:id', validate(getTournamentById.validationScheme), getTournamentById);
-  router.post('/', requireAuthentication, requireAdmin, validate(createTournament.validationScheme), createTournament);
   router.post('/:id/pairings/:rondeNummer', requireAuthentication, requireAdmin, validate(generatePairings.validationScheme), generatePairings);
   router.post("/:id/finalize", requireAuthentication, requireAdmin, validate(finalizeRatings.validationScheme), finalizeRatings);
   router.post("/:id/end",requireAuthentication,requireAdmin,validate(endTournamentHandler.validationScheme),endTournamentHandler);

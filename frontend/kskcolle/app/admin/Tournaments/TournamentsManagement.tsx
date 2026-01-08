@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import TournamentForm from "./components/forms/TournamentForm"
 import TournamentList from "./TournamentList"
 import RoundManagement from "./rounds/RoundManagement"
 import type { Toernooi } from "@/data/types"
@@ -47,7 +46,7 @@ export default function TournamentManagement() {
               <p className="text-gray-600 mt-1">
                 {selectedTournament
                   ? "Beheer rondes, resultaten en inhaaldagen"
-                  : "Maak nieuwe toernooien aan en beheer bestaande toernooien"}
+                  : "Beheer toernooien"}
               </p>
             </div>
           </div>
@@ -59,10 +58,7 @@ export default function TournamentManagement() {
         {selectedTournament ? (
           <RoundManagement tournament={selectedTournament} />
         ) : (
-          <div className="space-y-8">
-            <TournamentForm />
-            <TournamentList onSelectTournament={setSelectedTournament} />
-          </div>
+          <TournamentList onSelectTournament={setSelectedTournament} />
         )}
       </div>
     </div>

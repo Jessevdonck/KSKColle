@@ -1,6 +1,6 @@
 import { prisma } from "./data";
 import { Prisma } from "@prisma/client";
-import type { Tournament, TournamentCreateInput, TournamentUpdateInput } from "../types/tournament";
+import type { Tournament, TournamentUpdateInput } from "../types/tournament";
 import type { Participation } from "../types/participation";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
@@ -359,33 +359,6 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
     })));
 
     return tournamentWithSevillaFlag;
-  } catch (error) {
-    throw handleDBError(error);
-  }
-};
-
-export const addTournament = async (tournament: TournamentCreateInput) => {
-  try {
-    return await prisma.tournament.create({
-      data: {
-        naam: tournament.naam,
-        rondes: tournament.rondes,
-        type: tournament.type,  
-        is_youth: tournament.is_youth,
-        // Jeugdkampioenschappen gebruiken geen ELIO rating
-        rating_enabled: tournament.is_youth ? false : tournament.rating_enabled,
-        participations: {
-          create: tournament.participations.map((userId: number) => ({ user: { connect: { user_id: userId } } })),
-        },
-      },
-      include: {
-        participations: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    });
   } catch (error) {
     throw handleDBError(error);
   }
