@@ -104,12 +104,6 @@ export default function ChessBoard({
     return isLight ? '#f0d9b5' : '#b58863'
   }
 
-  const getSquareBorder = (row: number, col: number): string => {
-    // Add subtle borders between squares for better definition
-    const isLight = (row + col) % 2 === 0
-    return 'none'
-  }
-
   const getSquareName = (row: number, col: number): string => {
     const file = String.fromCharCode(97 + col) // a-h
     const rank = 8 - row // 1-8
@@ -343,7 +337,7 @@ export default function ChessBoard({
   const squares = []
   const rows = orientation === "white" ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0]
 
-  for (let row of rows) {
+  for (const row of rows) {
     for (let col = 0; col < 8; col++) {
       const squareName = getSquareName(row, col)
       const isSelected = selectedSquare === squareName

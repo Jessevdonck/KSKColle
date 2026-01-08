@@ -1,7 +1,6 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
-import { useAuth } from "../../../contexts/auth"
 import PrivateRoute from "../../components/PrivateRoute"
 import useSWR from "swr"
 import { getPuzzleById, savePuzzleAttempt, getPuzzleLeaderboard, getUserPuzzleAttempt } from "../../api/index"
@@ -26,7 +25,6 @@ interface PuzzleData {
 
 export default function PuzzleSolvePage() {
   const params = useParams()
-  const router = useRouter()
   const { toast } = useToast()
   const puzzleId = Number(params.id)
 
