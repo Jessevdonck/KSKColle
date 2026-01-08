@@ -14,33 +14,22 @@ export const getAllTournaments = async (
 
     // If filtering for active tournaments, we need special logic for herfstcompetitie and lentecompetitie
     if (typeof active === 'boolean' && active === true) {
-      // First, get all tournaments (both finished and unfinished) to find the latest herfst/lente
+      // First, get only minimal data (name, id, last round date) to find the latest herfst/lente
+      // This avoids loading all games and user data unnecessarily
       const allTournaments = await prisma.tournament.findMany({
         where: typeof is_youth === 'boolean' ? { is_youth } : {},
-        include: {
-          participations: { include: { user: true } },
-          rounds: { 
-            include: { 
-              games: { 
-                select: {
-                  game_id: true,
-                  round_id: true,
-                  speler1_id: true,
-                  speler2_id: true,
-                  winnaar_id: true,
-                  result: true,
-                  uitgestelde_datum: true,
-                  board_position: true,
-                  original_game_id: true,
-                  speler1: true,
-                  speler2: true,
-                  winnaar: true,
-                },
-              } 
+        select: {
+          tournament_id: true,
+          naam: true,
+          is_youth: true,
+          rounds: {
+            select: {
+              ronde_datum: true,
             },
             orderBy: {
               ronde_datum: 'desc'
-            }
+            },
+            take: 1, // Only need the last round date
           },
         },
         orderBy: {
@@ -101,28 +90,47 @@ export const getAllTournaments = async (
         where.is_youth = is_youth;
       }
 
+      // For admin list, we only need basic info, not all games and full user data
+      // This significantly reduces memory usage and response time
       const activeTournaments = await prisma.tournament.findMany({
         where,
-        include: {
-          participations: { include: { user: true } },
-          rounds: { 
-            include: { 
-              games: { 
+        select: {
+          tournament_id: true,
+          naam: true,
+          rondes: true,
+          type: true,
+          rating_enabled: true,
+          finished: true,
+          is_youth: true,
+          class_name: true,
+          megaschaak_enabled: true,
+          megaschaak_deadline: true,
+          megaschaak_config: true,
+          participations: {
+            select: {
+              user_id: true,
+              score: true,
+              user: {
                 select: {
-                  game_id: true,
-                  round_id: true,
-                  speler1_id: true,
-                  speler2_id: true,
-                  winnaar_id: true,
-                  result: true,
-                  uitgestelde_datum: true,
-                  board_position: true,
-                  original_game_id: true,
-                  speler1: true,
-                  speler2: true,
-                  winnaar: true,
-                },
-              } 
+                  user_id: true,
+                  voornaam: true,
+                  achternaam: true,
+                }
+              }
+            }
+          },
+          rounds: {
+            select: {
+              round_id: true,
+              ronde_nummer: true,
+              ronde_datum: true,
+              type: true,
+              label: true,
+              _count: {
+                select: {
+                  games: true
+                }
+              }
             },
             orderBy: {
               ronde_datum: 'desc'
@@ -164,29 +172,46 @@ export const getAllTournaments = async (
       if (latestHerfst && !hasNewerHerfst && !resultTournaments.find(t => t.tournament_id === latestHerfst!.tournament_id)) {
         // Check is_youth filter
         if (typeof is_youth === 'boolean' ? latestHerfst.is_youth === is_youth : true) {
-          // Ensure latestHerfst has the same structure as activeTournaments
+          // Ensure latestHerfst has the same structure as activeTournaments (minimal data)
           const herfstWithRounds = await prisma.tournament.findUnique({
             where: { tournament_id: latestHerfst.tournament_id },
-            include: {
-              participations: { include: { user: true } },
-              rounds: { 
-                include: { 
-                  games: { 
+            select: {
+              tournament_id: true,
+              naam: true,
+              rondes: true,
+              type: true,
+              rating_enabled: true,
+              finished: true,
+              is_youth: true,
+              class_name: true,
+              megaschaak_enabled: true,
+              megaschaak_deadline: true,
+              megaschaak_config: true,
+              participations: {
+                select: {
+                  user_id: true,
+                  score: true,
+                  user: {
                     select: {
-                      game_id: true,
-                      round_id: true,
-                      speler1_id: true,
-                      speler2_id: true,
-                      winnaar_id: true,
-                      result: true,
-                      uitgestelde_datum: true,
-                      board_position: true,
-                      original_game_id: true,
-                      speler1: true,
-                      speler2: true,
-                      winnaar: true,
-                    },
-                  } 
+                      user_id: true,
+                      voornaam: true,
+                      achternaam: true,
+                    }
+                  }
+                }
+              },
+              rounds: {
+                select: {
+                  round_id: true,
+                  ronde_nummer: true,
+                  ronde_datum: true,
+                  type: true,
+                  label: true,
+                  _count: {
+                    select: {
+                      games: true
+                    }
+                  }
                 },
                 orderBy: {
                   ronde_datum: 'desc'
@@ -203,29 +228,46 @@ export const getAllTournaments = async (
       if (latestLente && !hasNewerLente && !resultTournaments.find(t => t.tournament_id === latestLente!.tournament_id)) {
         // Check is_youth filter
         if (typeof is_youth === 'boolean' ? latestLente.is_youth === is_youth : true) {
-          // Ensure latestLente has the same structure as activeTournaments
+          // Ensure latestLente has the same structure as activeTournaments (minimal data)
           const lenteWithRounds = await prisma.tournament.findUnique({
             where: { tournament_id: latestLente.tournament_id },
-            include: {
-              participations: { include: { user: true } },
-              rounds: { 
-                include: { 
-                  games: { 
+            select: {
+              tournament_id: true,
+              naam: true,
+              rondes: true,
+              type: true,
+              rating_enabled: true,
+              finished: true,
+              is_youth: true,
+              class_name: true,
+              megaschaak_enabled: true,
+              megaschaak_deadline: true,
+              megaschaak_config: true,
+              participations: {
+                select: {
+                  user_id: true,
+                  score: true,
+                  user: {
                     select: {
-                      game_id: true,
-                      round_id: true,
-                      speler1_id: true,
-                      speler2_id: true,
-                      winnaar_id: true,
-                      result: true,
-                      uitgestelde_datum: true,
-                      board_position: true,
-                      original_game_id: true,
-                      speler1: true,
-                      speler2: true,
-                      winnaar: true,
-                    },
-                  } 
+                      user_id: true,
+                      voornaam: true,
+                      achternaam: true,
+                    }
+                  }
+                }
+              },
+              rounds: {
+                select: {
+                  round_id: true,
+                  ronde_nummer: true,
+                  ronde_datum: true,
+                  type: true,
+                  label: true,
+                  _count: {
+                    select: {
+                      games: true
+                    }
+                  }
                 },
                 orderBy: {
                   ronde_datum: 'desc'
@@ -258,29 +300,45 @@ export const getAllTournaments = async (
       where.is_youth = is_youth;
     }
 
+    // For non-active tournaments, also use minimal data to reduce memory usage
     const tournaments = await prisma.tournament.findMany({
       where,
-      include: {
-        participations: { include: { user: true } },
-        rounds: { 
-          include: { 
-            games: { 
+      select: {
+        tournament_id: true,
+        naam: true,
+        rondes: true,
+        type: true,
+        rating_enabled: true,
+        finished: true,
+        is_youth: true,
+        class_name: true,
+        megaschaak_enabled: true,
+        megaschaak_deadline: true,
+        megaschaak_config: true,
+        participations: {
+          select: {
+            user_id: true,
+            score: true,
+            user: {
               select: {
-                game_id: true,
-                round_id: true,
-                speler1_id: true,
-                speler2_id: true,
-                winnaar_id: true,
-                result: true,
-                uitgestelde_datum: true,
-                board_position: true,
-                original_game_id: true,
-                speler1: true,
-                speler2: true,
-                winnaar: true,
-              },
-            } 
-          } 
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+              }
+            }
+          }
+        },
+        rounds: {
+          select: {
+            round_id: true,
+            ronde_nummer: true,
+            ronde_datum: true,
+            type: true,
+            label: true,
+          },
+          orderBy: {
+            ronde_datum: 'desc'
+          }
         },
       },
     });

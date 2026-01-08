@@ -26,14 +26,44 @@ export interface TournamentRound {
  */
 export async function getAllTournamentRounds(tournament_id: number): Promise<TournamentRound[]> {
   try {
+    // Only fetch minimal user data to reduce memory usage
     const rounds = await prisma.round.findMany({
       where: { tournament_id },
       include: {
         games: {
-          include: {
-            speler1: true,
-            speler2: true,
-            winnaar: true
+          select: {
+            game_id: true,
+            round_id: true,
+            speler1_id: true,
+            speler2_id: true,
+            winnaar_id: true,
+            result: true,
+            uitgestelde_datum: true,
+            board_position: true,
+            original_game_id: true,
+            speler1: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+                schaakrating_elo: true,
+              }
+            },
+            speler2: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+                schaakrating_elo: true,
+              }
+            },
+            winnaar: {
+              select: {
+                user_id: true,
+                voornaam: true,
+                achternaam: true,
+              }
+            }
           }
         }
       },
