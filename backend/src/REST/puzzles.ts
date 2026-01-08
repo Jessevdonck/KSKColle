@@ -1,6 +1,6 @@
 import Router from '@koa/router';
 import * as puzzleService from '../service/puzzleService';
-import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
+import type { ChessAppContext, ChessAppState } from '../types/koa';
 import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
