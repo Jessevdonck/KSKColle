@@ -12,6 +12,7 @@ import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Setti
 import MegaschaakConfigForm from "./components/MegaschaakConfigForm"
 import CloseTournamentDialog from "./components/CloseTournamentDialog"
 import AdminCreateTeamDialog from "./components/AdminCreateTeamDialog"
+import TournamentDayExport from "./components/TournamentDayExport"
 import { axios } from "../../api/index"
 import {
   Dialog,
@@ -413,6 +414,15 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                   <div className="bg-mainAccent/10 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
                     <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-mainAccent" />
                   </div>
+                </div>
+
+                {/* Export Day Button */}
+                <div className="mb-3 sm:mb-4">
+                  <TournamentDayExport
+                    tournamentId={group.tournaments[0].tournament_id}
+                    tournamentName={group.name}
+                    className="w-full sm:w-auto"
+                  />
                 </div>
 
                 {/* Klasses */}

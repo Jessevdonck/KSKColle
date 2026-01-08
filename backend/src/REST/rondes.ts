@@ -232,6 +232,85 @@ getRoundForExport.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /rondes/:tournament_id/next-round-date Get the next upcoming round date
+ * @apiName GetNextRoundDate
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ *
+ * @apiSuccess {String} date The next upcoming round date in ISO format, or null if no rounds exist.
+ */
+const getNextRoundDate = async (ctx: any) => {
+  const tournamentId = Number(ctx.params.tournament_id);
+  const date = await rondeService.getNextRoundDate(tournamentId);
+  ctx.body = { date: date ? date.toISOString().split('T')[0] : null };
+};
+getNextRoundDate.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+  },
+};
+
+/**
+ * @api {get} /rondes/:tournament_id/next-rounds/export Get next upcoming rounds with games for export
+ * @apiName GetNextRoundsForExport
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ *
+ * @apiSuccess {Object} roundsData All rounds data with games and players for PDF export.
+ */
+const getNextRoundsForExport = async (ctx: any) => {
+  const tournamentId = Number(ctx.params.tournament_id);
+  const roundsData = await rondeService.getNextRoundsForExport(tournamentId);
+  ctx.body = roundsData;
+};
+getNextRoundsForExport.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+  },
+};
+
+/**
+ * @api {get} /rondes/:tournament_id/export-by-date Get all rounds for a specific date across all classes
+ * @apiName GetRoundsByDateForExport
+ * @apiGroup Ronde
+ *
+ * @apiParam {Number} tournament_id The ID of the tournament.
+ * @apiParam {String} date The date in ISO format (YYYY-MM-DD).
+ *
+ * @apiSuccess {Object} roundsData All rounds data with games and players for PDF export.
+ */
+const getRoundsByDateForExport = async (ctx: any) => {
+  const tournamentId = Number(ctx.params.tournament_id);
+  const dateStr = ctx.query.date as string;
+  
+  if (!dateStr) {
+    ctx.status = 400;
+    ctx.body = { error: 'Date parameter is required' };
+    return;
+  }
+  
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    ctx.status = 400;
+    ctx.body = { error: 'Invalid date format' };
+    return;
+  }
+  
+  const roundsData = await rondeService.getRoundsByDateForExport(tournamentId, date);
+  ctx.body = roundsData;
+};
+getRoundsByDateForExport.validationScheme = {
+  params: {
+    tournament_id: Joi.number().integer().positive(),
+  },
+  query: {
+    date: Joi.string().required(),
+  },
+};
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/rondes',
@@ -241,6 +320,9 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   router.get('/', requireAuthentication, validate(getAllRondes.validationScheme), getAllRondes);
   router.get('/next/:tournament_id', requireAuthentication, validate(getNextRoundNumber.validationScheme), getNextRoundNumber);
+  router.get('/:tournament_id/next-round-date', requireAuthentication, requireAdmin, validate(getNextRoundDate.validationScheme), getNextRoundDate);
+  router.get('/:tournament_id/next-rounds/export', requireAuthentication, requireAdmin, validate(getNextRoundsForExport.validationScheme), getNextRoundsForExport);
+  router.get('/:tournament_id/export-by-date', requireAuthentication, requireAdmin, validate(getRoundsByDateForExport.validationScheme), getRoundsByDateForExport);
   router.get('/:tournament_id/rondes',validate(getAllRondesByTournamentId.validationScheme), getAllRondesByTournamentId);
   router.get('/:ronde_id', validate(getRondeById.validationScheme), getRondeById);
   router.get('/:tournament_id/rondes/:round_id', requireAuthentication, validate(getRondeByTournament.validationScheme), getRondeByTournament); 
@@ -260,6 +342,9 @@ export {
   getAllRondesByTournamentId,
   getRondeByTournament,
   getRoundForExport,
+  getNextRoundDate,
+  getNextRoundsForExport,
+  getRoundsByDateForExport,
   updateRonde,
   removeRonde,
 };

@@ -227,6 +227,19 @@ export const getRoundForExport = async (tournamentId, roundId) => {
   return data;
 };
 
+// Get the next upcoming round date
+export const getNextRoundDate = async (tournamentId) => {
+  const { data } = await axios.get(`${baseUrl}/rondes/${tournamentId}/next-round-date`);
+  return data.date ? new Date(data.date) : null;
+};
+
+// Export all rounds for a specific date across all classes
+export const getRoundsByDateForExport = async (tournamentId, date) => {
+  const dateStr = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+  const { data } = await axios.get(`${baseUrl}/rondes/${tournamentId}/export-by-date?date=${dateStr}`);
+  return data;
+};
+
 // Game postpone functions
 export const postponeGame = async (url, { arg: { game_id, makeup_round_id } }) => {
   const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { 
