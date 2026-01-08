@@ -2,7 +2,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
-import { getById, generatePairings, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, postponeGameToMakeupRound } from "../../../api/index"
+import { getById, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, postponeGameToMakeupRound } from "../../../api/index"
 import type { Toernooi, MakeupDay, Round } from "@/data/types"
 import RoundSection from "./RoundSection"
 import MakeupSection from "./MakeupSection"
@@ -47,7 +47,6 @@ export default function RoundManagement({ tournament }: Props) {
   )
 
   // 4) Mutations
-  const { trigger: genPair, isMutating: generatingPairs } = useSWRMutation("tournament", generatePairings)
   const { trigger: createMakeup, isMutating: creatingMD } = useSWRMutation("makeupDay", postMakeupDay)
   const { trigger: createMakeupRoundMutation, isMutating: creatingMakeupRound } = useSWRMutation("tournamentRounds", createMakeupRound)
   const { trigger: deleteMakeupRoundMutation, isMutating: deletingMakeupRound } = useSWRMutation("tournamentRounds", deleteMakeupRound)
@@ -114,15 +113,6 @@ export default function RoundManagement({ tournament }: Props) {
   const makeupRounds = sortedRounds.filter(r => r.type === 'MAKEUP')
   const regularRounds = sortedRounds.filter(r => r.type === 'REGULAR' && !r.is_sevilla_imported)
 
-  // aangepaste canGen: negeert spellen met uitgestelde_datum
-  function canGen(roundNumber: number) {
-    if (roundNumber === 1) return true
-    const prev = T.rounds.find((r) => r.ronde_nummer === roundNumber - 1)
-    if (!prev) return false
-    // alleen de niet-uitgestelde games meepakken
-    const pending = prev.games.filter((g) => !g.uitgestelde_datum)
-    return pending.every((g) => g.result && g.result !== "not_played")
-  }
 
   // timeline bouwen (alleen nieuwe systeem)
   type Entry = { kind: "round"; roundNumber: number; roundData?: Round } | { kind: "makeupRound"; round: Round }
@@ -556,15 +546,7 @@ export default function RoundManagement({ tournament }: Props) {
                   }))}
                   participations={T.participations}
                   isSevillaImported={e.roundData?.is_sevilla_imported || false}
-                  onGenerate={() =>
-                    genPair({
-                      tournamentId: T.tournament_id,
-                      roundNumber: e.roundNumber,
-                    }).then(() => refetchT())
-                  }
-                  canGenerate={canGen(e.roundNumber)}
                   onUpdate={() => refetchT()}
-                  isGenerating={generatingPairs}
                 />
               )
             } else if (e.kind === "makeupRound") {
@@ -729,22 +711,6 @@ export default function RoundManagement({ tournament }: Props) {
                   </div>
                 </div>
 
-                {round.type === 'REGULAR' && !round.is_sevilla_imported && (
-                  <div className="flex space-x-2">
-                    <Button
-                      onClick={() =>
-                        genPair({
-                          tournamentId: T.tournament_id,
-                          roundNumber: round.ronde_nummer,
-                        }).then(() => refetchRounds())
-                      }
-                      disabled={!canGen(round.ronde_nummer) || generatingPairs}
-                      className="bg-mainAccent hover:bg-mainAccentDark"
-                    >
-                      {generatingPairs ? "Genereren..." : "Genereer Pairings"}
-                    </Button>
-                  </div>
-                )}
 
                 {/* Games sectie */}
                 <div className="mt-4">

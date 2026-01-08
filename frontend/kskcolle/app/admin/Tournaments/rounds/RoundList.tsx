@@ -16,9 +16,6 @@ interface RoundListProps {
   rounds: Round[]
   totalRounds: number
   tournament_id: number
-  onGeneratePairings: (roundNumber: number) => void
-  canGeneratePairings: (roundNumber: number) => boolean
-  nextRoundForPairings: number | null
   onUpdateGame: () => void
   makeupRounds?: Array<{
     round_id: number
@@ -32,9 +29,6 @@ export default function RoundList({
   rounds,
   totalRounds,
   tournament_id,
-  onGeneratePairings,
-  canGeneratePairings,
-  nextRoundForPairings,
   onUpdateGame,
   makeupRounds = [],
 }: RoundListProps) {
@@ -87,12 +81,6 @@ export default function RoundList({
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold">Ronde {roundNumber}</h3>
 
-              {nextRoundForPairings === roundNumber &&
-                canGeneratePairings(roundNumber) && (
-                  <Button onClick={() => onGeneratePairings(roundNumber)}>
-                    Genereer paringen
-                  </Button>
-              )}
 
               <Button
                 size="sm"

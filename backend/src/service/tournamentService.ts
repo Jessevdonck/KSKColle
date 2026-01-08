@@ -428,28 +428,6 @@ export const updateTournament = async (tournament_id: number, changes: Tournamen
   }
 };
 
-export const savePairings = async (tournament_id: number, round_number: number, pairings: any[]) => {
-  try {
-    const round = await prisma.round.create({
-      data: {
-        tournament_id,
-        ronde_nummer: round_number,
-        ronde_datum: new Date(),
-      },
-    });
-
-    await prisma.game.createMany({
-      data: pairings.map((pairing) => ({
-        round_id: round.round_id,
-        speler1_id: pairing.white.user_id,
-        speler2_id: pairing.black.user_id,
-      })),
-    });
-  } catch (error) {
-    throw handleDBError(error);
-  }
-};
-
 export const addParticipation = async (tournament_id: number, user_id: number): Promise<Participation> => {
   try {
     return await prisma.participation.create({

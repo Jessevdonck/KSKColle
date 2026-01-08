@@ -7,7 +7,6 @@ import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
-import { createAndSavePairings } from '../service/pairingService';
 
 const toBool = (v?: string) =>
   v === undefined ? undefined : v === 'true' ? true : v === 'false' ? false : undefined;
@@ -116,27 +115,6 @@ removeTournament.validationScheme = {
   },
 };
 
-/**
- * @api {post} /tournament/:id/pairings/:rondeNummer Generate pairings for a round
- */
-const generatePairings = async (ctx: KoaContext<void, IdParams & { rondeNummer: number }>) => {
-  const tournamentId  = Number(ctx.params.id);
-  const rondeNummer   = Number(ctx.params.rondeNummer);
-
-  try {
-    await createAndSavePairings(tournamentId, rondeNummer);
-    ctx.status = 201;      
-  } catch (error) {
-    ctx.throw(400, error instanceof Error ? error.message : 'Pairing mislukt');
-  }
-};
-generatePairings.validationScheme = {
-  params: {
-    id: Joi.number().integer().positive(),
-    rondeNummer: Joi.number().integer().positive(),
-  },
-};
-
 const finalizeRatings = async (ctx: any) => {
   const id = Number(ctx.params.id);
   await tournamentService.finalizeTournamentRatings(id);
@@ -167,7 +145,6 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   router.get('/', validate(getAllTournament.validationScheme), getAllTournament);
   router.get('/:id', validate(getTournamentById.validationScheme), getTournamentById);
-  router.post('/:id/pairings/:rondeNummer', requireAuthentication, requireAdmin, validate(generatePairings.validationScheme), generatePairings);
   router.post("/:id/finalize", requireAuthentication, requireAdmin, validate(finalizeRatings.validationScheme), finalizeRatings);
   router.post("/:id/end",requireAuthentication,requireAdmin,validate(endTournamentHandler.validationScheme),endTournamentHandler);
   router.put('/:id', requireAuthentication, requireAdmin, validate(updateTournament.validationScheme),updateTournament);

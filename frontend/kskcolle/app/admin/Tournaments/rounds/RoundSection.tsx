@@ -28,10 +28,7 @@ interface Props {
     tie_break: number
   }>
   isSevillaImported?: boolean
-  onGenerate(): void
-  canGenerate: boolean
   onUpdate(): void
-  isGenerating?: boolean
 }
 
 export default function RoundSection({
@@ -42,10 +39,7 @@ export default function RoundSection({
   makeupRounds = [],
   participations,
   isSevillaImported,
-  onGenerate,
-  canGenerate,
   onUpdate,
-  isGenerating = false,
 }: Props) {
   // local date for the <Input>
   const [date, setDate] = useState("")
@@ -84,7 +78,6 @@ export default function RoundSection({
     })
   }
 
-  const showGenerateButton = canGenerate && (roundData?.games.length ?? 0) === 0
 
   const handleDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value
@@ -192,26 +185,6 @@ export default function RoundSection({
         </div>
 
         <div className="flex items-center gap-3">
-          {showGenerateButton && (
-            <Button
-              onClick={onGenerate}
-              disabled={isGenerating}
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30 transition-all duration-200"
-            >
-              {isGenerating ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                  Genereren...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Play className="h-4 w-4 text-white" />
-                  Genereer Paringen
-                </div>
-              )}
-            </Button>
-          )}
-          
           {games.length > 0 && roundData && (
             <RoundExport
               tournamentId={tournamentId}
@@ -233,9 +206,7 @@ export default function RoundSection({
             </div>
             <h4 className="text-lg font-semibold text-gray-700 mb-2">Nog geen paringen</h4>
             <p className="text-gray-500">
-              {showGenerateButton
-                ? "Klik op 'Genereer Paringen' om de partijen voor deze ronde aan te maken."
-                : "Wacht tot de vorige ronde voltooid is voordat je paringen kunt genereren."}
+              Paringen worden automatisch geïmporteerd via Sevilla import.
             </p>
           </div>
         ) : (
