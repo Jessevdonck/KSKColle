@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Chess } from "chess.js"
 
 interface ChessBoardProps {
@@ -370,14 +370,14 @@ export default function ChessBoard({
             aspectRatio: '1',
             border: isSelected ? '3px solid #4a90e2' : 'none',
             cursor: draggable && piece ? 'grab' : draggable ? 'pointer' : 'default',
-            WebkitUserDrag: draggable && piece ? 'element' : 'none' as any,
             transition: 'background-color 0.15s ease',
             opacity: isDragging ? 0.3 : 1,
             boxSizing: 'border-box',
             position: 'relative',
             margin: 0,
             padding: 0,
-          }}
+            ...(draggable && piece ? { WebkitUserDrag: 'element' } : { WebkitUserDrag: 'none' }),
+          } as React.CSSProperties & { WebkitUserDrag?: string }}
           onClick={() => handleSquareClick(squareName)}
           onDragStart={(e) => handleDragStart(e, squareName)}
           onDragOver={(e) => handleDragOver(e, squareName)}
