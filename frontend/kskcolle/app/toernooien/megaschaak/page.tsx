@@ -139,11 +139,29 @@ export default function MegaschaakPage() {
         cost: tp.cost
       }))
       setSelectedPlayers(players)
+      
+      // Load reserve player if exists
+      if (currentEditingTeam.reserve_player) {
+        const reservePlayerData = availablePlayers.find(p => p.user_id === currentEditingTeam.reserve_player?.user_id)
+        if (reservePlayerData) {
+          setReservePlayer(reservePlayerData)
+        } else if (currentEditingTeam.reserve_player) {
+          // Fallback if not in available players list
+          setReservePlayer({
+            ...currentEditingTeam.reserve_player,
+            cost: currentEditingTeam.reserve_cost || 0,
+            class_name: ''
+          })
+        }
+      } else {
+        setReservePlayer(null)
+      }
     } else if (isCreatingNew) {
       setTeamName("Nieuw Team")
       setSelectedPlayers([])
+      setReservePlayer(null)
     }
-  }, [currentEditingTeam, isCreatingNew])
+  }, [currentEditingTeam, isCreatingNew, availablePlayers])
 
   // Calculate total cost
   const totalCost = selectedPlayers.reduce((sum, player) => sum + player.cost, 0)
