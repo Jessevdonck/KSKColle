@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useForm, Controller } from "react-hook-form"
-import { useMemo } from "react"
+import { useMemo, useEffect } from "react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { CalendarIcon, X, Plus, CalendarIcon as CalendarIconLucide, Type, FileText, Clock, Users, Tag, User } from "lucide-react"
@@ -20,9 +20,10 @@ interface CalendarEventFormProps {
   event?: CalendarEvent
   mutate: () => void
   onCancel: () => void
+  showYouth?: boolean // Toggle state from parent
 }
 
-const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, onCancel }) => {
+const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, onCancel, showYouth = false }) => {
   const form = useForm<CalendarEvent>({
     defaultValues: event
       ? { 
@@ -51,12 +52,22 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           date: new Date().toISOString(),
           startuur: "20:00",
           type: "Activiteit",
-          is_youth: false,
+          is_youth: showYouth, // Set based on showYouth toggle
           category: [],
           instructors: "",
           begeleider: "",
         },
   })
+
+  // Sync is_youth with showYouth toggle when creating new events
+  // This updates the checkbox when the toggle changes, even if the form is already open
+  useEffect(() => {
+    if (!event) {
+      // Only update for new events, not when editing existing events
+      // Use setValue with shouldValidate: false to avoid validation errors
+      form.setValue("is_youth", showYouth, { shouldDirty: false, shouldValidate: false })
+    }
+  }, [showYouth, event, form])
 
   const onSubmit = async (data: CalendarEvent) => {
     try {
@@ -303,7 +314,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                 <input
                   type="checkbox"
                   id="is_youth"
-                  {...form.register("is_youth")}
+                  checked={form.watch("is_youth") || false}
+                  onChange={(e) => form.setValue("is_youth", e.target.checked)}
                   className="h-4 w-4 text-mainAccent focus:ring-mainAccent border-gray-300 rounded"
                 />
                 <Label htmlFor="is_youth" className="text-sm font-medium text-gray-700">

@@ -201,7 +201,9 @@ const CalendarManagement = () => {
       {/* Modal Forms */}
       {showForm && (
         <CalendarEventForm 
+          key={`${editingEvent?.event_id || 'new'}-${showYouth}`} // Force remount when switching between new/edit or when showYouth changes
           event={editingEvent}
+          showYouth={showYouth}
           mutate={async () => { 
             await mutate()
             setShowForm(false)
