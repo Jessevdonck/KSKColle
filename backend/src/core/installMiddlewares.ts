@@ -26,23 +26,26 @@ export default function installMiddlewares(app: any) {
     }),
   );
 
-  app.use(async (ctx: KoaContext, next: () => any) => {
-    getLogger().info(`⏩ ${ctx.method} ${ctx.url}`);
-  
-    const getStatusEmoji = () => {
-      if (ctx.status >= 500) return '💀';
-      if (ctx.status >= 400) return '❌';
-      if (ctx.status >= 300) return '🔀';
-      if (ctx.status >= 200) return '✅';
-      return '🔄';
-    };
+  // Only log requests in development/testing, not in production to reduce overhead
+  if (NODE_ENV !== 'production') {
+    app.use(async (ctx: KoaContext, next: () => any) => {
+      getLogger().info(`⏩ ${ctx.method} ${ctx.url}`);
     
-    await next();
-  
-    getLogger().info(
-      `${getStatusEmoji()} ${ctx.method} ${ctx.status} ${ctx.url}`,
-    );
-  });
+      const getStatusEmoji = () => {
+        if (ctx.status >= 500) return '💀';
+        if (ctx.status >= 400) return '❌';
+        if (ctx.status >= 300) return '🔀';
+        if (ctx.status >= 200) return '✅';
+        return '🔄';
+      };
+      
+      await next();
+    
+      getLogger().info(
+        `${getStatusEmoji()} ${ctx.method} ${ctx.status} ${ctx.url}`,
+      );
+    });
+  }
 
   app.use(async (ctx: KoaContext, next: () => Promise<any>) => {
     try {
@@ -107,8 +110,8 @@ export default function installMiddlewares(app: any) {
   });
 
   app.use(bodyParser({
-    jsonLimit: '50mb', // Increased limit for large Sevilla JSON files
-    formLimit: '50mb'
+    jsonLimit: '10mb', // Reduced from 50mb to save memory
+    formLimit: '10mb'
   }));
   app.use(serve('apidoc'));
   app.use(serve('public')); // Serve static files from public directory

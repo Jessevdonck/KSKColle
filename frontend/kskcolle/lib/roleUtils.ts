@@ -8,7 +8,6 @@ import { User } from '../data/types'
  */
 export function hasRole(user: User | null | undefined, requiredRoles: string[]): boolean {
   if (!user || !user.roles) {
-    console.log('hasRole - No user or roles:', { user: !!user, hasRoles: !!user?.roles })
     return false
   }
   
@@ -17,20 +16,14 @@ export function hasRole(user: User | null | undefined, requiredRoles: string[]):
   if (typeof user.roles === 'string') {
     try {
       userRoles = JSON.parse(user.roles)
-      console.log('hasRole - Parsed string roles:', userRoles)
     } catch (e) {
-      console.log('hasRole - Failed to parse roles string:', user.roles)
       userRoles = []
     }
   } else if (Array.isArray(user.roles)) {
     userRoles = user.roles
-    console.log('hasRole - Already array:', userRoles)
-  } else {
-    console.log('hasRole - Unknown roles type:', typeof user.roles, user.roles)
-  }
+  } 
   
   const result = requiredRoles.some(role => userRoles.includes(role))
-  console.log('hasRole - Check:', { userRoles, requiredRoles, result })
   return result
 }
 
