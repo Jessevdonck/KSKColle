@@ -1,6 +1,5 @@
 "use client"
 
-import { useAuth } from "../../contexts/auth"
 import PrivateRoute from "../components/PrivateRoute"
 import useSWR from "swr"
 import { getAllPuzzles } from "../api/index"
