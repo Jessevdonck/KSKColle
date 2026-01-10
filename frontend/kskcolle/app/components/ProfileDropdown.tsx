@@ -46,18 +46,18 @@ export default function ProfileDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild data-cy="profile_button">   
-        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 border-2 border-gray-300 hover:border-mainAccent transition-colors cursor-pointer">
+        <div className="w-10 h-10 xl:w-8 xl:h-8 rounded-full overflow-hidden bg-gray-200 border-2 border-gray-300 hover:border-mainAccent transition-colors cursor-pointer flex-shrink-0">
           {user?.avatar_url ? (
             <Image
               src={user.avatar_url}
               alt={`${user.voornaam} ${user.achternaam}`}
-              width={32}
-              height={32}
+              width={40}
+              height={40}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <User className="text-gray-500" size={20} />
+              <User className="text-gray-500 xl:w-5 xl:h-5 w-6 h-6" />
             </div>
           )}
         </div>

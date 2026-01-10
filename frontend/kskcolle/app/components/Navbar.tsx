@@ -11,17 +11,15 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  Archive,
   Globe,
-  Medal,
   PersonStanding,
   Mail,
   BookOpen,
   History,
-  Swords,
   Puzzle,
 } from "lucide-react"
 import { type ReactNode, useState, useEffect, useMemo } from "react"
+import { usePathname } from "next/navigation"
 import LoginSheet from "./LoginSheet"
 import { useAuth } from "../contexts/auth"
 import ProfileDropdown from "./ProfileDropdown"
@@ -40,6 +38,7 @@ interface Tournament {
 
 export default function Navbar() {
   const { isAuthed } = useAuth()
+  const pathname = usePathname()
   const [isClient, setIsClient] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false)
@@ -111,10 +110,14 @@ export default function Navbar() {
     setIsClient(true)
   }, [])
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
+
   if (!isClient) {
     return null
   }
-
 
   return (
     <nav className="bg-neutral-50 text-textColor p-4 shadow-md sticky top-0 z-50">
@@ -341,13 +344,15 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="xl:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md">
-          <div className="container mx-auto py-4 space-y-4">
-            {/* Home */}
-            <NavItem href="/" icon={<Home size={18} />} text="Home" onClick={() => setIsMobileMenuOpen(false)} />
-            
-            {/* Contact */}
-            <NavItem href="/contact" icon={<Mail size={18} />} text="Contact" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="xl:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md max-h-[calc(100vh-80px)] flex flex-col">
+          {/* Scrollable Menu Content */}
+          <div className="overflow-y-auto flex-1">
+            <div className="container mx-auto py-4 space-y-4">
+              {/* Home */}
+              <NavItem href="/" icon={<Home size={18} />} text="Home" onClick={() => setIsMobileMenuOpen(false)} />
+              
+              {/* Contact */}
+              <NavItem href="/contact" icon={<Mail size={18} />} text="Contact" onClick={() => setIsMobileMenuOpen(false)} />
 
             {/* Mobile About Us Dropdown */}
             <div className="space-y-2">
@@ -673,14 +678,24 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+          </div>
+          </div>
 
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-gray-700">Notificaties</span>
+          {/* Profile and Notifications - Fixed at bottom */}
+          <div className="border-t border-gray-200 bg-white px-4 py-3 flex items-center gap-3 sticky bottom-0 z-10">
+            {isAuthed ? (
+              <>
+                <ProfileDropdown />
+                <span className="text-sm font-medium text-gray-700 flex-1">
+                  {isAuthed && typeof window !== 'undefined' && localStorage.getItem('user') 
+                    ? JSON.parse(localStorage.getItem('user') || '{}')?.voornaam || 'Profiel'
+                    : 'Profiel'}
+                </span>
                 {isAuthed && <NotificationBell />}
-              </div>
-              {isAuthed ? <ProfileDropdown /> : <LoginSheet />}
-            </div>
+              </>
+            ) : (
+              <LoginSheet />
+            )}
           </div>
         </div>
       )}
