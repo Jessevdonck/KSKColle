@@ -15,9 +15,10 @@ class ApiMonitor {
   private readonly logger = getLogger();
 
   recordCall(ctx: KoaContext, duration: number, isError: boolean) {
-    const key = `${ctx.method} ${ctx.url.split('?')[0]}`; // Remove query params
+    const endpoint = ctx.url?.split('?')[0] || ctx.url || '/';
+    const key = `${ctx.method} ${endpoint}`; // Remove query params
     const existing = this.stats.get(key) || {
-      endpoint: ctx.url.split('?')[0],
+      endpoint: endpoint,
       method: ctx.method,
       count: 0,
       totalTime: 0,
