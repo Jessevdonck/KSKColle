@@ -10,7 +10,7 @@ export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(typeof window !== "undefined" ? localStorage.getItem(JWT_TOKEN_KEY) : null)
 
-  const { data: rawUser, error: userError, mutate: mutateUser } = useSWR(token ? "users/me" : null, api.getById)
+  const { data: rawUser, error: userError, mutate: mutateUser } = useSWR(token ? "users/me" : null, api.getById, { revalidateOnFocus: false })
   
   // Normalize user data - parse roles if they're a string
   const user = useMemo(() => {
@@ -108,8 +108,8 @@ export const AuthProvider = ({ children }) => {
     // Initial check
     checkTokenExpiration()
 
-    // Set up periodic check
-    const intervalId = setInterval(checkTokenExpiration, 60000) // Check every minute
+    // Set up periodic check - only once every 12 hours to reduce API calls
+    const intervalId = setInterval(checkTokenExpiration, 12 * 60 * 60 * 1000) // Check every 12 hours
 
     return () => clearInterval(intervalId)
   }, [checkTokenExpiration])

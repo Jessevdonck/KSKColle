@@ -151,7 +151,8 @@ export default function PuzzlesPage() {
 
   const { data: puzzles, error, isLoading, mutate } = useSWR<PuzzleData[]>(
     "puzzles",
-    getAllPuzzles
+    getAllPuzzles,
+    { revalidateOnFocus: false }
   )
 
   // Sort puzzles by created_at DESC (newest first)
@@ -167,7 +168,8 @@ export default function PuzzlesPage() {
   
   const { data: currentPuzzle } = useSWR<PuzzleData>(
     currentPuzzleId ? `puzzle-${currentPuzzleId}` : null,
-    () => getPuzzleById(currentPuzzleId!)
+    () => getPuzzleById(currentPuzzleId!),
+    { revalidateOnFocus: false }
   )
 
   // Find current puzzle index

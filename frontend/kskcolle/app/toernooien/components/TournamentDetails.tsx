@@ -81,9 +81,9 @@ export default function TournamentDetails() {
     selectedClassId ? `tournament/${selectedClassId}` : null,
     () => getById(`tournament/${selectedClassId}`),
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false, // Disabled to reduce API calls
       revalidateOnReconnect: true,
-      dedupingInterval: 0, // Disable deduplication to force fresh data
+      dedupingInterval: 5000, // Enable deduplication to prevent duplicate requests
     },
   )
 
@@ -96,7 +96,8 @@ export default function TournamentDetails() {
   // Fetch all active tournaments to find other classes
   const { data: allTournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
-    () => getAll('tournament', { active: 'true', is_youth: 'false' })
+    () => getAll('tournament', { active: 'true', is_youth: 'false' }),
+    { revalidateOnFocus: false }
   )
 
   // Find all classes of this tournament (tournaments with same naam)

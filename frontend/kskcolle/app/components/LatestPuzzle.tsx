@@ -37,8 +37,9 @@ export default function LatestPuzzle() {
   const { toast } = useToast()
   const { isAuthed } = useAuth()
   const { data: puzzles, isLoading: puzzlesLoading } = useSWR<PuzzleData[]>(
-    "puzzles",
-    getAllPuzzles
+    isAuthed ? "puzzles" : null, // Only fetch if authenticated to avoid 401 errors
+    getAllPuzzles,
+    { revalidateOnFocus: false }
   )
 
   const [leaderboard, setLeaderboard] = useState<any[]>([])
@@ -183,7 +184,7 @@ export default function LatestPuzzle() {
           setLeaderboardLoading(false)
         })
     }
-  }, [latestPuzzle, isAuthed, isSolved])
+  }, [latestPuzzle, isAuthed]) // Removed isSolved to prevent infinite loop
 
   const handleMove = (from: string, to: string) => {
     if (!isAuthed) {

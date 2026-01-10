@@ -32,7 +32,8 @@ export default function MegaschaakPage() {
     async () => {
       const response = await axios.get('/megaschaak/active-tournament')
       return response.data
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   // Check if registration is closed (must be before using it in other hooks)
@@ -53,7 +54,8 @@ export default function MegaschaakPage() {
     async () => {
       const response = await axios.get('/megaschaak/players')
       return response.data.items
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   // Listen for config updates and refresh players
@@ -75,7 +77,8 @@ export default function MegaschaakPage() {
       if (!activeTournament) return []
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/my-teams`)
       return response.data.items
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   // Fetch standings (only if deadline has passed)
@@ -85,7 +88,8 @@ export default function MegaschaakPage() {
       if (!activeTournament) return []
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/standings`)
       return response.data.items
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   // Fetch cross-table data (only if deadline has passed)
@@ -95,7 +99,8 @@ export default function MegaschaakPage() {
       if (!activeTournament) return null
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/crosstable`)
       return response.data
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   // Fetch popular players (only if deadline has passed)
@@ -105,7 +110,8 @@ export default function MegaschaakPage() {
       if (!activeTournament) return null
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/popular-players`)
       return response.data
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   // Fetch value players (only if deadline has passed)
@@ -115,7 +121,8 @@ export default function MegaschaakPage() {
       if (!activeTournament) return null
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/value-players`)
       return response.data
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   // Auto-select first team or create mode
@@ -1052,7 +1059,8 @@ function MyTeamsOverview({ myTeams }: { myTeams: MegaschaakTeam[] }) {
       if (!expandedTeamId) return null
       const response = await axios.get(`/megaschaak/team/${expandedTeamId}/details`)
       return response.data
-    }
+    },
+    { revalidateOnFocus: false }
   )
 
   return (
@@ -1277,7 +1285,8 @@ function StandingsView({ standings, isLoading }: { standings: any[], isLoading: 
       if (!expandedTeamId) return null
       const response = await axios.get(`/megaschaak/team/${expandedTeamId}/details`)
       return response.data
-    }
+    },
+    { revalidateOnFocus: false }
   )
   if (isLoading) {
     return (

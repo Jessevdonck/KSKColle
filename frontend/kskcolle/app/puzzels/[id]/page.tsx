@@ -30,7 +30,8 @@ export default function PuzzleSolvePage() {
 
   const { data: puzzle, error, isLoading } = useSWR<PuzzleData>(
     puzzleId ? `puzzle-${puzzleId}` : null,
-    () => getPuzzleById(puzzleId)
+    () => getPuzzleById(puzzleId),
+    { revalidateOnFocus: false }
   )
 
   const [currentGame, setCurrentGame] = useState<Chess | null>(null)
@@ -131,7 +132,6 @@ export default function PuzzleSolvePage() {
       // Load leaderboard
       getPuzzleLeaderboard(puzzleId)
         .then((data) => {
-          console.log("Leaderboard loaded:", data)
           setLeaderboard(data)
         })
         .catch((error) => {
@@ -150,7 +150,7 @@ export default function PuzzleSolvePage() {
           console.error("Error checking user attempt:", error)
         })
     }
-  }, [puzzleId, isSolved]) // Reload when puzzle is solved
+  }, [puzzleId]) // Only reload when puzzleId changes - removed isSolved to prevent infinite loop
 
   const handleMove = (from: string, to: string) => {
     if (!currentGame || isSolved || userAttempt) return // Don't allow moves if already solved
@@ -218,15 +218,12 @@ export default function PuzzleSolvePage() {
           setIsSolved(true)
           
           // Save attempt to leaderboard
-          console.log("Saving puzzle attempt:", { puzzleId, solveTimeMs })
           savePuzzleAttempt(puzzleId, solveTimeMs)
             .then((result) => {
-              console.log("Puzzle attempt saved:", result)
               // Reload leaderboard
               return getPuzzleLeaderboard(puzzleId)
             })
             .then((updatedLeaderboard) => {
-              console.log("Leaderboard updated:", updatedLeaderboard)
               setLeaderboard(updatedLeaderboard)
             })
             .catch((error) => {
@@ -275,15 +272,12 @@ export default function PuzzleSolvePage() {
                   setIsSolved(true)
                   
                   // Save attempt to leaderboard
-                  console.log("Saving puzzle attempt (opponent move):", { puzzleId, solveTimeMs })
                   savePuzzleAttempt(puzzleId, solveTimeMs)
                     .then((result) => {
-                      console.log("Puzzle attempt saved:", result)
                       // Reload leaderboard
                       return getPuzzleLeaderboard(puzzleId)
                     })
                     .then((updatedLeaderboard) => {
-                      console.log("Leaderboard updated:", updatedLeaderboard)
                       setLeaderboard(updatedLeaderboard)
                     })
                     .catch((error) => {

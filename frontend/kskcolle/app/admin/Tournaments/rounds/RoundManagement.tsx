@@ -44,6 +44,7 @@ export default function RoundManagement({ tournament }: Props) {
   const { data: allRounds = [], mutate: refetchRounds } = useSWR<Round[]>(
     ["tournamentRounds", tournament.tournament_id],
     () => getAllTournamentRounds(tournament.tournament_id),
+    { revalidateOnFocus: false }
   )
 
   // 4) Mutations

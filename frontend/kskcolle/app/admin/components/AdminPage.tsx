@@ -21,11 +21,11 @@ const AdminPage = () => {
   const { user: currentUser } = useAuth()
 
   // 1) Haal gebruikers op
-  const { data: users = [] } = useSWR("users", () => getAll("users"))
+  const { data: users = [] } = useSWR("users", () => getAll("users"), { revalidateOnFocus: false })
   // 2) Haal actieve toernooien op
-  const { data: activeTournaments = [] } = useSWR("tournament?active=true", () => getAll("tournament?active=true"))
+  const { data: activeTournaments = [] } = useSWR("tournament?active=true", () => getAll("tournament?active=true"), { revalidateOnFocus: false })
   // 3) Haal calendar events op 
-  const { data: events = [] } = useSWR("calendar", () => getAll("calendar"));
+  const { data: events = [] } = useSWR("calendar", () => getAll("calendar"), { revalidateOnFocus: false });
 
   // Check if user has admin or bestuurslid role
   const hasAccess = currentUser && (isAdmin(currentUser) || isBoardMember(currentUser))

@@ -6,6 +6,7 @@ import { KoaContext } from '../types/koa';
 import ServiceError from './serviceError';
 import koaHelmet from 'koa-helmet';
 import serve from 'koa-static';
+import { apiMonitoringMiddleware } from './apiMonitoring';
 
 const NODE_ENV = config.get<string>('env');
 
@@ -25,6 +26,9 @@ export default function installMiddlewares(app: any) {
       maxAge: CORS_MAX_AGE,
     }),
   );
+
+  // API monitoring - always enabled to track usage
+  app.use(apiMonitoringMiddleware());
 
   // Only log requests in development/testing, not in production to reduce overhead
   if (NODE_ENV !== 'production') {
