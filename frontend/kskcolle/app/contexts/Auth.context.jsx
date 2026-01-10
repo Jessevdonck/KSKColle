@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
   // Check for token expiration - use SWR data instead of separate API call
   useEffect(() => {
     // Only check if we have a token but userError indicates 401
-    if (token && userError && (userError as any)?.status === 401) {
+    if (token && userError && userError?.status === 401) {
       logout()
     }
   }, [token, userError, logout])
