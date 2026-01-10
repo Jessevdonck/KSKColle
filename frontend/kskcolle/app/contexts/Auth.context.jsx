@@ -91,28 +91,16 @@ export const AuthProvider = ({ children }) => {
     mutateUser(null, false)
   }, [mutateUser])
 
-  // Check for token expiration
-  const checkTokenExpiration = useCallback(async () => {
-    if (token) {
-      try {
-        await api.getById("users/me")
-      } catch (error) {
-        if (error.status === 401) {
-          logout()
-        }
-      }
-    }
-  }, [token, logout])
-
+  // Check for token expiration - use SWR data instead of separate API call
   useEffect(() => {
-    // Initial check
-    checkTokenExpiration()
+    // Only check if we have a token but userError indicates 401
+    if (token && userError && (userError as any)?.status === 401) {
+      logout()
+    }
+  }, [token, userError, logout])
 
-    // Set up periodic check - only once every 12 hours to reduce API calls
-    const intervalId = setInterval(checkTokenExpiration, 12 * 60 * 60 * 1000) // Check every 12 hours
-
-    return () => clearInterval(intervalId)
-  }, [checkTokenExpiration])
+  // Remove periodic check - SWR will handle revalidation if needed
+  // Token expiration is now checked via SWR error handling
 
   const value = useMemo(
     () => ({
