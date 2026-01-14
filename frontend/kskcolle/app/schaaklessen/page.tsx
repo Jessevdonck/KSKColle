@@ -27,10 +27,41 @@ export default function SchaaklessenPage() {
     const fetchLessons = async () => {
       try {
         const events = await getAll("calendar")
+        const now = new Date()
+        
         // Filter events with type "Les" and is_youth = false (volwassen lessen)
-        const lessonEvents = events.filter((event: CalendarEvent) => 
-          event.type === "Les" && event.is_youth === false
-        )
+        // and only include future lessons
+        const lessonEvents = events.filter((event: CalendarEvent) => {
+          if (event.type !== "Les" || event.is_youth !== false) {
+            return false
+          }
+          
+          // Combine date and startuur to create a full datetime
+          const lessonDate = new Date(event.date)
+          if (event.startuur) {
+            const [hours, minutes] = event.startuur.split(':').map(Number)
+            lessonDate.setHours(hours || 0, minutes || 0, 0, 0)
+          }
+          
+          // Only include lessons that are in the future
+          return lessonDate > now
+        })
+        
+        // Sort by date (earliest first)
+        lessonEvents.sort((a, b) => {
+          const dateA = new Date(a.date)
+          const dateB = new Date(b.date)
+          if (a.startuur) {
+            const [hoursA, minutesA] = a.startuur.split(':').map(Number)
+            dateA.setHours(hoursA || 0, minutesA || 0, 0, 0)
+          }
+          if (b.startuur) {
+            const [hoursB, minutesB] = b.startuur.split(':').map(Number)
+            dateB.setHours(hoursB || 0, minutesB || 0, 0, 0)
+          }
+          return dateA.getTime() - dateB.getTime()
+        })
+        
         setLessons(lessonEvents)
       } catch (error) {
         console.error("Error fetching lessons:", error)
