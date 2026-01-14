@@ -506,9 +506,20 @@ export const getAvailablePlayers = async () => {
       }
     }
 
+    // Check if this is a lentecompetitie tournament
+    const isLentecompetitie = activeTournament.naam.toLowerCase().includes('lente') || 
+                               activeTournament.naam.toLowerCase().includes('lentecompetitie');
+
     // Convert to array and add costs
     const playersWithCosts = [];
     for (const user of participantsMap.values()) {
+      // Exclude Piet Vermeiren from lentecompetitie megaschaak selection
+      if (isLentecompetitie && 
+          user.voornaam?.toLowerCase() === 'piet' && 
+          user.achternaam?.toLowerCase() === 'vermeiren') {
+        continue; // Skip this player
+      }
+      
       const cost = await calculatePlayerCost(user.user_id, user.class_name, allClassesTournaments.map(t => t.tournament_id));
       playersWithCosts.push({
         ...user,
