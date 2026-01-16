@@ -454,21 +454,6 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
           });
           
           logger.info('Email sent to admin successfully', { admin_email: email });
-          
-          // Site notificatie naar admin user (als admin in database staat)
-          const adminUser = admins.find(a => a.email === email);
-          if (adminUser) {
-            try {
-              await createNotification({
-                user_id: adminUser.user_id,
-                type: NotificationTypes.GAME_POSTPONED,
-                title: '[ADMIN] Partij uitgesteld',
-                message: `${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} heeft een partij uitgesteld tegen ${opponent?.voornaam} ${opponent?.achternaam} in ${game.round.tournament.naam}. Nieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`,
-              });
-            } catch (notifError) {
-              logger.error('Failed to send site notification to admin', { admin_id: adminUser.user_id, error: notifError });
-            }
-          }
         } catch (adminError) {
           logger.error('Failed to send notification to admin', { admin_email: email, error: adminError });
           // Continue met de volgende admin
