@@ -257,7 +257,58 @@ export async function postponeGameToMakeupRound(
       throw ServiceError.validationFailed('Inhaaldag hoort niet bij hetzelfde toernooi');
     }
 
-    // 6. Markeer de originele game als uitgesteld
+    // 6. Controleer of beide spelers vrij zijn op deze inhaaldag
+    const orConditions = [
+      { speler1_id: originalGame.speler1_id },
+      { speler2_id: originalGame.speler1_id }
+    ];
+
+    if (originalGame.speler2_id) {
+      orConditions.push(
+        { speler1_id: originalGame.speler2_id },
+        { speler2_id: originalGame.speler2_id }
+      );
+    }
+
+    const existingGames = await prisma.game.findMany({
+      where: {
+        round_id: makeup_round_id,
+        OR: orConditions
+      },
+      include: {
+        speler1: true,
+        speler2: true
+      }
+    });
+
+    if (existingGames.length > 0) {
+      const conflictingPlayers: string[] = [];
+      for (const existingGame of existingGames) {
+        if (existingGame.speler1_id === originalGame.speler1_id) {
+          conflictingPlayers.push(`${existingGame.speler1.voornaam} ${existingGame.speler1.achternaam}`);
+        }
+        if (existingGame.speler2_id === originalGame.speler1_id && existingGame.speler2) {
+          conflictingPlayers.push(`${existingGame.speler2.voornaam} ${existingGame.speler2.achternaam}`);
+        }
+        if (originalGame.speler2_id) {
+          if (existingGame.speler1_id === originalGame.speler2_id) {
+            conflictingPlayers.push(`${existingGame.speler1.voornaam} ${existingGame.speler1.achternaam}`);
+          }
+          if (existingGame.speler2_id === originalGame.speler2_id && existingGame.speler2) {
+            conflictingPlayers.push(`${existingGame.speler2.voornaam} ${existingGame.speler2.achternaam}`);
+          }
+        }
+      }
+      
+      const uniquePlayers = [...new Set(conflictingPlayers)];
+      const playerList = uniquePlayers.join(' en ');
+      
+      throw ServiceError.validationFailed(
+        `Niet mogelijk: ${playerList} ${uniquePlayers.length === 1 ? 'heeft' : 'hebben'} al een partij op deze speeldag`
+      );
+    }
+
+    // 7. Markeer de originele game als uitgesteld
     await prisma.game.update({
       where: { game_id },
       data: {
@@ -266,7 +317,7 @@ export async function postponeGameToMakeupRound(
       }
     });
 
-    // 7. Maak een nieuwe game aan in de inhaaldag
+    // 8. Maak een nieuwe game aan in de inhaaldag
     const newGame = await prisma.game.create({
       data: {
         round_id: makeup_round_id,
@@ -288,7 +339,7 @@ export async function postponeGameToMakeupRound(
       }
     });
 
-    // 8. Stuur email notificaties naar beide spelers en admin
+    // 9. Stuur email notificaties naar beide spelers en admin
     await sendAdminPostponeNotifications(originalGame, newGame, makeup_round_id);
 
     return {

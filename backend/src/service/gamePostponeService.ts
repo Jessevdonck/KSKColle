@@ -203,6 +203,13 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
       if (!targetRound) {
         throw ServiceError.validationFailed('Geen inhaaldagen beschikbaar voor herfst toernooi');
       }
+      
+      // Controleer of beide spelers vrij zijn op deze inhaaldag
+      const conflictCheck = await checkPlayersAvailable(game, targetRound.round_id);
+      if (!conflictCheck.available) {
+        throw ServiceError.validationFailed(`Niet mogelijk: ${conflictCheck.reason}`);
+      }
+      
       logger.info('Selected target round for herfst', { 
         target_round_id: targetRound.round_id,
         target_round_date: targetRound.ronde_datum
@@ -224,6 +231,13 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
           throw ServiceError.validationFailed('Geen inhaaldagen beschikbaar voor lente toernooi');
         }
       }
+      
+      // Controleer of beide spelers vrij zijn op deze inhaaldag
+      const conflictCheck = await checkPlayersAvailable(game, targetRound.round_id);
+      if (!conflictCheck.available) {
+        throw ServiceError.validationFailed(`Niet mogelijk: ${conflictCheck.reason}`);
+      }
+      
       logger.info('Selected target round for lente', { 
         target_round_id: targetRound.round_id,
         target_round_date: targetRound.ronde_datum,
@@ -368,26 +382,9 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
     const isAdminEmail = await isUserAdmin(data.user_id);
     
     try {
-      const admins = await prisma.user.findMany({
-        where: {
-          OR: [
-            { is_admin: true },
-            { roles: { array_contains: 'admin' } }
-          ]
-        }
-      });
-      
-      logger.info('Found admins for notifications', { admin_count: admins.length });
-      
-      // Verzamel alle unieke admin email adressen (inclusief niels.ongena@hotmail.be)
+      // Verzamel alle unieke admin email adressen (alleen niels.ongena@hotmail.be)
       const adminEmails = new Set<string>();
       adminEmails.add(adminEmail); // ALTIJD toevoegen
-      
-      for (const admin of admins) {
-        if (admin.email) {
-          adminEmails.add(admin.email);
-        }
-      }
       
       logger.info('Sending notifications to admins', { 
         admin_emails: Array.from(adminEmails),
@@ -599,6 +596,68 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
       throw ServiceError.internalServerError(`Unexpected error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+}
+
+/**
+ * Controleer of beide spelers vrij zijn op een gegeven ronde
+ */
+async function checkPlayersAvailable(game: any, round_id: number): Promise<{ available: boolean; reason?: string }> {
+  // Bouw de OR conditie om te controleren of een van de spelers al een game heeft
+  const orConditions = [
+    { speler1_id: game.speler1_id },
+    { speler2_id: game.speler1_id }
+  ];
+
+  // Voeg speler2 condities alleen toe als speler2 bestaat
+  if (game.speler2_id) {
+    orConditions.push(
+      { speler1_id: game.speler2_id },
+      { speler2_id: game.speler2_id }
+    );
+  }
+
+  // Controleer of een van de spelers al een game heeft op deze ronde
+  const existingGames = await prisma.game.findMany({
+    where: {
+      round_id: round_id,
+      OR: orConditions
+    },
+    include: {
+      speler1: true,
+      speler2: true
+    }
+  });
+
+  if (existingGames.length > 0) {
+    // Bepaal welke speler(s) al een game hebben
+    const conflictingPlayers: string[] = [];
+    for (const existingGame of existingGames) {
+      if (existingGame.speler1_id === game.speler1_id) {
+        conflictingPlayers.push(`${existingGame.speler1.voornaam} ${existingGame.speler1.achternaam}`);
+      }
+      if (existingGame.speler2_id === game.speler1_id) {
+        conflictingPlayers.push(`${existingGame.speler2?.voornaam} ${existingGame.speler2?.achternaam}`);
+      }
+      if (game.speler2_id) {
+        if (existingGame.speler1_id === game.speler2_id) {
+          conflictingPlayers.push(`${existingGame.speler1.voornaam} ${existingGame.speler1.achternaam}`);
+        }
+        if (existingGame.speler2_id === game.speler2_id) {
+          conflictingPlayers.push(`${existingGame.speler2?.voornaam} ${existingGame.speler2?.achternaam}`);
+        }
+      }
+    }
+    
+    const uniquePlayers = [...new Set(conflictingPlayers)];
+    const playerList = uniquePlayers.join(' en ');
+    
+    return {
+      available: false,
+      reason: `${playerList} ${uniquePlayers.length === 1 ? 'heeft' : 'hebben'} al een partij op deze speeldag`
+    };
+  }
+
+  return { available: true };
 }
 
 /**
