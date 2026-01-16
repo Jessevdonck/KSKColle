@@ -16,6 +16,10 @@ const MIN_PLAYERS = 10
 const MAX_PLAYERS = 10
 const MAX_BUDGET = 1000
 
+const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
+  return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+}
+
 export default function MegaschaakPage() {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
@@ -844,9 +848,12 @@ export default function MegaschaakPage() {
                             >
                               {/* Player Info - All on one line */}
                               <div className="flex-1 flex items-center gap-3 min-w-0">
-                                <div className="font-medium text-sm text-gray-800 truncate">
+                                <Link
+                                  href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                                  className="font-medium text-sm text-gray-800 hover:text-mainAccent transition-colors truncate"
+                                >
                                   {player.voornaam} {player.achternaam}
-                                </div>
+                                </Link>
                                 <div className="text-xs text-gray-600 flex-shrink-0">
                                   Elo: {player.schaakrating_elo}
                                 </div>
@@ -953,9 +960,12 @@ export default function MegaschaakPage() {
                           <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
                             {index + 1}
                           </div>
-                          <div className="font-medium text-sm text-gray-800 truncate flex-shrink-0 min-w-[120px]">
+                          <Link
+                            href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                            className="font-medium text-sm text-gray-800 hover:text-mainAccent transition-colors truncate flex-shrink-0 min-w-[120px]"
+                          >
                             {player.voornaam} {player.achternaam}
-                          </div>
+                          </Link>
                           {player.class_name && (
                             <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-white/80 text-mainAccent border border-mainAccent/30 flex-shrink-0">
                               {player.class_name}
@@ -996,9 +1006,12 @@ export default function MegaschaakPage() {
                           <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
                             R
                           </div>
-                          <div className="font-medium text-sm text-gray-800 truncate flex-shrink-0 min-w-[120px]">
+                          <Link
+                            href={`/profile/${createUrlFriendlyName(reservePlayer.voornaam, reservePlayer.achternaam)}`}
+                            className="font-medium text-sm text-gray-800 hover:text-mainAccent transition-colors truncate flex-shrink-0 min-w-[120px]"
+                          >
                             {reservePlayer.voornaam} {reservePlayer.achternaam}
-                          </div>
+                          </Link>
                           <div className="text-xs text-gray-600 flex-shrink-0">
                             Elo: {reservePlayer.schaakrating_elo}
                           </div>
@@ -1180,25 +1193,28 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
             {/* Class headers */}
             <tr>
               <th className="sticky left-0 z-20 bg-white border-b-2 border-mainAccent"></th>
+              <th className="px-1.5 py-1.5 text-center bg-mainAccent/20 border-b-2 border-mainAccent font-bold text-mainAccent border-r-2 border-mainAccent">
+                Totaal
+              </th>
               {sortedClassEntries.map(([className, classPlayers]: [string, any], classIdx: number) => (
                 <th 
                   key={className}
                   colSpan={(classPlayers as any[]).length}
-                  className={`px-2 py-1.5 text-center bg-mainAccent/10 border-b-2 border-mainAccent text-mainAccent font-bold text-xs ${
-                    classIdx > 0 ? 'border-l-4 border-l-mainAccent' : ''
+                  className={`px-1 py-1 text-center bg-mainAccent/10 border-b-2 border-mainAccent text-mainAccent font-bold text-xs ${
+                    classIdx > 0 ? 'border-l-2 border-l-mainAccent' : ''
                   }`}
                 >
                   {className}
                 </th>
               ))}
-              <th className="px-2 py-1.5 text-center bg-mainAccent/20 border-b-2 border-mainAccent font-bold text-mainAccent border-l-4 border-l-mainAccent">
-                Totaal
-              </th>
             </tr>
             {/* Player headers */}
             <tr className="bg-gray-50">
-              <th className="sticky left-0 z-20 bg-gray-50 px-3 py-2 text-left font-semibold text-gray-700 border-r-2 border-gray-300">
+              <th className="sticky left-0 z-20 bg-gray-50 px-2 py-2 text-left font-semibold text-gray-700 border-r-2 border-gray-300">
                 Team
+              </th>
+              <th className="px-1.5 py-2 text-center font-semibold text-gray-700 bg-gray-100 border-r-2 border-mainAccent">
+                Score
               </th>
               {players.map((player: any, playerIdx: number) => {
                 // Check if this is the first player of a new class
@@ -1206,22 +1222,23 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                 return (
                   <th 
                     key={player.user_id}
-                    className={`px-1.5 py-2 text-center font-medium text-gray-700 border-r border-gray-200 min-w-[70px] ${
-                      isFirstInClass ? 'border-l-4 border-l-mainAccent' : ''
+                    className={`px-0.5 py-2 text-center font-medium text-gray-700 border-r border-gray-200 min-w-[35px] ${
+                      isFirstInClass ? 'border-l-2 border-l-mainAccent' : ''
                     }`}
                   >
-                    <div className="text-[10px] leading-tight">
+                    <Link
+                      href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                      className="text-[9px] leading-tight hover:text-mainAccent transition-colors block"
+                      title={`${player.voornaam} ${player.achternaam}`}
+                    >
                       {player.voornaam.substring(0, 1)}. {player.achternaam}
-                    </div>
-                    <div className="text-[9px] text-gray-500">
+                    </Link>
+                    <div className="text-[8px] text-gray-500">
                       {player.schaakrating_elo}
                     </div>
                   </th>
                 )
               })}
-              <th className="px-2 py-2 text-center font-semibold text-gray-700 bg-gray-100 border-l-4 border-l-mainAccent">
-                Score
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -1231,10 +1248,14 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                 className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
               >
                 <td 
-                  className="sticky left-0 z-10 px-3 py-2 font-semibold text-gray-800 border-r-2 border-gray-300 text-xs whitespace-nowrap"
+                  className="sticky left-0 z-10 px-2 py-2 font-semibold text-gray-800 border-r-2 border-gray-300 text-xs whitespace-nowrap"
                   style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}
                 >
                   {team.team_name}
+                </td>
+                <td className="px-1.5 py-2 text-center font-bold text-mainAccent bg-mainAccent/5 border-r-2 border-mainAccent"
+                    style={{ backgroundColor: idx % 2 === 0 ? 'rgba(212, 175, 55, 0.05)' : 'rgba(212, 175, 55, 0.1)' }}>
+                  {team.totalScore.toFixed(1)}
                 </td>
                 {team.playerScores.map((ps: any, playerIdx: number) => {
                   const score = ps.score
@@ -1245,12 +1266,12 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                   return (
                     <td 
                       key={ps.player_id}
-                      className={`px-1.5 py-2 text-center border-r border-gray-200 ${
-                        isFirstInClass ? 'border-l-4 border-l-mainAccent' : ''
+                      className={`px-0.5 py-2 text-center border-r border-gray-200 ${
+                        isFirstInClass ? 'border-l-2 border-l-mainAccent' : ''
                       }`}
                     >
                       {ps.inTeam ? (
-                        <span className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold ${
+                        <span className={`inline-block px-1 py-0.5 rounded text-[10px] font-semibold ${
                           score === null || score === 0 ? 'bg-red-100 text-red-800' :
                           score >= 1 ? 'bg-green-100 text-green-800' :
                           'bg-yellow-100 text-yellow-800'
@@ -1258,14 +1279,11 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                           {score !== null ? score.toFixed(1) : '0.0'}
                         </span>
                       ) : (
-                        <span className="text-gray-300 text-xs">-</span>
+                        <span className="text-gray-300 text-[10px]">-</span>
                       )}
                     </td>
                   )
                 })}
-                <td className="px-2 py-2 text-center font-bold text-mainAccent bg-mainAccent/5 border-l-4 border-l-mainAccent">
-                  {team.totalScore.toFixed(1)}
-                </td>
               </tr>
             ))}
           </tbody>
@@ -1309,13 +1327,13 @@ function StandingsView({ standings, isLoading }: { standings: any[], isLoading: 
     )
   }
 
-  return (
-    <div className="space-y-4">
+    return (
+      <div className="space-y-2 max-w-2xl mx-auto">
       {/* Leaderboard */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Trophy className="h-6 w-6" />
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+          <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+            <Trophy className="h-4 w-4" />
             Klassement
           </h2>
         </div>
@@ -1325,52 +1343,55 @@ function StandingsView({ standings, isLoading }: { standings: any[], isLoading: 
             <div key={team.team_id}>
               <div
                 onClick={() => setExpandedTeamId(expandedTeamId === team.team_id ? null : team.team_id)}
-                className="p-4 hover:bg-gray-50 cursor-pointer transition-colors group"
+                className="px-3 py-1 hover:bg-gray-50 cursor-pointer transition-colors group"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   {/* Rank */}
                   <div className="flex-shrink-0">
                     {index === 0 ? (
-                      <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Medal className="h-6 w-6 text-white" />
+                      <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                        <Medal className="h-4 w-4 text-white" />
                       </div>
                     ) : index === 1 ? (
-                      <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center shadow-lg">
-                        <Medal className="h-6 w-6 text-white" />
+                      <div className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center">
+                        <Medal className="h-4 w-4 text-white" />
                       </div>
                     ) : index === 2 ? (
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Medal className="h-6 w-6 text-white" />
+                      <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+                        <Medal className="h-4 w-4 text-white" />
                       </div>
                     ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 text-lg">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 text-sm">
                         {index + 1}
                       </div>
                     )}
                   </div>
 
                   {/* Team Info */}
-                  <div className="flex-1 min-w-0 pr-4">
-                    <h3 className="font-bold text-lg text-gray-800 group-hover:text-mainAccent transition-colors truncate">
-                      {team.team_name}
-                    </h3>
-                    <p className="text-sm text-gray-600 truncate">
-                      {team.user.voornaam} {team.user.achternaam}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {team.players.length} spelers
-                    </p>
+                  <div className="flex-1 min-w-0 pr-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-sm text-gray-800 group-hover:text-mainAccent transition-colors">
+                        {team.team_name}
+                      </h3>
+                      <span className="text-[10px] text-gray-500">•</span>
+                      <Link
+                        href={`/profile/${createUrlFriendlyName(team.user.voornaam, team.user.achternaam)}`}
+                        className="text-xs text-gray-600 hover:text-mainAccent transition-colors"
+                      >
+                        {team.user.voornaam} {team.user.achternaam}
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Score */}
-                  <div className="flex items-center gap-4 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <div className="text-right">
-                      <div className="text-3xl font-bold text-mainAccent">
+                      <div className="text-lg font-bold text-mainAccent">
                         {team.totalScore.toFixed(1)}
                       </div>
-                      <div className="text-xs text-gray-500">punten</div>
+                      <div className="text-[10px] text-gray-500">punten</div>
                     </div>
-                    <ChevronRight className={`h-5 w-5 transition-all ${
+                    <ChevronRight className={`h-4 w-4 transition-all ${
                       expandedTeamId === team.team_id 
                         ? 'rotate-90 text-mainAccent' 
                         : 'text-gray-400 group-hover:text-mainAccent'
@@ -1381,12 +1402,12 @@ function StandingsView({ standings, isLoading }: { standings: any[], isLoading: 
 
               {/* Expanded Team Details */}
               {expandedTeamId === team.team_id && (
-                <div className="border-t border-gray-200 bg-gray-50 p-6">
+                <div className="border-t border-gray-200 bg-gray-50 p-3">
                   {expandedTeamDetails ? (
                     <TeamDetailView teamDetails={expandedTeamDetails} />
                   ) : (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mainAccent"></div>
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-mainAccent"></div>
                     </div>
                   )}
                 </div>
@@ -1406,43 +1427,43 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
   return (
     <div className="space-y-6">
       {/* Team Summary */}
-      <div className="bg-mainAccent/10 rounded-lg p-4">
-        <div className="grid grid-cols-3 gap-4 text-center">
+      <div className="bg-mainAccent/10 rounded-lg p-2">
+        <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <div className="text-2xl font-bold text-mainAccent">
+            <div className="text-xl font-bold text-mainAccent">
               {teamDetails.players.length}
             </div>
-            <div className="text-sm text-gray-600">Spelers</div>
+            <div className="text-xs text-gray-600">Spelers</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-mainAccent">
+            <div className="text-xl font-bold text-mainAccent">
               {rounds.length}
             </div>
-            <div className="text-sm text-gray-600">Rondes</div>
+            <div className="text-xs text-gray-600">Rondes</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-mainAccent">
+            <div className="text-xl font-bold text-mainAccent">
               {teamDetails.players.reduce((sum: number, p: any) => sum + p.totalScore, 0).toFixed(1)}
             </div>
-            <div className="text-sm text-gray-600">Totaal Punten</div>
+            <div className="text-xs text-gray-600">Totaal Punten</div>
           </div>
         </div>
       </div>
 
       {/* Players Table */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-gray-100">
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10">
+              <th className="px-2 py-1.5 text-left text-xs font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10">
                 Speler
               </th>
               {rounds.map((round: number) => (
-                <th key={round} className="px-3 py-3 text-center text-sm font-semibold text-gray-700">
+                <th key={round} className="px-1.5 py-1.5 text-center text-xs font-semibold text-gray-700">
                   R{round}
                 </th>
               ))}
-              <th className="px-4 py-3 text-center text-sm font-semibold text-mainAccent bg-mainAccent/10">
+              <th className="px-2 py-1.5 text-center text-xs font-semibold text-mainAccent bg-mainAccent/10">
                 Totaal
               </th>
             </tr>
@@ -1452,19 +1473,24 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
               .sort((a: any, b: any) => b.totalScore - a.totalScore)
               .map((playerData: any, idx: number) => (
                 <tr key={playerData.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-800 sticky left-0 z-10" 
+                  <td className="px-2 py-1.5 text-xs font-medium text-gray-800 sticky left-0 z-10" 
                       style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}>
-                    {playerData.player.voornaam} {playerData.player.achternaam}
-                    <div className="text-xs text-gray-500">
-                      Rating: {playerData.player.schaakrating_elo}
+                    <Link
+                      href={`/profile/${createUrlFriendlyName(playerData.player.voornaam, playerData.player.achternaam)}`}
+                      className="text-gray-800 hover:text-mainAccent transition-colors block"
+                    >
+                      {playerData.player.voornaam} {playerData.player.achternaam}
+                    </Link>
+                    <div className="text-[10px] text-gray-500">
+                      {playerData.player.schaakrating_elo}
                     </div>
                   </td>
                   {rounds.map((round: number) => {
                     const roundScore = playerData.roundScores?.find((rs: any) => rs.ronde_nummer === round)
                     const score = roundScore?.score ?? null
                     return (
-                      <td key={round} className="px-3 py-3 text-center text-sm">
-                        <span className={`inline-block px-2 py-1 rounded ${
+                      <td key={round} className="px-1.5 py-1.5 text-center text-xs">
+                        <span className={`inline-block px-1.5 py-0.5 rounded ${
                           score === 1 ? 'bg-green-100 text-green-800 font-semibold' :
                           score === 0.5 ? 'bg-yellow-100 text-yellow-800' :
                           score === 0 ? 'bg-red-100 text-red-800' :
@@ -1475,8 +1501,8 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                       </td>
                     )
                   })}
-                  <td className="px-4 py-3 text-center bg-mainAccent/5">
-                    <span className="text-lg font-bold text-mainAccent">
+                  <td className="px-2 py-1.5 text-center bg-mainAccent/5">
+                    <span className="text-sm font-bold text-mainAccent">
                       {playerData.totalScore.toFixed(1)}
                     </span>
                   </td>
@@ -1485,7 +1511,7 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
           </tbody>
           <tfoot>
             <tr className="bg-mainAccent/10 font-bold">
-              <td className="px-4 py-3 text-sm text-gray-800 sticky left-0 bg-mainAccent/10 z-10">
+              <td className="px-2 py-1.5 text-xs text-gray-800 sticky left-0 bg-mainAccent/10 z-10">
                 Team Totaal
               </td>
               {rounds.map((round: number) => {
@@ -1494,13 +1520,13 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                   return sum + (roundScore?.score || 0)
                 }, 0)
                 return (
-                  <td key={round} className="px-3 py-3 text-center text-sm text-gray-800">
+                  <td key={round} className="px-1.5 py-1.5 text-center text-xs text-gray-800">
                     {roundTotal.toFixed(1)}
                   </td>
                 )
               })}
-              <td className="px-4 py-3 text-center bg-mainAccent/20">
-                <span className="text-xl font-bold text-mainAccent">
+              <td className="px-2 py-1.5 text-center bg-mainAccent/20">
+                <span className="text-base font-bold text-mainAccent">
                   {teamDetails.players.reduce((sum: number, p: any) => sum + p.totalScore, 0).toFixed(1)}
                 </span>
               </td>
@@ -1678,9 +1704,12 @@ function ValuePlayersView({ players, isLoading }: { players: any[], isLoading: b
                   </div>
                 </td>
                 <td className="px-2 py-1.5">
-                  <div className="font-semibold text-gray-800">
+                  <Link
+                    href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                    className="font-semibold text-gray-800 hover:text-mainAccent transition-colors block"
+                  >
                     {player.voornaam} {player.achternaam}
-                  </div>
+                  </Link>
                 </td>
                 <td className="px-2 py-1.5">
                   <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px]">

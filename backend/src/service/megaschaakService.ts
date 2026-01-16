@@ -1618,6 +1618,9 @@ export const getTeamDetailedScores = async (teamId: number) => {
       },
       include: {
         rounds: {
+          where: {
+            type: 'REGULAR' // Only regular rounds, no makeup rounds
+          },
           include: {
             games: {
               include: {
@@ -1635,9 +1638,10 @@ export const getTeamDetailedScores = async (teamId: number) => {
       }
     });
 
-    // Get all rounds (sorted)
+    // Get all rounds (sorted) - only REGULAR rounds
     const allRounds = allClassesTournaments
       .flatMap(t => t.rounds)
+      .filter(round => round.type === 'REGULAR') // Extra filter to be safe
       .sort((a, b) => a.ronde_nummer - b.ronde_nummer);
 
     // Group games by round number
@@ -1652,9 +1656,39 @@ export const getTeamDetailedScores = async (teamId: number) => {
     // Calculate scores per player per round
     const playerScoresByRound = team.players.map(tp => {
       const roundScores = Array.from(gamesByRound.entries()).map(([rondeNummer, games]) => {
-        const score = games.reduce((sum: number, game: any) => {
-          return sum + calculateGameScore(game, tp.player_id);
-        }, 0);
+        // Find if player has a game in this round
+        const playerGame = games.find((game: any) => 
+          game.speler1_id === tp.player_id || game.speler2_id === tp.player_id
+        );
+        
+        // If no game, return null to indicate no game played
+        if (!playerGame) {
+          return {
+            ronde_nummer: rondeNummer,
+            score: null,
+            hasGame: false
+          };
+        }
+        
+        // Check if it's a BYE (speler2_id is null)
+        const isBye = playerGame.speler2_id === null;
+        
+        // Check if game has a result
+        const hasResult = playerGame.result && 
+          playerGame.result !== 'not_played' && 
+          playerGame.result !== '...' &&
+          playerGame.result !== 'uitgesteld';
+        
+        const score = calculateGameScore(playerGame, tp.player_id);
+        
+        // If score is 0 and (no result or BYE), return null
+        if (score === 0 && (!hasResult || isBye)) {
+          return {
+            ronde_nummer: rondeNummer,
+            score: null,
+            hasGame: true
+          };
+        }
 
         return {
           ronde_nummer: rondeNummer,
@@ -1662,7 +1696,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
         };
       });
 
-      const totalScore = roundScores.reduce((sum, rs) => sum + rs.score, 0);
+      const totalScore = roundScores.reduce((sum, rs) => sum + (rs.score ?? 0), 0);
 
       return {
         ...tp,
@@ -1796,7 +1830,12 @@ export const getBestValuePlayers = async (tournamentId: number) => {
 
     // Get all tournaments with the same name (all classes)
     const allClassesTournaments = await prisma.tournament.findMany({
-      where: { naam: tournament.naam }
+      where: { naam: tournament.naam },
+      select: {
+        tournament_id: true,
+        class_name: true,
+        rondes: true
+      }
     });
 
     const tournamentIds = allClassesTournaments.map(t => t.tournament_id);
@@ -1862,6 +1901,25 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       }
     }
 
+    // Helper function: check if result represents a game that should count as played
+    // Excludes: null, "not_played", "...", "uitgesteld", absences ("ABS-", "0.5-0"), and invalid results ("0-0")
+    // Includes: regular games ("1-0", "0-1", "½-½", "1/2-1/2", "-"), forfeits ("1-0R", "0-1R")
+    const isPlayedGame = (result: string | null, speler2_id: number | null): boolean => {
+      // BYE games don't count
+      if (speler2_id === null) return false;
+      
+      if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
+      // Exclude absences with message (results starting with 'ABS-')
+      if (result.startsWith("ABS-")) return false;
+      // Exclude "0.5-0" which is an absence with message
+      if (result === "0.5-0") return false;
+      // Exclude "0-0" which is an invalid/unplayed result
+      if (result === "0-0") return false;
+      // Only count valid game results: wins, losses, draws, and forfeits
+      return result === "1-0" || result === "0-1" || result === "1-0R" || result === "0-1R" ||
+             result === "½-½" || result === "1/2-1/2" || result === "-";
+    };
+
     // Calculate scores for each player
     for (const [playerId, data] of playerData.entries()) {
       const games = await prisma.game.findMany({
@@ -1881,29 +1939,67 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       });
 
       let totalScore = 0;
+      let gamesPlayedCount = 0;
       for (const game of games) {
-        totalScore += calculateGameScore(game, playerId);
+        const score = calculateGameScore(game, playerId);
+        totalScore += score;
+        
+        // Only count games that were actually played (using same logic as isPlayedGame)
+        if (isPlayedGame(game.result, game.speler2_id)) {
+          gamesPlayedCount++;
+        }
       }
 
       data.totalScore = totalScore;
-      data.gamesPlayed = games.length;
+      data.gamesPlayed = gamesPlayedCount;
     }
+
+    // Get total rounds per class for value ratio calculation
+    const config = await getMegaschaakConfig(tournamentIds);
+    const roundsPerClassMap: { [key: string]: number } = {};
+    
+    // Get rounds from tournaments
+    for (const tournament of allClassesTournaments) {
+      if (tournament.class_name && tournament.rondes) {
+        roundsPerClassMap[tournament.class_name] = tournament.rondes;
+      }
+    }
+    
+    // Use config roundsPerClass if available, otherwise use tournament rondes
+    Object.keys(config.roundsPerClass).forEach(className => {
+      if (config.roundsPerClass[className]) {
+        roundsPerClassMap[className] = config.roundsPerClass[className];
+      }
+    });
 
     // Calculate value ratio and filter players with at least 1 game
     const valuePlayers = Array.from(playerData.values())
       .filter(p => p.gamesPlayed > 0)
-      .map(p => ({
-        user_id: p.player.user_id,
-        voornaam: p.player.voornaam,
-        achternaam: p.player.achternaam,
-        schaakrating_elo: p.player.schaakrating_elo,
-        cost: p.cost,
-        totalScore: p.totalScore,
-        gamesPlayed: p.gamesPlayed,
-        valueRatio: p.totalScore / p.cost, // Points per cost unit
-        className: p.className
-      }))
-      .sort((a, b) => b.valueRatio - a.valueRatio)
+      .map(p => {
+        // Get total rounds for this player's class
+        const totalRounds = roundsPerClassMap[p.className] || 11; // Default to 11 if not found
+        
+        return {
+          user_id: p.player.user_id,
+          voornaam: p.player.voornaam,
+          achternaam: p.player.achternaam,
+          schaakrating_elo: p.player.schaakrating_elo,
+          cost: p.cost,
+          totalScore: p.totalScore,
+          gamesPlayed: p.gamesPlayed,
+          valueRatio: p.totalScore / totalRounds, // Points per total rounds to be played
+          className: p.className
+        };
+      })
+      .sort((a, b) => {
+        // First sort by valueRatio (descending)
+        if (Math.abs(b.valueRatio - a.valueRatio) > 0.001) {
+          return b.valueRatio - a.valueRatio;
+        }
+        // If valueRatio is equal (within 0.001), sort by cost (ascending)
+        // Players with lower cost rank higher
+        return a.cost - b.cost;
+      })
       .slice(0, 20); // Top 20
 
     return valuePlayers;

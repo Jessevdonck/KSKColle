@@ -692,6 +692,14 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
       } else if ((result === "½-½" || result === "1/2-1/2" || result === "�-�") && p2) {
         sbMap[p1] += scoreMap[p2] * 0.5
         sbMap[p2] += scoreMap[p1] * 0.5
+        // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
+        // Remise = 0.5 × (eindscore tegenstander)²
+        if (isLentecompetitie) {
+          const opponentScore1 = scoreMap[p2] ?? 0
+          const opponentScore2 = scoreMap[p1] ?? 0
+          sbSquaredMap[p1] += 0.5 * Math.pow(opponentScore1, 2)
+          sbSquaredMap[p2] += 0.5 * Math.pow(opponentScore2, 2)
+        }
       }
     })
   })

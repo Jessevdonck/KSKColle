@@ -14,6 +14,7 @@ import { useState, useEffect } from "react"
 import PostponeGameButton from './PostponeGameButton'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../../contexts/auth'
+import Link from 'next/link'
 
 type Game = {
   game_id: number
@@ -68,7 +69,7 @@ export default function TournamentDetails() {
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: any; games: Game[] })[]
   >([])
   const [reportingAbsence, setReportingAbsence] = useState(false)
-  const [activeTab, setActiveTab] = useState<'rounds' | 'standings' | 'megaschaak'>('rounds')
+  const [activeTab, setActiveTab] = useState<'rounds' | 'standings' | 'megaschaak' | 'crosstable'>('rounds')
   const [selectedClassId, setSelectedClassId] = useState<number>(tournamentId)
   const { user: currentUser } = useAuth()
 
@@ -481,20 +482,47 @@ export default function TournamentDetails() {
                   Rondes & Stand
                 </div>
               </button>
+              <button
+                onClick={() => setActiveTab('crosstable')}
+                className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'crosstable'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Kruistabel
+                </div>
+              </button>
               {tournament.megaschaak_enabled && (
-                <button
-                  onClick={() => setActiveTab('megaschaak')}
-                  className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                    activeTab === 'megaschaak'
-                      ? 'text-mainAccent border-mainAccent'
-                      : 'text-gray-500 border-transparent hover:text-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Swords className="h-4 w-4" />
-                    Megaschaak
-                  </div>
-                </button>
+                isLentecompetitie ? (
+                  <Link
+                    href="/toernooien/megaschaak"
+                    className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                      'text-gray-500 border-transparent hover:text-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Swords className="h-4 w-4" />
+                      Megaschaak
+                    </div>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setActiveTab('megaschaak')}
+                    className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                      activeTab === 'megaschaak'
+                        ? 'text-mainAccent border-mainAccent'
+                        : 'text-gray-500 border-transparent hover:text-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Swords className="h-4 w-4" />
+                      Megaschaak
+                    </div>
+                  </button>
+                )
               )}
             </div>
           </div>
@@ -519,32 +547,46 @@ export default function TournamentDetails() {
               </div>
             </button>
             <button
-              onClick={() => setActiveTab('standings')}
+              onClick={() => setActiveTab('crosstable')}
               className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                activeTab === 'standings'
+                activeTab === 'crosstable'
                   ? 'text-mainAccent border-mainAccent'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
               <div className="flex items-center justify-center gap-2">
-                <Trophy className="h-4 w-4" />
-                Stand
+                <Users className="h-4 w-4" />
+                Kruistabel
               </div>
             </button>
             {tournament.megaschaak_enabled && (
-              <button
-                onClick={() => setActiveTab('megaschaak')}
-                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                  activeTab === 'megaschaak'
-                    ? 'text-mainAccent border-mainAccent'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Swords className="h-4 w-4" />
-                  Megaschaak
-                </div>
-              </button>
+              isLentecompetitie ? (
+                <Link
+                  href="/toernooien/megaschaak"
+                  className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                    'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Swords className="h-4 w-4" />
+                    Megaschaak
+                  </div>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setActiveTab('megaschaak')}
+                  className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                    activeTab === 'megaschaak'
+                      ? 'text-mainAccent border-mainAccent'
+                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Swords className="h-4 w-4" />
+                    Megaschaak
+                  </div>
+                </button>
+              )
             )}
           </div>
         </div>
@@ -577,14 +619,14 @@ export default function TournamentDetails() {
         {/* Regular Layout - Rounds and Standings */}
         {isLentecompetitie ? (
           /* For Lentecompetitie: Rounds and CrossTable full width, stacked */
-          <div className={`space-y-4 max-w-4xl mx-auto ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
-            {/* Rounds & Makeup Days with Navigation */}
-            <div className={`${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
+          <div className={`space-y-3 max-w-4xl mx-auto px-2 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+            {/* Rounds & Makeup Days with Navigation - Only show on rounds tab */}
+            <div className={`${activeTab === 'rounds' ? 'block' : 'hidden'}`}>
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                    <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
                       Rondes & Inhaaldagen
                     </h2>
 
@@ -593,20 +635,20 @@ export default function TournamentDetails() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={goToPrevious}
-                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                          className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
                         >
-                          <ChevronLeft className="h-4 w-4" />
+                          <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
-                        <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
+                        <div className="px-2 py-1 bg-white/20 rounded-lg text-white font-medium min-w-[90px] text-center text-xs">
                           {currentEntry?.kind === "round"
                             ? `Ronde ${currentEntry.round.ronde_nummer}`
                             : `Inhaaldag ${currentEntry?.day.makeupDayNumber}`}
                         </div>
                         <button
                           onClick={goToNext}
-                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                          className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
                         >
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     )}
@@ -614,12 +656,12 @@ export default function TournamentDetails() {
 
                   {/* Round Indicators */}
                   {timeline.length > 1 && (
-                    <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
+                    <div className="flex items-center gap-1 mt-2 overflow-x-auto pb-0.5">
                       {timeline.map((entry, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentIndex(index)}
-                          className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                          className={`flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
                             index === currentIndex
                               ? "bg-white text-mainAccent"
                               : "bg-white/20 text-white hover:bg-white/30"
@@ -633,7 +675,7 @@ export default function TournamentDetails() {
                 </div>
 
                 {/* Current Round/Makeup Day Content */}
-                <div className="p-4 min-h-[300px]">
+                <div className="p-2">
                   {currentEntry ? (
                     currentEntry.kind === "round" ? (
                       <RoundPairings 
@@ -654,16 +696,31 @@ export default function TournamentDetails() {
               </div>
             </div>
 
-            {/* Cross Table - Full width below rounds for Lentecompetitie, only on rounds tab */}
+            {/* Cross Table - Full width below rounds for Lentecompetitie, on rounds tab */}
             {activeTab === 'rounds' && (
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
+                  <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
                     Kruistabel
                   </h2>
                 </div>
-                <div className="p-4">
+                <div className="p-2">
+                  <CrossTable tournament={tournament} rounds={allRounds} />
+                </div>
+              </div>
+            )}
+            
+            {/* Cross Table - Full width on separate crosstable tab */}
+            {activeTab === 'crosstable' && (
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
+                  <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
+                    Kruistabel
+                  </h2>
+                </div>
+                <div className="p-2">
                   <CrossTable tournament={tournament} rounds={allRounds} />
                 </div>
               </div>
@@ -671,14 +728,14 @@ export default function TournamentDetails() {
           </div>
         ) : (
           /* For other tournaments: Rounds and Standings side by side */
-          <div className={`grid grid-cols-1 xl:grid-cols-3 gap-4 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+          <div className={`grid grid-cols-1 xl:grid-cols-3 gap-3 max-w-7xl mx-auto px-2 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
             {/* Rounds & Makeup Days with Navigation */}
             <div className={`xl:col-span-2 order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                    <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
                       Rondes & Inhaaldagen
                     </h2>
 
@@ -687,20 +744,20 @@ export default function TournamentDetails() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={goToPrevious}
-                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                          className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
                         >
-                          <ChevronLeft className="h-4 w-4" />
+                          <ChevronLeft className="h-3.5 w-3.5" />
                         </button>
-                        <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
+                        <div className="px-2 py-1 bg-white/20 rounded-lg text-white font-medium min-w-[90px] text-center text-xs">
                           {currentEntry?.kind === "round"
                             ? `Ronde ${currentEntry.round.ronde_nummer}`
                             : `Inhaaldag ${currentEntry?.day.makeupDayNumber}`}
                         </div>
                         <button
                           onClick={goToNext}
-                          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                          className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
                         >
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     )}
@@ -708,12 +765,12 @@ export default function TournamentDetails() {
 
                   {/* Round Indicators */}
                   {timeline.length > 1 && (
-                    <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
+                    <div className="flex items-center gap-1 mt-2 overflow-x-auto pb-0.5">
                       {timeline.map((entry, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentIndex(index)}
-                          className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                          className={`flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
                             index === currentIndex
                               ? "bg-white text-mainAccent"
                               : "bg-white/20 text-white hover:bg-white/30"
@@ -727,7 +784,7 @@ export default function TournamentDetails() {
                 </div>
 
                 {/* Current Round/Makeup Day Content */}
-                <div className="p-4 min-h-[300px]">
+                <div className="p-2">
                   {currentEntry ? (
                     currentEntry.kind === "round" ? (
                       <RoundPairings 
@@ -762,6 +819,23 @@ export default function TournamentDetails() {
                 </div>
               </div>
             </div>
+            
+            {/* Cross Table - Full width on separate crosstable tab for other tournaments */}
+            {activeTab === 'crosstable' && (
+              <div className="xl:col-span-3 order-3">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Kruistabel
+                    </h2>
+                  </div>
+                  <div className="p-4">
+                    <CrossTable tournament={tournament} rounds={allRounds} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

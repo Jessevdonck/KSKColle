@@ -148,22 +148,22 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
-            <table className="w-full table-fixed">
+            <table className="w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
-                  <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-[50px]">Bord</th>
-                  <th className="px-1.5 py-0.5 text-left font-semibold text-xs w-[220px]">Wit</th>
+                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[45px]">Bord</th>
+                  <th className="px-1 py-0.5 text-left font-semibold text-xs w-[150px]">Wit</th>
                   {tournament?.is_youth !== true && (
-                    <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-[70px]">Rating</th>
+                    <th className="px-1 py-0.5 text-center font-semibold text-xs w-[60px]">Rating</th>
                   )}
-                  <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-[60px]">Punten</th>
-                  <th className="px-1.5 py-0.5 text-center font-semibold w-[40px]"></th>
-                  <th className="px-1.5 py-0.5 text-left font-semibold text-xs w-[220px]">Zwart</th>
+                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[50px]">Punten</th>
+                  <th className="px-1 py-0.5 text-center font-semibold w-[30px]"></th>
+                  <th className="px-1 py-0.5 text-left font-semibold text-xs w-[170px]">Zwart</th>
                   {tournament?.is_youth !== true && (
-                    <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-[70px]">Rating</th>
+                    <th className="px-1 py-0.5 text-center font-semibold text-xs w-[60px]">Rating</th>
                   )}
-                  <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-[60px]">Punten</th>
-                  <th className="px-1.5 py-0.5 text-center font-semibold text-xs w-[100px]">Uitslag</th>
+                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[50px]">Punten</th>
+                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[130px]">Uitslag</th>
                 </tr>
               </thead>
               <tbody>
@@ -179,12 +179,12 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
                   } hover:bg-mainAccent/5 transition-colors`}
                 >
-                  <td className="px-1.5 py-0.5 text-center w-[50px]">
+                  <td className="px-1 py-0.5 text-center w-[45px]">
                     <div className="bg-mainAccent/10 text-mainAccent rounded-full w-5 h-5 flex items-center justify-center text-[0.7em] font-bold">
                       {index + 1}
                     </div>
                   </td>
-                  <td className="px-1.5 py-0.5 w-[220px]">
+                  <td className="px-1 py-0.5 w-[150px]">
                     <Link
                       href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
                       className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-1.5 group text-xs truncate"
@@ -197,13 +197,13 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     </Link>
                   </td>
                   {tournament?.is_youth !== true && (
-                    <td className="px-1.5 py-0.5 text-center w-[70px]">
+                    <td className="px-1 py-0.5 text-center w-[60px]">
                       <span className="text-sm font-medium text-gray-700">
                         {game.speler1.schaakrating_elo}
                       </span>
                     </td>
                   )}
-                  <td className="px-1.5 py-0.5 text-center w-[60px]">
+                  <td className="px-1 py-0.5 text-center w-[50px]">
                     {playerScores.length > 0 ? (
                       <span className="text-sm font-medium text-mainAccent">
                         {getPlayerScore(game.speler1.user_id)}
@@ -213,11 +213,11 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     )}
                   </td>
 
-                  <td className="px-1.5 py-0.5 text-center w-[40px]">
+                  <td className="px-1 py-0.5 text-center w-[30px]">
                     <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
                   </td>
 
-                  <td className="px-1.5 py-0.5 w-[220px]">
+                  <td className="px-1 py-0.5 w-[170px]">
                     {game.speler2 ? (
                       <Link
                         href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
@@ -230,16 +230,16 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                         <span className="truncate">{`${game.speler2.voornaam} ${game.speler2.achternaam}`}</span>
                       </Link>
                     ) : (
-                      <div className="flex items-center gap-2 text-gray-500 italic text-sm truncate">
+                      <div className="flex items-center gap-2 text-gray-500 italic text-sm">
                         <div className="w-5 h-5 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-[0.7em] flex-shrink-0">
                           -
                         </div>
-                        <span className="truncate">{getByeText(game.result)}</span>
+                        <span>{getByeText(game.result)}</span>
                       </div>
                     )}
                   </td>
                   {tournament?.is_youth !== true && (
-                    <td className="px-1.5 py-0.5 text-center w-[70px]">
+                    <td className="px-1 py-0.5 text-center w-[60px]">
                       {game.speler2 ? (
                         <span className="text-sm font-medium text-gray-700">
                           {game.speler2.schaakrating_elo}
@@ -249,7 +249,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                       )}
                     </td>
                   )}
-                  <td className="px-1.5 py-0.5 text-center w-[60px]">
+                  <td className="px-1 py-0.5 text-center w-[50px]">
                     {game.speler2 && playerScores.length > 0 ? (
                       <span className="text-sm font-medium text-mainAccent">
                         {getPlayerScore(game.speler2.user_id)}
@@ -259,7 +259,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     )}
                   </td>
 
-                  <td className="px-1.5 py-0.5 text-center w-[100px]">
+                  <td className="px-1 py-0.5 text-center w-[130px]">
                     <span
                       className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
                         game.uitgestelde_datum
