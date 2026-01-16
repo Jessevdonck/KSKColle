@@ -4,6 +4,8 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import * as calendarService from "./calendarService";
 import { emailService } from "./emailService";
+import { createNotification } from "./notificationService";
+import { NotificationTypes } from "../types/notification";
 import { getLogger } from "../core/logging";
 const logger = getLogger();
 
@@ -908,12 +910,67 @@ async function sendAdminConfirmationNotification(originalGame: any, newGame: any
       text: textContent
     });
 
-    logger.info('Admin confirmation notification sent', {
+    logger.info('Admin confirmation email sent', {
       to: adminEmail,
       original_game_id: originalGame.game_id,
       new_game_id: newGame.game_id,
       tournament: originalGame.round.tournament.naam
     });
+    
+    // Stuur site notificaties naar alle admins
+    try {
+      const allUsers = await prisma.user.findMany({
+        where: {
+          OR: [
+            { is_admin: true }
+          ]
+        },
+        select: {
+          user_id: true,
+          email: true,
+          is_admin: true,
+          roles: true
+        }
+      });
+      
+      // Filter op users met 'admin' in roles array
+      const admins = allUsers.filter(user => {
+        if (user.is_admin) return true;
+        if (user.roles && Array.isArray(user.roles) && user.roles.includes('admin')) {
+          return true;
+        }
+        // Check if roles is a string that needs parsing
+        if (typeof user.roles === 'string') {
+          try {
+            const parsedRoles = JSON.parse(user.roles);
+            if (Array.isArray(parsedRoles) && parsedRoles.includes('admin')) {
+              return true;
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
+        return false;
+      });
+      
+      for (const admin of admins) {
+        try {
+          await createNotification({
+            user_id: admin.user_id,
+            type: NotificationTypes.GAME_POSTPONED,
+            title: '[ADMIN] Partij uitgesteld',
+            message: `Partij ${speler1Name} vs ${speler2Name} in ${originalGame.round.tournament.naam} is uitgesteld naar ${newRound.ronde_datum.toLocaleDateString('nl-BE')} om ${newRound.startuur}`,
+          });
+          logger.info('Site notification sent to admin', { admin_id: admin.user_id });
+        } catch (notifError) {
+          logger.error('Failed to send site notification to admin', { admin_id: admin.user_id, error: notifError });
+        }
+      }
+    } catch (adminError) {
+      logger.error('Failed to send site notifications to admins', {
+        error: adminError instanceof Error ? adminError.message : String(adminError)
+      });
+    }
 
   } catch (error) {
     logger.error('Failed to send admin confirmation notification', {

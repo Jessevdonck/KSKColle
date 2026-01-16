@@ -382,81 +382,129 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
     const isAdminEmail = await isUserAdmin(data.user_id);
     
     try {
+      // Haal alle admins op voor site notificaties
+      const allUsers = await prisma.user.findMany({
+        where: {
+          OR: [
+            { is_admin: true }
+          ]
+        },
+        select: {
+          user_id: true,
+          email: true,
+          is_admin: true,
+          roles: true
+        }
+      });
+      
+      // Filter op users met 'admin' in roles array
+      const admins = allUsers.filter(user => {
+        if (user.is_admin) return true;
+        if (user.roles && Array.isArray(user.roles) && user.roles.includes('admin')) {
+          return true;
+        }
+        // Check if roles is a string that needs parsing
+        if (typeof user.roles === 'string') {
+          try {
+            const parsedRoles = JSON.parse(user.roles);
+            if (Array.isArray(parsedRoles) && parsedRoles.includes('admin')) {
+              return true;
+            }
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
+        return false;
+      });
+      
       // Verzamel alle unieke admin email adressen (alleen niels.ongena@hotmail.be)
       const adminEmails = new Set<string>();
       adminEmails.add(adminEmail); // ALTIJD toevoegen
       
       logger.info('Sending notifications to admins', { 
         admin_emails: Array.from(adminEmails),
+        admin_count: admins.length,
         is_admin_initiated: isAdminEmail 
       });
       
-      // Stuur email naar elke admin (inclusief niels.ongena@hotmail.be)
-      for (const email of adminEmails) {
-        try {
-          const adminSubject = isAdminEmail 
-            ? `[ADMIN BEVESTIGING] Partij uitgesteld - ${game.round.tournament.naam}`
-            : `[ADMIN] Partij uitgesteld - ${game.round.tournament.naam}`;
-          const adminHtml = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 5px; }
-                .admin-notice { background-color: #007bff; color: white; padding: 15px; border-radius: 5px; margin: 20px 0; }
-                .content { padding: 20px; }
-                .info-box { background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; }
-                .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>KSK Colle - Admin Notificatie</h1>
-                  <h2>Partij Uitgesteld</h2>
-                </div>
-                
-                <div class="admin-notice">
-                  <strong>⚠️ ADMIN NOTIFICATIE</strong><br>
-                  ${isAdminEmail ? 'Dit is een bevestiging van een uitstel door een admin.' : 'Dit is een automatische melding voor administratoren.'}
-                </div>
-                
-                <div class="content">
-                  <div class="info-box">
-                    <p><strong>Toernooi:</strong> ${game.round.tournament.naam}</p>
-                    <p><strong>Speler die uitstel aanvroeg:</strong> ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} ${isAdminEmail ? '(Admin)' : ''}</p>
-                    <p><strong>Tegenstander:</strong> ${opponent?.voornaam} ${opponent?.achternaam}</p>
-                    <p><strong>Originele ronde:</strong> Ronde ${game.round.ronde_nummer}</p>
-                    <p><strong>Nieuwe datum:</strong> ${targetRound.ronde_datum.toLocaleDateString('nl-BE')} om ${targetRound.startuur}</p>
-                    <p><strong>Inhaaldag:</strong> ${targetRound.label || 'Inhaaldag'}</p>
-                  </div>
-                  
-                  <p>Beide spelers hebben een notificatie ontvangen op de website en via email.</p>
-                </div>
-                
-                <div class="footer">
-                  <p>KSK Colle Admin Systeem</p>
-                  <p>Deze email is automatisch gegenereerd.</p>
-                </div>
+      // Stuur email naar niels.ongena@hotmail.be
+      try {
+        const adminSubject = isAdminEmail 
+          ? `[ADMIN BEVESTIGING] Partij uitgesteld - ${game.round.tournament.naam}`
+          : `[ADMIN] Partij uitgesteld - ${game.round.tournament.naam}`;
+        const adminHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 5px; }
+              .admin-notice { background-color: #007bff; color: white; padding: 15px; border-radius: 5px; margin: 20px 0; }
+              .content { padding: 20px; }
+              .info-box { background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; }
+              .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>KSK Colle - Admin Notificatie</h1>
+                <h2>Partij Uitgesteld</h2>
               </div>
-            </body>
-            </html>
-          `;
-          
-          await emailService.sendCustomEmail({
-            to: email,
-            subject: adminSubject,
-            html: adminHtml,
-            text: `${isAdminEmail ? '[ADMIN BEVESTIGING]' : '[ADMIN]'} Partij uitgesteld\n\nToernooi: ${game.round.tournament.naam}\nSpeler: ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} ${isAdminEmail ? '(Admin)' : ''}\nTegenstander: ${opponent?.voornaam} ${opponent?.achternaam}\nNieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`
+              
+              <div class="admin-notice">
+                <strong>⚠️ ADMIN NOTIFICATIE</strong><br>
+                ${isAdminEmail ? 'Dit is een bevestiging van een uitstel door een admin.' : 'Dit is een automatische melding voor administratoren.'}
+              </div>
+              
+              <div class="content">
+                <div class="info-box">
+                  <p><strong>Toernooi:</strong> ${game.round.tournament.naam}</p>
+                  <p><strong>Speler die uitstel aanvroeg:</strong> ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} ${isAdminEmail ? '(Admin)' : ''}</p>
+                  <p><strong>Tegenstander:</strong> ${opponent?.voornaam} ${opponent?.achternaam}</p>
+                  <p><strong>Originele ronde:</strong> Ronde ${game.round.ronde_nummer}</p>
+                  <p><strong>Nieuwe datum:</strong> ${targetRound.ronde_datum.toLocaleDateString('nl-BE')} om ${targetRound.startuur}</p>
+                  <p><strong>Inhaaldag:</strong> ${targetRound.label || 'Inhaaldag'}</p>
+                </div>
+                
+                <p>Beide spelers hebben een notificatie ontvangen op de website en via email.</p>
+              </div>
+              
+              <div class="footer">
+                <p>KSK Colle Admin Systeem</p>
+                <p>Deze email is automatisch gegenereerd.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+        
+        await emailService.sendCustomEmail({
+          to: adminEmail,
+          subject: adminSubject,
+          html: adminHtml,
+          text: `${isAdminEmail ? '[ADMIN BEVESTIGING]' : '[ADMIN]'} Partij uitgesteld\n\nToernooi: ${game.round.tournament.naam}\nSpeler: ${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} ${isAdminEmail ? '(Admin)' : ''}\nTegenstander: ${opponent?.voornaam} ${opponent?.achternaam}\nNieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`
+        });
+        
+        logger.info('Email sent to admin successfully', { admin_email: adminEmail });
+      } catch (adminError) {
+        logger.error('Failed to send email to admin', { admin_email: adminEmail, error: adminError });
+      }
+      
+      // Stuur site notificaties naar alle admins
+      for (const admin of admins) {
+        try {
+          await createNotification({
+            user_id: admin.user_id,
+            type: NotificationTypes.GAME_POSTPONED,
+            title: '[ADMIN] Partij uitgesteld',
+            message: `${postponingPlayer?.voornaam} ${postponingPlayer?.achternaam} heeft een partij uitgesteld tegen ${opponent?.voornaam} ${opponent?.achternaam} in ${game.round.tournament.naam}. Nieuwe datum: ${targetRound.ronde_datum.toLocaleDateString('nl-BE')}`,
           });
-          
-          logger.info('Email sent to admin successfully', { admin_email: email });
-        } catch (adminError) {
-          logger.error('Failed to send notification to admin', { admin_email: email, error: adminError });
-          // Continue met de volgende admin
+          logger.info('Site notification sent to admin', { admin_id: admin.user_id });
+        } catch (notifError) {
+          logger.error('Failed to send site notification to admin', { admin_id: admin.user_id, error: notifError });
         }
       }
     } catch (error) {
