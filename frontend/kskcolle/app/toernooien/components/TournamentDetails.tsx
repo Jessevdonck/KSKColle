@@ -444,21 +444,35 @@ export default function TournamentDetails() {
         <div className="bg-white border-b border-neutral-200">
           <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
             <div className="flex gap-2 overflow-x-auto py-2">
-              {tournamentClasses.map((tournamentClass) => (
-                <button
-                  key={tournamentClass.tournament_id}
-                  onClick={() => setSelectedClassId(tournamentClass.tournament_id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                    selectedClassId === tournamentClass.tournament_id
-                      ? 'bg-mainAccent text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {tournamentClass.class_name || 'Hoofdtoernooi'}
-                  <span className="ml-2 text-xs opacity-75">
-                    ({tournamentClass.participations.length} spelers)
-                  </span>
-                </button>
+              {tournamentClasses.map((tournamentClass, index) => (
+                <React.Fragment key={tournamentClass.tournament_id}>
+                  <button
+                    onClick={() => setSelectedClassId(tournamentClass.tournament_id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                      selectedClassId === tournamentClass.tournament_id
+                        ? 'bg-mainAccent text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {tournamentClass.class_name || 'Hoofdtoernooi'}
+                    <span className="ml-2 text-xs opacity-75">
+                      ({tournamentClass.participations.length} spelers)
+                    </span>
+                  </button>
+                  {/* Add Megaschaak link after Vierde Klasse if megaschaak is enabled */}
+                  {tournament.megaschaak_enabled && 
+                   tournamentClass.class_name === 'Vierde Klasse' && (
+                    <Link
+                      href="/toernooien/megaschaak"
+                      className="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Swords className="h-4 w-4" />
+                        Megaschaak
+                      </div>
+                    </Link>
+                  )}
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -466,7 +480,9 @@ export default function TournamentDetails() {
       )}
 
       {/* Desktop Tabs - Only visible on desktop */}
-      {(tournament.megaschaak_enabled || isLentecompetitie) && (
+      {/* For lentecompetitie: hide tabs completely (kruistabel is already shown, megaschaak is in class bar) */}
+      {/* For other tournaments with megaschaak: show tabs if there's more than just "rounds" */}
+      {(!isLentecompetitie && tournament.megaschaak_enabled) && (
         <div className="hidden xl:block bg-white border-b border-neutral-200">
           <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
             <div className="flex gap-2">
@@ -496,102 +512,74 @@ export default function TournamentDetails() {
                   Kruistabel
                 </div>
               </button>
-              {tournament.megaschaak_enabled && (
-                isLentecompetitie ? (
-                  <Link
-                    href="/toernooien/megaschaak"
-                    className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                      'text-gray-500 border-transparent hover:text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Swords className="h-4 w-4" />
-                      Megaschaak
-                    </div>
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => setActiveTab('megaschaak')}
-                    className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                      activeTab === 'megaschaak'
-                        ? 'text-mainAccent border-mainAccent'
-                        : 'text-gray-500 border-transparent hover:text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Swords className="h-4 w-4" />
-                      Megaschaak
-                    </div>
-                  </button>
-                )
-              )}
+              <button
+                onClick={() => setActiveTab('megaschaak')}
+                className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'megaschaak'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Swords className="h-4 w-4" />
+                  Megaschaak
+                </div>
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* Mobile Tabs - Only visible on mobile */}
-      <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-[90rem] mx-auto px-6">
-          <div className="flex gap-1">
-            <button
-              onClick={() => setActiveTab('rounds')}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                activeTab === 'rounds'
-                  ? 'text-mainAccent border-mainAccent'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Rondes
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('crosstable')}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                activeTab === 'crosstable'
-                  ? 'text-mainAccent border-mainAccent'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Users className="h-4 w-4" />
-                Kruistabel
-              </div>
-            </button>
-            {tournament.megaschaak_enabled && (
-              isLentecompetitie ? (
-                <Link
-                  href="/toernooien/megaschaak"
-                  className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                    'text-gray-500 border-transparent hover:text-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Swords className="h-4 w-4" />
-                    Megaschaak
-                  </div>
-                </Link>
-              ) : (
-                <button
-                  onClick={() => setActiveTab('megaschaak')}
-                  className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
-                    activeTab === 'megaschaak'
-                      ? 'text-mainAccent border-mainAccent'
-                      : 'text-gray-500 border-transparent hover:text-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Swords className="h-4 w-4" />
-                    Megaschaak
-                  </div>
-                </button>
-              )
-            )}
+      {/* For lentecompetitie: hide tabs completely (kruistabel is already shown, megaschaak is in class bar) */}
+      {/* For other tournaments with megaschaak: show tabs if there's more than just "rounds" */}
+      {(!isLentecompetitie && tournament.megaschaak_enabled) && (
+        <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">
+          <div className="max-w-[90rem] mx-auto px-6">
+            <div className="flex gap-1">
+              <button
+                onClick={() => setActiveTab('rounds')}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'rounds'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Rondes
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('crosstable')}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'crosstable'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Kruistabel
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('megaschaak')}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'megaschaak'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Swords className="h-4 w-4" />
+                  Megaschaak
+                </div>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-4">
@@ -699,21 +687,6 @@ export default function TournamentDetails() {
 
             {/* Cross Table - Full width below rounds for Lentecompetitie, on rounds tab */}
             {activeTab === 'rounds' && (
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
-                  <h2 className="text-base font-bold text-white flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5" />
-                    Kruistabel
-                  </h2>
-                </div>
-                <div className="p-2 pl-0">
-                  <CrossTable tournament={tournament} rounds={allRounds} />
-                </div>
-              </div>
-            )}
-            
-            {/* Cross Table - Full width on separate crosstable tab */}
-            {activeTab === 'crosstable' && (
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
                   <h2 className="text-base font-bold text-white flex items-center gap-1.5">

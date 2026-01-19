@@ -161,8 +161,8 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                     className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white last:border-r-0"
                     style={{ 
                       width: '35px',
-                      minWidth: '35px',
-                      height: '80px'
+                      minWidth: '30px',
+                      height: '95px'
                     }}
                   >
                     <div className="flex items-center justify-center h-full">
@@ -231,7 +231,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                           <td
                             key={opponent.user_id}
                             className="border-r border-gray-200 px-1 py-2 text-center bg-green-50 last:border-r-0"
-                            style={{ width: '35px', minWidth: '35px' }}
+                            style={{ width: '35px', minWidth: '30px' }}
                           >
                             <span className="text-gray-600 font-semibold">x</span>
                           </td>
@@ -242,7 +242,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                         <td
                           key={opponent.user_id}
                           className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result ?? null)}`}
-                          style={{ width: '35px', minWidth: '35px' }}
+                          style={{ width: '35px', minWidth: '30px' }}
                         >
                           {result !== null && result !== undefined ? result : "-"}
                         </td>
