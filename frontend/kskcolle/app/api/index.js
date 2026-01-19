@@ -292,6 +292,11 @@ export const undoPostponeGame = async (url, { arg: { game_id } }) => {
   return data;
 };
 
+export const undoAdminPostponeGame = async (url, { arg: { original_game_id, new_game_id } }) => {
+  const { data } = await axios.post(`${baseUrl}/tournamentRounds/undo-admin-postpone`, { original_game_id, new_game_id });
+  return data;
+};
+
 // Absence reporting function
 export const reportAbsence = async (url, { arg: { tournament_id } }) => {
   const { data } = await axios.post(`${baseUrl}/absence`, { 

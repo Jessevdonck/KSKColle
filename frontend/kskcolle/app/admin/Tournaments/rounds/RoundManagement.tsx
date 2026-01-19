@@ -2,7 +2,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
-import { getById, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, postponeGameToMakeupRound } from "../../../api/index"
+import { getById, postMakeupDay, getAll, getAllTournamentRounds, createMakeupRound, deleteMakeupRound, addGameToMakeupRound, updateMakeupRoundDate, postponeGameToMakeupRound, deleteById, undoAdminPostponeGame } from "../../../api/index"
 import type { Toernooi, MakeupDay, Round } from "@/data/types"
 import RoundSection from "./RoundSection"
 import MakeupSection from "./MakeupSection"
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
-import { Calendar, Plus, Trophy, CheckCircle, Clock, Users, Gamepad2 } from "lucide-react"
+import { Calendar, Plus, Trophy, CheckCircle, Clock, Users, Gamepad2, X } from "lucide-react"
 import { sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from "@/lib/gameSorting"
 
 const getByeText = (result: string | null) => {
@@ -54,6 +54,8 @@ export default function RoundManagement({ tournament }: Props) {
   const { trigger: addGameMutation, isMutating: addingGame } = useSWRMutation("tournamentRounds", addGameToMakeupRound)
   const { trigger: updateDateMutation, isMutating: updatingDate } = useSWRMutation("tournamentRounds", updateMakeupRoundDate)
   const { trigger: postponeGameMutation, isMutating: postponingGameMutation } = useSWRMutation("tournamentRounds", postponeGameToMakeupRound)
+  const { trigger: deleteGameMutation, isMutating: deletingGame } = useSWRMutation("spel", deleteById)
+  const { trigger: undoAdminPostponeMutation, isMutating: undoingPostpone } = useSWRMutation("tournamentRounds", undoAdminPostponeGame)
 
   // Form-state voor nieuwe inhaaldag (oude systeem)
   const [addingNew, setAddingNew] = useState(false)
@@ -908,6 +910,46 @@ export default function RoundManagement({ tournament }: Props) {
                                 className="text-xs"
                               >
                                 Uitstellen
+                              </Button>
+                            )}
+                            {round.type === 'MAKEUP' && (
+                              <Button
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  const gameId = game.game_id || game.id
+                                  if (!gameId) {
+                                    toast({ title: "Error", description: "Kon game ID niet vinden", variant: "destructive" })
+                                    return
+                                  }
+                                  if (confirm(`Weet je zeker dat je deze partij wilt verwijderen?\n\n${game.speler1?.voornaam} ${game.speler1?.achternaam} vs ${game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : 'Bye'}`)) {
+                                    try {
+                                      // Als deze game een original_game_id heeft, betekent het dat het een uitgestelde partij is
+                                      // In dat geval moeten we de originele partij herstellen
+                                      if ((game as any).original_game_id) {
+                                        await undoAdminPostponeMutation({ 
+                                          original_game_id: (game as any).original_game_id, 
+                                          new_game_id: Number(gameId) 
+                                        })
+                                        toast({ title: "Success", description: "Partij verwijderd en originele partij hersteld." })
+                                      } else {
+                                        // Geen original_game_id, gewoon verwijderen (handmatig toegevoegde partij)
+                                        await deleteGameMutation(Number(gameId))
+                                        toast({ title: "Success", description: "Partij verwijderd." })
+                                      }
+                                      refetchRounds()
+                                    } catch (error) {
+                                      console.error('Error deleting game:', error)
+                                      toast({ title: "Error", description: "Kon partij niet verwijderen", variant: "destructive" })
+                                    }
+                                  }
+                                }}
+                                size="sm"
+                                variant="ghost"
+                                disabled={deletingGame || undoingPostpone}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 h-6 w-6 p-0"
+                                title="Verwijder partij"
+                              >
+                                <X className="h-4 w-4" />
                               </Button>
                             )}
                           </div>
