@@ -198,14 +198,14 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   </td>
                   {tournament?.is_youth !== true && (
                     <td className="px-1 py-0.5 text-center w-[60px]">
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-normal text-yellow-600">
                         {game.speler1.schaakrating_elo}
                       </span>
                     </td>
                   )}
                   <td className="px-1 py-0.5 text-center w-[50px]">
                     {playerScores.length > 0 ? (
-                      <span className="text-sm font-medium text-mainAccent">
+                      <span className="text-sm font-bold text-black">
                         {getPlayerScore(game.speler1.user_id)}
                       </span>
                     ) : (
@@ -241,7 +241,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   {tournament?.is_youth !== true && (
                     <td className="px-1 py-0.5 text-center w-[60px]">
                       {game.speler2 ? (
-                        <span className="text-sm font-medium text-gray-700">
+                        <span className="text-sm font-normal text-yellow-600">
                           {game.speler2.schaakrating_elo}
                         </span>
                       ) : (
@@ -251,7 +251,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   )}
                   <td className="px-1 py-0.5 text-center w-[50px]">
                     {game.speler2 && playerScores.length > 0 ? (
-                      <span className="text-sm font-medium text-mainAccent">
+                      <span className="text-sm font-bold text-black">
                         {getPlayerScore(game.speler2.user_id)}
                       </span>
                     ) : (
@@ -333,12 +333,12 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     >
                       {game.speler1.voornaam} {game.speler1.achternaam}
                     </Link>
-                    <div className="flex items-center gap-4 mt-0.5 text-xs text-gray-500">
+                    <div className="flex items-center gap-4 mt-0.5 text-xs">
                       {tournament?.is_youth !== true && (
-                        <span>ELIO: {game.speler1.schaakrating_elo}</span>
+                        <span className="font-normal text-yellow-600">ELIO: {game.speler1.schaakrating_elo}</span>
                       )}
                       {playerScores.length > 0 && (
-                        <span className="text-mainAccent font-medium">
+                        <span className="font-bold text-black">
                           {getPlayerScore(game.speler1.user_id)} pt
                         </span>
                       )}
@@ -370,12 +370,12 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                       </div>
                     )}
                     {game.speler2 && (
-                      <div className="flex items-center gap-4 mt-0.5 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 mt-0.5 text-xs">
                         {tournament?.is_youth !== true && (
-                          <span>ELIO: {game.speler2.schaakrating_elo}</span>
+                          <span className="font-normal text-yellow-600">ELIO: {game.speler2.schaakrating_elo}</span>
                         )}
                         {playerScores.length > 0 && (
-                          <span className="text-mainAccent font-medium">
+                          <span className="font-bold text-black">
                             {getPlayerScore(game.speler2.user_id)} pt
                           </span>
                         )}
