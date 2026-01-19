@@ -916,7 +916,7 @@ export default function RoundManagement({ tournament }: Props) {
                               <Button
                                 onClick={async (e) => {
                                   e.stopPropagation()
-                                  const gameId = game.game_id || game.id
+                                  const gameId = game.game_id
                                   if (!gameId) {
                                     toast({ title: "Error", description: "Kon game ID niet vinden", variant: "destructive" })
                                     return
