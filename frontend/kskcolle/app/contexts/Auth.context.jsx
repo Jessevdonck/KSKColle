@@ -17,18 +17,14 @@ export const AuthProvider = ({ children }) => {
     if (!rawUser) return rawUser
     
     let roles = rawUser.roles
-    console.log('Auth context - Raw roles:', { type: typeof roles, value: roles })
     
     if (typeof roles === 'string') {
       try {
         roles = JSON.parse(roles)
-        console.log('Auth context - Parsed roles from string:', roles)
       } catch (e) {
-        console.log('Auth context - Failed to parse roles:', e)
         roles = []
       }
     } else if (!Array.isArray(roles)) {
-      console.log('Auth context - Roles not array, defaulting to empty:', roles)
       roles = []
     }
     
@@ -36,7 +32,6 @@ export const AuthProvider = ({ children }) => {
       ...rawUser,
       roles
     }
-    console.log('Auth context - Normalized user:', normalizedUser)
     return normalizedUser
   }, [rawUser])
 

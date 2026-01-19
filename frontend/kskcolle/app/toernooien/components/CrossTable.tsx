@@ -155,7 +155,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                   SB²
                 </th>
                 {/* Column headers with player names (vertical) */}
-                {standings.map((player, index) => (
+                {standings.map((player) => (
                   <th
                     key={player.user_id}
                     className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white last:border-r-0"
@@ -225,7 +225,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       {player.tieBreak.toFixed(2)}
                     </td>
                     {/* Game results */}
-                    {standings.map((opponent, colIndex) => {
+                    {standings.map((opponent) => {
                       if (player.user_id === opponent.user_id) {
                         return (
                           <td
@@ -256,61 +256,132 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
         </div>
       </div>
 
-      {/* Mobile View - Simplified */}
-      <div className="md:hidden space-y-4">
-        {standings.map((player, index) => {
-          const playerResults = crossTableData.get(player.user_id)
-          return (
-            <div key={player.user_id} className="bg-white rounded-lg shadow-md p-4">
-              <div className="mb-3 pb-3 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-lg">
-                      {index + 1}.{' '}
+      {/* Mobile View - Full cross table with horizontal scroll */}
+      <div className="md:hidden bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="border-collapse text-xs" style={{ tableLayout: 'fixed', width: '100%' }}>
+            <thead>
+              <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark">
+                <th className="sticky left-0 z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-2 py-2 text-center font-semibold text-white" style={{ width: '30px' }}>
+                  #
+                </th>
+                <th className="sticky left-[30px] z-20 bg-gradient-to-r from-mainAccent to-mainAccentDark border-r border-white/20 px-2 py-2 text-left font-semibold text-white" style={{ width: '120px' }}>
+                  Naam
+                </th>
+                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white" style={{ width: '30px' }}>
+                  PT
+                </th>
+                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white" style={{ width: '30px' }}>
+                  Part
+                </th>
+                {!tournament.is_youth && (
+                  <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white" style={{ width: '40px' }}>
+                    ELIO
+                  </th>
+                )}
+                <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white" style={{ width: '40px' }}>
+                  SB²
+                </th>
+                {/* Column headers with player names (vertical) */}
+                {standings.map((player) => (
+                  <th
+                    key={player.user_id}
+                    className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white last:border-r-0"
+                    style={{ 
+                      width: '35px',
+                      minWidth: '30px',
+                      height: '95px'
+                    }}
+                  >
+                    <div className="flex items-center justify-center h-full">
+                      <div 
+                        className="text-[9px] leading-tight"
+                        style={{ 
+                          writingMode: 'vertical-rl',
+                          textOrientation: 'mixed',
+                          transform: 'rotate(180deg)'
+                        }}
+                      >
+                        <Link
+                          href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                          className="hover:text-yellow-200 transition-colors inline-block"
+                          title={`${player.voornaam} ${player.achternaam}`}
+                        >
+                          <span className="whitespace-nowrap">{player.voornaam.substring(0, 1)}. {player.achternaam}</span>
+                        </Link>
+                      </div>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {standings.map((player, rowIndex) => {
+                const playerResults = crossTableData.get(player.user_id)
+                return (
+                  <tr key={player.user_id} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    {/* Position number */}
+                    <td className="sticky left-0 z-10 bg-inherit border-r border-gray-200 px-2 py-2 text-center font-bold text-gray-700" style={{ width: '30px' }}>
+                      {rowIndex + 1}
+                    </td>
+                    {/* Player name */}
+                    <td className="sticky left-[30px] z-10 bg-inherit border-r border-gray-200 px-2 py-2 font-medium text-gray-900 text-[10px]" style={{ width: '120px' }}>
                       <Link
                         href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
-                        className="hover:text-mainAccent transition-colors"
+                        className="hover:text-mainAccent transition-colors truncate block"
+                        title={`${player.voornaam} ${player.achternaam}`}
                       >
                         {player.voornaam} {player.achternaam}
                       </Link>
-                    </h3>
-                    <div className="flex gap-4 mt-1 text-sm text-gray-600">
-                      <span>PT: {player.score}</span>
-                      <span>Part: {player.gamesPlayed}</span>
-                      {!tournament.is_youth && <span>ELIO: {player.schaakrating_elo || '-'}</span>}
-                      <span>SB²: {player.tieBreak.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-6 gap-1 text-xs">
-                {standings.map((opponent, oppIndex) => {
-                  if (player.user_id === opponent.user_id) {
-                    return (
-                      <div
-                        key={opponent.user_id}
-                        className="bg-green-50 text-center p-1 rounded text-gray-600 font-semibold"
-                      >
-                        x
-                      </div>
-                    )
-                  }
-                  const result = playerResults?.get(opponent.user_id)
-                  return (
-                    <div
-                      key={opponent.user_id}
-                      className={`text-center p-1 rounded font-medium ${getResultClass(result ?? null)}`}
-                      title={`vs ${opponent.voornaam} ${opponent.achternaam}`}
-                    >
-                      <div className="text-[10px] text-gray-500">{oppIndex + 1}</div>
-                      <div>{result !== null && result !== undefined ? result : "-"}</div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
+                    </td>
+                    {/* Points */}
+                    <td className="border-r border-gray-200 px-1 py-2 text-center font-bold text-gray-900" style={{ width: '30px' }}>
+                      {player.score}
+                    </td>
+                    {/* Games played */}
+                    <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700" style={{ width: '30px' }}>
+                      {player.gamesPlayed}
+                    </td>
+                    {/* ELIO */}
+                    {!tournament.is_youth && (
+                      <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700" style={{ width: '40px' }}>
+                        {player.schaakrating_elo || '-'}
+                      </td>
+                    )}
+                    {/* SB² */}
+                    <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700" style={{ width: '40px' }}>
+                      {player.tieBreak.toFixed(2)}
+                    </td>
+                    {/* Game results */}
+                    {standings.map((opponent) => {
+                      if (player.user_id === opponent.user_id) {
+                        return (
+                          <td
+                            key={opponent.user_id}
+                            className="border-r border-gray-200 px-1 py-2 text-center bg-green-50 last:border-r-0"
+                            style={{ width: '35px', minWidth: '30px' }}
+                          >
+                            <span className="text-gray-600 font-semibold">x</span>
+                          </td>
+                        )
+                      }
+                      const result = playerResults?.get(opponent.user_id)
+                      return (
+                        <td
+                          key={opponent.user_id}
+                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result ?? null)}`}
+                          style={{ width: '35px', minWidth: '30px' }}
+                        >
+                          {result !== null && result !== undefined ? result : "-"}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
