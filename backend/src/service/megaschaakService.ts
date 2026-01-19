@@ -1377,15 +1377,36 @@ export const getCrossTableData = async (tournamentId: number) => {
       }
     });
 
-    // Build players list with class info and their tournament score
-    const playersWithClass = allParticipations.map(p => ({
-      user_id: p.user.user_id,
-      voornaam: p.user.voornaam,
-      achternaam: p.user.achternaam,
-      schaakrating_elo: p.user.schaakrating_elo,
-      className: p.tournament.class_name || 'Hoofdtoernooi',
-      tournamentScore: p.score || 0,
-      tie_break: p.tie_break || 0
+    // Build a map of player costs from teams (if player is in a team, use that cost)
+    const playerCostMap = new Map<number, number>();
+    for (const team of teams) {
+      for (const teamPlayer of team.players) {
+        if (!playerCostMap.has(teamPlayer.player_id)) {
+          playerCostMap.set(teamPlayer.player_id, teamPlayer.cost);
+        }
+      }
+    }
+
+    // Build players list with class info, tournament score, and cost
+    const playersWithClass = await Promise.all(allParticipations.map(async p => {
+      // Get cost from team if available, otherwise calculate it
+      let cost = playerCostMap.get(p.user.user_id);
+      if (cost === undefined) {
+        // Calculate cost if not in any team
+        const className = p.tournament.class_name || 'Hoofdtoernooi';
+        cost = await calculatePlayerCost(p.user.user_id, className, allClassesTournaments.map(t => t.tournament_id));
+      }
+      
+      return {
+        user_id: p.user.user_id,
+        voornaam: p.user.voornaam,
+        achternaam: p.user.achternaam,
+        schaakrating_elo: p.user.schaakrating_elo,
+        className: p.tournament.class_name || 'Hoofdtoernooi',
+        tournamentScore: p.score || 0,
+        tie_break: p.tie_break || 0,
+        cost: cost
+      };
     }));
 
     // Remove duplicates (keep first occurrence)

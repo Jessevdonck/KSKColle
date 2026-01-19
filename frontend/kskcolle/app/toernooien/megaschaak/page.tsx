@@ -1279,6 +1279,11 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                         >
                           <span className="whitespace-nowrap">{player.voornaam.substring(0, 1)}. {player.achternaam}</span>
                         </Link>
+                        {player.cost !== undefined && (
+                          <div className="text-[8px] text-gray-500 mt-0.5 whitespace-nowrap">
+                            ({player.cost} pts)
+                          </div>
+                        )}
                       </div>
                     </div>
                   </th>
