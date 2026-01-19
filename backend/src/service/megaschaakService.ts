@@ -1869,7 +1869,41 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       }
     });
 
-    // Collect unique players
+    // Collect unique players from teams (for cost info)
+    const teamPlayerCosts = new Map<number, number>();
+    for (const team of teams) {
+      for (const teamPlayer of team.players) {
+        const playerId = teamPlayer.player_id;
+        // Store the cost from the team (use first occurrence if multiple teams)
+        if (!teamPlayerCosts.has(playerId)) {
+          teamPlayerCosts.set(playerId, teamPlayer.cost);
+        }
+      }
+    }
+
+    // Get all participants from all tournaments (all classes)
+    const allParticipations = await prisma.participation.findMany({
+      where: {
+        tournament_id: { in: tournamentIds }
+      },
+      include: {
+        user: {
+          select: {
+            user_id: true,
+            voornaam: true,
+            achternaam: true,
+            schaakrating_elo: true,
+          }
+        },
+        tournament: {
+          select: {
+            class_name: true
+          }
+        }
+      }
+    });
+
+    // Collect unique players (all participants, not just those in teams)
     const playerData = new Map<number, {
       player: any
       cost: number
@@ -1878,34 +1912,25 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       className: string
     }>();
 
-    for (const team of teams) {
-      for (const teamPlayer of team.players) {
-        const playerId = teamPlayer.player_id;
-        
-        if (!playerData.has(playerId)) {
-          // Get player's class
-          const participation = await prisma.participation.findFirst({
-            where: {
-              user_id: playerId,
-              tournament_id: { in: tournamentIds }
-            },
-            include: {
-              tournament: {
-                select: {
-                  class_name: true
-                }
-              }
-            }
-          });
-
-          playerData.set(playerId, {
-            player: teamPlayer.player,
-            cost: teamPlayer.cost,
-            totalScore: 0,
-            gamesPlayed: 0,
-            className: participation?.tournament.class_name || 'Hoofdtoernooi'
-          });
+    for (const participation of allParticipations) {
+      const playerId = participation.user.user_id;
+      
+      if (!playerData.has(playerId)) {
+        // Get cost from team if available, otherwise calculate it
+        let playerCost = teamPlayerCosts.get(playerId);
+        if (!playerCost) {
+          // Calculate cost if not in any team
+          const className = participation.tournament.class_name || 'Hoofdtoernooi';
+          playerCost = await calculatePlayerCost(playerId, className, tournamentIds);
         }
+
+        playerData.set(playerId, {
+          player: participation.user,
+          cost: playerCost,
+          totalScore: 0,
+          gamesPlayed: 0,
+          className: participation.tournament.class_name || 'Hoofdtoernooi'
+        });
       }
     }
 
@@ -1980,9 +2005,8 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       }
     });
 
-    // Calculate value ratio and filter players with at least 1 game
+    // Calculate value ratio (include all players, even those without games)
     const valuePlayers = Array.from(playerData.values())
-      .filter(p => p.gamesPlayed > 0)
       .map(p => {
         // Get total rounds for this player's class
         const totalRounds = roundsPerClassMap[p.className] || 11; // Default to 11 if not found
@@ -2007,8 +2031,7 @@ export const getBestValuePlayers = async (tournamentId: number) => {
         // If valueRatio is equal (within 0.001), sort by cost (ascending)
         // Players with lower cost rank higher
         return a.cost - b.cost;
-      })
-      .slice(0, 20); // Top 20
+      });
 
     return valuePlayers;
   } catch (error) {
