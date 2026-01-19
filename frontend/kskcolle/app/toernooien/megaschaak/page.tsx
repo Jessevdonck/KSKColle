@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { format, isPast } from "date-fns"
+import { useAuth } from "../../contexts/auth"
 
 const MIN_PLAYERS = 10
 const MAX_PLAYERS = 10
@@ -22,6 +23,7 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
 
 export default function MegaschaakPage() {
   const { toast } = useToast()
+  const { isAuthed } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [teamName, setTeamName] = useState("Nieuw Team")
   const [selectedPlayers, setSelectedPlayers] = useState<MegaschaakPlayer[]>([])
@@ -74,13 +76,18 @@ export default function MegaschaakPage() {
     }
   }, [mutatePlayers])
 
-  // Fetch user's teams for this tournament
+  // Fetch user's teams for this tournament (only if authenticated)
   const { data: myTeams = [], mutate: mutateTeams } = useSWR<MegaschaakTeam[]>(
-    activeTournament ? `megaschaak/tournament/${activeTournament.tournament_id}/my-teams` : null,
+    activeTournament && isAuthed ? `megaschaak/tournament/${activeTournament.tournament_id}/my-teams` : null,
     async () => {
       if (!activeTournament) return []
-      const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/my-teams`)
-      return response.data.items
+      try {
+        const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/my-teams`)
+        return response.data.items
+      } catch (error) {
+        // If not authenticated, return empty array
+        return []
+      }
     },
     { revalidateOnFocus: false }
   )
@@ -509,7 +516,7 @@ export default function MegaschaakPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3 flex items-center gap-2">
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-mainAccent flex-shrink-0" />
-              <span className="leading-tight">Reglement Megaschaak 2025</span>
+              <span className="leading-tight">Reglement Megaschaak 2026</span>
             </h2>
             <div className="text-xs sm:text-sm text-gray-700 space-y-1.5 sm:space-y-2">
               <p className="leading-relaxed"><strong>•</strong> Elke deelnemer dient een ploeg in ter waarde van <strong>max. 1000 punten</strong></p>

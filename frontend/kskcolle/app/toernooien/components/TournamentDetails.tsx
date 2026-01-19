@@ -442,7 +442,7 @@ export default function TournamentDetails() {
       {/* Class Tabs - Only show if tournament has multiple classes */}
       {hasMultipleClasses && (
         <div className="bg-white border-b border-neutral-200">
-          <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
+          <div className={isLentecompetitie ? "max-w-4xl mx-auto px-2" : "max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12"}>
             <div className="flex gap-2 overflow-x-auto py-2">
               {tournamentClasses.map((tournamentClass, index) => (
                 <React.Fragment key={tournamentClass.tournament_id}>
@@ -455,9 +455,6 @@ export default function TournamentDetails() {
                     }`}
                   >
                     {tournamentClass.class_name || 'Hoofdtoernooi'}
-                    <span className="ml-2 text-xs opacity-75">
-                      ({tournamentClass.participations.length} spelers)
-                    </span>
                   </button>
                   {/* Add Megaschaak link after Vierde Klasse if megaschaak is enabled */}
                   {tournament.megaschaak_enabled && 

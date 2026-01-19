@@ -401,19 +401,21 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   const requireAdmin = makeRequireRole(Role.ADMIN);
 
-  // Public/member routes
-  router.get('/active-tournament', requireAuthentication, getActiveTournament);
-  router.get('/players', requireAuthentication, getAvailablePlayers);
+  // Public routes (read-only, no authentication required)
+  router.get('/active-tournament', getActiveTournament);
+  router.get('/players', getAvailablePlayers);
+  router.get('/tournament/:tournamentId/standings', validate(getTeamStandings.validationScheme), getTeamStandings);
+  router.get('/tournament/:tournamentId/crosstable', validate(getCrossTable.validationScheme), getCrossTable);
+  router.get('/team/:teamId/details', validate(getTeamDetails.validationScheme), getTeamDetails);
+  router.get('/tournament/:tournamentId/popular-players', validate(getPopularPlayers.validationScheme), getPopularPlayers);
+  router.get('/tournament/:tournamentId/value-players', validate(getValuePlayers.validationScheme), getValuePlayers);
+  
+  // Member routes (authentication required)
   router.get('/tournament/:tournamentId/my-teams', requireAuthentication, validate(getMyTeams.validationScheme), getMyTeams);
   router.get('/team/:teamId', requireAuthentication, validate(getTeam.validationScheme), getTeam);
   router.post('/tournament/:tournamentId/team', requireAuthentication, validate(createTeam.validationScheme), createTeam);
   router.put('/team/:teamId', requireAuthentication, validate(updateTeam.validationScheme), updateTeam);
   router.delete('/team/:teamId', requireAuthentication, validate(deleteTeamHandler.validationScheme), deleteTeamHandler);
-  router.get('/tournament/:tournamentId/standings', requireAuthentication, validate(getTeamStandings.validationScheme), getTeamStandings);
-  router.get('/tournament/:tournamentId/crosstable', requireAuthentication, validate(getCrossTable.validationScheme), getCrossTable);
-  router.get('/team/:teamId/details', requireAuthentication, validate(getTeamDetails.validationScheme), getTeamDetails);
-  router.get('/tournament/:tournamentId/popular-players', requireAuthentication, validate(getPopularPlayers.validationScheme), getPopularPlayers);
-  router.get('/tournament/:tournamentId/value-players', requireAuthentication, validate(getValuePlayers.validationScheme), getValuePlayers);
   
   // Admin only routes
   router.patch('/tournament/:tournamentId/toggle', requireAuthentication, requireAdmin, validate(toggleMegaschaak.validationScheme), toggleMegaschaak);
