@@ -1446,12 +1446,16 @@ export const getCrossTableData = async (tournamentId: number) => {
 
       const totalScore = playerScores.reduce((sum, ps) => sum + (ps.score || 0), 0);
 
+      // Calculate total cost: sum of all player costs only (reserve cost not included)
+      const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
+
       return {
         team_id: team.team_id,
         team_name: team.team_name,
         user: team.user,
         playerScores,
-        totalScore
+        totalScore,
+        totalCost
       };
     });
 
@@ -1556,10 +1560,14 @@ export const getTeamStandings = async (tournamentId: number) => {
         };
       });
 
+      // Calculate total cost: sum of all player costs only (reserve cost not included)
+      const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
+
       return {
         ...team,
         players: playerScores,
-        totalScore
+        totalScore,
+        totalCost
       };
     });
 

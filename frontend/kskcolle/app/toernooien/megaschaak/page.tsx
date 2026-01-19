@@ -1251,7 +1251,10 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                   className="sticky left-0 z-10 px-2 py-2 font-semibold text-gray-800 border-r-2 border-gray-300 text-xs whitespace-nowrap"
                   style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}
                 >
-                  {team.team_name}
+                  <div>{team.team_name}</div>
+                  <div className="text-[9px] text-gray-500 font-normal mt-0.5">
+                    {team.totalCost || 0} pts
+                  </div>
                 </td>
                 <td className="px-1.5 py-2 text-center font-bold text-mainAccent bg-mainAccent/5 border-r-2 border-mainAccent"
                     style={{ backgroundColor: idx % 2 === 0 ? 'rgba(212, 175, 55, 0.05)' : 'rgba(212, 175, 55, 0.1)' }}>
@@ -1383,8 +1386,14 @@ function StandingsView({ standings, isLoading }: { standings: any[], isLoading: 
                     </div>
                   </div>
 
-                  {/* Score */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Score and Cost */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500 mb-0.5">Totaalprijs</div>
+                      <div className="text-sm font-semibold text-gray-700">
+                        {team.totalCost || 0} pts
+                      </div>
+                    </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-mainAccent">
                         {team.totalScore.toFixed(1)}
@@ -1479,7 +1488,7 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                       href={`/profile/${createUrlFriendlyName(playerData.player.voornaam, playerData.player.achternaam)}`}
                       className="text-gray-800 hover:text-mainAccent transition-colors block"
                     >
-                      {playerData.player.voornaam} {playerData.player.achternaam}
+                      {playerData.player.voornaam} {playerData.player.achternaam} {playerData.cost !== undefined && `(${playerData.cost} pts)`}
                     </Link>
                     <div className="text-[10px] text-gray-500">
                       {playerData.player.schaakrating_elo}
