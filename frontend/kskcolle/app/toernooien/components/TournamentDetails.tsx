@@ -45,6 +45,7 @@ type Tournament = {
   megaschaak_enabled?: boolean
   is_youth?: boolean
   megaschaak_deadline?: string | null
+  finished?: boolean
   participations: Array<{
     user: {
       user_id: number
@@ -422,7 +423,7 @@ export default function TournamentDetails() {
                 participations={tournament.participations.map(p => ({ user_id: p.user.user_id }))}
                 onGamePostponed={goToRound}
               />
-              {isParticipating && (
+              {isParticipating && !isLentecompetitie && !tournament.finished && (
                 <Button
                   onClick={handleReportAbsence}
                   disabled={reportingAbsence}
