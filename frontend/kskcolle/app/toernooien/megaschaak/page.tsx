@@ -1187,7 +1187,7 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
         </p>
       </div>
 
-      <div className="p-3 overflow-x-auto">
+      <div className="pt-3 pr-3 pb-3 overflow-x-auto">
         <table className="w-full border-collapse text-xs">
           <thead>
             {/* Class headers */}
@@ -1222,19 +1222,28 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                 return (
                   <th 
                     key={player.user_id}
-                    className={`px-0.5 py-2 text-center font-medium text-gray-700 border-r border-gray-200 min-w-[35px] ${
+                    className={`px-0.5 py-2 text-center font-medium text-gray-700 border-r border-gray-200 ${
                       isFirstInClass ? 'border-l-2 border-l-mainAccent' : ''
                     }`}
+                    style={{ width: '35px', minWidth: '35px', height: '80px' }}
                   >
-                    <Link
-                      href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
-                      className="text-[9px] leading-tight hover:text-mainAccent transition-colors block"
-                      title={`${player.voornaam} ${player.achternaam}`}
-                    >
-                      {player.voornaam.substring(0, 1)}. {player.achternaam}
-                    </Link>
-                    <div className="text-[8px] text-gray-500">
-                      {player.schaakrating_elo}
+                    <div className="flex items-center justify-center h-full">
+                      <div 
+                        className="text-[9px] leading-tight"
+                        style={{ 
+                          writingMode: 'vertical-rl',
+                          textOrientation: 'mixed',
+                          transform: 'rotate(180deg)'
+                        }}
+                      >
+                        <Link
+                          href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
+                          className="hover:text-mainAccent transition-colors inline-block"
+                          title={`${player.voornaam} ${player.achternaam}`}
+                        >
+                          <span className="whitespace-nowrap">{player.voornaam.substring(0, 1)}. {player.achternaam}</span>
+                        </Link>
+                      </div>
                     </div>
                   </th>
                 )
@@ -1252,6 +1261,11 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                   style={{ backgroundColor: idx % 2 === 0 ? 'white' : 'rgb(249, 250, 251)' }}
                 >
                   <div>{team.team_name}</div>
+                  {team.user?.voornaam && team.user?.achternaam && (
+                    <div className="text-[10px] text-gray-600 font-normal mt-0.5">
+                      {team.user.voornaam} {team.user.achternaam}
+                    </div>
+                  )}
                   <div className="text-[9px] text-gray-500 font-normal mt-0.5">
                     {team.totalCost || 0} pts
                   </div>

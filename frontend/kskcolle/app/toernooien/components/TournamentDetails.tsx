@@ -706,7 +706,7 @@ export default function TournamentDetails() {
                     Kruistabel
                   </h2>
                 </div>
-                <div className="p-2">
+                <div className="p-2 pl-0">
                   <CrossTable tournament={tournament} rounds={allRounds} />
                 </div>
               </div>
@@ -721,7 +721,7 @@ export default function TournamentDetails() {
                     Kruistabel
                   </h2>
                 </div>
-                <div className="p-2">
+                <div className="p-2 pl-0">
                   <CrossTable tournament={tournament} rounds={allRounds} />
                 </div>
               </div>
@@ -831,7 +831,7 @@ export default function TournamentDetails() {
                       Kruistabel
                     </h2>
                   </div>
-                  <div className="p-4">
+                  <div className="p-4 pl-0">
                     <CrossTable tournament={tournament} rounds={allRounds} />
                   </div>
                 </div>
