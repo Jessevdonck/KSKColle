@@ -85,9 +85,9 @@ export default function MegaschaakPage() {
     { revalidateOnFocus: false }
   )
 
-  // Fetch standings (only if deadline has passed)
+  // Fetch standings (always fetch, even before deadline, to show scores)
   const { data: standings = [], isLoading: standingsLoading } = useSWR<any[]>(
-    activeTournament && isRegistrationClosed ? `megaschaak/tournament/${activeTournament.tournament_id}/standings` : null,
+    activeTournament ? `megaschaak/tournament/${activeTournament.tournament_id}/standings` : null,
     async () => {
       if (!activeTournament) return []
       const response = await axios.get(`/megaschaak/tournament/${activeTournament.tournament_id}/standings`)
@@ -632,7 +632,7 @@ export default function MegaschaakPage() {
           />
         ) : isRegistrationClosed && myTeams.length > 0 ? (
           // Show all teams when registration is closed
-          <MyTeamsOverview myTeams={myTeams} />
+          <MyTeamsOverview myTeams={myTeams} standings={standings} />
         ) : isRegistrationClosed && myTeams.length === 0 ? (
           // No teams and registration closed
           <div className="space-y-6">
@@ -679,20 +679,41 @@ export default function MegaschaakPage() {
                 </Button>
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2">
-                {myTeams.map(team => (
-                  <button
-                    key={team.team_id}
-                    onClick={() => handleSelectTeam(team)}
-                    className={`flex-shrink-0 px-4 py-2 rounded-lg border-2 transition-all ${
-                      currentEditingTeam?.team_id === team.team_id && !isCreatingNew
-                        ? 'border-mainAccent bg-mainAccent/10 text-mainAccent font-semibold'
-                        : 'border-gray-200 bg-white hover:border-mainAccent/50'
-                    }`}
-                  >
-                    <div className="text-sm">{team.team_name}</div>
-                    <div className="text-xs text-gray-500">{team.players.length} spelers</div>
-                  </button>
-                ))}
+                {myTeams.map(team => {
+                  // Find team in standings to get score and position
+                  const teamStanding = standings.find((s: any) => s.team_id === team.team_id)
+                  const position = teamStanding ? standings.indexOf(teamStanding) + 1 : null
+                  const score = teamStanding?.totalScore ?? 0
+                  
+                  return (
+                    <button
+                      key={team.team_id}
+                      onClick={() => handleSelectTeam(team)}
+                      className={`flex-shrink-0 px-4 py-2 rounded-lg border-2 transition-all ${
+                        currentEditingTeam?.team_id === team.team_id && !isCreatingNew
+                          ? 'border-mainAccent bg-mainAccent/10 text-mainAccent font-semibold'
+                          : 'border-gray-200 bg-white hover:border-mainAccent/50'
+                      }`}
+                    >
+                      <div className="text-sm font-medium">{team.team_name}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        {position !== null && (
+                          <>
+                            <div className="text-xs font-semibold text-mainAccent">
+                              #{position}
+                            </div>
+                            <div className="text-xs text-gray-400">•</div>
+                          </>
+                        )}
+                        <div className="text-xs font-semibold text-gray-700">
+                          {score.toFixed(1)} pts
+                        </div>
+                        <div className="text-xs text-gray-400">•</div>
+                        <div className="text-xs text-gray-500">{team.players.length} spelers</div>
+                      </div>
+                    </button>
+                  )
+                })}
                 {isCreatingNew && (
                   <div className="flex-shrink-0 px-4 py-2 rounded-lg border-2 border-green-500 bg-green-50 text-green-700">
                     <div className="text-sm font-semibold">Nieuw Team</div>
@@ -1063,7 +1084,7 @@ export default function MegaschaakPage() {
 }
 
 // My Teams Overview Component (after deadline)
-function MyTeamsOverview({ myTeams }: { myTeams: MegaschaakTeam[] }) {
+function MyTeamsOverview({ myTeams, standings }: { myTeams: MegaschaakTeam[], standings: any[] }) {
   const [expandedTeamId, setExpandedTeamId] = React.useState<number | null>(null)
   
   const { data: expandedTeamDetails } = useSWR<any>(
@@ -1082,20 +1103,34 @@ function MyTeamsOverview({ myTeams }: { myTeams: MegaschaakTeam[] }) {
 
       {/* Teams Grid */}
       <div className="space-y-4">
-        {myTeams.map(team => (
-          <div key={team.team_id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-            <div 
-              onClick={() => setExpandedTeamId(expandedTeamId === team.team_id ? null : team.team_id)}
-              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between"
-            >
-              <div>
-                <h3 className="font-bold text-lg text-gray-800">{team.team_name}</h3>
-                <p className="text-sm text-gray-600">{team.players.length} spelers</p>
+        {myTeams.map(team => {
+          // Find team in standings to get score and position
+          const teamStanding = standings.find((s: any) => s.team_id === team.team_id)
+          const position = teamStanding ? standings.indexOf(teamStanding) + 1 : null
+          const score = teamStanding?.totalScore ?? 0
+          
+          return (
+            <div key={team.team_id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+              <div 
+                onClick={() => setExpandedTeamId(expandedTeamId === team.team_id ? null : team.team_id)}
+                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="font-bold text-lg text-gray-800">{team.team_name}</h3>
+                    {position !== null && (
+                      <>
+                        <span className="text-sm font-semibold text-mainAccent">#{position}</span>
+                        <span className="text-sm font-semibold text-gray-700">{score.toFixed(1)} pts</span>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600">{team.players.length} spelers</p>
+                </div>
+                <Button size="sm" variant="outline" className="border-mainAccent text-mainAccent">
+                  {expandedTeamId === team.team_id ? 'Inklappen' : 'Bekijk Details'}
+                </Button>
               </div>
-              <Button size="sm" variant="outline" className="border-mainAccent text-mainAccent">
-                {expandedTeamId === team.team_id ? 'Inklappen' : 'Bekijk Details'}
-              </Button>
-            </div>
             
             {expandedTeamId === team.team_id && (
               <div className="border-t border-gray-200 p-4 bg-gray-50">
@@ -1109,7 +1144,8 @@ function MyTeamsOverview({ myTeams }: { myTeams: MegaschaakTeam[] }) {
               </div>
             )}
           </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -1447,6 +1483,19 @@ function StandingsView({ standings, isLoading }: { standings: any[], isLoading: 
 function TeamDetailView({ teamDetails }: { teamDetails: any }) {
   const rounds = teamDetails.rounds || []
   
+  // Calculate number of played rounds (rounds where at least one player has a score)
+  const playedRounds = React.useMemo(() => {
+    const roundsWithScores = new Set<number>()
+    teamDetails.players?.forEach((player: any) => {
+      player.roundScores?.forEach((rs: any) => {
+        if (rs.score !== null && rs.score !== undefined) {
+          roundsWithScores.add(rs.ronde_nummer)
+        }
+      })
+    })
+    return roundsWithScores.size
+  }, [teamDetails.players])
+  
   return (
     <div className="space-y-6">
       {/* Team Summary */}
@@ -1460,7 +1509,7 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
           </div>
           <div>
             <div className="text-xl font-bold text-mainAccent">
-              {rounds.length}
+              {playedRounds}
             </div>
             <div className="text-xs text-gray-600">Rondes</div>
           </div>
