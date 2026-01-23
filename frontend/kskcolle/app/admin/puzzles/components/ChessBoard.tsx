@@ -551,7 +551,6 @@ export default function ChessBoard({
                 fontFamily: '"Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols", Arial, sans-serif',
                 fontFeatureSettings: 'normal',
                 fontVariant: 'normal',
-                fontVariantEmoji: 'none',
                 WebkitFontSmoothing: 'antialiased',
                 MozOsxFontSmoothing: 'grayscale',
                 textRendering: 'optimizeLegibility',
@@ -638,7 +637,7 @@ export default function ChessBoard({
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto" style={{ fontVariantEmoji: 'none' }}>
+    <div className="w-full max-w-2xl mx-auto">
       {/* File labels (a-h) - top */}
       <div className="grid grid-cols-8 mb-1">
         {orientation === "white" 
@@ -751,7 +750,6 @@ export default function ChessBoard({
               fontFamily: '"Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols", Arial, sans-serif',
               fontFeatureSettings: 'normal',
               fontVariant: 'normal',
-              fontVariantEmoji: 'none',
               WebkitFontSmoothing: 'antialiased',
               MozOsxFontSmoothing: 'grayscale',
               textRendering: 'optimizeLegibility',
