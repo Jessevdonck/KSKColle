@@ -516,8 +516,6 @@ export default function ChessBoard({
                 : isSelected 
                   ? '#baca44' 
                   : getSquareColor(visualRow, visualCol),
-            width: '100%',
-            height: '100%',
             aspectRatio: '1',
             border: isSelected ? '3px solid #4a90e2' : 'none',
             cursor: draggable && piece ? 'grab' : draggable ? 'pointer' : 'default',
@@ -538,17 +536,18 @@ export default function ChessBoard({
         >
           {piece && !isDragging && (
             <span 
-              className="text-5xl md:text-6xl font-normal leading-none"
+              className="text-4xl sm:text-5xl md:text-6xl font-normal leading-none flex items-center justify-center"
               style={{ 
                 userSelect: 'none',
                 pointerEvents: 'none',
-                display: 'block',
                 lineHeight: '1',
                 color: piece.color === 'w' ? '#ffffff' : '#1a1a1a',
                 textShadow: piece.color === 'w' 
                   ? '2px 2px 3px rgba(0,0,0,0.7)' 
                   : '1px 1px 1px rgba(255,255,255,0.4)',
                 WebkitTextStroke: piece.color === 'w' ? '0.5px rgba(0,0,0,0.3)' : 'none',
+                width: '100%',
+                height: '100%',
               }}
             >
               {piece.symbol}
@@ -637,29 +636,29 @@ export default function ChessBoard({
       <div className="grid grid-cols-8 mb-1">
         {orientation === "white" 
           ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(file => (
-              <div key={file} className="text-center text-sm font-semibold text-gray-700">
+              <div key={file} className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                 {file}
               </div>
             ))
           : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'].map(file => (
-              <div key={file} className="text-center text-sm font-semibold text-gray-700">
+              <div key={file} className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                 {file}
               </div>
             ))
         }
       </div>
       
-      <div className="flex">
+      <div className="flex items-stretch" style={{ minWidth: 0 }}>
         {/* Rank labels (1-8) - left */}
-        <div className="flex flex-col-reverse mr-1 justify-center">
+        <div className="flex flex-col mr-1 flex-shrink-0" style={{ width: 'auto' }}>
           {orientation === "white"
-            ? [1, 2, 3, 4, 5, 6, 7, 8].map(rank => (
-                <div key={rank} className="flex items-center justify-center text-sm font-semibold text-gray-700" style={{ height: '12.5%', aspectRatio: '1' }}>
+            ? [8, 7, 6, 5, 4, 3, 2, 1].map(rank => (
+                <div key={rank} className="flex items-center justify-center text-xs sm:text-sm font-semibold text-gray-700" style={{ flex: '1 1 0', minHeight: 0 }}>
                   {rank}
                 </div>
               ))
-            : [8, 7, 6, 5, 4, 3, 2, 1].map(rank => (
-                <div key={rank} className="flex items-center justify-center text-sm font-semibold text-gray-700" style={{ height: '12.5%', aspectRatio: '1' }}>
+            : [1, 2, 3, 4, 5, 6, 7, 8].map(rank => (
+                <div key={rank} className="flex items-center justify-center text-xs sm:text-sm font-semibold text-gray-700" style={{ flex: '1 1 0', minHeight: 0 }}>
                   {rank}
                 </div>
               ))
@@ -674,22 +673,22 @@ export default function ChessBoard({
             aspectRatio: '1',
             boxSizing: 'border-box',
             width: '100%',
-            height: '100%',
+            minWidth: 0,
           }}
         >
           {squares}
         </div>
         
         {/* Rank labels (1-8) - right */}
-        <div className="flex flex-col-reverse ml-1 justify-center">
+        <div className="flex flex-col ml-1 flex-shrink-0" style={{ width: 'auto' }}>
           {orientation === "white"
-            ? [1, 2, 3, 4, 5, 6, 7, 8].map(rank => (
-                <div key={rank} className="flex items-center justify-center text-sm font-semibold text-gray-700" style={{ height: '12.5%', aspectRatio: '1' }}>
+            ? [8, 7, 6, 5, 4, 3, 2, 1].map(rank => (
+                <div key={rank} className="flex items-center justify-center text-xs sm:text-sm font-semibold text-gray-700" style={{ flex: '1 1 0', minHeight: 0 }}>
                   {rank}
                 </div>
               ))
-            : [8, 7, 6, 5, 4, 3, 2, 1].map(rank => (
-                <div key={rank} className="flex items-center justify-center text-sm font-semibold text-gray-700" style={{ height: '12.5%', aspectRatio: '1' }}>
+            : [1, 2, 3, 4, 5, 6, 7, 8].map(rank => (
+                <div key={rank} className="flex items-center justify-center text-xs sm:text-sm font-semibold text-gray-700" style={{ flex: '1 1 0', minHeight: 0 }}>
                   {rank}
                 </div>
               ))
@@ -701,12 +700,12 @@ export default function ChessBoard({
       <div className="grid grid-cols-8 mt-1">
           {orientation === "white" 
           ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map(file => (
-              <div key={file} className="text-center text-sm font-semibold text-gray-700">
+              <div key={file} className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                 {file}
               </div>
             ))
           : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'].map(file => (
-              <div key={file} className="text-center text-sm font-semibold text-gray-700">
+              <div key={file} className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                 {file}
               </div>
             ))
@@ -730,7 +729,7 @@ export default function ChessBoard({
           }}
         >
           <span 
-            className="text-5xl md:text-6xl font-normal leading-none"
+            className="text-4xl sm:text-5xl md:text-6xl font-normal leading-none"
             style={{ 
               userSelect: 'none',
               pointerEvents: 'none',
