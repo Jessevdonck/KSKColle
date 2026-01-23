@@ -316,11 +316,11 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             {tournament.is_youth !== true && (
               <div className="w-16 text-center text-[0.7em] font-semibold text-gray-600">ELIO</div>
             )}
-            <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
             <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
             <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
               {isLentecompetitie ? "SB²" : tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}
             </div>
+            <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
           </div>
         </div>
 
@@ -373,12 +373,6 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                     </div>
                   )}
 
-                  {/* Games Played */}
-                  <div className="w-10 text-center text-[0.7em] text-gray-600 flex items-center justify-center gap-0.5">
-                    <User className="h-3 w-3" />
-                    {player.gamesPlayed}
-                  </div>
-
                   {/* Score */}
                   <div className="w-9 text-center">
                     <div className={`text-xs font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
@@ -393,6 +387,12 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                     ) : (
                       <span>{player.tieBreak.toFixed(1)}</span>
                     )}
+                  </div>
+
+                  {/* Games Played */}
+                  <div className="w-10 text-center text-[0.7em] text-gray-600 flex items-center justify-center gap-0.5">
+                    <User className="h-3 w-3" />
+                    {player.gamesPlayed}
                   </div>
                 </div>
               </div>
@@ -757,7 +757,7 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     p.schaakrating_elo = user.schaakrating_elo
   })
 
-  // 5) sorteren: eerst op score, dan tieBreak, dan rating
+  // 5) sorteren: eerst op score, dan tieBreak, dan aantal partijen (minder = beter), dan rating (lager = beter)
   players.sort((a, b) => {
     // Eerste criterium: Punten (hoog naar laag)
     if (b.score !== a.score) {
@@ -769,10 +769,15 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
       return b.tieBreak - a.tieBreak
     }
     
-    // Derde criterium: Rating (hoog naar laag)
+    // Derde criterium: Aantal partijen (LAAG naar HOOG - minder partijen = beter)
+    if (a.gamesPlayed !== b.gamesPlayed) {
+      return a.gamesPlayed - b.gamesPlayed
+    }
+    
+    // Vierde criterium: Rating (LAAG naar HOOG - lagere rating = beter)
     const ratingA = a.schaakrating_elo || 0
     const ratingB = b.schaakrating_elo || 0
-    return ratingB - ratingA
+    return ratingA - ratingB
   })
 
   return players
