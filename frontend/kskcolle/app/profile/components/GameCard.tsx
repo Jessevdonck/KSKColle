@@ -1,6 +1,5 @@
 import { GameWithRoundAndTournament } from "@/data/types"
 import { Card, CardContent } from "@/components/ui/card"
-import { CalendarIcon, UserIcon } from "lucide-react"
 
 interface GameCardProps {
   game: GameWithRoundAndTournament
@@ -16,36 +15,39 @@ export function GameCard({ game, playerId }: GameCardProps) {
   return (
     <Card>
       <CardContent className="p-2">
-        <div className="flex items-center justify-between gap-3 text-sm">
+        <div className="grid grid-cols-[80px_220px_1fr_100px] gap-3 text-sm">
           {/* Date */}
           {game.round && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap min-w-[70px]">
+            <span className="text-xs text-muted-foreground whitespace-nowrap self-center">
               {new Date(game.round.ronde_datum).toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
             </span>
           )}
           
           {/* Tournament and Round */}
           {game.round && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap min-w-[100px] truncate">
+            <span className="text-xs text-muted-foreground self-center">
               {game.round.tournament?.naam || 'Onbekend'} R{game.round.ronde_nummer}
             </span>
           )}
           
-          {/* Players */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="h-2.5 w-2.5 bg-gray-300 rounded-full flex-shrink-0" />
-            <span className={isProfilePlayerWhite ? "font-semibold text-textColor truncate" : "truncate"}>
-              {whitePlayerName}
-            </span>
-            <span className="text-muted-foreground">-</span>
-            <div className="h-2.5 w-2.5 bg-gray-700 rounded-full flex-shrink-0" />
-            <span className={!isProfilePlayerWhite ? "font-semibold text-textColor truncate" : "truncate"}>
-              {blackPlayerName}
-            </span>
+          {/* Players - wit en zwart onder elkaar */}
+          <div className="flex flex-col gap-1 min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="h-2.5 w-2.5 bg-gray-300 rounded-full flex-shrink-0" />
+              <span className={isProfilePlayerWhite ? "font-semibold text-textColor truncate" : "truncate text-xs"}>
+                {whitePlayerName}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="h-2.5 w-2.5 bg-gray-700 rounded-full flex-shrink-0" />
+              <span className={!isProfilePlayerWhite ? "font-semibold text-textColor truncate" : "truncate text-xs"}>
+                {blackPlayerName}
+              </span>
+            </div>
           </div>
           
           {/* Result */}
-          <span className={`text-sm font-bold whitespace-nowrap ${getResultColor(result)}`}>
+          <span className={`text-sm font-bold whitespace-nowrap text-right self-center ${getResultColor(result)}`}>
             {result}
           </span>
         </div>

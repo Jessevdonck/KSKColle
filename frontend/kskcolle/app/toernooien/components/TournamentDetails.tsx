@@ -19,8 +19,8 @@ import Link from 'next/link'
 type Game = {
   game_id: number
   result: string | null
-  speler1: { user_id: number; voornaam: string; achternaam: string }
-  speler2: { user_id: number; voornaam: string; achternaam: string } | null
+  speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
+  speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
   uitgestelde_datum?: string
 }
 
