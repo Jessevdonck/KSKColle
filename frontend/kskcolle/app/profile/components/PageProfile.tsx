@@ -67,13 +67,33 @@ export default function PlayerProfile({ name }: { name: string }) {
   // Deduplicate games by game_id (behoud eerste match)
   const uniqueGames = Array.from(new Map(filteredGames.map(game => [game.game_id, game])).values())
 
+  // Filter: only games with results (played games) and from last 1 year
+  const oneYearAgo = new Date()
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+  
+  const playedGamesWithResults = uniqueGames.filter(game => {
+    // Check if game has a valid result (not empty, not "...", not "uitgesteld", not "not_played")
+    const result = game.result?.trim() ?? ''
+    if (!result || result === '...' || result.toLowerCase() === 'uitgesteld' || result === 'not_played') {
+      return false
+    }
+    
+    // Check if game date is within last year
+    if (game.round?.ronde_datum) {
+      const gameDate = new Date(game.round.ronde_datum)
+      return gameDate >= oneYearAgo
+    }
+    
+    return false
+  })
+
   return (
     <AsyncData loading={isLoading} error={error}>
       {player && (
         <div className="container mx-auto px-4 py-8 min-h-screen">
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <PlayerHeader player={player} />
-            <RecentGames games={uniqueGames} playerId={player.user_id} />
+            <RecentGames games={playedGamesWithResults} playerId={player.user_id} />
           </div>
         </div>
       )}

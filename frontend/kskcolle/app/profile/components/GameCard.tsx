@@ -15,51 +15,40 @@ export function GameCard({ game, playerId }: GameCardProps) {
 
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <UserIcon className="h-4 w-4 text-muted-foreground" />
-            <span className="flex flex-row text-sm font-medium items-center space-x-6">
-              <span className="flex items-center">
-                <div className="h-3 w-3 mx-2 bg-gray-300 rounded-full" />
-                {isProfilePlayerWhite ? (
-                  <span className="font-semibold text-textColor">{whitePlayerName}</span>
-                ) : (
-                  whitePlayerName
-                )}
-              </span>
-              <span className="flex-grow text-center">-</span>
-              <span className="flex items-center">
-                <div className="h-3 w-3 mr-2 bg-gray-700 rounded-full" />
-                {isProfilePlayerWhite ? (
-                  blackPlayerName
-                ) : (
-                  <span className="font-semibold text-textColor">{blackPlayerName}</span>
-                )}
-              </span>
+      <CardContent className="p-2">
+        <div className="flex items-center justify-between gap-3 text-sm">
+          {/* Date */}
+          {game.round && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap min-w-[70px]">
+              {new Date(game.round.ronde_datum).toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+            </span>
+          )}
+          
+          {/* Tournament and Round */}
+          {game.round && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap min-w-[100px] truncate">
+              {game.round.tournament?.naam || 'Onbekend'} R{game.round.ronde_nummer}
+            </span>
+          )}
+          
+          {/* Players */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="h-2.5 w-2.5 bg-gray-300 rounded-full flex-shrink-0" />
+            <span className={isProfilePlayerWhite ? "font-semibold text-textColor truncate" : "truncate"}>
+              {whitePlayerName}
+            </span>
+            <span className="text-muted-foreground">-</span>
+            <div className="h-2.5 w-2.5 bg-gray-700 rounded-full flex-shrink-0" />
+            <span className={!isProfilePlayerWhite ? "font-semibold text-textColor truncate" : "truncate"}>
+              {blackPlayerName}
             </span>
           </div>
-          <span className={`text-sm font-bold ${getResultColor(result)}`}>
+          
+          {/* Result */}
+          <span className={`text-sm font-bold whitespace-nowrap ${getResultColor(result)}`}>
             {result}
           </span>
         </div>
-        
-        {game.round && (
-          <>
-            <div className="mt-2 flex items-center space-x-2 text-sm text-muted-foreground">
-              <CalendarIcon className="h-4 w-4" />
-              <span>{new Date(game.round.ronde_datum).toLocaleDateString()}</span>
-            </div>
-            <div className="mt-1 text-sm text-muted-foreground">
-              {game.round.tournament?.naam || 'Onbekend toernooi'}, Ronde {game.round.ronde_nummer}
-            </div>
-          </>
-        )}
-        {!game.round && (
-          <div className="mt-2 text-sm text-muted-foreground">
-            Geen ronde-informatie beschikbaar
-          </div>
-        )}
       </CardContent>
     </Card>
   )

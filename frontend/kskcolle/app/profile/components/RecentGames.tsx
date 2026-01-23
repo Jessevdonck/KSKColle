@@ -32,9 +32,9 @@ export default function RecentGames({ games, playerId }: RecentGamesProps) {
         <CardTitle>Recente Partijen</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {sortedGamesArray.slice(0, 5).map((game) => (
-            <GameCard game={game} playerId={playerId} />
+        <div className="space-y-1">
+          {sortedGamesArray.map((game, index) => (
+            <GameCard key={game.game_id || index} game={game} playerId={playerId} />
           ))}
         </div>
       </CardContent>
