@@ -187,15 +187,15 @@ export default function PostponeGameButton({ tournamentId, tournamentName, isHer
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <CardHeader>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <Card className="w-full max-w-2xl my-4 flex flex-col max-h-[90vh]">
+            <CardHeader className="flex-shrink-0">
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
                 Partij Uitstellen - {tournamentName}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 overflow-y-auto flex-1">
               {postponableGames.length === 0 ? (
                 <div className="text-center py-8">
                   <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -296,7 +296,7 @@ export default function PostponeGameButton({ tournamentId, tournamentName, isHer
                 </>
               )}
 
-              <div className="flex justify-end pt-4 border-t">
+              <div className="flex justify-end pt-4 border-t sticky bottom-0 bg-white pb-2">
                 <Button 
                   onClick={() => setIsOpen(false)}
                   variant="outline"

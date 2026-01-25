@@ -971,14 +971,14 @@ export default function RoundManagement({ tournament }: Props) {
 
       {/* Game Uitstellen Modal */}
       {postponingGame && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Game Uitstellen</h3>
-            <p className="text-gray-600 mb-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 my-4 max-h-[90vh] flex flex-col">
+            <h3 className="text-lg font-semibold mb-4 flex-shrink-0">Game Uitstellen</h3>
+            <p className="text-gray-600 mb-4 flex-shrink-0">
               Selecteer naar welke inhaaldag je deze game wilt uitstellen:
             </p>
             
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2 mb-4 overflow-y-auto flex-1">
               {makeupRounds.map((makeupRound) => (
                 <div
                   key={makeupRound.round_id}
@@ -1000,12 +1000,12 @@ export default function RoundManagement({ tournament }: Props) {
             </div>
 
             {makeupRounds.length === 0 && (
-              <p className="text-gray-500 text-sm mb-4">
+              <p className="text-gray-500 text-sm mb-4 flex-shrink-0">
                 Er zijn nog geen inhaaldagen aangemaakt. Maak eerst een inhaaldag aan.
               </p>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0 pt-4 border-t mt-auto">
               <Button
                 onClick={() => handlePostponeGame(postponingGame)}
                 disabled={!selectedMakeupRound || postponingGameMutation}
