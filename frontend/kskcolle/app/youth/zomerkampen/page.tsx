@@ -11,7 +11,7 @@ export default function ZomerkampenPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Zomerkampen schaken 2024</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Zomerkampen schaken 2026</h1>
         </div>
 
         {/* Main Content */}
@@ -21,7 +21,7 @@ export default function ZomerkampenPage() {
           <Card className="border-mainAccent/20 shadow-lg">
             <CardContent className="pt-6">
               <p className="text-gray-700 text-lg leading-relaxed">
-                Tijdens de zomer van 2024 organiseert Schaakclub KSK Colle samen met de stad Sint-Niklaas een zomerkamp schaken.
+                Tijdens de zomer van 2026 organiseert Schaakclub KSK Colle samen met de stad Sint-Niklaas een zomerkamp schaken.
               </p>
             </CardContent>
           </Card>
@@ -66,12 +66,20 @@ export default function ZomerkampenPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                  <p className="font-semibold text-blue-800 mb-2">Juli 2024</p>
-                  <p className="text-blue-700">Van 1 juli tot en met 5 juli 2024</p>
+                  <p className="font-semibold text-blue-800 mb-2">Juli 2026</p>
+                  <ul className="text-blue-700 space-y-1">
+                    <li>1 – 3 juli</li>
+                    <li>6 – 10 juli</li>
+                    <li>27 – 31 juli</li>
+                  </ul>
                 </div>
                 <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                  <p className="font-semibold text-green-800 mb-2">Augustus 2024</p>
-                  <p className="text-green-700">Van 26 augustus tot en met 30 augustus 2024</p>
+                  <p className="font-semibold text-green-800 mb-2">Augustus 2026</p>
+                  <ul className="text-green-700 space-y-1">
+                    <li>3 – 7 augustus</li>
+                    <li>17 – 21 augustus</li>
+                    <li>24 – 28 augustus</li>
+                  </ul>
                 </div>
               </div>
             </CardContent>
