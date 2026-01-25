@@ -18,6 +18,11 @@ export interface Puzzle {
   created_by: number;
   created_at: Date;
   updated_at: Date;
+  creator?: {
+    user_id: number;
+    voornaam: string;
+    achternaam: string;
+  };
 }
 
 /**
@@ -56,6 +61,15 @@ export const getAllPuzzles = async (): Promise<Puzzle[]> => {
       orderBy: {
         created_at: "desc",
       },
+      include: {
+        creator: {
+          select: {
+            user_id: true,
+            voornaam: true,
+            achternaam: true,
+          },
+        },
+      },
     });
 
     return puzzles.map((puzzle) => ({
@@ -74,6 +88,15 @@ export const getPuzzleById = async (puzzleId: number): Promise<Puzzle> => {
   try {
     const puzzle = await prisma.puzzle.findUnique({
       where: { puzzle_id: puzzleId },
+      include: {
+        creator: {
+          select: {
+            user_id: true,
+            voornaam: true,
+            achternaam: true,
+          },
+        },
+      },
     });
 
     if (!puzzle) {

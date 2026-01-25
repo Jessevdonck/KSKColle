@@ -21,6 +21,11 @@ interface PuzzleData {
   created_by: number
   created_at: string
   updated_at: string
+  creator?: {
+    user_id: number
+    voornaam: string
+    achternaam: string
+  }
 }
 
 export default function PuzzleSolvePage() {
@@ -408,6 +413,9 @@ export default function PuzzleSolvePage() {
                     Aan zet: <span className="capitalize font-medium">
                       {puzzle.active_color === "white" ? "Wit" : "Zwart"}
                     </span> • {puzzle.solution.length} {puzzle.solution.length === 1 ? "zet" : "zetten"}
+                    {puzzle.creator && (
+                      <span> • Door: <span className="font-medium">{puzzle.creator.voornaam} {puzzle.creator.achternaam}</span></span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -445,7 +453,7 @@ export default function PuzzleSolvePage() {
                 {userAttempt && (
                   <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
                     <CheckCircle className="h-5 w-5 text-blue-600" />
-                    <p className="text-blue-800 font-medium">Je hebt deze puzzel al opgelost! Bekijk de leaderboard om te zien hoe je het doet.</p>
+                    <p className="text-blue-800 font-medium">Je hebt deze puzzel al opgelost! Bekijk het leaderboard om te zien hoe je het doet.</p>
                   </div>
                 )}
 

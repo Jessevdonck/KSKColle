@@ -19,6 +19,11 @@ interface PuzzleData {
   created_by: number
   created_at: string
   updated_at: string
+  creator?: {
+    user_id: number
+    voornaam: string
+    achternaam: string
+  }
 }
 
 const formatTime = (ms: number): string => {
@@ -354,7 +359,7 @@ export default function LatestPuzzle() {
             </div>
             <h2 className="text-4xl font-bold text-textColor mb-4">Laatste Schaakpuzzel</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Probeer de nieuwste puzzel op te lossen en zie hoe je het doet op de leaderboard!
+              Probeer de nieuwste puzzel op te lossen en zie hoe je het doet op het leaderboard!
             </p>
           </div>
 
@@ -366,18 +371,11 @@ export default function LatestPuzzle() {
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     {latestPuzzle.name}
                   </h3>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Zetten:</span>
-                      <span>{latestPuzzle.solution.length}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Aan zet:</span>
-                      <span className="capitalize">
-                        {latestPuzzle.active_color === "white" ? "Wit" : "Zwart"}
-                      </span>
-                    </div>
-                  </div>
+                  {latestPuzzle.creator && (
+                    <p className="text-sm text-gray-600">
+                      Door: {latestPuzzle.creator.voornaam} {latestPuzzle.creator.achternaam}
+                    </p>
+                  )}
                 </div>
                 <div className="ml-4">
                   <Puzzle className="h-8 w-8 text-mainAccent" />
