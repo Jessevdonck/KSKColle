@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronRight, Calendar, User, ArrowRight, ChevronLeft } from "lucide-react"
+import { ChevronRight, Calendar, User, ArrowRight, ChevronLeft, Puzzle } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { getRecentArticles } from "../api/index"
@@ -38,7 +38,7 @@ const HeroHomepage = () => {
   const getArticlesPerView = () => {
     switch (screenSize) {
       case 'mobile': return 1
-      case 'tablet': return 2
+      case 'tablet': return 1  // ook 1 op tablet, alleen desktop toont 3
       case 'desktop': return 3
       default: return 3
     }
@@ -59,6 +59,7 @@ const HeroHomepage = () => {
   }
 
   const articlesPerView = getArticlesPerView()
+  const showPuzzleThumb = screenSize === 'desktop'
   const displayedArticles = articles.slice(
     currentIndex,
     currentIndex + articlesPerView
@@ -156,16 +157,16 @@ const HeroHomepage = () => {
               maxWidth: 'calc(100vw - 2rem)'
             }}>
 
-              {/* Desktop: Title and Button aligned with articles */}
+              {/* Desktop: Title and Button aligned with articles; optional Puzzel header when puzzle thumb shown */}
               <div className="hidden md:flex items-center gap-2 mb-3 w-full">
                 <div className="w-10 shrink-0"></div>
                 <div className="flex-1 grid gap-4" style={{
-                  gridTemplateColumns: `repeat(${articlesPerView}, 1fr)`
+                  gridTemplateColumns: showPuzzleThumb ? 'repeat(3, minmax(0, 1fr)) 200px' : `repeat(${articlesPerView}, 1fr)`
                 }}>
                   <div className="flex items-center">
                     <h2 className="text-2xl font-bold text-white drop-shadow-lg">Newsfeed</h2>
                   </div>
-                  {Array.from({ length: articlesPerView - 2 }, (_, i) => (
+                  {Array.from({ length: showPuzzleThumb ? 1 : articlesPerView - 2 }, (_, i) => (
                     <div key={i}></div>
                   ))}
                   <div className="flex justify-end">
@@ -179,6 +180,11 @@ const HeroHomepage = () => {
                       </Button>
                     </Link>
                   </div>
+                  {showPuzzleThumb && (
+                    <div className="flex items-center">
+                      <h2 className="text-lg font-bold text-white drop-shadow-lg">Puzzel</h2>
+                    </div>
+                  )}
                 </div>
                 <div className="w-10 shrink-0"></div>
               </div>
@@ -197,32 +203,33 @@ const HeroHomepage = () => {
                 </Link>
               </div>
 
-              <div className="flex items-center gap-2 w-full">
+              <div className="flex items-center gap-1 sm:gap-2 w-full px-1 sm:px-0">
                 <Button
                   onClick={goToPrev}
                   disabled={articles.length <= articlesPerView}
                   variant="ghost"
                   size="icon"
-                  className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10"
+                  className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10 touch-manipulation"
+                  aria-label="Vorige artikel"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
 
-                <div className="flex-1 grid gap-4" style={{
-                  gridTemplateColumns: `repeat(${articlesPerView}, 1fr)`
+                <div className="flex-1 min-w-0 grid gap-2 md:gap-4 items-stretch" style={{
+                  gridTemplateColumns: showPuzzleThumb ? 'repeat(3, minmax(0, 1fr)) 200px' : `repeat(${articlesPerView}, 1fr)`
                 }}>
                 {displayedArticles.map((article) => (
                   <Link 
                     key={article.article_id} 
                     href={`/articles/${article.article_id}`}
-                    className="group"
+                    className="group h-full min-h-[260px] md:min-h-[280px] flex"
                   >
                     <Card 
-                      className="bg-white/20 backdrop-blur-md hover:bg-white/30 transition-all duration-300 hover:shadow-2xl border-white/30 hover:border-mainAccent/50 h-full flex flex-col overflow-hidden"
+                      className="bg-white/20 backdrop-blur-md hover:bg-white/30 transition-all duration-300 hover:shadow-2xl border-white/30 hover:border-mainAccent/50 h-full min-h-[260px] md:min-h-[280px] flex flex-col overflow-hidden w-full"
                     >
-                      {/* Image Section */}
+                      {/* Image Section - fixed height for consistent card height */}
                       {article.image_urls && article.image_urls.length > 0 && (
-                        <div className="relative w-full h-36 overflow-hidden transition-opacity duration-300 group-hover:opacity-0">
+                        <div className="relative w-full h-36 shrink-0 overflow-hidden transition-opacity duration-300 group-hover:opacity-0">
                           <Image
                             src={article.image_urls[0]}
                             alt={article.title}
@@ -235,24 +242,24 @@ const HeroHomepage = () => {
                         </div>
                       )}
                       
-                      {/* Content: slide-up only when there is an image */}
+                      {/* Content: slide-up only when there is an image; line-clamp keeps height consistent */}
                       {article.image_urls && article.image_urls.length > 0 ? (
-                        <div className="flex-grow transition-transform duration-300 group-hover:-translate-y-36">
+                        <div className="flex-grow min-h-0 transition-transform duration-300 group-hover:-translate-y-36">
                           <CardHeader className="pb-2">
-                            <CardTitle className="text-lg leading-tight text-white mb-2 group-hover:text-mainAccent transition-colors">
+                            <CardTitle className="text-lg leading-tight text-white mb-2 line-clamp-2 group-hover:text-mainAccent transition-colors">
                               {article.title}
                             </CardTitle>
-                            <p className="text-sm text-white/80">
+                            <p className="text-sm text-white/80 line-clamp-3">
                               {article.excerpt || getTextPreview(article.content, 300)}
                             </p>
                           </CardHeader>
                         </div>
                       ) : (
-                        <CardHeader className="pb-2 flex-grow">
-                          <CardTitle className="text-lg leading-tight text-white mb-2 group-hover:text-mainAccent transition-colors">
+                        <CardHeader className="pb-2 flex-grow min-h-0">
+                          <CardTitle className="text-lg leading-tight text-white mb-2 line-clamp-2 group-hover:text-mainAccent transition-colors">
                             {article.title}
                           </CardTitle>
-                          <p className="text-sm text-white/80">
+                          <p className="text-sm text-white/80 line-clamp-3">
                             {article.excerpt || getTextPreview(article.content, 140)}
                           </p>
                         </CardHeader>
@@ -280,6 +287,28 @@ const HeroHomepage = () => {
                     </Card>
                   </Link>
                 ))}
+                {showPuzzleThumb && (
+                  <Link href="/#puzzel" className="group h-full min-h-[260px] md:min-h-[280px] flex">
+                    <Card className="bg-white/20 backdrop-blur-md hover:bg-white/30 transition-all duration-300 hover:shadow-2xl border-white/30 hover:border-mainAccent/50 h-full min-h-[260px] md:min-h-[280px] flex flex-col overflow-hidden w-full">
+                      <div className="flex flex-col items-center justify-center flex-grow p-4 text-center">
+                        <div className="mb-2 p-2 rounded-lg bg-mainAccent/20 group-hover:bg-mainAccent/30 transition-colors">
+                          <Puzzle className="h-10 w-10 text-mainAccent" />
+                        </div>
+                        <CardTitle className="text-base leading-tight text-white mb-1 group-hover:text-mainAccent transition-colors">
+                          Puzzel van de dag
+                        </CardTitle>
+                        <p className="text-xs text-white/80">
+                          Probeer de schaakpuzzel
+                        </p>
+                      </div>
+                      <CardContent className="pt-0 pb-3 mt-auto flex justify-center">
+                        <span className="text-xs text-white/70 inline-flex items-center gap-1">
+                          Naar puzzel <ChevronRight className="h-3 w-3" />
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )}
               </div>
 
               <Button
@@ -287,11 +316,29 @@ const HeroHomepage = () => {
                 disabled={articles.length <= articlesPerView}
                 variant="ghost"
                 size="icon"
-                className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10"
+                className="text-white hover:text-mainAccent hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed shrink-0 h-10 w-10 touch-manipulation"
+                aria-label="Volgende artikel"
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
+
+              {/* Mobile/tablet: carousel dot indicators */}
+              {(screenSize === 'mobile' || screenSize === 'tablet') && articles.length > articlesPerView && (
+                <div className="flex justify-center gap-1.5 mt-3 flex-wrap" role="tablist" aria-label="Artikel in carousel">
+                  {Array.from({ length: Math.ceil(articles.length / articlesPerView) }, (_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      role="tab"
+                      aria-selected={Math.floor(currentIndex / articlesPerView) === i}
+                      aria-label={`Pagina ${i + 1} van ${Math.ceil(articles.length / articlesPerView)}`}
+                      onClick={() => setCurrentIndex(i * articlesPerView)}
+                      className={`shrink-0 w-2.5 h-2.5 rounded-full transition-colors touch-manipulation ${Math.floor(currentIndex / articlesPerView) === i ? 'bg-mainAccent scale-110' : 'bg-white/40 hover:bg-white/60'}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
