@@ -53,7 +53,7 @@ export interface GameWithRoundAndTournament {
   uitgestelde_datum: Date | null;
   speler1_naam: string;
   speler2_naam: string | null;
-  speler1_rating?: number;
+  speler1_rating?: number | null;
   speler2_rating?: number | null;
   /** Ratingwinst/verlies in dit toernooi (sevilla_rating_change van de speler). */
   rating_change_in_tournament?: number | null;

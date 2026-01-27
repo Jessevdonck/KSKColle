@@ -102,8 +102,8 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
       uitgestelde_datum: game.uitgestelde_datum,
       speler1_naam: `${game.speler1.voornaam} ${game.speler1.achternaam}`,
       speler2_naam: game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : null,
-      speler1_rating: game.speler1.schaakrating_elo ?? undefined,
-      speler2_rating: game.speler2?.schaakrating_elo ?? undefined,
+      speler1_rating: game.speler1.schaakrating_elo ?? null,
+      speler2_rating: game.speler2?.schaakrating_elo ?? null,
       rating_change_in_tournament: ratingChangeByTournament.get(game.round.tournament_id) ?? null,
       round: {
         round_id: game.round.round_id,
