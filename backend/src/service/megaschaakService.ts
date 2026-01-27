@@ -19,6 +19,15 @@ export interface MegaschaakConfig {
   playerCosts?: { [playerId: number]: number }; // Handmatige prijzen per speler (optioneel)
 }
 
+/** Spelers die volledig afwezig zijn in megaschaak (buiten competitie, bv. Lode Van Landeghem) */
+function isExcludedFromMegaschaak(voornaam: string, achternaam: string): boolean {
+  const v = (voornaam || '').trim().toLowerCase();
+  const a = (achternaam || '').trim().toLowerCase();
+  if (v === 'piet' && a === 'vermeiren') return true; // bestaande uitsluiting lentecompetitie
+  if (v === 'lode' && (a.includes('landeghem') || a.includes('van landeghem'))) return true;
+  return false;
+}
+
 const DEFAULT_CONFIG: MegaschaakConfig = {
   classBonusPoints: {
     'Eerste Klasse': 0,
@@ -513,11 +522,8 @@ export const getAvailablePlayers = async () => {
     // Convert to array and add costs
     const playersWithCosts = [];
     for (const user of participantsMap.values()) {
-      // Exclude Piet Vermeiren from lentecompetitie megaschaak selection
-      if (isLentecompetitie && 
-          user.voornaam?.toLowerCase() === 'piet' && 
-          user.achternaam?.toLowerCase() === 'vermeiren') {
-        continue; // Skip this player
+      if (isExcludedFromMegaschaak(user.voornaam || '', user.achternaam || '')) {
+        continue; // Skip: buiten competitie / uitgesloten van megaschaak
       }
       
       const cost = await calculatePlayerCost(user.user_id, user.class_name, allClassesTournaments.map(t => t.tournament_id));
@@ -1387,8 +1393,11 @@ export const getCrossTableData = async (tournamentId: number) => {
       }
     }
 
-    // Build players list with class info, tournament score, and cost
-    const playersWithClass = await Promise.all(allParticipations.map(async p => {
+    // Build players list with class info, tournament score, and cost (exclude Lode e.a. uit megaschaak)
+    const participationsForMegaschaak = allParticipations.filter(
+      (p) => !isExcludedFromMegaschaak(p.user.voornaam, p.user.achternaam)
+    );
+    const playersWithClass = await Promise.all(participationsForMegaschaak.map(async p => {
       // Get cost from team if available, otherwise calculate it
       let cost = playerCostMap.get(p.user.user_id);
       if (cost === undefined) {
@@ -1924,7 +1933,7 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       }
     });
 
-    // Collect unique players (all participants, not just those in teams)
+    // Collect unique players (all participants, not just those in teams); exclude Lode e.a. uit megaschaak
     const playerData = new Map<number, {
       player: any
       cost: number
@@ -1933,7 +1942,10 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       className: string
     }>();
 
-    for (const participation of allParticipations) {
+    const participationsForValue = allParticipations.filter(
+      (p) => !isExcludedFromMegaschaak(p.user.voornaam, p.user.achternaam)
+    );
+    for (const participation of participationsForValue) {
       const playerId = participation.user.user_id;
       
       if (!playerData.has(playerId)) {

@@ -531,6 +531,13 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   )
 }
 
+/** Speler "buiten competitie" (disregard results): uitslagen worden getoond in partijen maar tellen niet mee voor stand/tie-break */
+function isBuitenCompetitie(voornaam: string, achternaam: string): boolean {
+  const v = (voornaam || '').trim().toLowerCase()
+  const a = (achternaam || '').trim().toLowerCase()
+  return v === 'lode' && (a.includes('landeghem') || a.includes('van landeghem'))
+}
+
 export function calculateStandings(tournament: StandingsProps["tournament"], rounds: StandingsProps["rounds"]): PlayerScore[] {
   // 1) init
   // Use scores from participation table (Sevilla scores) for Buchholz calculation
@@ -540,6 +547,12 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
   const buchholzList: Record<number, number[]> = {}
   const sbMap: Record<number, number> = {}
   const sbSquaredMap: Record<number, number> = {} // Voor Lentecompetitie: ∑(resultaat)×(eindscore tegenstander)²
+
+  const buitenCompetitieIds = new Set(
+    tournament.participations
+      .filter((p) => isBuitenCompetitie(p.user.voornaam, p.user.achternaam))
+      .map((p) => p.user.user_id)
+  )
   
   // Check if this is a Lentecompetitie tournament
   const isLentecompetitie = tournament.naam.toLowerCase().includes('lentecompetitie')
@@ -548,7 +561,7 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
   // Separate list for worst calculation (excludes forfeits)
   const buchholzListForWorst: Record<number, number[]> = {}
   tournament.participations.forEach(({ user, score }) => {
-    scoreMap[user.user_id] = score ?? 0 // Use Sevilla score for Buchholz
+    scoreMap[user.user_id] = buitenCompetitieIds.has(user.user_id) ? 0 : (score ?? 0) // Buiten competitie: 0 voor Buchholz
     calculatedScoreMap[user.user_id] = 0 // Calculate for display
     gamesPlayed[user.user_id] = 0
     buchholzList[user.user_id] = []
@@ -583,6 +596,11 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
       games.forEach(({ speler1, speler2, result }) => {
         const p1 = speler1.user_id
         const p2 = speler2?.user_id ?? null
+
+        // Buiten competitie: partij telt niet mee voor stand; geen punten voor wie dan ook
+        if (buitenCompetitieIds.has(p1) || (p2 != null && buitenCompetitieIds.has(p2))) {
+          return
+        }
 
         // Only count games that are actually played (not postponed or not yet played)
         const isPlayed = result && result !== "..." && result !== "uitgesteld" && result !== null
@@ -623,7 +641,9 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
       })
 
       // Any participant who didn't play gets a BYE (0.5 points) - only for regular rounds
+      // Buiten competitie: geen BYE-punten
       tournament.participations.forEach(({ user }) => {
+        if (buitenCompetitieIds.has(user.user_id)) return
         if (!playersWhoPlayed.has(user.user_id)) {
           calculatedScoreMap[user.user_id] += 0.5
           // Note: BYE doesn't count as a played game, so gamesPlayed stays the same
@@ -639,6 +659,9 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     games.forEach(({ speler1, speler2, result }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
+
+      // Buiten competitie: partij telt niet mee voor tie-break
+      if (buitenCompetitieIds.has(p1) || (p2 != null && buitenCompetitieIds.has(p2))) return
 
       // Skip games that are not played (absences, postponed, etc.)
       // IMPORTANT: Forfeits DO count for tie-breaks, only absences don't
