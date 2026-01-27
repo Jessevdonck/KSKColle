@@ -8,16 +8,6 @@ import type {
 } from '../types/notification'
 import { NotificationTypes } from '../types/notification'
 
-// Use prisma from data module if available, else PrismaClient
-function getPrisma() {
-  try {
-    const { prisma } = require('./data')
-    return prisma
-  } catch {
-    return new PrismaClient()
-  }
-}
-
 const prisma = new PrismaClient()
 
 export const createNotification = async (notificationData: CreateNotificationRequest): Promise<Notification> => {

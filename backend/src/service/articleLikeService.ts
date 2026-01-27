@@ -89,9 +89,9 @@ export const getArticleLikes = async (
       voornaam: r.user.voornaam,
       achternaam: r.user.achternaam,
     }))
-    const user_has_liked =
-      currentUserId != null ? likes.some((l) => l.user_id === currentUserId) : undefined
-    return { likes, count: likes.length, user_has_liked }
+    return currentUserId != null
+      ? { likes, count: likes.length, user_has_liked: likes.some((l) => l.user_id === currentUserId) }
+      : { likes, count: likes.length }
   } catch (error) {
     throw handleDBError(error)
   }
