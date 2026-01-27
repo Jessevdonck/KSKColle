@@ -515,10 +515,6 @@ export const getAvailablePlayers = async () => {
       }
     }
 
-    // Check if this is a lentecompetitie tournament
-    const isLentecompetitie = activeTournament.naam.toLowerCase().includes('lente') || 
-                               activeTournament.naam.toLowerCase().includes('lentecompetitie');
-
     // Convert to array and add costs
     const playersWithCosts = [];
     for (const user of participantsMap.values()) {
