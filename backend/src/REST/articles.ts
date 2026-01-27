@@ -7,6 +7,7 @@ import {
   updateArticle as updateArticleService, 
   deleteArticle as deleteArticleService 
 } from '../service/articleService'
+import { likeArticle as likeArticleService, unlikeArticle as unlikeArticleService, getArticleLikes as getArticleLikesService } from '../service/articleLikeService'
 import { requireAuthentication, makeRequireRole } from '../core/auth'
 import validate from '../core/validation'
 import Joi from 'joi'
@@ -322,20 +323,50 @@ deleteArticle.validationScheme = {
   }
 }
 
+const getArticleLikes = async (ctx: KoaContext) => {
+  const articleId = parseInt((ctx.params as { id: string }).id)
+  let userId: number | undefined
+  const { authorization } = ctx.headers
+  if (authorization) {
+    try {
+      const session = await userService.checkAndParseSession(authorization)
+      userId = session.userId
+    } catch { /* guest */ }
+  }
+  ctx.body = await getArticleLikesService(articleId, userId)
+}
+getArticleLikes.validationScheme = { params: { id: Joi.number().integer().positive().required() } }
+
+const likeArticle = async (ctx: KoaContext) => {
+  const articleId = parseInt((ctx.params as { id: string }).id)
+  const userId = ctx.state.session.userId
+  ctx.body = await likeArticleService(userId, articleId)
+}
+likeArticle.validationScheme = { params: { id: Joi.number().integer().positive().required() } }
+
+const unlikeArticle = async (ctx: KoaContext) => {
+  const articleId = parseInt((ctx.params as { id: string }).id)
+  const userId = ctx.state.session.userId
+  ctx.body = await unlikeArticleService(userId, articleId)
+}
+unlikeArticle.validationScheme = { params: { id: Joi.number().integer().positive().required() } }
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/articles',
   })
 
-  // Public routes
   router.get('/', validate(getArticles.validationScheme), getArticles)
   router.get('/recent', validate(getRecentArticles.validationScheme), getRecentArticles)
+  router.get('/:id/likes', validate(getArticleLikes.validationScheme), getArticleLikes)
   router.get('/:id', validate(getArticleById.validationScheme), getArticleById)
 
-  // Protected routes (admin, bestuurslid, and author only)
   router.post('/', requireAuthentication, makeRequireRole(['admin', 'bestuurslid', 'author']), validate(createArticle.validationScheme), createArticle)
   router.put('/:id', requireAuthentication, makeRequireRole(['admin', 'bestuurslid', 'author']), validate(updateArticle.validationScheme), updateArticle)
   router.delete('/:id', requireAuthentication, makeRequireRole(['admin', 'bestuurslid', 'author']), validate(deleteArticle.validationScheme), deleteArticle)
+
+  router.post('/:id/like', requireAuthentication, validate(likeArticle.validationScheme), likeArticle)
+  router.delete('/:id/like', requireAuthentication, validate(unlikeArticle.validationScheme), unlikeArticle)
 
   parent.use(router.routes()).use(router.allowedMethods())
 }

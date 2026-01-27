@@ -36,6 +36,7 @@ export interface GetNotificationsResponse {
 export const NotificationTypes = {
   ARTICLE_COMMENT: 'article_comment',
   COMMENT_REPLY: 'comment_reply',
+  ARTICLE_LIKE: 'article_like',
   GAME_POSTPONED: 'game_postponed',
   ABSENCE_REPORTED: 'absence_reported',
 } as const

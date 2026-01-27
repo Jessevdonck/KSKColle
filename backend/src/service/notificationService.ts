@@ -8,6 +8,16 @@ import type {
 } from '../types/notification'
 import { NotificationTypes } from '../types/notification'
 
+// Use prisma from data module if available, else PrismaClient
+function getPrisma() {
+  try {
+    const { prisma } = require('./data')
+    return prisma
+  } catch {
+    return new PrismaClient()
+  }
+}
+
 const prisma = new PrismaClient()
 
 export const createNotification = async (notificationData: CreateNotificationRequest): Promise<Notification> => {
@@ -158,5 +168,30 @@ export const createCommentReplyNotification = async (
   } catch (error) {
     // Don't throw error for notification failures - comments should still work
     console.error('Failed to create comment reply notification:', error)
+  }
+}
+
+export const createArticleLikeNotification = async (
+  articleAuthorId: number,
+  likerName: string,
+  articleId: number,
+  articleTitle: string,
+  otherLikeCount: number
+): Promise<void> => {
+  try {
+    const message = otherLikeCount === 0
+      ? `${likerName} heeft je post "${articleTitle}" geliket`
+      : otherLikeCount === 1
+        ? `${likerName} en 1 ander hebben je post "${articleTitle}" geliket`
+        : `${likerName} en ${otherLikeCount} anderen hebben je post "${articleTitle}" geliket`
+    await createNotification({
+      user_id: articleAuthorId,
+      type: NotificationTypes.ARTICLE_LIKE,
+      title: 'Vind ik leuk',
+      message,
+      related_article_id: articleId,
+    })
+  } catch (error) {
+    console.error('Failed to create article like notification:', error)
   }
 }

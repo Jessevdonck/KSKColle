@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "../../contexts/auth"
-import { getArticleById, deleteArticle } from "../../api/index"
+import { getArticleById, deleteArticle, getArticleLikes, likeArticle, unlikeArticle } from "../../api/index"
 import { Article } from "../../../data/article"
-import { ArrowLeft, Edit, Trash2, Calendar, User, Tag, Share2 } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, Calendar, User, Tag, Share2, Heart } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
@@ -24,6 +24,8 @@ export default function ArticleDetailPage() {
   const [deleting, setDeleting] = useState(false)
   const [contentWithoutImages, setContentWithoutImages] = useState("")
   const [extractedImages, setExtractedImages] = useState<string[]>([])
+  const [likes, setLikes] = useState<{ likes: { voornaam: string; achternaam: string }[]; count: number; user_has_liked?: boolean } | null>(null)
+  const [liking, setLiking] = useState(false)
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -63,6 +65,22 @@ export default function ArticleDetailPage() {
 
     fetchArticle()
   }, [params.id, router])
+
+  useEffect(() => {
+    if (!article) return
+    getArticleLikes(article.article_id).then(setLikes).catch(() => setLikes({ likes: [], count: 0 }))
+  }, [article?.article_id])
+
+  const handleLike = () => {
+    if (!article || !user || liking) return
+    setLiking(true)
+    likeArticle(article.article_id).then(setLikes).finally(() => setLiking(false))
+  }
+  const handleUnlike = () => {
+    if (!article || !user || liking) return
+    setLiking(true)
+    unlikeArticle(article.article_id).then(setLikes).finally(() => setLiking(false))
+  }
 
   const handleDelete = async () => {
     if (!article || !confirm("Weet je zeker dat je dit artikel wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.")) {
@@ -331,6 +349,30 @@ export default function ArticleDetailPage() {
               ))}
             </div>
           )}
+
+          {/* Vind ik leuk – rechtsonder, één geheel */}
+          <div className="flex justify-end pt-3">
+            {user ? (
+              <button
+                type="button"
+                onClick={likes?.user_has_liked ? handleUnlike : handleLike}
+                disabled={liking}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${likes?.user_has_liked ? "text-mainAccent bg-mainAccent/10 hover:bg-mainAccent/20" : "text-gray-600 bg-gray-100 hover:bg-gray-200"}`}
+                aria-pressed={likes?.user_has_liked}
+              >
+                <Heart className="h-4 w-4 shrink-0" fill={likes?.user_has_liked ? "currentColor" : "none"} strokeWidth={2} />
+                <span>Vind ik leuk</span>
+                {likes && likes.count > 0 && (
+                  <span className="ml-0.5 font-medium tabular-nums">({likes.count})</span>
+                )}
+              </button>
+            ) : likes && likes.count > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-gray-500 bg-gray-100">
+                <Heart className="h-4 w-4 shrink-0" fill="currentColor" strokeWidth={2} />
+                <span>{likes.count}</span>
+              </span>
+            ) : null}
+          </div>
 
           {/* Comments Section */}
           <div className="mt-8">

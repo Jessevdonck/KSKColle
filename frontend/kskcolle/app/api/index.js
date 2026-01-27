@@ -358,6 +358,21 @@ export const deleteArticle = async (articleId) => {
   await axios.delete(`${baseUrl}/articles/${articleId}`);
 };
 
+export const getArticleLikes = async (articleId) => {
+  const { data } = await axios.get(`${baseUrl}/articles/${articleId}/likes`);
+  return data;
+};
+
+export const likeArticle = async (articleId) => {
+  const { data } = await axios.post(`${baseUrl}/articles/${articleId}/like`);
+  return data;
+};
+
+export const unlikeArticle = async (articleId) => {
+  const { data } = await axios.delete(`${baseUrl}/articles/${articleId}/like`);
+  return data;
+};
+
 // Comment API functions
 export const createComment = async (commentData) => {
   const { data } = await axios.post(`${baseUrl}/comments`, commentData);
