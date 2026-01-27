@@ -79,6 +79,19 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
       },
     });
 
+    const tournamentIds = [...new Set(games.map((g) => g.round.tournament_id))];
+    const participations = await prisma.participation.findMany({
+      where: {
+        user_id: playerId,
+        tournament_id: { in: tournamentIds },
+        sevilla_rating_change: { not: null },
+      },
+      select: { tournament_id: true, sevilla_rating_change: true },
+    });
+    const ratingChangeByTournament = new Map(
+      participations.map((p) => [p.tournament_id, p.sevilla_rating_change as number])
+    );
+
     return games.map((game): GameWithRoundAndTournament => ({
       game_id: game.game_id,
       round_id: game.round_id,
@@ -89,6 +102,9 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
       uitgestelde_datum: game.uitgestelde_datum,
       speler1_naam: `${game.speler1.voornaam} ${game.speler1.achternaam}`,
       speler2_naam: game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : null,
+      speler1_rating: game.speler1.schaakrating_elo ?? undefined,
+      speler2_rating: game.speler2?.schaakrating_elo ?? undefined,
+      rating_change_in_tournament: ratingChangeByTournament.get(game.round.tournament_id) ?? null,
       round: {
         round_id: game.round.round_id,
         tournament_id: game.round.tournament_id,

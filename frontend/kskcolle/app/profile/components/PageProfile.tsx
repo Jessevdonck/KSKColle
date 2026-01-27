@@ -3,6 +3,7 @@
 import useSWR from "swr"
 import PlayerHeader from "./PlayerHeader"
 import RecentGames from "./RecentGames"
+import ProfileStats from "./ProfileStats"
 import AsyncData from "../../components/AsyncData"
 import { getById } from "../../api/index"
 import type { User, GameWithRoundAndTournament } from "../../../data/types"
@@ -34,16 +35,14 @@ export default function PlayerProfile({ name }: { name: string }) {
       : `spel/speler/${player.user_id}/public`
     : null
 
-  const { data: recentGamesData, error: recentGamesError } = useSWR<any>(
+  const { data: recentGamesData } = useSWR<any>(
     gamesEndpoint ? ["recentGames", gamesEndpoint] : null,
     async () => {
       if (!player) return { items: [] }
       try {
         const data = await getById(gamesEndpoint!)
         return data
-      } catch (error) {
-        // Als er geen games zijn, return een lege array in plaats van een error
-        console.log("No games found for player, returning empty array")
+      } catch {
         return { items: [] }
       }
     },
@@ -51,7 +50,6 @@ export default function PlayerProfile({ name }: { name: string }) {
   )
 
   const isLoading = !player && !playerError
-  // Don't treat missing games as an error
   const error = playerError
 
   // Always ensure array
@@ -65,35 +63,40 @@ export default function PlayerProfile({ name }: { name: string }) {
   )
 
   // Deduplicate games by game_id (behoud eerste match)
-  const uniqueGames = Array.from(new Map(filteredGames.map(game => [game.game_id, game])).values())
+  const uniqueGames = Array.from(new Map(filteredGames.map(game => [game.game_id, game])).values()) as GameWithRoundAndTournament[]
 
-  // Filter: only games with results (played games) and from last 1 year
-  const oneYearAgo = new Date()
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
-  
+  // Filter: only games with results (played games), last 2 years so custom range has data
+  const twoYearsAgo = new Date()
+  twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
+
   const playedGamesWithResults = uniqueGames.filter(game => {
-    // Check if game has a valid result (not empty, not "...", not "uitgesteld", not "not_played")
     const result = game.result?.trim() ?? ''
     if (!result || result === '...' || result.toLowerCase() === 'uitgesteld' || result === 'not_played') {
       return false
     }
-    
-    // Check if game date is within last year
     if (game.round?.ronde_datum) {
       const gameDate = new Date(game.round.ronde_datum)
-      return gameDate >= oneYearAgo
+      return gameDate >= twoYearsAgo
     }
-    
     return false
   })
 
   return (
     <AsyncData loading={isLoading} error={error}>
       {player && (
-        <div className="container mx-auto px-4 py-8 min-h-screen">
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="container mx-auto px-4 py-4 md:py-6 min-h-screen">
+          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
             <PlayerHeader player={player} />
-            <RecentGames games={playedGamesWithResults} playerId={player.user_id} />
+            <div className="p-4 md:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 lg:gap-6 items-start">
+                <div className="order-2 lg:order-1 min-w-0">
+                  <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
+                </div>
+                <div className="order-1 lg:order-2 min-w-0">
+                  <ProfileStats games={playedGamesWithResults} playerId={player.user_id} compact />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

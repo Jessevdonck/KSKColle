@@ -4,29 +4,33 @@ import { Card, CardContent } from "@/components/ui/card"
 interface GameCardProps {
   game: GameWithRoundAndTournament
   playerId: number
+  compact?: boolean
 }
 
-export function GameCard({ game, playerId }: GameCardProps) {
+export function GameCard({ game, playerId, compact }: GameCardProps) {
   const whitePlayerName = game.speler1_naam
   const blackPlayerName = game.speler2_naam
   const result = getGameResult(game, playerId)
   const isProfilePlayerWhite = game.speler1_id === playerId
 
   return (
-    <Card>
-      <CardContent className="p-2">
-        <div className="grid grid-cols-[80px_220px_1fr_100px] gap-3 text-sm">
+    <Card className={compact ? "border border-border/40" : undefined}>
+      <CardContent className={compact ? "p-1.5" : "p-2"}>
+        <div className={compact
+          ? "grid grid-cols-[50px_minmax(0,1fr)_minmax(0,1fr)_minmax(72px,auto)] gap-1.5 text-xs"
+          : "grid grid-cols-[80px_220px_1fr_100px] gap-3 text-sm"
+        }>
           {/* Date */}
           {game.round && (
-            <span className="text-xs text-muted-foreground whitespace-nowrap self-center">
+            <span className={`text-muted-foreground whitespace-nowrap self-center ${compact ? "text-[11px]" : "text-xs"}`}>
               {new Date(game.round.ronde_datum).toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
             </span>
           )}
           
           {/* Tournament and Round */}
           {game.round && (
-            <span className="text-xs text-muted-foreground self-center">
-              {game.round.tournament?.naam || 'Onbekend'} R{game.round.ronde_nummer}
+            <span className={`text-muted-foreground self-center truncate ${compact ? "text-[11px]" : "text-xs"}`} title={game.round.tournament?.naam || 'Onbekend'}>
+              {compact ? (game.round.tournament?.naam?.slice(0, 14) || 'Onbekend') + (game.round.tournament?.naam && game.round.tournament.naam.length > 14 ? '…' : '') + ` R${game.round.ronde_nummer}` : `${game.round.tournament?.naam || 'Onbekend'} R${game.round.ronde_nummer}`}
             </span>
           )}
           
@@ -46,10 +50,12 @@ export function GameCard({ game, playerId }: GameCardProps) {
             </div>
           </div>
           
-          {/* Result */}
-          <span className={`text-sm font-bold whitespace-nowrap text-right self-center ${getResultColor(result)}`}>
-            {result}
-          </span>
+          {/* Result — vaste ruimte, geen overflow */}
+          <div className="min-w-[72px] overflow-hidden flex justify-end items-center shrink-0">
+            <span className={`font-bold truncate text-right max-w-full block ${compact ? "text-xs" : "text-sm"} ${getResultColor(result)}`} title={result}>
+              {result}
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -188,6 +188,10 @@ export interface GameWithRoundAndTournament {
   original_game_id?: number | null;
   speler1_naam: string;
   speler2_naam: string | null;
+  speler1_rating?: number;
+  speler2_rating?: number | null;
+  /** Ratingwinst/verlies in dit toernooi (sevilla_rating_change). */
+  rating_change_in_tournament?: number | null;
   round: {
     round_id: number;
     tournament_id: number;
