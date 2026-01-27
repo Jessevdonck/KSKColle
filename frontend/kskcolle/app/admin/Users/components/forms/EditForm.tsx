@@ -377,18 +377,6 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
               {errors.guardian_email && <p className="text-red-500 text-xs mt-1">{errors.guardian_email.message}</p>}
             </div>
             <div>
-              <Label htmlFor="guardian_phone" className="text-xs font-medium text-gray-700">
-                Tel. Voogd
-              </Label>
-              <Input
-                {...register("guardian_phone")}
-                id="guardian_phone"
-                placeholder="Voor jeugdleden"
-                className="mt-1 text-sm"
-              />
-              {errors.guardian_phone && <p className="text-red-500 text-xs mt-1">{errors.guardian_phone.message}</p>}
-            </div>
-            <div>
               <Label htmlFor="tel_nummer" className="text-xs font-medium text-gray-700">
                 GSM
               </Label>
@@ -399,6 +387,18 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
                 className="mt-1 text-sm"
               />
               {errors.tel_nummer && <p className="text-red-500 text-xs mt-1">{errors.tel_nummer.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="guardian_phone" className="text-xs font-medium text-gray-700">
+                Tel. Voogd
+              </Label>
+              <Input
+                {...register("guardian_phone")}
+                id="guardian_phone"
+                placeholder="Voor jeugdleden"
+                className="mt-1 text-sm"
+              />
+              {errors.guardian_phone && <p className="text-red-500 text-xs mt-1">{errors.guardian_phone.message}</p>}
             </div>
             <div>
             <Label htmlFor="vast_nummer" className="text-sm font-medium text-gray-700 flex items-center gap-2">

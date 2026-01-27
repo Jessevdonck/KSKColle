@@ -393,24 +393,6 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
               )}
             </div>
             <div>
-              <Label htmlFor="guardian_phone" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Phone className="h-3 w-3" />
-                Tel. Voogd
-              </Label>
-              <Input
-                {...register("guardian_phone")}
-                id="guardian_phone"
-                placeholder="Voor jeugdleden"
-                data-cy="guardian_phone"
-                className="mt-1 text-sm"
-              />
-              {errors.guardian_phone && (
-                <p className="text-red-500 text-xs mt-1" data-cy="error_guardian_phone">
-                  {errors.guardian_phone.message}
-                </p>
-              )}
-            </div>
-            <div>
               <Label htmlFor="telefoon" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                 <Phone className="h-3 w-3" />
                 GSM
@@ -425,6 +407,24 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
               {errors.tel_nummer && (
                 <p className="text-red-500 text-xs mt-1" data-cy="error_telnr">
                   {errors.tel_nummer.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="guardian_phone" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Phone className="h-3 w-3" />
+                Tel. Voogd
+              </Label>
+              <Input
+                {...register("guardian_phone")}
+                id="guardian_phone"
+                placeholder="Voor jeugdleden"
+                data-cy="guardian_phone"
+                className="mt-1 text-sm"
+              />
+              {errors.guardian_phone && (
+                <p className="text-red-500 text-xs mt-1" data-cy="error_guardian_phone">
+                  {errors.guardian_phone.message}
                 </p>
               )}
             </div>

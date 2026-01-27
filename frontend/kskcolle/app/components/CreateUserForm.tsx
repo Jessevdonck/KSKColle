@@ -280,18 +280,6 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="guardian_phone" className="text-sm font-medium text-gray-700">Tel. Voogd (optioneel)</Label>
-            <Input
-              id="guardian_phone"
-              {...register('guardian_phone')}
-              data-cy="create_user_guardian_phone_input"
-              className="text-sm"
-              placeholder="Voor jeugdleden (optioneel)"
-            />
-            {errors.guardian_phone && <p className="text-sm text-red-500">{errors.guardian_phone.message}</p>}
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="tel_nummer" className="text-sm font-medium text-gray-700">Telefoonnummer (optioneel)</Label>
             <Input
               id="tel_nummer"
@@ -301,6 +289,18 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
               placeholder="Optioneel"
             />
             {errors.tel_nummer && <p className="text-sm text-red-500">{errors.tel_nummer.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="guardian_phone" className="text-sm font-medium text-gray-700">Tel. Voogd (optioneel)</Label>
+            <Input
+              id="guardian_phone"
+              {...register('guardian_phone')}
+              data-cy="create_user_guardian_phone_input"
+              className="text-sm"
+              placeholder="Voor jeugdleden (optioneel)"
+            />
+            {errors.guardian_phone && <p className="text-sm text-red-500">{errors.guardian_phone.message}</p>}
           </div>
 
           <div className="space-y-2">
