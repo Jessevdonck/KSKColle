@@ -240,65 +240,38 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
   return (
     <>
-      {/* Mobile Layout */}
-      <div className="block sm:hidden text-[0.9em]">
-        <div className="space-y-1.5">
+      {/* Mobile Layout - compact, zonder ELIO */}
+      <div className="block sm:hidden text-[0.85em]">
+        <div className="space-y-1">
           {playerScores.map((player, idx) => {
             const position = idx + 1
             const isTop = position <= 3
-            const isBiggestRatingGain = player.ratingDifference === maxRatingGain && maxRatingGain > 0
 
             return (
               <div
                 key={player.user_id}
-                className={`rounded-lg border p-2.5 ${
+                className={`rounded border px-2 py-1.5 flex items-center justify-between gap-2 ${
                   isTop
                     ? "bg-gradient-to-r from-mainAccent/5 to-mainAccentDark/5 border-mainAccent/20"
                     : "bg-white border-gray-200"
                 }`}
                 onClick={() => setSelectedPlayer(player)}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className={getPositionStyle(position)}>{getPositionIcon(position)}</div>
-                    <div className="font-semibold text-textColor text-xs">
-                      {player.voornaam} {player.achternaam}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-base font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
-                      {player.score}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {isLentecompetitie ? "SB²" : tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}: {player.tieBreak.toFixed(1)}
-                    </div>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className={`flex-shrink-0 ${getPositionStyle(position)}`}>{getPositionIcon(position)}</div>
+                  <div className="font-semibold text-textColor text-xs truncate">
+                    {player.voornaam} {player.achternaam}
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-600">
-                  <div className="flex items-center gap-4">
-                    {tournament.is_youth !== true && (
-                      <div className="flex items-center gap-1">
-                        <span>ELIO: {player.schaakrating_elo || '-'}</span>
-                        {player.ratingDifference !== null && player.ratingDifference !== undefined && (
-                          <span className={`text-xs font-bold ${
-                            isBiggestRatingGain
-                              ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg"
-                              : player.ratingDifference > 0 
-                              ? "text-green-600" 
-                              : player.ratingDifference < 0 
-                              ? "text-red-600" 
-                              : "text-gray-500"
-                          }`}>
-                            ({player.ratingDifference > 0 ? "+" : ""}{Math.round(player.ratingDifference)})
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      <span>{player.gamesPlayed} partijen</span>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2 flex-shrink-0 text-xs">
+                  <span className={`font-bold ${isTop ? "text-mainAccent" : "text-textColor"}`}>
+                    {player.score}
+                  </span>
+                  <span className="text-gray-500">{player.tieBreak.toFixed(1)}</span>
+                  <span className="text-gray-400 flex items-center gap-0.5">
+                    <User className="h-2.5 w-2.5" />
+                    {player.gamesPlayed}
+                  </span>
                 </div>
               </div>
             )
@@ -314,7 +287,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             <div className="w-5 text-center text-[0.7em] font-semibold text-gray-600">#</div>
             <div className="flex-1 text-[0.7em] font-semibold text-gray-600">Naam</div>
             {tournament.is_youth !== true && (
-              <div className="w-16 text-center text-[0.7em] font-semibold text-gray-600">ELIO</div>
+              <div className="hidden lg:block w-14 text-center text-[0.7em] font-semibold text-gray-600">ELIO</div>
             )}
             <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
             <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
@@ -353,9 +326,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                     </div>
                   </div>
 
-                  {/* ELO with Rating Difference */}
+                  {/* ELIO with Rating Difference - alleen op lg+ */}
                   {tournament.is_youth !== true && (
-                    <div className="w-16 text-center text-[0.7em] font-medium text-gray-700 flex items-center justify-center gap-0.5">
+                    <div className="hidden lg:flex w-14 text-center text-[0.7em] font-medium text-gray-700 items-center justify-center gap-0.5">
                       <span>{player.schaakrating_elo || '-'}</span>
                       {player.ratingDifference !== null && player.ratingDifference !== undefined && (
                         <span className={`text-xs font-bold ${

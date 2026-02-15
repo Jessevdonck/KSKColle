@@ -705,10 +705,10 @@ export default function TournamentDetails() {
             )}
           </div>
         ) : (
-          /* For other tournaments: Rounds and Standings side by side */
+          /* For other tournaments: Rounds and Standings side by side (op mobile: stand onder de rondes) */
           <div className={`grid grid-cols-1 xl:grid-cols-3 gap-3 max-w-7xl mx-auto px-2 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
-            {/* Rounds & Makeup Days with Navigation */}
-            <div className={`xl:col-span-2 order-2 xl:order-1 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
+            {/* Rounds & Makeup Days - op mobile eerst (order-1), op desktop links */}
+            <div className={`xl:col-span-2 order-1 xl:order-1 ${activeTab === 'rounds' || activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
                   <div className="flex items-center justify-between">
@@ -790,16 +790,16 @@ export default function TournamentDetails() {
               </div>
             </div>
 
-            {/* Standings */}
-            <div className={`xl:col-span-1 order-1 xl:order-2 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
+            {/* Standings - op mobile onder de rondes (order-2), compacter; op desktop rechts */}
+            <div className={`xl:col-span-1 order-2 xl:order-2 ${activeTab === 'rounds' || activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5 sm:px-3 sm:py-2">
+                  <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                     <Trophy className="h-4 w-4" />
                     Stand
                   </h2>
                 </div>
-                <div className="p-3">
+                <div className="p-2 sm:p-3">
                   <StandingsWithModal tournament={tournament} rounds={allRounds} />
                 </div>
               </div>
