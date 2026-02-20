@@ -288,7 +288,7 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
       result: originalGame.result
     });
 
-    // Dan: maak een nieuwe game aan in de inhaaldag
+    // Dan: maak een nieuwe game aan in de inhaaldag (met link naar origineel voor undo)
     const newGame = await prisma.game.create({
       data: {
         round_id: targetRound.round_id,
@@ -296,7 +296,8 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
         speler2_id: game.speler2_id,
         winnaar_id: null,
         result: null, // Nieuwe game zonder resultaat
-        uitgestelde_datum: null // Nieuwe game is niet uitgesteld
+        uitgestelde_datum: null, // Nieuwe game is niet uitgesteld
+        original_game_id: data.game_id, // Voor betrouwbare undo: link naar originele game
       },
       include: {
         speler1: true,
@@ -894,7 +895,8 @@ export async function getPostponableGames(user_id: number, tournament_id: number
     
     let whereClause: any = {
       round: {
-        tournament_id: tournament_id
+        tournament_id: tournament_id,
+        type: RoundType.REGULAR // Alleen partijen uit reguliere rondes (niet uit inhaaldagen)
       },
       AND: [
         {
