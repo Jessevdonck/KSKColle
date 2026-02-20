@@ -1629,18 +1629,19 @@ export const getCrossTableData = async (tournamentId: number) => {
     });
 
     // Add gamesPlayed per player (for crosstable display)
-    for (const player of uniquePlayers) {
-      player.gamesPlayed = allGames.filter(
+    const uniquePlayersWithGames = uniquePlayers.map((player) => ({
+      ...player,
+      gamesPlayed: allGames.filter(
         (game) =>
           (game.speler1_id === player.user_id ||
             game.speler2_id === player.user_id) &&
           isPlayedGame(game.result, game.speler2_id),
-      ).length;
-    }
+      ).length,
+    }));
 
     // Calculate scores for each team-player combination
     const crossTable = teams.map((team) => {
-      const playerScores = uniquePlayers.map((player) => {
+      const playerScores = uniquePlayersWithGames.map((player) => {
         // Check if this player is in the team
         const isInTeam = team.players.some(
           (tp) => tp.player_id === player.user_id,
@@ -1664,11 +1665,11 @@ export const getCrossTableData = async (tournamentId: number) => {
       );
 
       // Total games played by this team's players
-      const gamesPlayed = uniquePlayers
+      const gamesPlayed = uniquePlayersWithGames
         .filter((p) =>
           team.players.some((tp) => tp.player_id === p.user_id),
         )
-        .reduce((sum, p) => sum + (p.gamesPlayed ?? 0), 0);
+        .reduce((sum, p) => sum + p.gamesPlayed, 0);
 
       // Calculate total cost: sum of all player costs only (reserve cost not included)
       const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
@@ -1689,7 +1690,7 @@ export const getCrossTableData = async (tournamentId: number) => {
 
     return {
       teams: crossTable,
-      players: uniquePlayers,
+      players: uniquePlayersWithGames,
     };
   } catch (error) {
     throw handleDBError(error);
