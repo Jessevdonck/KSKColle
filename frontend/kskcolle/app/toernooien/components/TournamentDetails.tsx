@@ -876,20 +876,6 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
     }
   }
 
-  // Check if games data is properly loaded
-  if (!games || games.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-          <Calendar className="h-8 w-8 text-mainAccent" />
-        </div>
-        <h4 className="text-base font-semibold text-gray-700 mb-2">Geen partijen</h4>
-        <p className="text-gray-500 text-sm">Er zijn nog geen partijen voor deze inhaaldag.</p>
-      </div>
-    )
-  }
-
-
   const getByeText = (result: string | null) => {
     if (!result || result === "...") return "Nog te spelen"
     
@@ -917,13 +903,13 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
         </h3>
         <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 text-xs text-gray-600">
           <p>
-            {games.length} partijen
+            {(games?.length ?? 0)} partijen
           </p>
-          {round.ronde_datum && (
+          {(round.ronde_datum || round.date) && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>{new Date(round.ronde_datum).toLocaleDateString('nl-NL', { 
+                <span>{new Date(round.ronde_datum || round.date).toLocaleDateString('nl-NL', { 
                   weekday: 'long', 
                   year: 'numeric', 
                   month: 'long', 
@@ -941,13 +927,13 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
         </div>
       </div>
 
-      {games.length === 0 ? (
+      {(games?.length ?? 0) === 0 ? (
         <div className="text-center py-12">
           <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
             <Calendar className="h-8 w-8 text-mainAccent" />
           </div>
           <h4 className="text-base font-semibold text-gray-700 mb-2">Geen uitgestelde partijen</h4>
-          <p className="text-gray-500 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
+          <p className="text-gray-500 text-sm">Er zijn nog geen partijen uitgesteld naar deze inhaaldag.</p>
         </div>
       ) : (
         <>

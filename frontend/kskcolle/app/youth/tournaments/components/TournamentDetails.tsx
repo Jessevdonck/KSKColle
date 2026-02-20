@@ -452,12 +452,14 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
           <p>
             {games.length} partijen
           </p>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{format(parseISO(day.date), "dd-MM-yyyy")}</span>
+          {(day.date || (day as any).ronde_datum) && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>{format(parseISO((day.date || (day as any).ronde_datum) as string), "dd-MM-yyyy")}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

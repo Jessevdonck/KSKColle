@@ -22,7 +22,8 @@
     "send-launch-email": "tsx src/scripts/send-launch-email.ts",
     "simulate-launch-email": "tsx src/scripts/simulate-launch-email.ts",
     "export-active-members": "tsx src/scripts/export-active-members.ts",
-    "send-david-email": "tsx src/scripts/send-david-email.ts"
+    "send-david-email": "tsx src/scripts/send-david-email.ts",
+    "replace-megaschaak-forfait": "tsx src/scripts/replace-megaschaak-forfait.ts"
   },
   "author": "",
   "license": "ISC",
