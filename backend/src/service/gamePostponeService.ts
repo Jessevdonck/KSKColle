@@ -1098,7 +1098,7 @@ export async function undoPostponeGame(data: UndoPostponeGameData): Promise<Undo
 
     // 5 & 6: Eerst originele game herstellen, dán inhaalpartij verwijderen (in transactie)
     // Volgorde is cruciaal: als we eerst verwijderen en de update faalt, blijft de originele op "uitgesteld" staan
-    const restoredGame = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // 5a. Herstel de originele game naar "Nog te spelen" (eerst, vóór verwijderen)
       const restored = await tx.game.update({
         where: { game_id: originalGame.game_id },
@@ -1125,8 +1125,6 @@ export async function undoPostponeGame(data: UndoPostponeGameData): Promise<Undo
       });
 
       logger.info('Game deleted from makeup round', { game_id: data.game_id });
-
-      return restored;
     });
 
     logger.info('Undo postpone game completed successfully', {
