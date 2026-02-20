@@ -1096,31 +1096,37 @@ export async function undoPostponeGame(data: UndoPostponeGameData): Promise<Undo
       original_round_number: originalGame.round.ronde_nummer
     });
 
-    // 5. Verwijder de game uit de inhaaldag
-    await prisma.game.delete({
-      where: { game_id: data.game_id }
-    });
+    // 5 & 6: Eerst originele game herstellen, dán inhaalpartij verwijderen (in transactie)
+    // Volgorde is cruciaal: als we eerst verwijderen en de update faalt, blijft de originele op "uitgesteld" staan
+    const restoredGame = await prisma.$transaction(async (tx) => {
+      // 5a. Herstel de originele game naar "Nog te spelen" (eerst, vóór verwijderen)
+      const restored = await tx.game.update({
+        where: { game_id: originalGame.game_id },
+        data: {
+          result: null, // Reset naar "Nog te spelen"
+          uitgestelde_datum: null, // Reset uitgestelde datum
+        },
+        include: {
+          speler1: true,
+          speler2: true,
+          round: true,
+        },
+      });
 
-    logger.info('Game deleted from makeup round', { game_id: data.game_id });
+      logger.info('Original game restored in transaction', {
+        original_game_id: restored.game_id,
+        result: restored.result,
+        uitgestelde_datum: restored.uitgestelde_datum,
+      });
 
-    // 6. Herstel de originele game naar "Nog te spelen" status
-    const restoredGame = await prisma.game.update({
-      where: { game_id: originalGame.game_id },
-      data: {
-        result: null, // Reset naar "Nog te spelen"
-        uitgestelde_datum: null // Reset uitgestelde datum
-      },
-      include: {
-        speler1: true,
-        speler2: true,
-        round: true
-      }
-    });
+      // 5b. Verwijder daarna de game uit de inhaaldag
+      await tx.game.delete({
+        where: { game_id: data.game_id },
+      });
 
-    logger.info('Original game restored', { 
-      original_game_id: restoredGame.game_id,
-      result: restoredGame.result,
-      uitgestelde_datum: restoredGame.uitgestelde_datum
+      logger.info('Game deleted from makeup round', { game_id: data.game_id });
+
+      return restored;
     });
 
     logger.info('Undo postpone game completed successfully', {
