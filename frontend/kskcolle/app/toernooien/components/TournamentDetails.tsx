@@ -217,25 +217,28 @@ export default function TournamentDetails() {
       
       for (const round of sortedRounds) {
         if (round.type === 'REGULAR') {
-          // Regular round
-          const found = rounds.find((x) => x.ronde_nummer === round.ronde_nummer)
+          // Normale speeldag: toon deze ronde met alle partijen; uitgestelde partijen tonen we met label "Uitgesteld"
+          const found = rounds.find(
+            (x) => (round.round_id != null && x.round_id === round.round_id) ||
+              (x.ronde_nummer === round.ronde_nummer && x.type === 'REGULAR')
+          )
           newTimeline.push({
             kind: "round",
-            round: found ?? { 
-              round_id: round.round_id, 
-              ronde_nummer: round.ronde_nummer, 
-              games: round.games || [], 
+            round: found ?? {
+              round_id: round.round_id,
+              ronde_nummer: round.ronde_nummer,
+              games: round.games || [],
               ronde_datum: round.ronde_datum,
               startuur: round.startuur,
-              type: "REGULAR" 
+              type: "REGULAR",
             },
           })
         } else if (round.type === 'MAKEUP') {
-          // Makeup round
+          // Inhaaldag: toon alleen de partijen die naar deze inhaaldag zijn uitgesteld (games van deze ronde)
           newTimeline.push({
             kind: "makeup",
             day: { ...round, makeupDayNumber: makeupDayCounter },
-            games: round.games || []
+            games: round.games || [],
           })
           makeupDayCounter++
         }
