@@ -30,6 +30,10 @@ async function main() {
   }
   const voornaam = parts[0];
   const achternaam = parts.slice(1).join(" ");
+  if (voornaam === undefined) {
+    console.error("Geef de volledige naam (voornaam + achternaam).");
+    process.exit(1);
+  }
 
   const user = await prisma.user.findFirst({
     where: { voornaam, achternaam },
