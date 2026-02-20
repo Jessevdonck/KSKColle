@@ -1236,8 +1236,11 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
             {/* Class headers */}
             <tr>
               <th className="sticky left-0 z-20 bg-white border-b-2 border-mainAccent"></th>
-              <th className="px-1.5 py-1.5 text-center bg-mainAccent/20 border-b-2 border-mainAccent font-bold text-mainAccent border-r-2 border-mainAccent">
+              <th className="px-1.5 py-1.5 text-center bg-mainAccent/20 border-b-2 border-mainAccent font-bold text-mainAccent border-r border-mainAccent">
                 Totaal
+              </th>
+              <th className="px-1.5 py-1.5 text-center bg-mainAccent/10 border-b-2 border-mainAccent font-bold text-mainAccent border-r-2 border-mainAccent">
+                Partijen
               </th>
               {sortedClassEntries.map(([className, classPlayers]: [string, any], classIdx: number) => (
                 <th 
@@ -1256,8 +1259,11 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
               <th className="sticky left-0 z-20 bg-gray-50 px-2 py-2 text-left font-semibold text-gray-700 border-r-2 border-gray-300">
                 Team
               </th>
-              <th className="px-1.5 py-2 text-center font-semibold text-gray-700 bg-gray-100 border-r-2 border-mainAccent">
+              <th className="px-1.5 py-2 text-center font-semibold text-gray-700 bg-gray-100 border-r border-mainAccent">
                 Score
+              </th>
+              <th className="px-1.5 py-2 text-center font-semibold text-gray-700 bg-gray-100 border-r-2 border-mainAccent">
+                Partijen
               </th>
               {players.map((player: any, playerIdx: number) => {
                 // Check if this is the first player of a new class
@@ -1291,6 +1297,11 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                             ({player.cost} pts)
                           </div>
                         )}
+                        {(player.gamesPlayed ?? 0) >= 0 && (
+                          <div className="text-[8px] text-gray-500 mt-0.5 whitespace-nowrap">
+                            {player.gamesPlayed} p
+                          </div>
+                        )}
                       </div>
                     </div>
                   </th>
@@ -1318,9 +1329,13 @@ function CrossTableView({ data, isLoading }: { data: any, isLoading: boolean }) 
                     {team.totalCost || 0} pts
                   </div>
                 </td>
-                <td className="px-1.5 py-2 text-center font-bold text-mainAccent bg-mainAccent/5 border-r-2 border-mainAccent"
+                <td className="px-1.5 py-2 text-center font-bold text-mainAccent bg-mainAccent/5 border-r border-mainAccent"
                     style={{ backgroundColor: idx % 2 === 0 ? 'rgba(212, 175, 55, 0.05)' : 'rgba(212, 175, 55, 0.1)' }}>
                   {team.totalScore.toFixed(1)}
+                </td>
+                <td className="px-1.5 py-2 text-center text-gray-700 bg-gray-50 border-r-2 border-mainAccent font-medium"
+                    style={{ backgroundColor: idx % 2 === 0 ? 'rgb(249, 250, 251)' : 'rgb(243, 244, 246)' }}>
+                  {team.gamesPlayed ?? 0}
                 </td>
                 {team.playerScores.map((ps: any, playerIdx: number) => {
                   const score = ps.score
@@ -1448,12 +1463,18 @@ function StandingsView({ standings, isLoading }: { standings: any[], isLoading: 
                     </div>
                   </div>
 
-                  {/* Score and Cost */}
+                  {/* Score, Partijen, Cost */}
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <div className="text-right">
                       <div className="text-xs text-gray-500 mb-0.5">Totaalprijs</div>
                       <div className="text-sm font-semibold text-gray-700">
                         {team.totalCost || 0} pts
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500 mb-0.5">Partijen</div>
+                      <div className="text-sm font-semibold text-gray-700">
+                        {team.gamesPlayed ?? 0}
                       </div>
                     </div>
                     <div className="text-right">

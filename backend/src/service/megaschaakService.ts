@@ -1417,6 +1417,23 @@ const calculateGameScore = (game: any, playerId: number): number => {
   return 0;
 };
 
+/** Whether a game counts as "played" (for games-played count); BYE and no-result don't count */
+const isPlayedGame = (
+  result: string | null,
+  speler2_id: number | null,
+): boolean => {
+  if (speler2_id === null) return false;
+  if (
+    !result ||
+    result === "not_played" ||
+    result === "..." ||
+    result === "uitgesteld"
+  )
+    return false;
+  if (typeof result === "string" && result.startsWith("ABS-")) return false;
+  return true;
+};
+
 /**
  * Get cross-table data: teams vs players with scores
  */
@@ -1611,6 +1628,16 @@ export const getCrossTableData = async (tournamentId: number) => {
       return b.tie_break - a.tie_break;
     });
 
+    // Add gamesPlayed per player (for crosstable display)
+    for (const player of uniquePlayers) {
+      player.gamesPlayed = allGames.filter(
+        (game) =>
+          (game.speler1_id === player.user_id ||
+            game.speler2_id === player.user_id) &&
+          isPlayedGame(game.result, game.speler2_id),
+      ).length;
+    }
+
     // Calculate scores for each team-player combination
     const crossTable = teams.map((team) => {
       const playerScores = uniquePlayers.map((player) => {
@@ -1636,6 +1663,13 @@ export const getCrossTableData = async (tournamentId: number) => {
         0,
       );
 
+      // Total games played by this team's players
+      const gamesPlayed = uniquePlayers
+        .filter((p) =>
+          team.players.some((tp) => tp.player_id === p.user_id),
+        )
+        .reduce((sum, p) => sum + (p.gamesPlayed ?? 0), 0);
+
       // Calculate total cost: sum of all player costs only (reserve cost not included)
       const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
 
@@ -1646,6 +1680,7 @@ export const getCrossTableData = async (tournamentId: number) => {
         playerScores,
         totalScore,
         totalCost,
+        gamesPlayed,
       };
     });
 
@@ -1735,8 +1770,14 @@ export const getTeamStandings = async (tournamentId: number) => {
     });
 
     // Calculate scores for each team
+    const teamPlayerIds = (team: (typeof teams)[0]) =>
+      team.players.map((tp) => tp.player_id);
+
     const teamsWithScores = teams.map((team) => {
+      const playerIds = new Set(teamPlayerIds(team));
       let totalScore = 0;
+      let gamesPlayed = 0;
+
       const playerScores = team.players.map((tp) => {
         // Calculate total score for this player across all games
         const playerScore = allGames.reduce((sum, game) => {
@@ -1751,6 +1792,16 @@ export const getTeamStandings = async (tournamentId: number) => {
         };
       });
 
+      // Count games played by any player in this team
+      for (const game of allGames) {
+        const inGame =
+          (game.speler1_id && playerIds.has(game.speler1_id)) ||
+          (game.speler2_id != null && playerIds.has(game.speler2_id));
+        if (inGame && isPlayedGame(game.result, game.speler2_id)) {
+          gamesPlayed++;
+        }
+      }
+
       // Calculate total cost: sum of all player costs only (reserve cost not included)
       const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
 
@@ -1759,6 +1810,7 @@ export const getTeamStandings = async (tournamentId: number) => {
         players: playerScores,
         totalScore,
         totalCost,
+        gamesPlayed,
       };
     });
 
