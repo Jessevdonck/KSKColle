@@ -1435,16 +1435,14 @@ const isPlayedGame = (
 };
 
 /**
- * For megaschaak we count each logical game once: either the regular game (if not postponed)
- * or the makeup copy. So exclude REGULAR games with uitgestelde_datum; include all MAKEUP games.
+ * Megaschaak: alleen reguliere speeldagen tellen. Inhaaldagen tellen niet mee (geen dubbeltelling).
+ * Partijen met uitgestelde_datum (uitgesteld naar inhaaldag) tellen ook niet mee.
  */
-const isCanonicalGameForMegaschaak = (
+const isRegularGameForMegaschaak = (
   roundType: string,
   uitgestelde_datum: Date | null,
 ): boolean => {
-  if (roundType === "MAKEUP") return true;
-  if (roundType === "REGULAR") return !uitgestelde_datum;
-  return false;
+  return roundType === "REGULAR" && !uitgestelde_datum;
 };
 
 /**
@@ -1469,6 +1467,7 @@ export const getCrossTableData = async (tournamentId: number) => {
       },
       include: {
         rounds: {
+          where: { type: "REGULAR" },
           include: {
             games: {
               include: {
@@ -1488,11 +1487,11 @@ export const getCrossTableData = async (tournamentId: number) => {
       },
     });
 
-    // Elk logische partij één keer: REGULAR zonder uitgestelde_datum, of MAKEUP
+    // Alleen reguliere speeldagen, geen inhaaldagen; uitgestelde partijen tellen niet mee
     const allGames = allClassesTournaments.flatMap((t) =>
       t.rounds.flatMap((r) =>
         (r.games as any[]).filter((g) =>
-          isCanonicalGameForMegaschaak(r.type, g.uitgestelde_datum),
+          isRegularGameForMegaschaak(r.type, g.uitgestelde_datum),
         ),
       ),
     );
@@ -1735,7 +1734,7 @@ export const getTeamStandings = async (tournamentId: number) => {
       },
       include: {
         rounds: {
-          // REGULAR + MAKEUP: uitgestelde partijen tellen mee via inhaalpartij, niet dubbel
+          where: { type: "REGULAR" },
           include: {
             games: {
               include: {
@@ -1752,11 +1751,11 @@ export const getTeamStandings = async (tournamentId: number) => {
       },
     });
 
-    // Elk logische partij één keer: REGULAR zonder uitgestelde_datum, of MAKEUP (inhaaldag)
+    // Alleen reguliere speeldagen; inhaaldagen en uitgestelde partijen tellen niet mee
     const allGames = allClassesTournaments.flatMap((t) =>
       t.rounds.flatMap((r) =>
         (r.games as any[]).filter((g) =>
-          isCanonicalGameForMegaschaak(r.type, g.uitgestelde_datum),
+          isRegularGameForMegaschaak(r.type, g.uitgestelde_datum),
         ),
       ),
     );
@@ -1890,6 +1889,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
       },
       include: {
         rounds: {
+          where: { type: "REGULAR" },
           include: {
             games: {
               include: {
@@ -1907,7 +1907,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
       },
     });
 
-    // Alle rondes (REGULAR + MAKEUP) gesorteerd; per ronde alleen canonieke partijen (geen dubbel door uitstel)
+    // Alleen reguliere rondes; inhaaldagen niet tonen; uitgestelde partijen niet meenemen
     const allRounds = allClassesTournaments
       .flatMap((t) => t.rounds)
       .sort((a, b) => a.ronde_nummer - b.ronde_nummer);
@@ -1917,10 +1917,10 @@ export const getTeamDetailedScores = async (teamId: number) => {
       if (!gamesByRound.has(round.ronde_nummer)) {
         gamesByRound.set(round.ronde_nummer, []);
       }
-      const canonical = (round.games as any[]).filter((g) =>
-        isCanonicalGameForMegaschaak(round.type, g.uitgestelde_datum),
+      const regularOnly = (round.games as any[]).filter((g) =>
+        isRegularGameForMegaschaak(round.type, g.uitgestelde_datum),
       );
-      gamesByRound.get(round.ronde_nummer)!.push(...canonical);
+      gamesByRound.get(round.ronde_nummer)!.push(...regularOnly);
     });
 
     // Calculate scores per player per round
@@ -2253,13 +2253,14 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       );
     };
 
-    // Calculate scores for each player (REGULAR + MAKEUP; alleen canonieke partijen tellen)
+    // Alleen reguliere speeldagen; inhaaldagen tellen niet mee
     for (const [playerId, data] of playerData.entries()) {
       const games = await prisma.game.findMany({
         where: {
           OR: [{ speler1_id: playerId }, { speler2_id: playerId }],
           round: {
             tournament_id: { in: tournamentIds },
+            type: "REGULAR",
           },
           result: { not: null },
         },
@@ -2268,13 +2269,13 @@ export const getBestValuePlayers = async (tournamentId: number) => {
         },
       });
 
-      const canonicalGames = games.filter((g) =>
-        isCanonicalGameForMegaschaak((g.round as any).type, g.uitgestelde_datum),
+      const regularGames = games.filter((g) =>
+        isRegularGameForMegaschaak((g.round as any).type, g.uitgestelde_datum),
       );
 
       let totalScore = 0;
       let gamesPlayedCount = 0;
-      for (const game of canonicalGames) {
+      for (const game of regularGames) {
         const score = calculateGameScore(game, playerId);
         totalScore += score;
         if (isPlayedGame(game.result, game.speler2_id)) {
