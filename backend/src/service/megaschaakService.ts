@@ -1417,7 +1417,7 @@ const calculateGameScore = (game: any, playerId: number): number => {
   return 0;
 };
 
-/** Whether a game counts as "played" (for games-played count); BYE and no-result don't count */
+/** Whether a game counts as "played" (for games-played count); BYE, no-result en forfait (1-0R/0-1R) tellen niet mee */
 const isPlayedGame = (
   result: string | null,
   speler2_id: number | null,
@@ -1431,6 +1431,8 @@ const isPlayedGame = (
   )
     return false;
   if (typeof result === "string" && result.startsWith("ABS-")) return false;
+  // Forfaits (1-0R / 0-1R) tellen niet mee als "gespeelde partij" voor megaschaak
+  if (result === "1-0R" || result === "0-1R") return false;
   return true;
 };
 
@@ -2219,8 +2221,8 @@ export const getBestValuePlayers = async (tournamentId: number) => {
     }
 
     // Helper function: check if result represents a game that should count as played
-    // Excludes: null, "not_played", "...", "uitgesteld", absences ("ABS-", "0.5-0"), and invalid results ("0-0")
-    // Includes: regular games ("1-0", "0-1", "½-½", "1/2-1/2", "-"), forfeits ("1-0R", "0-1R")
+    // Excludes: null, "not_played", "...", "uitgesteld", absences ("ABS-", "0.5-0"), forfaits ("1-0R", "0-1R") and invalid results ("0-0")
+    // Includes: regular games ("1-0", "0-1", "½-½", "1/2-1/2", "-")
     const isPlayedGame = (
       result: string | null,
       speler2_id: number | null,
@@ -2239,14 +2241,14 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       if (result.startsWith("ABS-")) return false;
       // Exclude "0.5-0" which is an absence with message
       if (result === "0.5-0") return false;
+      // Exclude quittingen/forfaits (Sevilla: 1-0R of 0-1R)
+      if (result === "1-0R" || result === "0-1R") return false;
       // Exclude "0-0" which is an invalid/unplayed result
       if (result === "0-0") return false;
-      // Only count valid game results: wins, losses, draws, and forfeits
+      // Only count valid game results: wins, losses and draws
       return (
         result === "1-0" ||
         result === "0-1" ||
-        result === "1-0R" ||
-        result === "0-1R" ||
         result === "½-½" ||
         result === "1/2-1/2" ||
         result === "-"

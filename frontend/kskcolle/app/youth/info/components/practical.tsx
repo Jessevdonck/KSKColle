@@ -9,6 +9,11 @@ export default function Practical() {
         <p className="text-base text-gray-600 max-w-2xl mx-auto">
           Kom kennismaken tijdens onze jeugduren. Iedereen welkom!
         </p>
+        <div className="mt-4 inline-flex items-center justify-center rounded-lg bg-amber-100 px-4 py-2 border border-amber-300">
+          <p className="text-amber-900 text-sm font-semibold">
+            Momenteel geldt er een inschrijvingsstop voor de jeugdwerking tot september.
+          </p>
+        </div>
       </div>
 
       <div className="max-w-xl mx-auto">
@@ -36,7 +41,7 @@ export default function Practical() {
               </div>
               <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-blue-800 text-center text-sm">
-                  <strong>Nieuwe jeugdleden welkom!</strong> Instappen kan op elk moment.
+                  <strong>Let op:</strong> Door de huidige inschrijvingsstop kunnen nieuwe jeugdleden pas opnieuw instappen vanaf september.
                 </p>
               </div>
             </div>
