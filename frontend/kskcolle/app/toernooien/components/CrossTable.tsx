@@ -46,7 +46,6 @@ type Tournament = {
     tie_break?: number | null
     score?: number | null
   }>
-  class_name?: string | null
 }
 
 interface CrossTableProps {
