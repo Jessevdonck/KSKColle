@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { calculateStandings } from "./Standings"
+import { isLentecompetitieTieBreak } from "./tieBreakLente"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) =>
   `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
@@ -28,6 +29,7 @@ type Round = {
 type Tournament = {
   tournament_id: number
   naam: string
+  class_name?: string | null
   rondes: number
   type: "SWISS" | "ROUND_ROBIN"
   rating_enabled?: boolean
@@ -53,6 +55,14 @@ interface CrossTableProps {
 }
 
 export default function CrossTable({ tournament, rounds }: CrossTableProps) {
+  const isLentecompetitie = isLentecompetitieTieBreak(tournament)
+  // Lente staat in DB vaak als SWISS maar gebruikt SB², niet Bh-W
+  const tieBreakColumnLabel = isLentecompetitie
+    ? "SB²"
+    : tournament.type === "SWISS"
+      ? "Bh-W"
+      : "SB"
+
   // Calculate standings to get sorted players and their stats
   const standings = React.useMemo(() => {
     return calculateStandings(tournament, rounds)
@@ -88,8 +98,12 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
             result = 1 // Player1 wins
           } else if (game.result === "0-1" || game.result === "0-1R") {
             result = 0 // Player1 loses
-          } else if (game.result === "1/2-1/2" || game.result === "½-½") {
-            result = 0.5 // Draw
+          } else if (
+            game.result === "1/2-1/2" ||
+            game.result === "½-½" ||
+            game.result === "-"
+          ) {
+            result = 0.5 // Draw (Sevilla gebruikt vaak "-")
           }
         }
 
@@ -152,7 +166,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                   </th>
                 )}
                 <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white" style={{ width: '50px' }}>
-                  SB²
+                  {tieBreakColumnLabel}
                 </th>
                 {/* Column headers with player names (vertical) */}
                 {standings.map((player) => (
@@ -220,7 +234,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                         {player.schaakrating_elo || '-'}
                       </td>
                     )}
-                    {/* SB² */}
+                    {/* Tie-break (Bh-W of SB) */}
                     <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700" style={{ width: '50px' }}>
                       {player.tieBreak.toFixed(2)}
                     </td>
@@ -280,7 +294,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                   </th>
                 )}
                 <th className="border-r border-white/20 px-1 py-2 text-center font-semibold text-white" style={{ width: '40px' }}>
-                  SB²
+                  {tieBreakColumnLabel}
                 </th>
                 {/* Column headers with player names (vertical) */}
                 {standings.map((player) => (
@@ -348,7 +362,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                         {player.schaakrating_elo || '-'}
                       </td>
                     )}
-                    {/* SB² */}
+                    {/* Tie-break (Bh-W of SB) */}
                     <td className="border-r border-gray-200 px-1 py-2 text-center text-gray-700" style={{ width: '40px' }}>
                       {player.tieBreak.toFixed(2)}
                     </td>

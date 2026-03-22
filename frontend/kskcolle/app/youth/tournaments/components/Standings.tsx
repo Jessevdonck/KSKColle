@@ -119,7 +119,12 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           score = isPlayer1 ? 1 : 0
         } else if (playerGame.result === "0-1") {
           score = isPlayer1 ? 0 : 1
-        } else if (playerGame.result === "½-½" || playerGame.result === "1/2-1/2" || playerGame.result === "�-�") {
+        } else if (
+          playerGame.result === "½-½" ||
+          playerGame.result === "1/2-1/2" ||
+          playerGame.result === "-" ||
+          playerGame.result === "�-�"
+        ) {
           score = 0.5
         } else if (playerGame.result === "0.5-0") {
           // Absent with message - player gets 0.5 points
@@ -256,7 +261,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                       {player.score}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}: {player.tieBreak.toFixed(1)}
+                      {tournament.type === "SWISS" ? "Bhlz-W" : "SB"}: {player.tieBreak.toFixed(1)}
                     </div>
                   </div>
                 </div>
@@ -305,7 +310,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             <div className="w-12 text-center text-xs font-semibold text-gray-600">Partijen</div>
             <div className="w-10 text-center text-xs font-semibold text-gray-600">Punten</div>
             <div className="w-16 text-center text-xs font-semibold text-gray-600">
-              {tournament.type === "SWISS" ? "Bhlz-W" : "SB-Score"}
+              {tournament.type === "SWISS" ? "Bhlz-W" : "SB"}
             </div>
           </div>
         </div>
@@ -445,7 +450,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-textColor">{selectedPlayer.tieBreak.toFixed(2)}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">
-                    {tournament.type === "SWISS" ? "Bh-W" : "SB²"}
+                    {tournament.type === "SWISS" ? "Bh-W" : "SB"}
                   </div>
                 </div>
               </div>
@@ -579,7 +584,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
             calculatedScoreMap[p1] += 1
           } else if (result === "0-1" && p2) {
             calculatedScoreMap[p2] += 1
-          } else if (result === "½-½" || result === "1/2-1/2" || result === "�-�") {
+          } else if (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") {
             calculatedScoreMap[p1] += 0.5
             if (p2) calculatedScoreMap[p2] += 0.5
           } else if (result === "0.5-0") {
@@ -645,7 +650,10 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
         sbMap[p1] += scoreMap[p2]
       } else if ((result === "0-1" || result === "0-1R") && p2) {
         sbMap[p2] += scoreMap[p1]
-      } else if ((result === "½-½" || result === "1/2-1/2" || result === "�-�") && p2) {
+      } else if (
+        (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") &&
+        p2
+      ) {
         sbMap[p1] += scoreMap[p2] * 0.5
         sbMap[p2] += scoreMap[p1] * 0.5
       }
@@ -679,7 +687,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
           tie = 0
         }
       } else {
-        tie = Math.pow(sbMap[id], 2)
+        tie = sbMap[id] ?? 0
       }
     }
 

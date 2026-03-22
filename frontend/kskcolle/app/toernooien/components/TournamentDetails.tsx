@@ -12,12 +12,14 @@ import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX, Clock, Swords } from "lucide-react"
 import { useState, useEffect } from "react"
 import PostponeGameButton from './PostponeGameButton'
+import { isLentecompetitieTieBreak } from "./tieBreakLente"
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../../contexts/auth'
 import Link from 'next/link'
 
 type Game = {
   game_id: number
+  original_game_id?: number | null
   result: string | null
   speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
   speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
@@ -89,8 +91,7 @@ export default function TournamentDetails() {
     },
   )
 
-  // Check if this is a Lentecompetitie tournament
-  const isLentecompetitie = tournament?.naam.toLowerCase().includes('lentecompetitie') || false
+  const isLentecompetitie = tournament ? isLentecompetitieTieBreak(tournament) : false
 
   // Debug logging
   console.log('🎯 Tournament type check - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);

@@ -12,39 +12,46 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     throw ServiceError.notFound("Geen deelnemers voor dit toernooi");
   }
 
-  // 2) Haal alle games van dit toernooi (exclusief inhaaldagen)
-  const games = await prisma.game.findMany({
-    where: { 
-      round: { 
+  // 2) Haal alle games (normaal + inhaaldag); dubbele koppelingen worden later gefilterd
+  const gamesRaw = await prisma.game.findMany({
+    where: {
+      round: {
         tournament_id,
-        type: 'REGULAR' // Alleen normale rondes, geen inhaaldagen
-      } 
+        type: { in: ["REGULAR", "MAKEUP"] },
+      },
     },
     select: {
+      game_id: true,
+      original_game_id: true,
       speler1_id: true,
       speler2_id: true,
       result: true,
+      round: { select: { type: true } },
     },
   });
 
   // 2.5) Haal het toernooitype op (SWISS of ROUND_ROBIN) en naam
   const tour = await prisma.tournament.findUnique({
     where: { tournament_id },
-    select: { type: true, naam: true },
+    select: { type: true, naam: true, class_name: true },
   });
   if (!tour) {
     throw ServiceError.notFound("Toernooi niet gevonden");
   }
 
-  // Check if this is a Lentecompetitie tournament
-  const isLentecompetitie = tour.naam.toLowerCase().includes('lentecompetitie');
+  const nLower = tour.naam.toLowerCase();
+  const isLentecompetitie =
+    nLower.includes("lentecompetitie") ||
+    nLower.includes("lente competitie") ||
+    (nLower.includes("lente") && (tour.class_name ?? "").trim().length > 0);
 
   // 3) Initialiseer maps
   // Gebruik de scores uit de participation tabel (zoals Sevilla ze berekent)
   const scoreMap: Record<number, number> = {};
   const winCount: Record<number, number> = {};
   const sbMap: Record<number, number> = {};
-  const sbSquaredMap: Record<number, number> = {}; // Voor Lentecompetitie: ∑(resultaat)×(eindscore tegenstander)²
+  /** Lentecompetitie (Sevilla SB²): Σ(win: PT_opp²) + 0,5×Σ(remise: PT_opp²) */
+  const sbSqMap: Record<number, number> = {};
   const buchholzList: Record<number, number[]> = {}; // lijst van opponent-scores
 
   for (const { user_id, score } of parts) {
@@ -52,7 +59,7 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     scoreMap[user_id] = score ?? 0;
     winCount[user_id] = 0;
     sbMap[user_id] = 0;
-    sbSquaredMap[user_id] = 0;
+    sbSqMap[user_id] = 0;
     buchholzList[user_id] = [];
   }
 
@@ -72,18 +79,45 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
            result === "½-½" || result === "1/2-1/2" || result === "-";
   };
 
+  /** Eén partij per spelerskoppel: bij uitstel staat het resultaat op de inhaaldag; die wint bij dubbel. */
+  function dedupeGamesByPair(
+    rows: typeof gamesRaw
+  ): Array<{ p1: number; p2: number; result: string }> {
+    const played = rows.filter(
+      (g) => g.speler2_id != null && isPlayedGame(g.result)
+    );
+    played.sort((a, b) => {
+      const aM = a.round.type === "MAKEUP" ? 1 : 0;
+      const bM = b.round.type === "MAKEUP" ? 1 : 0;
+      if (bM !== aM) return bM - aM;
+      const aO = a.original_game_id != null ? 1 : 0;
+      const bO = b.original_game_id != null ? 1 : 0;
+      if (bO !== aO) return bO - aO;
+      return b.game_id - a.game_id;
+    });
+    const seen = new Set<string>();
+    const out: Array<{ p1: number; p2: number; result: string }> = [];
+    for (const g of played) {
+      const p1 = g.speler1_id;
+      const p2 = g.speler2_id!;
+      const key = p1 < p2 ? `${p1}-${p2}` : `${p2}-${p1}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ p1, p2, result: g.result! });
+    }
+    return out;
+  }
+
+  const games = dedupeGamesByPair(gamesRaw);
+
   // 4) Bereken winCount (scoreMap wordt al gevuld met scores uit participation tabel)
   // Note: Forfeits count as played games, only absences don't
-  for (const { speler1_id: p1, speler2_id: p2, result } of games) {
-    if (!isPlayedGame(result)) continue;
-
+  for (const { p1, p2, result } of games) {
     // Count wins for played games
     if (result === "1-0" || result === "1-0R") {
       winCount[p1]! += 1;
     } else if (result === "0-1" || result === "0-1R") {
-      if (p2 != null) {
-        winCount[p2]! += 1;
-      }
+      winCount[p2]! += 1;
     }
     // Draws don't count as wins, so no need to increment winCount
   }
@@ -98,13 +132,7 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     buchholzListForWorst[user_id] = [];
   }
 
-  for (const { speler1_id: p1, speler2_id: p2, result } of games) {
-    // Skip games that are not played (absences, postponed, etc.)
-    if (!isPlayedGame(result)) continue;
-    
-    // Skip BYE games (no opponent) - they should not count in Buchholz
-    if (p2 == null) continue;
-
+  for (const { p1, p2, result } of games) {
     // Buchholz: INCLUDE forfeit games in Buchholz calculation (matches Sevilla Bhlz)
     // Use the score from participation table which matches Sevilla's calculation
     buchholzList[p1]!.push(scoreMap[p2]!);
@@ -117,36 +145,21 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     buchholzListForWorst[p2]!.push(scoreMap[p1]!);
     // SB (Sonneborn–Berger): gewogen by win/halve
     // Include forfeits in SB calculation
+    // Sonneborn–Berger (klassiek): win = PT_tegenstander, remise = ½ PT, verlies = 0
+    const o1 = scoreMap[p2] ?? 0;
+    const o2 = scoreMap[p1] ?? 0;
     if (result === "1-0" || result === "1-0R") {
-      sbMap[p1]! += scoreMap[p2!] ?? 0;
-      // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
-      // Win = 1 × (eindscore tegenstander)²
-      if (isLentecompetitie) {
-        const opponentScore = scoreMap[p2!] ?? 0;
-        sbSquaredMap[p1]! += 1 * Math.pow(opponentScore, 2);
-        // Verliezer krijgt 0 × (eindscore tegenstander)² = 0
-        sbSquaredMap[p2!]! += 0;
-      }
-    } else if ((result === "0-1" || result === "0-1R") && p2 != null) {
-      sbMap[p2]! += scoreMap[p1] ?? 0;
-      // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
-      // Win = 1 × (eindscore tegenstander)²
-      if (isLentecompetitie) {
-        const opponentScore = scoreMap[p1] ?? 0;
-        sbSquaredMap[p2]! += 1 * Math.pow(opponentScore, 2);
-        // Verliezer krijgt 0 × (eindscore tegenstander)² = 0
-        sbSquaredMap[p1]! += 0;
-      }
+      sbMap[p1]! += o1;
+      if (isLentecompetitie) sbSqMap[p1]! += o1 * o1;
+    } else if (result === "0-1" || result === "0-1R") {
+      sbMap[p2]! += o2;
+      if (isLentecompetitie) sbSqMap[p2]! += o2 * o2;
     } else if (result === "½-½" || result === "1/2-1/2" || result === "-") {
-      sbMap[p1]! += (scoreMap[p2!] ?? 0) * 0.5;
-      sbMap[p2!]! += (scoreMap[p1] ?? 0) * 0.5;
-      // Voor Lentecompetitie: resultaat × (eindscore tegenstander)²
-      // Remise = 0.5 × (eindscore tegenstander)²
+      sbMap[p1]! += o1 * 0.5;
+      sbMap[p2]! += o2 * 0.5;
       if (isLentecompetitie) {
-        const opponentScore1 = scoreMap[p2!] ?? 0;
-        const opponentScore2 = scoreMap[p1] ?? 0;
-        sbSquaredMap[p1]! += 0.5 * Math.pow(opponentScore1, 2);
-        sbSquaredMap[p2!]! += 0.5 * Math.pow(opponentScore2, 2);
+        sbSqMap[p1]! += 0.5 * (o1 * o1);
+        sbSqMap[p2]! += 0.5 * (o2 * o2);
       }
     }
   }
@@ -160,8 +173,8 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
       
       // Always calculate tie_break (don't use ModifiedMedian from Sevilla)
       if (isLentecompetitie) {
-        // Lentecompetitie: ∑(resultaat)×(eindscore tegenstander)²
-        tieValue = sbSquaredMap[user_id] ?? 0;
+        // Lentecompetitie (Sevilla SB²): Σ PT_opp² bij winst, ½×PT_opp² bij remise
+        tieValue = sbSqMap[user_id] ?? 0;
       } else if (tour.type === "SWISS") {
         // Buchholz-worst: Buchholz (includes forfeits) minus de laagste opponent-score (from ALL games)
         // Standard definition: subtract the lowest opponent score from total Buchholz
@@ -171,17 +184,12 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
           // Find the worst opponent from ALL games (including forfeits)
           const worstOpp = Math.min(...opps!);
           tieValue = sumBuch - worstOpp;
-          
-          // Debug logging for specific players (remove after debugging)
-          if (user_id === 50 || user_id === 51) { // Heidi Daelman or Dirk Heymans
-            console.log(`[DEBUG] User ${user_id}: sumBuch=${sumBuch}, opps=${JSON.stringify(opps)}, worstOpp=${worstOpp}, tieValue=${tieValue}`);
-          }
         } else {
           tieValue = 0;
         }
       } else {
-        // Round Robin: SB²
-        tieValue = Math.pow(sbMap[user_id] ?? 0, 2);
+        // Round Robin: Sonneborn–Berger
+        tieValue = sbMap[user_id] ?? 0;
       }
 
       return prisma.participation.update({
