@@ -1,3 +1,4 @@
+import type { User as PrismaUser } from "@prisma/client";
 import { prisma } from "./data";
 import type { User, UserUpdateInput, PublicUser, RegisterUserRequest } from '../types/user';
 import { hashPassword, verifyPassword } from "../core/password";
@@ -88,7 +89,7 @@ export const getUsersPaginated = async (page: number = 1, limit: number = 50): P
 
 /** Zelfde rating-/verschil-logica als voor de openbare spelerslijst, voor een gegeven user-lijst. */
 const mapUsersToPublicUsersWithRating = async (
-  users: User[],
+  users: PrismaUser[],
 ): Promise<PublicUser[]> => {
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -133,7 +134,7 @@ const mapUsersToPublicUsersWithRating = async (
         if (lastRatingUpdateDate < oneYearAgo) {
           ratingDifference = null;
         }
-      } else if (user.schaakrating_difference !== null) {
+      } else if (user.schaakrating_difference != null) {
         // zie getAllPublicUsers: geen exacte datum beschikbaar
       }
 
