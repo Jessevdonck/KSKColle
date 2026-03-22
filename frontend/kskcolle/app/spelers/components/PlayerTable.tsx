@@ -14,9 +14,11 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
 
 interface PlayerTableProps {
   users: UserType[]
+  /** Standaard: Ranglijst Clubrating */
+  tableTitle?: string
 }
 
-export default function PlayerTable({ users }: PlayerTableProps) {
+export default function PlayerTable({ users, tableTitle = "Ranglijst Clubrating" }: PlayerTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("schaakrating_elo")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
 
@@ -75,7 +77,7 @@ export default function PlayerTable({ users }: PlayerTableProps) {
       <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <Trophy className="h-5 w-5" />
-          Ranglijst Clubrating
+          {tableTitle}
         </h2>
         <p className="text-white/80 mt-1 text-sm">Klik op een kolomtitel om te sorteren</p>
       </div>

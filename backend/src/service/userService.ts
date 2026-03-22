@@ -86,78 +86,88 @@ export const getUsersPaginated = async (page: number = 1, limit: number = 50): P
   }
 };
 
+/** Zelfde rating-/verschil-logica als voor de openbare spelerslijst, voor een gegeven user-lijst. */
+const mapUsersToPublicUsersWithRating = async (
+  users: User[],
+): Promise<PublicUser[]> => {
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  const usersWithLastRatingUpdate = await Promise.all(
+    users.map(async (user) => {
+      const participationsWithRatingChange = await prisma.participation.findMany({
+        where: {
+          user_id: user.user_id,
+          sevilla_rating_change: { not: null },
+        },
+        include: {
+          tournament: {
+            include: {
+              rounds: {
+                orderBy: {
+                  ronde_datum: "desc",
+                },
+                take: 1,
+              },
+            },
+          },
+        },
+      });
+
+      let lastRatingUpdateDate: Date | null = null;
+      if (participationsWithRatingChange.length > 0) {
+        const dates = participationsWithRatingChange
+          .map((p) => p.tournament.rounds[0]?.ronde_datum)
+          .filter((date): date is Date => date !== undefined && date !== null);
+
+        if (dates.length > 0) {
+          lastRatingUpdateDate = dates.reduce((latest, current) =>
+            current > latest ? current : latest,
+          );
+        }
+      }
+
+      let ratingDifference = user.schaakrating_difference;
+
+      if (lastRatingUpdateDate) {
+        if (lastRatingUpdateDate < oneYearAgo) {
+          ratingDifference = null;
+        }
+      } else if (user.schaakrating_difference !== null) {
+        // zie getAllPublicUsers: geen exacte datum beschikbaar
+      }
+
+      return {
+        user,
+        ratingDifference,
+      };
+    }),
+  );
+
+  return usersWithLastRatingUpdate.map(({ user, ratingDifference }) => {
+    return makeExposedUser({
+      ...user,
+      rating_difference: ratingDifference,
+    });
+  });
+};
+
 export const getAllPublicUsers = async (): Promise<PublicUser[]> => {
   try {
     const users = await prisma.user.findMany();
+    return mapUsersToPublicUsersWithRating(users);
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
 
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
-    // For each user, find the most recent participation with a rating change
-    const usersWithLastRatingUpdate = await Promise.all(
-      users.map(async (user) => {
-        // Find all participations with sevilla_rating_change
-        const participationsWithRatingChange = await prisma.participation.findMany({
-          where: {
-            user_id: user.user_id,
-            sevilla_rating_change: { not: null }
-          },
-          include: {
-            tournament: {
-              include: {
-                rounds: {
-                  orderBy: {
-                    ronde_datum: 'desc'
-                  },
-                  take: 1
-                }
-              }
-            }
-          }
-        });
-
-        // Find the most recent one based on the last round date
-        let lastRatingUpdateDate: Date | null = null;
-        if (participationsWithRatingChange.length > 0) {
-          const dates = participationsWithRatingChange
-            .map(p => p.tournament.rounds[0]?.ronde_datum)
-            .filter((date): date is Date => date !== undefined && date !== null);
-          
-          if (dates.length > 0) {
-            lastRatingUpdateDate = dates.reduce((latest, current) => 
-              current > latest ? current : latest
-            );
-          }
-        }
-
-        let ratingDifference = user.schaakrating_difference;
-        
-        if (lastRatingUpdateDate) {
-          if (lastRatingUpdateDate < oneYearAgo) {
-            // Rating update was more than a year ago, set difference to null
-            ratingDifference = null;
-          }
-        } else if (user.schaakrating_difference !== null) {
-          // If there's a rating difference but no participation with sevilla_rating_change,
-          // it might have been updated via finalizeTournamentRatings.
-          // We can't determine the exact date, so we'll keep it as is for now.
-          // In the future, we could add a last_rating_update_date field to track this.
-        }
-
-        return {
-          user,
-          ratingDifference
-        };
-      })
-    );
-
-    return usersWithLastRatingUpdate.map(({ user, ratingDifference }) => {
-      // The database has schaakrating_difference, but makeExposedUser expects rating_difference
-      return makeExposedUser({
-        ...user,
-        rating_difference: ratingDifference, // Map to rating_difference for PublicUser type
-      });
+/** Jeugdleden met clubrating (publiek, zelfde velden als publicUsers). */
+export const getPublicYouthUsers = async (): Promise<PublicUser[]> => {
+  try {
+    const users = await prisma.user.findMany({
+      where: { is_youth: true },
     });
+    return mapUsersToPublicUsersWithRating(users);
   } catch (error) {
     throw handleDBError(error);
   }

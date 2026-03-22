@@ -247,6 +247,9 @@ export default function Navbar() {
                 <Link href="/youth/info" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Info
                 </Link>
+                <Link href="/youth/leden" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                  Jeugdleden
+                </Link>
                 <Link href="/youth/calendar" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Kalender
                 </Link>
@@ -530,6 +533,13 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Info
+                  </Link>
+                  <Link
+                    href="/youth/leden"
+                    className="block font-medium hover:text-mainAccent transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Jeugdleden
                   </Link>
                   <Link
                     href="/youth/calendar"

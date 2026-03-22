@@ -1,6 +1,12 @@
+import { RoundType } from "@prisma/client";
 import { prisma } from "./data";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
+
+/** Reguliere + inhaalrondes voor megaschaak-aggregaties (mutable array voor Prisma EnumRoundTypeFilter) */
+const megaschaakRoundTypesFilter = {
+  in: [RoundType.REGULAR, RoundType.MAKEUP],
+};
 
 /**
  * Calculate the cost of a player based on their rating
@@ -263,12 +269,7 @@ const calculateTPR = async (
       participation.sevilla_initial_rating || fallbackRating;
 
     // Regulier + inhaal; elk koppel één keer (geen dubbeltelling)
-    const allGames = collectDedupedMegaschaakGames([
-      latestTournament as {
-        tournament_id: number;
-        rounds: { type: string; ronde_nummer: number; games: any[] }[];
-      },
-    ]).filter(
+    const allGames = collectDedupedMegaschaakGames([latestTournament]).filter(
       (g) => g.speler1_id === playerId || g.speler2_id === playerId,
     );
 
@@ -1516,8 +1517,6 @@ function collectDedupedMegaschaakGames(
   }
   return out;
 }
-
-const megaschaakRoundTypesFilter = { in: ["REGULAR", "MAKEUP"] as const };
 
 /**
  * Get cross-table data: teams vs players with scores

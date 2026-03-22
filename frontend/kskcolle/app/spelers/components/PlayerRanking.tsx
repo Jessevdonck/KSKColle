@@ -7,8 +7,25 @@ import AsyncData from "../../components/AsyncData"
 import type { User } from "@/data/types"
 import { Users, Trophy } from "lucide-react"
 
-export default function PlayerRanking() {
-  const { data: users = [], isLoading, error } = useSWR<User[]>("users/publicUsers", getAll)
+export type PlayerRankingProps = {
+  /** API-pad onder users/, bv. publicUsers of publicYouth */
+  apiPath?: string
+  pageTitle?: string
+  registeredCountLabel?: string
+  sortHint?: string
+  tableTitle?: string
+}
+
+export default function PlayerRanking({
+  apiPath = "users/publicUsers",
+  pageTitle = "Spelers Ranglijst Clubrating",
+  registeredCountLabel = "geregistreerde spelers",
+  sortHint = "Gesorteerd op ELIO rating",
+  tableTitle = "Ranglijst Clubrating",
+}: PlayerRankingProps = {}) {
+  const { data: users = [], isLoading, error } = useSWR<User[]>(apiPath, () =>
+    getAll(apiPath),
+  )
 
   const noPlayersError = users.length === 0 && !isLoading && !error
 
@@ -17,7 +34,7 @@ export default function PlayerRanking() {
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mainAccent mx-auto mb-3"></div>
-          <p className="text-gray-600 text-base">Spelers worden geladen...</p>
+          <p className="text-gray-600 text-base">Lijst wordt geladen...</p>
         </div>
       </div>
     )
@@ -45,15 +62,17 @@ export default function PlayerRanking() {
               <Users className="h-6 w-6 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-textColor">Spelers Ranglijst Clubrating</h1>
+              <h1 className="text-2xl font-bold text-textColor">{pageTitle}</h1>
               <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
-                  <span>{users.length} geregistreerde spelers</span>
+                  <span>
+                    {users.length} {registeredCountLabel}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Trophy className="h-3 w-3" />
-                  <span>Gesorteerd op ELIO rating</span>
+                  <span>{sortHint}</span>
                 </div>
               </div>
             </div>
@@ -81,7 +100,7 @@ export default function PlayerRanking() {
               </div>
             </div>
           ) : (
-            <PlayerTable users={users} />
+            <PlayerTable users={users} tableTitle={tableTitle} />
           )}
         </AsyncData>
       </div>

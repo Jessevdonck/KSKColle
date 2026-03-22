@@ -113,6 +113,27 @@ const getAllPublicUsers = async (ctx: KoaContext<GetAllPublicUserResponse>): Pro
 getAllPublicUsers.validationScheme = null;
 
 /**
+ * @api {get} /users/publicYouth Get all public youth members (is_youth) with club rating
+ * @apiName GetPublicYouthUsers
+ * @apiGroup User
+ */
+const getPublicYouthUsers = async (ctx: KoaContext<GetAllPublicUserResponse>): Promise<PublicUser[]> => {
+  const users = await userService.getPublicYouthUsers();
+
+  const mappedUsers = users.map((user: any) => ({
+    ...user,
+    schaakrating_difference: user.rating_difference,
+  }));
+
+  ctx.body = {
+    items: mappedUsers,
+  };
+
+  return users;
+};
+getPublicYouthUsers.validationScheme = null;
+
+/**
  * @api {post} /users Register a new user
  * @apiName RegisterUser
  * @apiGroup User
@@ -479,6 +500,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/', requireAuthentication, makeRequireRole('admin'), validate(getAllUsers.validationScheme), getAllUsers);
   router.get('/paginated', requireAuthentication, makeRequireRole('admin'), validate(getPaginatedUsers.validationScheme), getPaginatedUsers);
   router.get('/publicUsers', validate(getAllPublicUsers.validationScheme), getAllPublicUsers);
+  router.get('/publicYouth', validate(getPublicYouthUsers.validationScheme), getPublicYouthUsers);
   router.post('/', requireAuthentication, makeRequireRole('admin'), authDelay, validate(registerUser.validationScheme), registerUser);
   router.get('/by-name', requireAuthentication, validate(getUserByNaam.validationScheme), getUserByNaam);
   router.get('/by-name/public', validate(getPublicUserByNaam.validationScheme), getPublicUserByNaam);
