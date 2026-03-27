@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Trophy, Medal, Award, User, X, Calendar } from "lucide-react"
+import { Medal, User, X, Calendar } from "lucide-react"
 import { useState } from "react"
 import { isLentecompetitieTieBreak } from "./tieBreakLente"
 
@@ -124,10 +124,6 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
   const isLentecompetitie = isLentecompetitieTieBreak(tournament)
 
-  const getByeText = (result: string | null) => {
-    // Always show "BYE" in player history modal
-    return "BYE"
-  }
   const playerScores = calculateStandings(tournament, rounds)
   
   // Find player with biggest rating gain
@@ -604,18 +600,19 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     sbSquaredMap[user.user_id] = 0
   })
 
-  // Helper: "echte gespeelde partijen" voor kolom Partijen
-  // Excludes: uitgesteld/niet gespeeld, inhaal-absenties, forfaits en invalid "0-0"
-  // Includes: 1-0, 0-1, 1/2-1/2, ½-½, -
+  // Helper: gespeelde partijen voor kolom Partijen
+  // Excludes: uitgesteld/niet gespeeld, inhaal-absenties en invalid "0-0"
+  // Includes ook forfaits: 1-0R, 0-1R
   const isPlayedGame = (result: string | null): boolean => {
     if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
     if (result.startsWith("ABS-")) return false;
     if (result === "0.5-0") return false;
     if (result === "0-0") return false;
-    if (result === "1-0R" || result === "0-1R") return false;
     return (
       result === "1-0" ||
       result === "0-1" ||
+      result === "1-0R" ||
+      result === "0-1R" ||
       result === "½-½" ||
       result === "1/2-1/2" ||
       result === "-"
