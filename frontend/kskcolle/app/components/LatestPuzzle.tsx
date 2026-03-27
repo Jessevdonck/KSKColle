@@ -363,7 +363,7 @@ export default function LatestPuzzle() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
             {/* Puzzle Card */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg p-8 border border-gray-200">
               <div className="flex items-start justify-between mb-6">
@@ -431,7 +431,7 @@ export default function LatestPuzzle() {
             </div>
 
             {/* Leaderboard Card */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 h-full flex flex-col">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-yellow-500" />
@@ -439,7 +439,7 @@ export default function LatestPuzzle() {
                 </h3>
               </div>
               
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="space-y-2 flex-1 overflow-y-auto">
                 {leaderboardLoading ? (
                   <div className="text-center py-4">
                     <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-mainAccent"></div>
