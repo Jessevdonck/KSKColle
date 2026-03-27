@@ -3,9 +3,9 @@ import { prisma } from "./data";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 
-/** Reguliere + inhaalrondes voor megaschaak-aggregaties (mutable array voor Prisma EnumRoundTypeFilter) */
+/** Enkel reguliere rondes voor megaschaak-aggregaties (inhaaldagen tellen niet mee) */
 const megaschaakRoundTypesFilter = {
-  in: [RoundType.REGULAR, RoundType.MAKEUP],
+  in: [RoundType.REGULAR],
 };
 
 /**
@@ -1452,9 +1452,9 @@ function pairKeyMegaschaak(p1: number, p2: number): string {
 }
 
 /**
- * Reguliere + inhaalpartijen; elk spelerskoppel telt één keer (zelfde logica als tieBreakService:
- * bij dubbel wint MAKEUP, anders original_game_id, anders hoogste game_id).
- * Alleen partijen met isPlayedGame (megaschaak) komen in aanmerking.
+ * Enkel reguliere partijen voor megaschaak; inhaaldagen tellen niet mee.
+ * Alleen "echt gespeelde" partijen (isPlayedGame) komen in aanmerking.
+ * Uitgestelde regels (met uitgestelde_datum) tellen ook niet mee.
  */
 function collectDedupedMegaschaakGames(
   allClassesTournaments: Array<{
@@ -1477,6 +1477,7 @@ function collectDedupedMegaschaakGames(
     for (const r of t.rounds) {
       for (const g of r.games) {
         if (g.speler2_id == null) continue;
+        if (g.uitgestelde_datum) continue;
         rows.push({
           game: g,
           tournament_id: t.tournament_id,
