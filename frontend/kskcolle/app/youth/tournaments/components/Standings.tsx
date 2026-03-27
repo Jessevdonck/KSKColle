@@ -543,20 +543,22 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     sbMap[user.user_id] = 0
   })
 
-  // Helper function: check if result represents a game that should count as played
-  // Excludes: null, "not_played", "...", "uitgesteld", absences ("ABS-", "0.5-0"), and invalid results ("0-0")
-  // Includes: regular games ("1-0", "0-1", "½-½", "1/2-1/2", "-"), forfeits ("1-0R", "0-1R")
+  // Helper: "echte gespeelde partijen" voor kolom Partijen
+  // Excludes: uitgesteld/niet gespeeld, inhaal-absenties, forfaits en invalid "0-0"
+  // Includes: 1-0, 0-1, 1/2-1/2, ½-½, -
   const isPlayedGame = (result: string | null): boolean => {
     if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
-    // Exclude absences with message (results starting with 'ABS-')
     if (result.startsWith("ABS-")) return false;
-    // Exclude "0.5-0" which is an absence with message
     if (result === "0.5-0") return false;
-    // Exclude "0-0" which is an invalid/unplayed result
     if (result === "0-0") return false;
-    // Only count valid game results: wins, losses, draws, and forfeits
-    return result === "1-0" || result === "0-1" || result === "1-0R" || result === "0-1R" ||
-           result === "½-½" || result === "1/2-1/2" || result === "-";
+    if (result === "1-0R" || result === "0-1R") return false;
+    return (
+      result === "1-0" ||
+      result === "0-1" ||
+      result === "½-½" ||
+      result === "1/2-1/2" ||
+      result === "-"
+    );
   };
 
   // 2) score & gamesPlayed
