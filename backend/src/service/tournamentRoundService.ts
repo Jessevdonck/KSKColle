@@ -433,7 +433,7 @@ export async function addGameToMakeupRound(
 }
 
 /**
- * Update de datum van een inhaaldag ronde
+ * Update de datum van een ronde (REGULAR of MAKEUP)
  */
 export async function updateMakeupRoundDate(
   round_id: number,
@@ -454,8 +454,8 @@ export async function updateMakeupRoundDate(
       }
     });
 
-    if (!round || round.type !== RoundType.MAKEUP) {
-      throw ServiceError.validationFailed(`Ronde ${round_id} is geen inhaaldag`);
+    if (!round) {
+      throw ServiceError.validationFailed(`Ronde ${round_id} niet gevonden`);
     }
 
     const isLentecompetitie = round.tournament.naam.toLowerCase().includes('lentecompetitie');
@@ -488,7 +488,10 @@ export async function updateMakeupRoundDate(
     if (round.calendar_event_id) {
       const eventUpdateData: any = {
         date: new_date,
-        title: `Inhaaldag - ${updatedRound.label || `Na ronde ${updatedRound.ronde_nummer - 1}`}`,
+        title:
+          round.type === RoundType.MAKEUP
+            ? `Inhaaldag - ${updatedRound.label || `Na ronde ${updatedRound.ronde_nummer - 1}`}`
+            : `Ronde ${updatedRound.ronde_nummer} - ${round.tournament.naam}`,
       };
       if (new_startuur !== undefined) {
         eventUpdateData.startuur = new_startuur;
@@ -500,7 +503,7 @@ export async function updateMakeupRoundDate(
     }
 
     // Als dit een Lentecompetitie is, update ook de corresponderende inhaaldagen in andere klassen
-    if (isLentecompetitie) {
+    if (isLentecompetitie && round.type === RoundType.MAKEUP) {
       const allTournaments = await prisma.tournament.findMany({
         where: { 
           naam: round.tournament.naam,

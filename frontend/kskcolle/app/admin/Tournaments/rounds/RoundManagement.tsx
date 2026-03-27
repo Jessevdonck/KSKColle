@@ -649,16 +649,14 @@ export default function RoundManagement({ tournament }: Props) {
                         ) : (
                           <div className="flex items-center gap-2">
                             <p>Speeldatum: {format(new Date(round.ronde_datum), 'dd/MM/yyyy')} om {round.startuur}</p>
-                            {round.type === 'MAKEUP' && (
-                              <Button
-                                onClick={() => handleEditRoundDate(round)}
-                                size="sm"
-                                variant="outline"
-                                className="border-white/50 text-white hover:bg-white/20 bg-white/10 text-xs"
-                              >
-                                Bewerken
-                              </Button>
-                            )}
+                            <Button
+                              onClick={() => handleEditRoundDate(round)}
+                              size="sm"
+                              variant="outline"
+                              className="border-white/50 text-white hover:bg-white/20 bg-white/10 text-xs"
+                            >
+                              Bewerken
+                            </Button>
                           </div>
                         )}
                         {round.is_sevilla_imported && (
