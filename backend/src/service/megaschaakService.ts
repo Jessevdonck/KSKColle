@@ -1428,7 +1428,7 @@ const calculateGameScore = (game: any, playerId: number): number => {
   return 0;
 };
 
-/** Whether a game counts as "played" (for games-played count); BYE, no-result en forfait (1-0R/0-1R) tellen niet mee */
+/** Whether a game counts as "played" (for games-played count); BYE en no-result tellen niet mee. Forfaits tellen wel mee. */
 const isPlayedGame = (
   result: string | null,
   speler2_id: number | null,
@@ -1442,8 +1442,6 @@ const isPlayedGame = (
   )
     return false;
   if (typeof result === "string" && result.startsWith("ABS-")) return false;
-  // Forfaits (1-0R / 0-1R) tellen niet mee als "gespeelde partij" voor megaschaak
-  if (result === "1-0R" || result === "0-1R") return false;
   return true;
 };
 
