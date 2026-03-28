@@ -3,7 +3,7 @@ import { prisma } from "./data";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 
-/** Enkel reguliere rondes voor megaschaak-aggregaties (inhaaldagen tellen niet mee) */
+/** Alleen reguliere speeldagen in megaschaak; inhaaluitslagen koppelen we via original_game_id */
 const megaschaakRoundTypesFilter = {
   in: [RoundType.REGULAR],
 };
@@ -268,8 +268,8 @@ const calculateTPR = async (
     const playerRatingAtTournament =
       participation.sevilla_initial_rating || fallbackRating;
 
-    // Regulier + inhaal; elk koppel één keer (geen dubbeltelling)
-    const allGames = collectDedupedMegaschaakGames([latestTournament]).filter(
+    // Reguliere rondes; inhaaluitslag via original_game_id. Elk koppel één keer.
+    const allGames = (await collectDedupedMegaschaakGames([latestTournament])).filter(
       (g) => g.speler1_id === playerId || g.speler2_id === playerId,
     );
 
@@ -1450,11 +1450,37 @@ function pairKeyMegaschaak(p1: number, p2: number): string {
 }
 
 /**
- * Enkel reguliere partijen voor megaschaak; inhaaldagen tellen niet mee.
- * Alleen "echt gespeelde" partijen (isPlayedGame) komen in aanmerking.
- * Uitgestelde regels (met uitgestelde_datum) tellen ook niet mee.
+ * Reguliere partij met echte uitslag op de speeldag, of anders de inhaalpartij
+ * (zelfde koppel, zelfde geplande ronde; geen MAKEUP-rondes in de UI).
  */
-function collectDedupedMegaschaakGames(
+function resolveRegularGameForMegaschaak(
+  reg: any,
+  makeupByOriginalId: Map<number, any>,
+): any | null {
+  if (reg.speler2_id == null) return null;
+  const m =
+    reg.game_id != null ? makeupByOriginalId.get(reg.game_id) : undefined;
+  const makeupPlayed = m && isPlayedGame(m.result, m.speler2_id);
+  // Geldige uitslag op de reguliere rij telt altijd (ook als uitgestelde_datum nog staat).
+  if (isPlayedGame(reg.result, reg.speler2_id)) {
+    return reg;
+  }
+  if (makeupPlayed) {
+    return {
+      ...reg,
+      result: m!.result,
+      winnaar_id: m!.winnaar_id,
+      winnaar: m!.winnaar,
+    };
+  }
+  return null;
+}
+
+/**
+ * Alleen REGULAR-rondes; uitslagen gespeeld op inhaaldag worden via original_game_id
+ * op de geplande ronde gezet. Per koppel één rij (nieuwste game_id wint bij dubbel).
+ */
+async function collectDedupedMegaschaakGames(
   allClassesTournaments: Array<{
     tournament_id: number;
     rounds: Array<{
@@ -1463,43 +1489,64 @@ function collectDedupedMegaschaakGames(
       games: any[];
     }>;
   }>,
-): any[] {
-  type Row = {
-    game: any;
-    tournament_id: number;
-    roundType: string;
-    ronde_nummer: number;
-  };
+): Promise<any[]> {
+  const regularGameIds: number[] = [];
+  for (const t of allClassesTournaments) {
+    for (const r of t.rounds) {
+      if (r.type !== RoundType.REGULAR && r.type !== "REGULAR") continue;
+      for (const g of r.games) {
+        if (g.speler2_id != null && g.game_id != null) {
+          regularGameIds.push(g.game_id);
+        }
+      }
+    }
+  }
+
+  const makeupByOriginalId = new Map<number, any>();
+  if (regularGameIds.length > 0) {
+    const makeups = await prisma.game.findMany({
+      where: {
+        original_game_id: { in: regularGameIds },
+        round: { type: RoundType.MAKEUP },
+      },
+      include: {
+        speler1: true,
+        speler2: true,
+        winnaar: true,
+      },
+      orderBy: { game_id: "desc" },
+    });
+    for (const m of makeups) {
+      const oid = m.original_game_id;
+      if (oid == null) continue;
+      if (!makeupByOriginalId.has(oid)) makeupByOriginalId.set(oid, m);
+    }
+  }
+
+  type Row = { game: any; tournament_id: number; ronde_nummer: number };
   const rows: Row[] = [];
   for (const t of allClassesTournaments) {
     for (const r of t.rounds) {
+      if (r.type !== RoundType.REGULAR && r.type !== "REGULAR") continue;
       for (const g of r.games) {
-        if (g.speler2_id == null) continue;
-        if (g.uitgestelde_datum) continue;
+        const effective = resolveRegularGameForMegaschaak(
+          g,
+          makeupByOriginalId,
+        );
+        if (!effective) continue;
         rows.push({
-          game: g,
+          game: effective,
           tournament_id: t.tournament_id,
-          roundType: r.type,
           ronde_nummer: r.ronde_nummer,
         });
       }
     }
   }
-  const played = rows.filter(({ game: g }) =>
-    isPlayedGame(g.result, g.speler2_id),
-  );
-  played.sort((a, b) => {
-    const aM = a.roundType === "MAKEUP" ? 1 : 0;
-    const bM = b.roundType === "MAKEUP" ? 1 : 0;
-    if (bM !== aM) return bM - aM;
-    const aO = a.game.original_game_id != null ? 1 : 0;
-    const bO = b.game.original_game_id != null ? 1 : 0;
-    if (bO !== aO) return bO - aO;
-    return b.game.game_id - a.game.game_id;
-  });
+
+  rows.sort((a, b) => b.game.game_id - a.game.game_id);
   const seen = new Set<string>();
   const out: any[] = [];
-  for (const { game, tournament_id, roundType, ronde_nummer } of played) {
+  for (const { game, tournament_id, ronde_nummer } of rows) {
     const p1 = game.speler1_id;
     const p2 = game.speler2_id!;
     const key = `${tournament_id}-${pairKeyMegaschaak(p1, p2)}`;
@@ -1510,11 +1557,101 @@ function collectDedupedMegaschaakGames(
       _megaschaak_round: {
         tournament_id,
         ronde_nummer,
-        type: roundType,
+        type: RoundType.REGULAR,
       },
     });
   }
+
+  const tournamentIds = [
+    ...new Set(allClassesTournaments.map((t) => t.tournament_id)),
+  ];
+  await appendMegaschaakOrphanMakeupGames(out, seen, tournamentIds);
+
   return out;
+}
+
+/**
+ * Inhaalpartijen die (nog) niet via de reguliere rij binnenkomen — bv. ontbrekende
+ * koppeling, of alleen op MAKEUP — alsnog onder het geplande rondenummer (offset 1000).
+ */
+async function appendMegaschaakOrphanMakeupGames(
+  out: any[],
+  seen: Set<string>,
+  tournamentIds: number[],
+): Promise<void> {
+  if (tournamentIds.length === 0) return;
+
+  const makeups = await prisma.game.findMany({
+    where: {
+      speler2_id: { not: null },
+      round: {
+        type: RoundType.MAKEUP,
+        tournament_id: { in: tournamentIds },
+      },
+    },
+    include: {
+      speler1: true,
+      speler2: true,
+      winnaar: true,
+      round: true,
+    },
+    orderBy: { game_id: "desc" },
+  });
+
+  const played = makeups.filter((m) =>
+    isPlayedGame(m.result, m.speler2_id),
+  );
+
+  const origIds = [
+    ...new Set(
+      played
+        .map((m) => m.original_game_id)
+        .filter((id): id is number => id != null),
+    ),
+  ];
+  const originals =
+    origIds.length > 0
+      ? await prisma.game.findMany({
+          where: { game_id: { in: origIds } },
+          include: {
+            round: { select: { ronde_nummer: true, type: true } },
+          },
+        })
+      : [];
+  const origMap = new Map(originals.map((o) => [o.game_id, o]));
+
+  for (const m of played) {
+    const tid = m.round.tournament_id;
+    const p1 = m.speler1_id;
+    const p2 = m.speler2_id!;
+    const key = `${tid}-${pairKeyMegaschaak(p1, p2)}`;
+    if (seen.has(key)) continue;
+
+    let displayRound: number | null = null;
+    if (m.original_game_id != null) {
+      const orig = origMap.get(m.original_game_id);
+      if (orig?.round?.type === RoundType.REGULAR) {
+        displayRound = orig.round.ronde_nummer;
+      }
+    }
+    if (displayRound == null) {
+      const rn = m.round.ronde_nummer;
+      if (typeof rn === "number" && rn >= 1000) {
+        displayRound = rn - 1000;
+      }
+    }
+    if (displayRound == null) continue;
+
+    seen.add(key);
+    out.push({
+      ...m,
+      _megaschaak_round: {
+        tournament_id: tid,
+        ronde_nummer: displayRound,
+        type: RoundType.REGULAR,
+      },
+    });
+  }
 }
 
 /**
@@ -1559,7 +1696,7 @@ export const getCrossTableData = async (tournamentId: number) => {
       },
     });
 
-    const allGames = collectDedupedMegaschaakGames(allClassesTournaments);
+    const allGames = await collectDedupedMegaschaakGames(allClassesTournaments);
 
     // Get all teams for this tournament
     const teams = await prisma.megaschaakTeam.findMany({
@@ -1816,7 +1953,7 @@ export const getTeamStandings = async (tournamentId: number) => {
       },
     });
 
-    const allGames = collectDedupedMegaschaakGames(allClassesTournaments);
+    const allGames = await collectDedupedMegaschaakGames(allClassesTournaments);
 
     // Get all teams for this tournament
     const teams = await prisma.megaschaakTeam.findMany({
@@ -1962,7 +2099,9 @@ export const getTeamDetailedScores = async (teamId: number) => {
       },
     });
 
-    const dedupedGames = collectDedupedMegaschaakGames(allClassesTournaments);
+    const dedupedGames = await collectDedupedMegaschaakGames(
+      allClassesTournaments,
+    );
 
     const gamesByRound = new Map<number, any[]>();
     for (const g of dedupedGames) {
@@ -1971,16 +2110,57 @@ export const getTeamDetailedScores = async (teamId: number) => {
       gamesByRound.get(rn)!.push(g);
     }
 
+    const teamTid = team.tournament_id;
+    const classTournamentIds = allClassesTournaments.map(
+      (t) => t.tournament_id,
+    );
+
+    // Spelers kunnen uit verschillende klassen komen; partijen hangen aan hun echte toernooi.
+    const participationsForTeamPlayers = await prisma.participation.findMany({
+      where: {
+        user_id: { in: team.players.map((p) => p.player_id) },
+        tournament_id: { in: classTournamentIds },
+      },
+      select: {
+        user_id: true,
+        tournament_id: true,
+      },
+    });
+    const playerCompetitionTournamentId = new Map<number, number>();
+    for (const p of participationsForTeamPlayers) {
+      if (!playerCompetitionTournamentId.has(p.user_id)) {
+        playerCompetitionTournamentId.set(p.user_id, p.tournament_id);
+      }
+    }
+
+    const planRounds = new Set<number>();
+    for (const t of allClassesTournaments) {
+      const n = t.rondes;
+      if (typeof n === "number" && n > 0) {
+        for (let i = 1; i <= n; i++) planRounds.add(i);
+      }
+      for (const r of t.rounds ?? []) {
+        planRounds.add(r.ronde_nummer);
+      }
+    }
+    for (const k of gamesByRound.keys()) {
+      planRounds.add(k);
+    }
+    const roundsSorted = [...planRounds].sort((a, b) => a - b);
+
     // Calculate scores per player per round
     const playerScoresByRound = team.players.map((tp) => {
-      const roundScores = Array.from(gamesByRound.entries()).map(
-        ([rondeNummer, games]) => {
-          // Find if player has a game in this round
-          const playerGame = games.find(
-            (game: any) =>
-              game.speler1_id === tp.player_id ||
-              game.speler2_id === tp.player_id,
-          );
+      const playerTid =
+        playerCompetitionTournamentId.get(tp.player_id) ?? teamTid;
+
+      const roundScores = roundsSorted.map((rondeNummer) => {
+        const games = gamesByRound.get(rondeNummer) ?? [];
+        const playerGame = games.find(
+          (game: any) =>
+            game._megaschaak_round?.tournament_id === playerTid &&
+            (game.speler1_id === tp.player_id ||
+              game.speler2_id === tp.player_id),
+        );
 
           // If no game, return null to indicate no game played
           if (!playerGame) {
@@ -2034,7 +2214,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
     return {
       ...team,
       players: playerScoresByRound,
-      rounds: Array.from(gamesByRound.keys()).sort((a, b) => a - b),
+      rounds: roundsSorted,
     };
   } catch (error) {
     throw handleDBError(error);
@@ -2179,7 +2359,7 @@ export const getBestValuePlayers = async (tournamentId: number) => {
 
     const tournamentIds = allClassesTournaments.map((t) => t.tournament_id);
 
-    const dedupedMegaschaakGames = collectDedupedMegaschaakGames(
+    const dedupedMegaschaakGames = await collectDedupedMegaschaakGames(
       allClassesTournaments,
     );
 
