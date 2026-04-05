@@ -583,9 +583,9 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
             if (p2) gamesPlayed[p2]++
           }
 
-          if (result === "1-0") {
+          if (result === "1-0" || result === "1-0R") {
             calculatedScoreMap[p1] += 1
-          } else if (result === "0-1" && p2) {
+          } else if ((result === "0-1" || result === "0-1R") && p2) {
             calculatedScoreMap[p2] += 1
           } else if (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") {
             calculatedScoreMap[p1] += 0.5
@@ -713,22 +713,20 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     p.schaakrating_elo = user.schaakrating_elo
   })
 
-  // 5) sorteren: eerst op score, dan tieBreak, dan rating
+  // 5) sorteren: zelfde volgorde als volwassen stand — score, minder partijen = beter, tie-break, lagere rating = beter
   players.sort((a, b) => {
-    // Eerste criterium: Punten (hoog naar laag)
     if (b.score !== a.score) {
       return b.score - a.score
     }
-    
-    // Tweede criterium: Tie-break (Bhlz-W/SB-score) (hoog naar laag)
+    if (a.gamesPlayed !== b.gamesPlayed) {
+      return a.gamesPlayed - b.gamesPlayed
+    }
     if (b.tieBreak !== a.tieBreak) {
       return b.tieBreak - a.tieBreak
     }
-    
-    // Derde criterium: Rating (hoog naar laag)
     const ratingA = a.schaakrating_elo || 0
     const ratingB = b.schaakrating_elo || 0
-    return ratingB - ratingA
+    return ratingA - ratingB
   })
 
   return players

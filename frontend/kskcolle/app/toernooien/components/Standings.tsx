@@ -767,23 +767,23 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     p.schaakrating_elo = user.schaakrating_elo
   })
 
-  // 5) sorteren: eerst op score, dan tieBreak, dan aantal partijen (minder = beter), dan rating (lager = beter)
+  // 5) sorteren: score, dan aantal partijen (minder = beter), dan tie-break, dan rating (lager = beter)
   players.sort((a, b) => {
     // Eerste criterium: Punten (hoog naar laag)
     if (b.score !== a.score) {
       return b.score - a.score
     }
-    
-    // Tweede criterium: Tie-break (Bhlz-W/SB-score) (hoog naar laag)
-    if (b.tieBreak !== a.tieBreak) {
-      return b.tieBreak - a.tieBreak
-    }
-    
-    // Derde criterium: Aantal partijen (LAAG naar HOOG - minder partijen = beter)
+
+    // Tweede criterium: Aantal partijen (LAAG naar HOOG - minder partijen = beter)
     if (a.gamesPlayed !== b.gamesPlayed) {
       return a.gamesPlayed - b.gamesPlayed
     }
-    
+
+    // Derde criterium: Tie-break (Bhlz-W/SB-score) (hoog naar laag)
+    if (b.tieBreak !== a.tieBreak) {
+      return b.tieBreak - a.tieBreak
+    }
+
     // Vierde criterium: Rating (LAAG naar HOOG - lagere rating = beter)
     const ratingA = a.schaakrating_elo || 0
     const ratingB = b.schaakrating_elo || 0
