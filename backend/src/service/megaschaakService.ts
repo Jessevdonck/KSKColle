@@ -38,6 +38,51 @@ function isExcludedFromMegaschaak(
   return false;
 }
 
+/**
+ * Vaste user_id's die nooit in megaschaak-partijen mogen meetellen (naast DB-lookup op naam).
+ * Vul aan met Lode Van Landeghem zodat het ook zonder brede user-query werkt.
+ */
+const MEGASCHAAT_EXCLUDED_FIXED_USER_IDS: readonly number[] = [];
+
+let megaschaakExcludedUserIdsPromise: Promise<Set<number>> | null = null;
+
+async function getMegaschaakExcludedUserIds(): Promise<Set<number>> {
+  if (!megaschaakExcludedUserIdsPromise) {
+    megaschaakExcludedUserIdsPromise = (async () => {
+      const ids = new Set<number>([...MEGASCHAAT_EXCLUDED_FIXED_USER_IDS]);
+      const candidates = await prisma.user.findMany({
+        where: {
+          OR: [
+            { voornaam: { in: ["Lode", "LODE", "lode", "Piet", "piet"] } },
+            { achternaam: { contains: "Landeghem" } },
+            { achternaam: { contains: "landeghem" } },
+            { achternaam: { contains: "Vermeiren" } },
+          ],
+        },
+        select: { user_id: true, voornaam: true, achternaam: true },
+      });
+      for (const u of candidates) {
+        if (isExcludedFromMegaschaak(u.voornaam || "", u.achternaam || "")) {
+          ids.add(u.user_id);
+        }
+      }
+      return ids;
+    })();
+  }
+  return megaschaakExcludedUserIdsPromise;
+}
+
+function gameInvolvesMegaschaakExcludedPlayer(
+  game: { speler1_id?: number | null; speler2_id?: number | null },
+  excludedIds: Set<number>,
+): boolean {
+  const p1 = game.speler1_id;
+  const p2 = game.speler2_id;
+  if (p1 != null && excludedIds.has(p1)) return true;
+  if (p2 != null && excludedIds.has(p2)) return true;
+  return false;
+}
+
 const DEFAULT_CONFIG: MegaschaakConfig = {
   classBonusPoints: {
     "Eerste Klasse": 0,
@@ -1490,6 +1535,8 @@ async function collectDedupedMegaschaakGames(
     }>;
   }>,
 ): Promise<any[]> {
+  const excludedUserIds = await getMegaschaakExcludedUserIds();
+
   const regularGameIds: number[] = [];
   for (const t of allClassesTournaments) {
     for (const r of t.rounds) {
@@ -1534,6 +1581,9 @@ async function collectDedupedMegaschaakGames(
           makeupByOriginalId,
         );
         if (!effective) continue;
+        if (gameInvolvesMegaschaakExcludedPlayer(effective, excludedUserIds)) {
+          continue;
+        }
         rows.push({
           game: effective,
           tournament_id: t.tournament_id,
@@ -1551,6 +1601,7 @@ async function collectDedupedMegaschaakGames(
     const p2 = game.speler2_id!;
     const key = `${tournament_id}-${pairKeyMegaschaak(p1, p2)}`;
     if (seen.has(key)) continue;
+    if (gameInvolvesMegaschaakExcludedPlayer(game, excludedUserIds)) continue;
     seen.add(key);
     out.push({
       ...game,
@@ -1565,7 +1616,12 @@ async function collectDedupedMegaschaakGames(
   const tournamentIds = [
     ...new Set(allClassesTournaments.map((t) => t.tournament_id)),
   ];
-  await appendMegaschaakOrphanMakeupGames(out, seen, tournamentIds);
+  await appendMegaschaakOrphanMakeupGames(
+    out,
+    seen,
+    tournamentIds,
+    excludedUserIds,
+  );
 
   return out;
 }
@@ -1578,6 +1634,7 @@ async function appendMegaschaakOrphanMakeupGames(
   out: any[],
   seen: Set<string>,
   tournamentIds: number[],
+  excludedUserIds: Set<number>,
 ): Promise<void> {
   if (tournamentIds.length === 0) return;
 
@@ -1641,6 +1698,8 @@ async function appendMegaschaakOrphanMakeupGames(
       }
     }
     if (displayRound == null) continue;
+
+    if (gameInvolvesMegaschaakExcludedPlayer(m, excludedUserIds)) continue;
 
     seen.add(key);
     out.push({
