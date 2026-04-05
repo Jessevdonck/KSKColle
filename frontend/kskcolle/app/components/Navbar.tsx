@@ -50,7 +50,7 @@ export default function Navbar() {
   // Fetch tournaments to find latest herfstcompetitie and lentecompetitie
   const { data: tournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
-    getAll
+    getAll,
   )
 
   // Find latest herfstcompetitie and lentecompetitie

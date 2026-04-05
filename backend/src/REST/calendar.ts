@@ -1,4 +1,11 @@
 import Router from '@koa/router';
+import {
+  shortLivedCacheGet,
+  shortLivedCacheSet,
+  shortLivedCacheInvalidatePrefix,
+  SHORT_CACHE_TTL_MS,
+  SHORT_CACHE_KEY_PREFIX,
+} from '../core/shortLivedCache';
 import * as eventService from '../service/calendarService';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 import type { IdParams } from '../types/common';
@@ -8,14 +15,25 @@ import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
 import { CreateEventRequest, CreateEventResponse, GetAllEventResponse, GetEventByIdResponse, UpdateEventRequest, UpdateEventResponse } from '../types/calendar';
 
+const CALENDAR_LIST_CACHE_PREFIX = SHORT_CACHE_KEY_PREFIX.calendarList;
+
+function invalidateCalendarListCache() {
+  shortLivedCacheInvalidatePrefix(CALENDAR_LIST_CACHE_PREFIX);
+}
 
 const getAllEvents = async (ctx: KoaContext<GetAllEventResponse>) => {
   const isYouth = ctx.query.is_youth === 'true' ? true : ctx.query.is_youth === 'false' ? false : undefined;
   const showArchive = ctx.query.show_archive === 'true' ? true : ctx.query.show_archive === 'false' ? false : undefined;
+  const cacheKey = `${CALENDAR_LIST_CACHE_PREFIX}${String(isYouth)}:${String(showArchive)}`;
+  const cached = shortLivedCacheGet<GetAllEventResponse>(cacheKey);
+  if (cached) {
+    ctx.body = cached;
+    return;
+  }
   const events = await eventService.getAllEvents(isYouth, showArchive);
-  ctx.body = {
-    items: events,
-  };
+  const body: GetAllEventResponse = { items: events };
+  shortLivedCacheSet(cacheKey, body, SHORT_CACHE_TTL_MS.calendarList);
+  ctx.body = body;
 };
 
 getAllEvents.validationScheme = {
@@ -27,6 +45,7 @@ getAllEvents.validationScheme = {
 
 const createEvent = async (ctx: KoaContext<CreateEventResponse, void, CreateEventRequest>) => {
   const newEvent: any = await eventService.createEvent(ctx.request.body);
+  invalidateCalendarListCache();
   ctx.status = 201; 
   ctx.body = newEvent;
 };
@@ -58,7 +77,7 @@ getEventById.validationScheme = {
 const updateEvent = async (ctx: KoaContext<UpdateEventResponse, IdParams, UpdateEventRequest>) => {
   const eventId = Number(ctx.params.id); 
   const updatedEvent = await eventService.updateEvent(eventId, ctx.request.body); 
-  
+  invalidateCalendarListCache();
   ctx.body = updatedEvent; 
 };
 
@@ -82,6 +101,7 @@ updateEvent.validationScheme = {
 const removeEvent = async (ctx: KoaContext<void, IdParams>) => {
   const spelId = Number(ctx.params.id);
   eventService.removeEvent(spelId);
+  invalidateCalendarListCache();
   ctx.status = 204; 
 };
 

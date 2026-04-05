@@ -72,21 +72,12 @@ export default function TournamentDetails() {
   } = useSWR<Tournament>(
     tournamentId ? `tournament/${tournamentId}` : null,
     () => getById(`tournament/${tournamentId}`),
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      dedupingInterval: 0, // Disable deduplication to force fresh data
-    },
   )
 
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<Round[]>(
     tournamentId ? `tournamentRounds?tournament_id=${tournamentId}` : null,
     () => getAllTournamentRounds(tournamentId),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
   )
 
   // Build timeline when data is available

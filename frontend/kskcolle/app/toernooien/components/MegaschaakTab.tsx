@@ -40,11 +40,11 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
 
   // Fetch available players (only if deadline hasn't passed)
   const { data: availablePlayers = [], isLoading: playersLoading, mutate: mutatePlayers } = useSWR<MegaschaakPlayer[]>(
-    'megaschaak/players',
+    !isDeadlinePassed ? "megaschaak/players" : null,
     async () => {
-      const response = await axios.get('/megaschaak/players')
-      return response.data.items
-    }
+      const response = await axios.get("/megaschaak/players");
+      return response.data.items;
+    },
   )
 
   // Listen for config updates and refresh players

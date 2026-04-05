@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/Auth.context";
+import { SWRProvider } from "./components/SWRProvider";
 import { PerformanceMonitor } from "./components/PerformanceMonitor";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -43,11 +44,13 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          <Navbar />
-          {children}
-          <Footer />
-          <Toaster />
-          <PerformanceMonitor />
+          <SWRProvider>
+            <Navbar />
+            {children}
+            <Footer />
+            <Toaster />
+            <PerformanceMonitor />
+          </SWRProvider>
         </AuthProvider>
       </body>
     </html>

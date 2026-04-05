@@ -42,9 +42,8 @@ export default function LatestPuzzle() {
   const { toast } = useToast()
   const { isAuthed } = useAuth()
   const { data: puzzles, isLoading: puzzlesLoading } = useSWR<PuzzleData[]>(
-    isAuthed ? "puzzles" : null, // Only fetch if authenticated to avoid 401 errors
+    isAuthed ? "puzzles" : null,
     getAllPuzzles,
-    { revalidateOnFocus: false }
   )
 
   const [leaderboard, setLeaderboard] = useState<any[]>([])

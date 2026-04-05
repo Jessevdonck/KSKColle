@@ -84,23 +84,14 @@ export default function TournamentDetails() {
   } = useSWR<Tournament>(
     selectedClassId ? `tournament/${selectedClassId}` : null,
     () => getById(`tournament/${selectedClassId}`),
-    {
-      revalidateOnFocus: false, // Disabled to reduce API calls
-      revalidateOnReconnect: true,
-      dedupingInterval: 5000, // Enable deduplication to prevent duplicate requests
-    },
   )
 
   const isLentecompetitie = tournament ? isLentecompetitieTieBreak(tournament) : false
-
-  // Debug logging
-  console.log('🎯 Tournament type check - is_youth:', tournament?.is_youth, 'naam:', tournament?.naam);
 
   // Fetch all active tournaments to find other classes
   const { data: allTournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
     () => getAll('tournament', { active: 'true', is_youth: 'false' }),
-    { revalidateOnFocus: false }
   )
 
   // Find all classes of this tournament (tournaments with same naam)
@@ -147,20 +138,6 @@ export default function TournamentDetails() {
 
   const hasMultipleClasses = tournamentClasses.length > 1
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('🔍 TournamentDetails Debug:', {
-      tournamentName: tournament?.naam,
-      tournamentClasses: tournamentClasses.map(t => ({ 
-        id: t.tournament_id, 
-        class_name: t.class_name,
-        participations: t.participations.length 
-      })),
-      hasMultipleClasses,
-      selectedClassId
-    })
-  }, [tournament, tournamentClasses, hasMultipleClasses, selectedClassId])
-
   // Reset state when switching classes
   useEffect(() => {
     setCurrentIndex(0)
@@ -175,10 +152,6 @@ export default function TournamentDetails() {
   const { data: allRounds = [], error: roundsError } = useSWR<any[]>(
     selectedClassId ? `tournamentRounds?tournament_id=${selectedClassId}` : null,
     () => getAllTournamentRounds(selectedClassId),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
   )
 
   // 3) Makeup days fetching (legacy system) - not used anymore

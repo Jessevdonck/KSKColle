@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState } from "react";
-import useSWR from "swr";
+import useSWR, { mutate as swrGlobalMutate } from "swr";
 import { axios } from "../../api/index";
 import type { MegaschaakPlayer, MegaschaakTeam, Toernooi } from "@/data/types";
 import {
@@ -33,10 +33,35 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { format, isPast } from "date-fns";
 import { useAuth } from "../../contexts/auth";
+import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig";
 
 const MIN_PLAYERS = 10;
 const MAX_PLAYERS = 10;
 const MAX_BUDGET = 1000;
+
+function useMegaschaakTeamDetails(expandedTeamId: number | null) {
+  return useSWR<unknown>(
+    expandedTeamId ? `megaschaak/team/${expandedTeamId}/details` : null,
+    async () => {
+      if (expandedTeamId == null) return null;
+      const response = await axios.get(
+        `/megaschaak/team/${expandedTeamId}/details`,
+      );
+      return response.data;
+    },
+    DEFAULT_SWR_OPTIONS,
+  );
+}
+
+async function revalidateMegaschaakAfterTeamChange() {
+  await swrGlobalMutate(
+    (key) =>
+      typeof key === "string" &&
+      /^megaschaak\/team\/\d+\/details$/.test(key),
+    undefined,
+    { revalidate: true },
+  );
+}
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(
@@ -71,7 +96,7 @@ export default function MegaschaakPage() {
         const response = await axios.get("/megaschaak/active-tournament");
         return response.data;
       },
-      { revalidateOnFocus: false },
+      DEFAULT_SWR_OPTIONS,
     );
 
   // Check if registration is closed (must be before using it in other hooks)
@@ -97,7 +122,7 @@ export default function MegaschaakPage() {
       const response = await axios.get("/megaschaak/players");
       return response.data.items;
     },
-    { revalidateOnFocus: false },
+    DEFAULT_SWR_OPTIONS,
   );
 
   // Listen for config updates and refresh players
@@ -132,11 +157,15 @@ export default function MegaschaakPage() {
         return [];
       }
     },
-    { revalidateOnFocus: false },
+    DEFAULT_SWR_OPTIONS,
   );
 
   // Fetch standings (always fetch, even before deadline, to show scores)
-  const { data: standings = [], isLoading: standingsLoading } = useSWR<any[]>(
+  const {
+    data: standings = [],
+    isLoading: standingsLoading,
+    mutate: mutateStandings,
+  } = useSWR<any[]>(
     activeTournament
       ? `megaschaak/tournament/${activeTournament.tournament_id}/standings`
       : null,
@@ -147,11 +176,15 @@ export default function MegaschaakPage() {
       );
       return response.data.items;
     },
-    { revalidateOnFocus: false },
+    DEFAULT_SWR_OPTIONS,
   );
 
   // Fetch cross-table data (only if deadline has passed)
-  const { data: crossTableData, isLoading: crossTableLoading } = useSWR<any>(
+  const {
+    data: crossTableData,
+    isLoading: crossTableLoading,
+    mutate: mutateCrossTable,
+  } = useSWR<any>(
     activeTournament && isRegistrationClosed
       ? `megaschaak/tournament/${activeTournament.tournament_id}/crosstable`
       : null,
@@ -162,11 +195,15 @@ export default function MegaschaakPage() {
       );
       return response.data;
     },
-    { revalidateOnFocus: false },
+    DEFAULT_SWR_OPTIONS,
   );
 
   // Fetch popular players (only if deadline has passed)
-  const { data: popularPlayersData, isLoading: popularPlayersLoading } =
+  const {
+    data: popularPlayersData,
+    isLoading: popularPlayersLoading,
+    mutate: mutatePopularPlayers,
+  } =
     useSWR<any>(
       activeTournament && isRegistrationClosed
         ? `megaschaak/tournament/${activeTournament.tournament_id}/popular-players`
@@ -178,11 +215,15 @@ export default function MegaschaakPage() {
         );
         return response.data;
       },
-      { revalidateOnFocus: false },
+      DEFAULT_SWR_OPTIONS,
     );
 
   // Fetch value players (only if deadline has passed)
-  const { data: valuePlayersData, isLoading: valuePlayersLoading } =
+  const {
+    data: valuePlayersData,
+    isLoading: valuePlayersLoading,
+    mutate: mutateValuePlayers,
+  } =
     useSWR<any>(
       activeTournament && isRegistrationClosed
         ? `megaschaak/tournament/${activeTournament.tournament_id}/value-players`
@@ -194,7 +235,7 @@ export default function MegaschaakPage() {
         );
         return response.data;
       },
-      { revalidateOnFocus: false },
+      DEFAULT_SWR_OPTIONS,
     );
 
   // Auto-select first team or create mode
@@ -391,7 +432,14 @@ export default function MegaschaakPage() {
         setIsCreatingNew(false);
       }
 
-      mutateTeams();
+      await Promise.all([
+        mutateTeams(undefined, { revalidate: true }),
+        mutateStandings(undefined, { revalidate: true }),
+        mutateCrossTable(undefined, { revalidate: true }),
+        mutatePopularPlayers(undefined, { revalidate: true }),
+        mutateValuePlayers(undefined, { revalidate: true }),
+        revalidateMegaschaakAfterTeamChange(),
+      ]);
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message || "Kon team niet opslaan";
@@ -483,7 +531,14 @@ export default function MegaschaakPage() {
 
       setCurrentEditingTeam(null);
       setIsCreatingNew(false);
-      mutateTeams();
+      await Promise.all([
+        mutateTeams(undefined, { revalidate: true }),
+        mutateStandings(undefined, { revalidate: true }),
+        mutateCrossTable(undefined, { revalidate: true }),
+        mutatePopularPlayers(undefined, { revalidate: true }),
+        mutateValuePlayers(undefined, { revalidate: true }),
+        revalidateMegaschaakAfterTeamChange(),
+      ]);
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message || "Kon team niet verwijderen";
@@ -1292,17 +1347,8 @@ function MyTeamsOverview({
     null,
   );
 
-  const { data: expandedTeamDetails } = useSWR<any>(
-    expandedTeamId ? `megaschaak/team/${expandedTeamId}/details` : null,
-    async () => {
-      if (!expandedTeamId) return null;
-      const response = await axios.get(
-        `/megaschaak/team/${expandedTeamId}/details`,
-      );
-      return response.data;
-    },
-    { revalidateOnFocus: false },
-  );
+  const { data: expandedTeamDetails } =
+    useMegaschaakTeamDetails(expandedTeamId);
 
   return (
     <div className="space-y-6">
@@ -1653,17 +1699,9 @@ function StandingsView({
     null,
   );
 
-  const { data: expandedTeamDetails } = useSWR<any>(
-    expandedTeamId ? `megaschaak/team/${expandedTeamId}/details` : null,
-    async () => {
-      if (!expandedTeamId) return null;
-      const response = await axios.get(
-        `/megaschaak/team/${expandedTeamId}/details`,
-      );
-      return response.data;
-    },
-    { revalidateOnFocus: false },
-  );
+  const { data: expandedTeamDetails } =
+    useMegaschaakTeamDetails(expandedTeamId);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">

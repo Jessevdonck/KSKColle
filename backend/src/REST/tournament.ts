@@ -1,4 +1,11 @@
 import Router from '@koa/router';
+import {
+  shortLivedCacheGet,
+  shortLivedCacheSet,
+  shortLivedCacheInvalidatePrefix,
+  SHORT_CACHE_TTL_MS,
+  SHORT_CACHE_KEY_PREFIX,
+} from '../core/shortLivedCache';
 import * as tournamentService from '../service/tournamentService';
 import type { GetAllTournamentenResponse, GetTournamentByIdResponse, UpdateTournamentRequest, UpdateTournamentResponse } from '../types/tournament';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
@@ -10,6 +17,12 @@ import Role from '../core/roles';
 
 const toBool = (v?: string) =>
   v === undefined ? undefined : v === 'true' ? true : v === 'false' ? false : undefined;
+
+const TOURNAMENT_LIST_CACHE_PREFIX = SHORT_CACHE_KEY_PREFIX.tournamentList;
+
+function invalidateTournamentListCache() {
+  shortLivedCacheInvalidatePrefix(TOURNAMENT_LIST_CACHE_PREFIX);
+}
 
 /**
  * @api {get} /tournament Get all tournaments
@@ -26,8 +39,17 @@ const getAllTournament = async (ctx: KoaContext<GetAllTournamentenResponse>) => 
   const active = toBool(ctx.query.active as string | undefined);
   const youth  = toBool((ctx.query as any).is_youth as string | undefined);
 
+  const cacheKey = `${TOURNAMENT_LIST_CACHE_PREFIX}${String(active)}:${String(youth)}`;
+  const cached = shortLivedCacheGet<GetAllTournamentenResponse>(cacheKey);
+  if (cached) {
+    ctx.body = cached;
+    return;
+  }
+
   const toernooien = await tournamentService.getAllTournaments(active, youth);
-  ctx.body = { items: toernooien };
+  const body: GetAllTournamentenResponse = { items: toernooien };
+  shortLivedCacheSet(cacheKey, body, SHORT_CACHE_TTL_MS.tournamentList);
+  ctx.body = body;
 };
 
 getAllTournament.validationScheme = {
@@ -77,7 +99,7 @@ getTournamentById.validationScheme = {
 const updateTournament = async (ctx: KoaContext<UpdateTournamentResponse, IdParams, UpdateTournamentRequest>) => {
   const tournamentId = Number(ctx.params.id); 
   const updatedSpeler = await tournamentService.updateTournament(tournamentId, ctx.request.body); 
-  
+  invalidateTournamentListCache();
   ctx.body = updatedSpeler; 
 };
 updateTournament.validationScheme = {
@@ -107,6 +129,7 @@ updateTournament.validationScheme = {
 const removeTournament = async (ctx: KoaContext<void, IdParams>) => {
   const tournament_id = Number(ctx.params.id);
   tournamentService.removeTournament(tournament_id);
+  invalidateTournamentListCache();
   ctx.status = 204; 
 };
 removeTournament.validationScheme = {
@@ -118,6 +141,7 @@ removeTournament.validationScheme = {
 const finalizeRatings = async (ctx: any) => {
   const id = Number(ctx.params.id);
   await tournamentService.finalizeTournamentRatings(id);
+  invalidateTournamentListCache();
   ctx.status = 204;
 };
 finalizeRatings.validationScheme = {
@@ -129,6 +153,7 @@ finalizeRatings.validationScheme = {
 const endTournamentHandler = async (ctx: any) => {
   const id = Number(ctx.params.id);
   await tournamentService.endTournament(id);
+  invalidateTournamentListCache();
   ctx.status = 204;
 };
 endTournamentHandler.validationScheme = {

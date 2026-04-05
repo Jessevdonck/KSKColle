@@ -7,6 +7,11 @@ import * as tournamentRoundService from '../service/tournamentRoundService';
 import * as gamePostponeService from '../service/gamePostponeService';
 import { getLogger } from '../core/logging';
 const logger = getLogger();
+import {
+  shortLivedCacheGet,
+  shortLivedCacheSet,
+  SHORT_CACHE_TTL_MS,
+} from '../core/shortLivedCache';
 import { prisma } from '../service/data';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
 
@@ -23,8 +28,16 @@ const getAllTournamentRounds = async (
   ctx: KoaContext<{ items: any[] }>
 ) => {
   const tournamentId = Number(ctx.query.tournament_id);
+  const cacheKey = `tournamentRounds:${tournamentId}`;
+  const cached = shortLivedCacheGet<{ items: any[] }>(cacheKey);
+  if (cached) {
+    ctx.body = cached;
+    return;
+  }
   const items = await tournamentRoundService.getAllTournamentRounds(tournamentId);
-  ctx.body = { items };
+  const body = { items };
+  shortLivedCacheSet(cacheKey, body, SHORT_CACHE_TTL_MS.tournamentRounds);
+  ctx.body = body;
 };
 getAllTournamentRounds.validationScheme = {
   query: {

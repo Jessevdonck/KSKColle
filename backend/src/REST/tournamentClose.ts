@@ -2,6 +2,10 @@ import Router from '@koa/router';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import { ratingService } from '../service/ratingService';
 import { prisma } from '../data';
+import {
+  shortLivedCacheInvalidatePrefix,
+  SHORT_CACHE_KEY_PREFIX,
+} from '../core/shortLivedCache';
 
 const requireAdmin = makeRequireRole('admin');
 
@@ -50,6 +54,8 @@ export function installTournamentCloseRouter(router: Router) {
         where: { tournament_id: tournamentId },
         data: { finished: true },
       });
+
+      shortLivedCacheInvalidatePrefix(SHORT_CACHE_KEY_PREFIX.tournamentList);
 
       ctx.status = 200;
       ctx.body = {
