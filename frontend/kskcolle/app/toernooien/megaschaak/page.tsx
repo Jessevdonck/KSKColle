@@ -56,8 +56,7 @@ function useMegaschaakTeamDetails(expandedTeamId: number | null) {
 async function revalidateMegaschaakAfterTeamChange() {
   await swrGlobalMutate(
     (key) =>
-      typeof key === "string" &&
-      /^megaschaak\/team\/\d+\/details$/.test(key),
+      typeof key === "string" && /^megaschaak\/team\/\d+\/details$/.test(key),
     undefined,
     { revalidate: true },
   );
@@ -203,40 +202,38 @@ export default function MegaschaakPage() {
     data: popularPlayersData,
     isLoading: popularPlayersLoading,
     mutate: mutatePopularPlayers,
-  } =
-    useSWR<any>(
-      activeTournament && isRegistrationClosed
-        ? `megaschaak/tournament/${activeTournament.tournament_id}/popular-players`
-        : null,
-      async () => {
-        if (!activeTournament) return null;
-        const response = await axios.get(
-          `/megaschaak/tournament/${activeTournament.tournament_id}/popular-players`,
-        );
-        return response.data;
-      },
-      DEFAULT_SWR_OPTIONS,
-    );
+  } = useSWR<any>(
+    activeTournament && isRegistrationClosed
+      ? `megaschaak/tournament/${activeTournament.tournament_id}/popular-players`
+      : null,
+    async () => {
+      if (!activeTournament) return null;
+      const response = await axios.get(
+        `/megaschaak/tournament/${activeTournament.tournament_id}/popular-players`,
+      );
+      return response.data;
+    },
+    DEFAULT_SWR_OPTIONS,
+  );
 
   // Fetch value players (only if deadline has passed)
   const {
     data: valuePlayersData,
     isLoading: valuePlayersLoading,
     mutate: mutateValuePlayers,
-  } =
-    useSWR<any>(
-      activeTournament && isRegistrationClosed
-        ? `megaschaak/tournament/${activeTournament.tournament_id}/value-players`
-        : null,
-      async () => {
-        if (!activeTournament) return null;
-        const response = await axios.get(
-          `/megaschaak/tournament/${activeTournament.tournament_id}/value-players`,
-        );
-        return response.data;
-      },
-      DEFAULT_SWR_OPTIONS,
-    );
+  } = useSWR<any>(
+    activeTournament && isRegistrationClosed
+      ? `megaschaak/tournament/${activeTournament.tournament_id}/value-players`
+      : null,
+    async () => {
+      if (!activeTournament) return null;
+      const response = await axios.get(
+        `/megaschaak/tournament/${activeTournament.tournament_id}/value-players`,
+      );
+      return response.data;
+    },
+    DEFAULT_SWR_OPTIONS,
+  );
 
   // Auto-select first team or create mode
   React.useEffect(() => {
