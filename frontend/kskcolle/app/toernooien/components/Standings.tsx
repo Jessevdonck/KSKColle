@@ -174,9 +174,10 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
         const opponent = isPlayer1 ? playerGame.speler2 : playerGame.speler1
 
         let score = 0
-        if (playerGame.result === "1-0" || playerGame.result === "1-0R") {
+        const r = playerGame.result || ""
+        if (r.startsWith("1-0")) {
           score = isPlayer1 ? 1 : 0
-        } else if (playerGame.result === "0-1" || playerGame.result === "0-1R") {
+        } else if (r.startsWith("0-1")) {
           score = isPlayer1 ? 0 : 1
         } else if (
           playerGame.result === "½-½" ||
@@ -222,7 +223,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             } else {
               opponentDisplay = "Tegenstander onbekend"
             }
-          } else if (playerGame.result === "1-0" || playerGame.result === "1-0R" && score === 1) {
+          } else if (playerGame.result && playerGame.result.startsWith("1-0") && score === 1) {
             // This is a real BYE (player gets 1 point)
             opponentDisplay = null // Will be displayed as "BYE" in UI
             isRealBye = true
@@ -608,11 +609,9 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     if (result.startsWith("ABS-")) return false;
     if (result === "0.5-0") return false;
     if (result === "0-0") return false;
+    // Zelfde als RoundPairings / inhaaldag-stand: alle 1-0* en 0-1* (incl. forfait)
+    if (result.startsWith("1-0") || result.startsWith("0-1")) return true;
     return (
-      result === "1-0" ||
-      result === "0-1" ||
-      result === "1-0R" ||
-      result === "0-1R" ||
       result === "½-½" ||
       result === "1/2-1/2" ||
       result === "-"
@@ -645,9 +644,9 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
             if (p2) gamesPlayed[p2]++
           }
 
-          if (result === "1-0" || result === "1-0R") {
+          if (result.startsWith("1-0")) {
             calculatedScoreMap[p1] += 1
-          } else if (result === "0-1" || result === "0-1R" && p2) {
+          } else if (result.startsWith("0-1") && p2) {
             calculatedScoreMap[p2] += 1
           } else if (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") {
             calculatedScoreMap[p1] += 0.5
@@ -700,10 +699,10 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     buchholzListForWorst[p2].push(scoreMap[p1] ?? 0)
 
     // Klassieke SB; Lente SB²: Σ(PT_eind_tegenstander)² bij winst, ½× bij remise (Sevilla-eindstand)
-    if (result === "1-0" || result === "1-0R") {
+    if (result.startsWith("1-0")) {
       sbMap[p1] += oppScore1
       if (isLentecompetitie) sbSquaredMap[p1] += oppScore1 * oppScore1
-    } else if (result === "0-1" || result === "0-1R") {
+    } else if (result.startsWith("0-1")) {
       sbMap[p2] += oppScore2
       if (isLentecompetitie) sbSquaredMap[p2] += oppScore2 * oppScore2
     } else if (

@@ -1455,8 +1455,18 @@ const calculateGameScore = (game: any, playerId: number): number => {
     return 0;
   }
 
+  const res = game.result as string;
+
   // Check if player won
   if (game.winnaar_id === playerId) {
+    return 1;
+  }
+
+  // Zelfde logica als toernooi-UI (startsWith): 1-0R, 1-0FF, …; soms ontbreekt winnaar_id na import
+  if (res.startsWith("1-0") && game.speler1_id === playerId) {
+    return 1;
+  }
+  if (res.startsWith("0-1") && game.speler2_id === playerId) {
     return 1;
   }
 
@@ -1927,10 +1937,9 @@ export const getCrossTableData = async (tournamentId: number) => {
           return { player_id: player.user_id, score: null, inTeam: false };
         }
 
-        // Calculate total score for this player across all games
-        const score = allGames.reduce((sum, game) => {
-          return sum + calculateGameScore(game, player.user_id);
-        }, 0);
+        // Officiële stand (Sevilla / participation.score) — zelfde als toernooipagina; niet herberekenen uit
+        // gededupliceerde partijen (forfaits, import-randen, enz. wijken daar soms van af).
+        const score = player.tournamentScore;
 
         return { player_id: player.user_id, score, inTeam: true };
       });
@@ -2043,15 +2052,37 @@ export const getTeamStandings = async (tournamentId: number) => {
       },
     });
 
+    const classTournamentIdsForStandings = allClassesTournaments.map(
+      (t) => t.tournament_id,
+    );
+    const teamPlayerIdsForStandings = [
+      ...new Set(teams.flatMap((t) => t.players.map((p) => p.player_id))),
+    ];
+    const participationRowsForStandings =
+      teamPlayerIdsForStandings.length > 0
+        ? await prisma.participation.findMany({
+            where: {
+              tournament_id: { in: classTournamentIdsForStandings },
+              user_id: { in: teamPlayerIdsForStandings },
+            },
+            select: { user_id: true, score: true },
+            orderBy: { tournament_id: "asc" },
+          })
+        : [];
+    const officialScoreByUserIdForStandings = new Map<number, number>();
+    for (const row of participationRowsForStandings) {
+      if (!officialScoreByUserIdForStandings.has(row.user_id)) {
+        officialScoreByUserIdForStandings.set(row.user_id, row.score ?? 0);
+      }
+    }
+
     // Calculate scores for each team
     const teamsWithScores = teams.map((team) => {
       let totalScore = 0;
 
       const playerScores = team.players.map((tp) => {
-        // Calculate total score for this player across all games
-        const playerScore = allGames.reduce((sum, game) => {
-          return sum + calculateGameScore(game, tp.player_id);
-        }, 0);
+        const playerScore =
+          officialScoreByUserIdForStandings.get(tp.player_id) ?? 0;
 
         totalScore += playerScore;
 
@@ -2183,6 +2214,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
       select: {
         user_id: true,
         tournament_id: true,
+        score: true,
       },
     });
     const playerCompetitionTournamentId = new Map<number, number>();
@@ -2190,6 +2222,21 @@ export const getTeamDetailedScores = async (teamId: number) => {
       if (!playerCompetitionTournamentId.has(p.user_id)) {
         playerCompetitionTournamentId.set(p.user_id, p.tournament_id);
       }
+    }
+    const officialTotalScoreByPlayer = new Map<number, number>();
+    for (const tp of team.players) {
+      const tid = playerCompetitionTournamentId.get(tp.player_id);
+      const row =
+        tid != null
+          ? participationsForTeamPlayers.find(
+              (p) =>
+                p.user_id === tp.player_id && p.tournament_id === tid,
+            )
+          : undefined;
+      officialTotalScoreByPlayer.set(
+        tp.player_id,
+        row?.score ?? 0,
+      );
     }
 
     const planRounds = new Set<number>();
@@ -2258,10 +2305,12 @@ export const getTeamDetailedScores = async (teamId: number) => {
         },
       );
 
-      const totalScore = roundScores.reduce(
+      const totalScoreFromRounds = roundScores.reduce(
         (sum, rs) => sum + (rs.score ?? 0),
         0,
       );
+      const totalScore =
+        officialTotalScoreByPlayer.get(tp.player_id) ?? totalScoreFromRounds;
 
       return {
         ...tp,
@@ -2512,23 +2561,18 @@ export const getBestValuePlayers = async (tournamentId: number) => {
         playerData.set(playerId, {
           player: participation.user,
           cost: playerCost,
-          totalScore: 0,
+          totalScore: participation.score ?? 0,
           gamesPlayed: 0,
           className: participation.tournament.class_name || "Hoofdtoernooi",
         });
       }
     }
 
-    // Regulier + inhaal, dedupe per koppel (geen dubbeltelling)
+    // Alleen gamesPlayed uit gededupliceerde partijen; punten = officiële participation (zelfde als toernooi)
     for (const [playerId, data] of playerData.entries()) {
       const gamesForPlayer = dedupedMegaschaakGames.filter(
         (g) => g.speler1_id === playerId || g.speler2_id === playerId,
       );
-      let totalScore = 0;
-      for (const game of gamesForPlayer) {
-        totalScore += calculateGameScore(game, playerId);
-      }
-      data.totalScore = totalScore;
       data.gamesPlayed = gamesForPlayer.length;
     }
 

@@ -1049,10 +1049,18 @@ export class SevillaImporterService {
         : null;
 
       // The result is always from white's perspective: "1-0" = white wins, "0-1" = black wins, "1/2-1/2" or "½-½" or "�-�" = draw
-      if (playerGame.Res === "1-0" || playerGame.Res === "1-0R") {
+      if (
+        playerGame.Res === "1-0" ||
+        playerGame.Res === "1-0R" ||
+        playerGame.Res === "1-0FF"
+      ) {
         // White wins
         winnaarId = whitePlayerId;
-      } else if (playerGame.Res === "0-1" || playerGame.Res === "0-1R") {
+      } else if (
+        playerGame.Res === "0-1" ||
+        playerGame.Res === "0-1R" ||
+        playerGame.Res === "0-1FF"
+      ) {
         // Black wins
         winnaarId = blackPlayerId;
       } else if (

@@ -115,9 +115,10 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
         const opponent = isPlayer1 ? playerGame.speler2 : playerGame.speler1
 
         let score = 0
-        if (playerGame.result === "1-0") {
+        const r = playerGame.result || ""
+        if (r.startsWith("1-0")) {
           score = isPlayer1 ? 1 : 0
-        } else if (playerGame.result === "0-1") {
+        } else if (r.startsWith("0-1")) {
           score = isPlayer1 ? 0 : 1
         } else if (
           playerGame.result === "½-½" ||
@@ -163,7 +164,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             } else {
               opponentDisplay = "Tegenstander onbekend"
             }
-          } else if (playerGame.result === "1-0" && score === 1) {
+          } else if (playerGame.result && playerGame.result.startsWith("1-0") && score === 1) {
             // This is a real BYE (player gets 1 point)
             opponentDisplay = null // Will be displayed as "BYE" in UI
             isRealBye = true
@@ -551,11 +552,8 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     if (result.startsWith("ABS-")) return false;
     if (result === "0.5-0") return false;
     if (result === "0-0") return false;
+    if (result.startsWith("1-0") || result.startsWith("0-1")) return true;
     return (
-      result === "1-0" ||
-      result === "0-1" ||
-      result === "1-0R" ||
-      result === "0-1R" ||
       result === "½-½" ||
       result === "1/2-1/2" ||
       result === "-"
@@ -583,9 +581,9 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
             if (p2) gamesPlayed[p2]++
           }
 
-          if (result === "1-0" || result === "1-0R") {
+          if (result.startsWith("1-0")) {
             calculatedScoreMap[p1] += 1
-          } else if ((result === "0-1" || result === "0-1R") && p2) {
+          } else if (result.startsWith("0-1") && p2) {
             calculatedScoreMap[p2] += 1
           } else if (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") {
             calculatedScoreMap[p1] += 0.5
@@ -649,9 +647,9 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       buchholzListForWorst[p2].push(scoreMap[p1])
 
       // SB-score (also use Sevilla scores)
-      if ((result === "1-0" || result === "1-0R") && p2) {
+      if (result.startsWith("1-0") && p2) {
         sbMap[p1] += scoreMap[p2]
-      } else if ((result === "0-1" || result === "0-1R") && p2) {
+      } else if (result.startsWith("0-1") && p2) {
         sbMap[p2] += scoreMap[p1]
       } else if (
         (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") &&
