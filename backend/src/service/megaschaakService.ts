@@ -1506,12 +1506,7 @@ const isPlayedGame = (
   if (speler2_id === null) return false;
   if (winnaar_id != null) return true;
   const r = typeof result === "string" ? result.trim() : result;
-  if (
-    !r ||
-    r === "not_played" ||
-    r === "..." ||
-    r === "uitgesteld"
-  )
+  if (!r || r === "not_played" || r === "..." || r === "uitgesteld")
     return false;
   if (typeof r === "string" && r.startsWith("ABS-")) return false;
   return true;
@@ -1585,6 +1580,62 @@ function resolveEffectiveGameForPlayerInRegularRound(
 }
 
 /**
+ * Aantal rondes met een echte tegenstander — zelfde resolutie als getTeamDetailedScores / UI-tabel.
+ * Alleen `allGames` + isPlayedGame kan te hoog uitkomen (extra rijen buiten de per-ronde bron).
+ */
+function countMegaschaakGamesPlayedFromRoundResolution(
+  playerId: number,
+  teamTournamentId: number,
+  playerCompetitionTournamentId: Map<number, number>,
+  allClassesTournaments: Array<{
+    tournament_id: number;
+    rondes?: number | null;
+    rounds?: Array<{ ronde_nummer: number; games?: any[] }>;
+  }>,
+  makeupByOriginalId: Map<number, any>,
+  gamesByRound: Map<number, any[]>,
+  roundsSorted: number[],
+): number {
+  const playerTid =
+    playerCompetitionTournamentId.get(playerId) ?? teamTournamentId;
+  let count = 0;
+  for (const rondeNummer of roundsSorted) {
+    const playerTournament = allClassesTournaments.find(
+      (t) => t.tournament_id === playerTid,
+    );
+    let effectiveGame: any | null = null;
+    if (playerTournament) {
+      effectiveGame = resolveEffectiveGameForPlayerInRegularRound(
+        playerTournament,
+        rondeNummer,
+        playerId,
+        makeupByOriginalId,
+      );
+    }
+    if (!effectiveGame) {
+      const games = gamesByRound.get(rondeNummer) ?? [];
+      effectiveGame =
+        games.find(
+          (game: any) =>
+            game._megaschaak_round?.tournament_id === playerTid &&
+            (game.speler1_id === playerId ||
+              game.speler2_id === playerId),
+        ) ??
+        games.find(
+          (game: any) =>
+            game.speler1_id === playerId || game.speler2_id === playerId,
+        ) ??
+        null;
+    }
+    if (!effectiveGame || effectiveGame.speler2_id === null) {
+      continue;
+    }
+    count += 1;
+  }
+  return count;
+}
+
+/**
  * Reguliere partij met echte uitslag op de speeldag, of anders de inhaalpartij
  * (zelfde koppel, zelfde geplande ronde; geen MAKEUP-rondes in de UI).
  */
@@ -1595,8 +1646,7 @@ function resolveRegularGameForMegaschaak(
   if (reg.speler2_id == null) return null;
   const m =
     reg.game_id != null ? makeupByOriginalId.get(reg.game_id) : undefined;
-  const makeupPlayed =
-    m && isPlayedGame(m.result, m.speler2_id, m.winnaar_id);
+  const makeupPlayed = m && isPlayedGame(m.result, m.speler2_id, m.winnaar_id);
   // Geldige uitslag op de reguliere rij telt altijd (ook als uitgestelde_datum nog staat).
   if (isPlayedGame(reg.result, reg.speler2_id, reg.winnaar_id)) {
     return reg;
@@ -1819,7 +1869,32 @@ export const getCrossTableData = async (tournamentId: number) => {
       },
     });
 
-    const allGames = await collectDedupedMegaschaakGames(allClassesTournaments);
+    const makeupByOriginalIdCross =
+      await buildMakeupByOriginalIdMap(allClassesTournaments);
+    const allGames = await collectDedupedMegaschaakGames(
+      allClassesTournaments,
+      makeupByOriginalIdCross,
+    );
+    const gamesByRoundCross = new Map<number, any[]>();
+    for (const g of allGames) {
+      const rn = g._megaschaak_round?.ronde_nummer ?? 0;
+      if (!gamesByRoundCross.has(rn)) gamesByRoundCross.set(rn, []);
+      gamesByRoundCross.get(rn)!.push(g);
+    }
+    const planRoundsCross = new Set<number>();
+    for (const t of allClassesTournaments) {
+      const n = t.rondes;
+      if (typeof n === "number" && n > 0) {
+        for (let i = 1; i <= n; i++) planRoundsCross.add(i);
+      }
+      for (const r of t.rounds ?? []) {
+        planRoundsCross.add(r.ronde_nummer);
+      }
+    }
+    for (const k of gamesByRoundCross.keys()) {
+      planRoundsCross.add(k);
+    }
+    const roundsSortedCross = [...planRoundsCross].sort((a, b) => a - b);
 
     // Get all teams for this tournament
     const teams = await prisma.megaschaakTeam.findMany({
@@ -1968,15 +2043,33 @@ export const getCrossTableData = async (tournamentId: number) => {
       return b.tie_break - a.tie_break;
     });
 
+    const playerCompetitionTournamentIdCross = new Map<number, number>();
+    for (const p of uniquePlayers) {
+      const rows = participationsForMegaschaak.filter(
+        (row) => row.user.user_id === p.user_id,
+      );
+      const preferred =
+        rows.find((row) => row.tournament_id === tournamentId) ?? rows[0];
+      if (preferred) {
+        playerCompetitionTournamentIdCross.set(
+          p.user_id,
+          preferred.tournament_id,
+        );
+      }
+    }
+
     // Add gamesPlayed per player (for crosstable display)
     const uniquePlayersWithGames = uniquePlayers.map((player) => ({
       ...player,
-      gamesPlayed: allGames.filter(
-        (game) =>
-          (game.speler1_id === player.user_id ||
-            game.speler2_id === player.user_id) &&
-          isPlayedGame(game.result, game.speler2_id, game.winnaar_id),
-      ).length,
+      gamesPlayed: countMegaschaakGamesPlayedFromRoundResolution(
+        player.user_id,
+        tournamentId,
+        playerCompetitionTournamentIdCross,
+        allClassesTournaments,
+        makeupByOriginalIdCross,
+        gamesByRoundCross,
+        roundsSortedCross,
+      ),
     }));
 
     // Calculate scores for each team-player combination
@@ -2003,10 +2096,21 @@ export const getCrossTableData = async (tournamentId: number) => {
         0,
       );
 
-      // Total games played by this team's players
-      const gamesPlayed = uniquePlayersWithGames
-        .filter((p) => team.players.some((tp) => tp.player_id === p.user_id))
-        .reduce((sum, p) => sum + p.gamesPlayed, 0);
+      // Som van gespeelde partijen per ploeglid (zelfde als getTeamStandings)
+      const gamesPlayed = team.players.reduce(
+        (sum, tp) =>
+          sum +
+          countMegaschaakGamesPlayedFromRoundResolution(
+            tp.player_id,
+            tournamentId,
+            playerCompetitionTournamentIdCross,
+            allClassesTournaments,
+            makeupByOriginalIdCross,
+            gamesByRoundCross,
+            roundsSortedCross,
+          ),
+        0,
+      );
 
       // Calculate total cost: sum of all player costs only (reserve cost not included)
       const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
@@ -2073,7 +2177,34 @@ export const getTeamStandings = async (tournamentId: number) => {
       },
     });
 
-    const allGames = await collectDedupedMegaschaakGames(allClassesTournaments);
+    const makeupByOriginalIdStandings =
+      await buildMakeupByOriginalIdMap(allClassesTournaments);
+    const allGames = await collectDedupedMegaschaakGames(
+      allClassesTournaments,
+      makeupByOriginalIdStandings,
+    );
+    const gamesByRoundStandings = new Map<number, any[]>();
+    for (const g of allGames) {
+      const rn = g._megaschaak_round?.ronde_nummer ?? 0;
+      if (!gamesByRoundStandings.has(rn)) gamesByRoundStandings.set(rn, []);
+      gamesByRoundStandings.get(rn)!.push(g);
+    }
+    const planRoundsStandings = new Set<number>();
+    for (const t of allClassesTournaments) {
+      const n = t.rondes;
+      if (typeof n === "number" && n > 0) {
+        for (let i = 1; i <= n; i++) planRoundsStandings.add(i);
+      }
+      for (const r of t.rounds ?? []) {
+        planRoundsStandings.add(r.ronde_nummer);
+      }
+    }
+    for (const k of gamesByRoundStandings.keys()) {
+      planRoundsStandings.add(k);
+    }
+    const roundsSortedStandings = [...planRoundsStandings].sort(
+      (a, b) => a - b,
+    );
 
     // Get all teams for this tournament
     const teams = await prisma.megaschaakTeam.findMany({
@@ -2117,7 +2248,7 @@ export const getTeamStandings = async (tournamentId: number) => {
               tournament_id: { in: classTournamentIdsForStandings },
               user_id: { in: teamPlayerIdsForStandings },
             },
-            select: { user_id: true, score: true },
+            select: { user_id: true, score: true, tournament_id: true },
             orderBy: { tournament_id: "asc" },
           })
         : [];
@@ -2125,6 +2256,17 @@ export const getTeamStandings = async (tournamentId: number) => {
     for (const row of participationRowsForStandings) {
       if (!officialScoreByUserIdForStandings.has(row.user_id)) {
         officialScoreByUserIdForStandings.set(row.user_id, row.score ?? 0);
+      }
+    }
+    const playerCompetitionTournamentIdStandings = new Map<number, number>();
+    for (const pid of teamPlayerIdsForStandings) {
+      const rows = participationRowsForStandings.filter(
+        (p) => p.user_id === pid,
+      );
+      const preferred =
+        rows.find((p) => p.tournament_id === tournamentId) ?? rows[0];
+      if (preferred) {
+        playerCompetitionTournamentIdStandings.set(pid, preferred.tournament_id);
       }
     }
 
@@ -2144,17 +2286,22 @@ export const getTeamStandings = async (tournamentId: number) => {
         };
       });
 
-      // Som van gespeelde partijen per ploeglid (zelfde logica als kruistabel).
+      // Som van gespeelde partijen per ploeglid (zelfde resolutie als teamdetail-UI).
       // Bij een intern duel (twee ploegleden tegen elkaar) telt die partij voor beide: +2 totaal.
-      const gamesPlayed = team.players.reduce((sum, tp) => {
-        const n = allGames.filter(
-          (game) =>
-            (game.speler1_id === tp.player_id ||
-              game.speler2_id === tp.player_id) &&
-            isPlayedGame(game.result, game.speler2_id, game.winnaar_id),
-        ).length;
-        return sum + n;
-      }, 0);
+      const gamesPlayed = team.players.reduce(
+        (sum, tp) =>
+          sum +
+          countMegaschaakGamesPlayedFromRoundResolution(
+            tp.player_id,
+            team.tournament_id,
+            playerCompetitionTournamentIdStandings,
+            allClassesTournaments,
+            makeupByOriginalIdStandings,
+            gamesByRoundStandings,
+            roundsSortedStandings,
+          ),
+        0,
+      );
 
       // Calculate total cost: sum of all player costs only (reserve cost not included)
       const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
@@ -2240,8 +2387,9 @@ export const getTeamDetailedScores = async (teamId: number) => {
       },
     });
 
-    const makeupByOriginalId =
-      await buildMakeupByOriginalIdMap(allClassesTournaments);
+    const makeupByOriginalId = await buildMakeupByOriginalIdMap(
+      allClassesTournaments,
+    );
     const dedupedGames = await collectDedupedMegaschaakGames(
       allClassesTournaments,
       makeupByOriginalId,
@@ -2279,7 +2427,10 @@ export const getTeamDetailedScores = async (teamId: number) => {
       const preferred =
         rows.find((p) => p.tournament_id === teamTid) ?? rows[0];
       if (preferred) {
-        playerCompetitionTournamentId.set(tp.player_id, preferred.tournament_id);
+        playerCompetitionTournamentId.set(
+          tp.player_id,
+          preferred.tournament_id,
+        );
       }
     }
     const officialTotalScoreByPlayer = new Map<number, number>();
