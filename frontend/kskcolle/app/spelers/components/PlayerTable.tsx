@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, type ReactNode } from "react"
 import Link from "next/link"
 import { ChevronUp, ChevronDown, Trophy, TrendingUp, TrendingDown, Minus, User, Award } from "lucide-react"
 import type { User as UserType } from "@/data/types"
@@ -16,9 +16,15 @@ interface PlayerTableProps {
   users: UserType[]
   /** Standaard: Ranglijst Clubrating */
   tableTitle?: string
+  /** Extra regel rechts in de tabel-header (bv. niet-actieve leden-toggle). */
+  membershipToggleSlot?: ReactNode
 }
 
-export default function PlayerTable({ users, tableTitle = "Ranglijst Clubrating" }: PlayerTableProps) {
+export default function PlayerTable({
+  users,
+  tableTitle = "Ranglijst Clubrating",
+  membershipToggleSlot,
+}: PlayerTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("schaakrating_elo")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
 
@@ -75,11 +81,18 @@ export default function PlayerTable({ users, tableTitle = "Ranglijst Clubrating"
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <Trophy className="h-5 w-5" />
-          {tableTitle}
-        </h2>
-        <p className="text-white/80 mt-1 text-sm">Klik op een kolomtitel om te sorteren</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Trophy className="h-5 w-5 shrink-0" />
+              {tableTitle}
+            </h2>
+            <p className="text-white/80 mt-1 text-sm">Klik op een kolomtitel om te sorteren</p>
+          </div>
+          {membershipToggleSlot ? (
+            <div className="flex justify-center sm:justify-end shrink-0 self-center">{membershipToggleSlot}</div>
+          ) : null}
+        </div>
       </div>
 
       {/* Desktop Table */}

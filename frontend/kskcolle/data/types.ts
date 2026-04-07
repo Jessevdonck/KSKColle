@@ -38,6 +38,8 @@ export interface User {
   jeugdlidgeld_betaald: boolean;
   jeugdlidgeld_periode_start?: Date | null;
   jeugdlidgeld_periode_eind?: Date | null;
+  /** Publieke API: zelfde als `lidgeld_betaald` in de database. */
+  membership_valid?: boolean;
 }
 
 export interface PasswordResetRequest {

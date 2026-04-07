@@ -92,39 +92,27 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
 
     if (!matchesRole) return false
 
-    const now = new Date()
-    const lidgeldValid = user.lidgeld_betaald && 
-      user.lidgeld_periode_eind && 
-      new Date(user.lidgeld_periode_eind) > now
-    const bondslidgeldValid = user.bondslidgeld_betaald && 
-      user.bondslidgeld_periode_eind && 
-      new Date(user.bondslidgeld_periode_eind) > now
-    const isMember = lidgeldValid || bondslidgeldValid
-
     switch (filterStatus) {
       case 'paid':
-        return isMember
+        return user.lidgeld_betaald === true
       case 'unpaid':
-        return !isMember
+        return user.lidgeld_betaald !== true
       case 'expired':
-        return (user.lidgeld_betaald || user.bondslidgeld_betaald) && !isMember
+        return (
+          user.lidgeld_betaald !== true &&
+          Boolean(user.lidgeld_periode_eind) &&
+          new Date(user.lidgeld_periode_eind) <= new Date()
+        )
       default:
         return true
     }
   })
 
   const getMembershipStatus = (user: LidgeldUser) => {
-    const now = new Date()
-    const lidgeldValid = user.lidgeld_betaald && 
-      user.lidgeld_periode_eind && 
-      new Date(user.lidgeld_periode_eind) > now
-    const bondslidgeldValid = user.bondslidgeld_betaald && 
-      user.bondslidgeld_periode_eind && 
-      new Date(user.bondslidgeld_periode_eind) > now
-    const jeugdlidgeldValid = user.jeugdlidgeld_betaald && 
-      user.jeugdlidgeld_periode_eind && 
-      new Date(user.jeugdlidgeld_periode_eind) > now
-    const isMember = lidgeldValid || bondslidgeldValid || jeugdlidgeldValid
+    const lidgeldValid = user.lidgeld_betaald === true
+    const bondslidgeldValid = user.bondslidgeld_betaald === true
+    const jeugdlidgeldValid = user.jeugdlidgeld_betaald === true
+    const isMember = lidgeldValid
 
     const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind, user.jeugdlidgeld_periode_eind]
       .filter(Boolean)
@@ -151,16 +139,12 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
   }
 
   const getStatusColor = (user: LidgeldUser) => {
-    const status = getMembershipStatus(user)
-    if (status.isMember) return 'bg-green-100 text-green-800'
-    if (user.lidgeld_betaald || user.bondslidgeld_betaald) return 'bg-red-100 text-red-800'
+    if (user.lidgeld_betaald === true) return 'bg-green-100 text-green-800'
     return 'bg-gray-100 text-gray-800'
   }
 
   const getStatusText = (user: LidgeldUser) => {
-    const status = getMembershipStatus(user)
-    if (status.isMember) return 'Lid'
-    if (user.lidgeld_betaald || user.bondslidgeld_betaald) return 'Verlopen'
+    if (user.lidgeld_betaald === true) return 'Lid'
     return 'Geen lid'
   }
 
@@ -382,15 +366,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
   onClose: () => void
   onSave: (userId: number, data: Record<string, unknown>) => void
 }) {
-  const now = new Date()
-  const lidgeldExpired = user.lidgeld_betaald && user.lidgeld_periode_eind && new Date(user.lidgeld_periode_eind) <= now
-  const bondslidgeldExpired = user.bondslidgeld_betaald && user.bondslidgeld_periode_eind && new Date(user.bondslidgeld_periode_eind) <= now
-
   const [formData, setFormData] = useState({
-    lidgeld_betaald: user.lidgeld_betaald && !lidgeldExpired,
+    lidgeld_betaald: user.lidgeld_betaald,
     lidgeld_periode_start: user.lidgeld_periode_start ? format(new Date(user.lidgeld_periode_start), 'yyyy-MM-dd') : '',
     lidgeld_periode_eind: user.lidgeld_periode_eind ? format(new Date(user.lidgeld_periode_eind), 'yyyy-MM-dd') : '',
-    bondslidgeld_betaald: user.bondslidgeld_betaald && !bondslidgeldExpired,
+    bondslidgeld_betaald: user.bondslidgeld_betaald,
     bondslidgeld_periode_start: user.bondslidgeld_periode_start ? format(new Date(user.bondslidgeld_periode_start), 'yyyy-MM-dd') : '',
     bondslidgeld_periode_eind: user.bondslidgeld_periode_eind ? format(new Date(user.bondslidgeld_periode_eind), 'yyyy-MM-dd') : '',
     jeugdlidgeld_betaald: user.jeugdlidgeld_betaald,

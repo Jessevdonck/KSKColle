@@ -92,16 +92,11 @@ const getAugust31st = () => {
 }
 
 function initLidgeldState(u: User) {
-  const now = new Date()
-  const lidgeldExpired =
-    u.lidgeld_betaald && u.lidgeld_periode_eind && new Date(u.lidgeld_periode_eind) <= now
-  const bondslidgeldExpired =
-    u.bondslidgeld_betaald && u.bondslidgeld_periode_eind && new Date(u.bondslidgeld_periode_eind) <= now
   return {
-    lidgeld_betaald: Boolean(u.lidgeld_betaald && !lidgeldExpired),
+    lidgeld_betaald: Boolean(u.lidgeld_betaald),
     lidgeld_periode_start: u.lidgeld_periode_start ? format(new Date(u.lidgeld_periode_start), "yyyy-MM-dd") : "",
     lidgeld_periode_eind: u.lidgeld_periode_eind ? format(new Date(u.lidgeld_periode_eind), "yyyy-MM-dd") : "",
-    bondslidgeld_betaald: Boolean(u.bondslidgeld_betaald && !bondslidgeldExpired),
+    bondslidgeld_betaald: Boolean(u.bondslidgeld_betaald),
     bondslidgeld_periode_start: u.bondslidgeld_periode_start
       ? format(new Date(u.bondslidgeld_periode_start), "yyyy-MM-dd")
       : "",

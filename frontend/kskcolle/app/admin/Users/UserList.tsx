@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import type { User } from "@/data/types"
 import EditForm from "./components/forms/EditForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search, Euro, CheckCircle, XCircle, Clock, Shield, PenTool } from "lucide-react"
+import { Users, Edit, Trash2, Mail, Trophy, Calendar, UserIcon, Search, Euro, CheckCircle, Clock, Shield, PenTool } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -17,56 +17,21 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
 }
 
-// Helper function to determine membership status
-const getMembershipStatus = (user: User) => {
-  const now = new Date()
-  const lidgeldValid = user.lidgeld_betaald && 
-    user.lidgeld_periode_eind && 
-    new Date(user.lidgeld_periode_eind) > now
-  const bondslidgeldValid = user.bondslidgeld_betaald && 
-    user.bondslidgeld_periode_eind && 
-    new Date(user.bondslidgeld_periode_eind) > now
-  const jeugdlidgeldValid = user.jeugdlidgeld_betaald && 
-    user.jeugdlidgeld_periode_eind && 
-    new Date(user.jeugdlidgeld_periode_eind) > now
-  const isMember = lidgeldValid || bondslidgeldValid || jeugdlidgeldValid
-
-  const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind, user.jeugdlidgeld_periode_eind]
-    .filter(Boolean)
-    .sort((a, b) => new Date(b!).getTime() - new Date(a!).getTime())[0]
-
-  return {
-    isMember,
-    lidgeldValid,
-    bondslidgeldValid,
-    jeugdlidgeldValid,
-    expiresAt: expiresAt ? new Date(expiresAt) : null
-  }
-}
-
 /** Filter Leden: enkel lidgeld_betaald uit de database */
 const hasLidgeldBetaald = (user: User) => user.lidgeld_betaald === true
 
-// Helper function to get status color and text
+// Lidmaatschap-label: uitsluitend het veld lidgeld_betaald (zoals in de database).
 const getStatusInfo = (user: User) => {
-  const status = getMembershipStatus(user)
-  if (status.isMember) {
+  if (user.lidgeld_betaald === true) {
     return {
       color: 'bg-green-100 text-green-800',
       text: 'Lid',
       icon: CheckCircle
     }
   }
-  if (user.lidgeld_betaald || user.bondslidgeld_betaald || user.jeugdlidgeld_betaald) {
-    return {
-      color: 'bg-red-100 text-red-800',
-      text: 'Verlopen',
-      icon: XCircle
-    }
-  }
   return {
     color: 'bg-gray-100 text-gray-800',
-    text: 'Ex-Lid',
+    text: 'Geen lid',
     icon: Clock
   }
 }
