@@ -44,6 +44,9 @@ const getMembershipStatus = (user: User) => {
   }
 }
 
+/** Filter Leden: enkel lidgeld_betaald uit de database */
+const hasLidgeldBetaald = (user: User) => user.lidgeld_betaald === true
+
 // Helper function to get status color and text
 const getStatusInfo = (user: User) => {
   const status = getMembershipStatus(user)
@@ -178,8 +181,7 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
           case "exlid":
             return userRoles.includes("exlid")
           case "user":
-            // Volwassen clubleden: geldig lidgeld/bondslidgeld (jeugdleden zitten onder Jeugd)
-            return getMembershipStatus(user).isMember && user.is_youth !== true
+            return hasLidgeldBetaald(user)
           default:
             return true
         }
@@ -220,7 +222,7 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
       if (userRoles.includes("author")) counts.author++
       if (user.is_youth === true) counts.youth++
       if (userRoles.includes("exlid")) counts.exlid++
-      if (getMembershipStatus(user).isMember && user.is_youth !== true) {
+      if (hasLidgeldBetaald(user)) {
         counts.user++
       }
     })
@@ -364,6 +366,8 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
                 Jeugd ({userCounts.youth})
               </button>
               <button
+                type="button"
+                title="Spelers waarvoor lidgeld_betaald in de database op true staat."
                 onClick={() => {
                   setSelectedFilter("user")
                   pagination.onPageChange(1)
