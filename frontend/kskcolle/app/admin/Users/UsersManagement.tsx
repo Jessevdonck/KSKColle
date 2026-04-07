@@ -28,7 +28,6 @@ export default function UsersManagement() {
   
   const refreshUsers = (updatedUser?: User) => {
     if (updatedUser) {
-      // Optimistic update: update the cache immediately with the new user data
       mutate((currentData) => {
         if (!currentData) return currentData
         return {
@@ -37,9 +36,8 @@ export default function UsersManagement() {
             user.user_id === updatedUser.user_id ? updatedUser : user
           )
         }
-      }, true) // true = also revalidate to ensure consistency
+      }, true)
     } else {
-      // No updated user data provided, just revalidate
       mutate()
     }
   }
@@ -48,7 +46,6 @@ export default function UsersManagement() {
   const handleDeleteUser = async (userId: number) => {
     try {
       await deleteUser(userId)
-      // Update local cache immediately
       mutate((currentData) => {
         if (!currentData) return currentData
         return {
@@ -57,7 +54,6 @@ export default function UsersManagement() {
           total: currentData.total - 1
         }
       }, false)
-      // Also refresh from server to ensure consistency
       setTimeout(() => {
         mutate()
       }, 100)
@@ -69,22 +65,16 @@ export default function UsersManagement() {
   }
 
   const handleUserDeleted = (userId: number) => {
-    // This callback is called after a user is successfully deleted
-    // It ensures the allUsers state in UserList is also updated
+    // Callback after delete if needed
   }
 
   const handleCopyActiveMemberEmails = async () => {
     try {
-      // Filter for members with paid lidgeld (including youth who play in adult competitions)
       const activeMembers = allUsers.filter((user: User) => {
-        // Must have email
         if (!user.email) return false
-        
-        // Check if lidgeld is paid
         return user.lidgeld_betaald === true
       })
       
-      // Extract email addresses
       const emails = activeMembers
         .map((user: User) => user.email)
         .filter((email): email is string => Boolean(email))
@@ -98,7 +88,6 @@ export default function UsersManagement() {
         return
       }
       
-      // Copy to clipboard
       const emailString = emails.join(', ')
       await navigator.clipboard.writeText(emailString)
       
@@ -141,15 +130,14 @@ export default function UsersManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
             <div className="bg-mainAccent/10 p-2 rounded-lg">
               <Settings className="h-6 w-6 text-mainAccent" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-textColor">Spelers Beheren</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold text-textColor">Ledenbeheer</h1>
               <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
@@ -172,7 +160,6 @@ export default function UsersManagement() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           <AddOrEditUser onRefresh={refreshUsers} />
@@ -200,7 +187,6 @@ export default function UsersManagement() {
         </div>
       </div>
 
-      {/* Edit Modal */}
       {selectedUser && <EditForm user={selectedUser} onClose={() => setSelectedUser(null)} onRefresh={refreshUsers} />}
     </div>
   )

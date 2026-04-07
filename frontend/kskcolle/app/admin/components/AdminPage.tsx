@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useMemo } from "react"
 import useSWR from "swr"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
@@ -36,27 +36,35 @@ const AdminPage = () => {
     return new Date(ev.date) > today
   }).length
 
-  const tabs = [
-    { value: "dashboard", label: "Dashboard", icon: BarChart3, adminOnly: false, puzzleMasterOnly: false },
-    { value: "users", label: "Leden", icon: Users, adminOnly: true, puzzleMasterOnly: false },
-    { value: "lidgeld", label: "Lidgeld", icon: Euro, adminOnly: false, puzzleMasterOnly: false },
-    { value: "tournaments", label: "Toernooien", icon: Trophy, adminOnly: true, puzzleMasterOnly: false },
-    { value: "calendar", label: "Kalender", icon: CalendarDays, adminOnly: true, puzzleMasterOnly: false },
-    { value: "puzzles", label: "Puzzels", icon: Puzzle, adminOnly: false, puzzleMasterOnly: true },
-    { value: "sevilla", label: "Sevilla Import", icon: Upload, adminOnly: true, puzzleMasterOnly: false },
-    { value: "settings", label: "Instellingen", icon: Palette, adminOnly: true, puzzleMasterOnly: false },
-  ].filter(tab => {
-    // Bestuursleden zien alleen dashboard en lidgeld
-    if (currentUser && isBoardMember(currentUser) && !isAdmin(currentUser)) {
-      return !tab.adminOnly && !tab.puzzleMasterOnly
-    }
-    // Puzzle master only tabs
-    if (tab.puzzleMasterOnly) {
-      return currentUser && (isAdmin(currentUser) || isPuzzleMaster(currentUser))
-    }
-    // Admins zien alles
-    return !tab.adminOnly || (currentUser && isAdmin(currentUser))
-  })
+  const tabs = useMemo(
+    () =>
+      [
+        { value: "dashboard", label: "Dashboard", icon: BarChart3, adminOnly: false, puzzleMasterOnly: false },
+        { value: "users", label: "Leden", icon: Users, adminOnly: true, puzzleMasterOnly: false },
+        { value: "lidgeld", label: "Lidgeld", icon: Euro, adminOnly: false, puzzleMasterOnly: false },
+        { value: "tournaments", label: "Toernooien", icon: Trophy, adminOnly: true, puzzleMasterOnly: false },
+        { value: "calendar", label: "Kalender", icon: CalendarDays, adminOnly: true, puzzleMasterOnly: false },
+        { value: "puzzles", label: "Puzzels", icon: Puzzle, adminOnly: false, puzzleMasterOnly: true },
+        { value: "sevilla", label: "Sevilla Import", icon: Upload, adminOnly: true, puzzleMasterOnly: false },
+        { value: "settings", label: "Instellingen", icon: Palette, adminOnly: true, puzzleMasterOnly: false },
+      ].filter((tab) => {
+        // Admins beheren lidgeld onder Leden → geen aparte Lidgeld-tab
+        if (tab.value === "lidgeld" && currentUser && isAdmin(currentUser)) {
+          return false
+        }
+        // Bestuursleden zien alleen dashboard en lidgeld
+        if (currentUser && isBoardMember(currentUser) && !isAdmin(currentUser)) {
+          return !tab.adminOnly && !tab.puzzleMasterOnly
+        }
+        // Puzzle master only tabs
+        if (tab.puzzleMasterOnly) {
+          return Boolean(currentUser && (isAdmin(currentUser) || isPuzzleMaster(currentUser)))
+        }
+        // Admins zien alles
+        return !tab.adminOnly || Boolean(currentUser && isAdmin(currentUser))
+      }),
+    [currentUser]
+  )
 
 
   useEffect(() => {
@@ -78,7 +86,17 @@ const AdminPage = () => {
 
     window.addEventListener("hashchange", handleHashChange)
     return () => window.removeEventListener("hashchange", handleHashChange)
-  }, [])
+  }, [tabs])
+
+  // Admin heeft geen lidgeld-tab: oude #lidgeld-hash terug naar dashboard
+  useEffect(() => {
+    if (!currentUser || !isAdmin(currentUser)) return
+    const available = tabs.map((t) => t.value)
+    if (!available.includes(activeTab)) {
+      setActiveTab("dashboard")
+      window.location.hash = "dashboard"
+    }
+  }, [currentUser, activeTab, tabs])
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab)
@@ -268,20 +286,22 @@ const AdminPage = () => {
           <TabsContent value="users" className="mt-0">
             <UsersManagement />
           </TabsContent>
-          <TabsContent value="lidgeld" className="mt-0">
-            <Link href="/admin/lidgeld">
-              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Euro className="h-8 w-8 text-mainAccent" />
+          {currentUser && !isAdmin(currentUser) && (
+            <TabsContent value="lidgeld" className="mt-0">
+              <Link href="/admin/lidgeld">
+                <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                  <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Euro className="h-8 w-8 text-mainAccent" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Lidgeld Beheer</h3>
+                  <p className="text-gray-600 mb-4">Beheer lidgeld en bondslidgeld betalingen</p>
+                  <button className="bg-mainAccent text-white px-6 py-2 rounded-lg hover:bg-mainAccentDark transition-colors">
+                    Open Lidgeld Beheer
+                  </button>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Lidgeld Beheer</h3>
-                <p className="text-gray-600 mb-4">Beheer lidgeld en bondslidgeld betalingen</p>
-                <button className="bg-mainAccent text-white px-6 py-2 rounded-lg hover:bg-mainAccentDark transition-colors">
-                  Open Lidgeld Beheer
-                </button>
-              </div>
-            </Link>
-          </TabsContent>
+              </Link>
+            </TabsContent>
+          )}
           <TabsContent value="tournaments" className="mt-0">
             <TournamentsManagement />
           </TabsContent>

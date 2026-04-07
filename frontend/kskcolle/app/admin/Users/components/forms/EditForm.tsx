@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { parseRoles } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, User, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox, LandPlot, Phone, Building, PenTool, Puzzle } from "lucide-react"
+import { CheckCircle2, User as UserIcon, Mail, Trophy, Shield, Globe, MapPin, Hash, Mailbox, LandPlot, Phone, Building, PenTool, Puzzle, Euro } from "lucide-react"
 import useSWRMutation from "swr/mutation"
-import { save } from "../../../../api/index"
+import { mutate } from "swr"
+import { save, updateLidgeldStatus } from "../../../../api/index"
 import { Checkbox } from "@/components/ui/checkbox"
 import GeneratePasswordButton from "../../../../components/GeneratePasswordButton"
+import { format } from "date-fns"
+import type { User } from "@/data/types"
 
 const validationRules = {
   voornaam: {
@@ -79,15 +82,118 @@ const toDateInputString = (date: Date) => {
   return date ? new Date(date).toISOString().split("T")[0] : ""
 }
 
+const getAugust31st = () => {
+  const today = new Date()
+  const y = today.getFullYear()
+  const m = today.getMonth()
+  const d = today.getDate()
+  const yearForAug = m > 7 || (m === 7 && d > 31) ? y + 1 : y
+  return new Date(yearForAug, 7, 31)
+}
+
+function initLidgeldState(u: User) {
+  const now = new Date()
+  const lidgeldExpired =
+    u.lidgeld_betaald && u.lidgeld_periode_eind && new Date(u.lidgeld_periode_eind) <= now
+  const bondslidgeldExpired =
+    u.bondslidgeld_betaald && u.bondslidgeld_periode_eind && new Date(u.bondslidgeld_periode_eind) <= now
+  return {
+    lidgeld_betaald: Boolean(u.lidgeld_betaald && !lidgeldExpired),
+    lidgeld_periode_start: u.lidgeld_periode_start ? format(new Date(u.lidgeld_periode_start), "yyyy-MM-dd") : "",
+    lidgeld_periode_eind: u.lidgeld_periode_eind ? format(new Date(u.lidgeld_periode_eind), "yyyy-MM-dd") : "",
+    bondslidgeld_betaald: Boolean(u.bondslidgeld_betaald && !bondslidgeldExpired),
+    bondslidgeld_periode_start: u.bondslidgeld_periode_start
+      ? format(new Date(u.bondslidgeld_periode_start), "yyyy-MM-dd")
+      : "",
+    bondslidgeld_periode_eind: u.bondslidgeld_periode_eind
+      ? format(new Date(u.bondslidgeld_periode_eind), "yyyy-MM-dd")
+      : "",
+    jeugdlidgeld_betaald: Boolean(u.jeugdlidgeld_betaald ?? false),
+    jeugdlidgeld_periode_start: u.jeugdlidgeld_periode_start
+      ? format(new Date(u.jeugdlidgeld_periode_start), "yyyy-MM-dd")
+      : "",
+    jeugdlidgeld_periode_eind: u.jeugdlidgeld_periode_eind
+      ? format(new Date(u.jeugdlidgeld_periode_eind), "yyyy-MM-dd")
+      : "",
+  }
+}
+
+function buildLidgeldApiPayload(
+  form: ReturnType<typeof initLidgeldState>,
+) {
+  const today = new Date()
+  const august31 = getAugust31st()
+  return {
+    lidgeld_periode_start: form.lidgeld_periode_start
+      ? new Date(form.lidgeld_periode_start).toISOString()
+      : form.lidgeld_betaald
+        ? today.toISOString()
+        : null,
+    lidgeld_periode_eind: form.lidgeld_periode_eind
+      ? new Date(form.lidgeld_periode_eind).toISOString()
+      : form.lidgeld_betaald
+        ? august31.toISOString()
+        : null,
+    bondslidgeld_periode_start: form.bondslidgeld_periode_start
+      ? new Date(form.bondslidgeld_periode_start).toISOString()
+      : form.bondslidgeld_betaald
+        ? today.toISOString()
+        : null,
+    bondslidgeld_periode_eind: form.bondslidgeld_periode_eind
+      ? new Date(form.bondslidgeld_periode_eind).toISOString()
+      : form.bondslidgeld_betaald
+        ? august31.toISOString()
+        : null,
+    jeugdlidgeld_periode_start: form.jeugdlidgeld_periode_start
+      ? new Date(form.jeugdlidgeld_periode_start).toISOString()
+      : form.jeugdlidgeld_betaald
+        ? today.toISOString()
+        : null,
+    jeugdlidgeld_periode_eind: form.jeugdlidgeld_periode_eind
+      ? new Date(form.jeugdlidgeld_periode_eind).toISOString()
+      : form.jeugdlidgeld_betaald
+        ? august31.toISOString()
+        : null,
+    lidgeld_betaald: form.lidgeld_betaald,
+    bondslidgeld_betaald: form.bondslidgeld_betaald,
+    jeugdlidgeld_betaald: form.jeugdlidgeld_betaald,
+  }
+}
+
+function mergeUserWithLidgeldResponse(
+  updated: User,
+  form: ReturnType<typeof initLidgeldState>,
+): User {
+  const p = buildLidgeldApiPayload(form)
+  return {
+    ...updated,
+    lidgeld_betaald: form.lidgeld_betaald,
+    lidgeld_periode_start: p.lidgeld_periode_start ? new Date(p.lidgeld_periode_start) : null,
+    lidgeld_periode_eind: p.lidgeld_periode_eind ? new Date(p.lidgeld_periode_eind) : null,
+    bondslidgeld_betaald: form.bondslidgeld_betaald,
+    bondslidgeld_periode_start: p.bondslidgeld_periode_start ? new Date(p.bondslidgeld_periode_start) : null,
+    bondslidgeld_periode_eind: p.bondslidgeld_periode_eind ? new Date(p.bondslidgeld_periode_eind) : null,
+    jeugdlidgeld_betaald: form.jeugdlidgeld_betaald,
+    jeugdlidgeld_periode_start: p.jeugdlidgeld_periode_start ? new Date(p.jeugdlidgeld_periode_start) : null,
+    jeugdlidgeld_periode_eind: p.jeugdlidgeld_periode_eind ? new Date(p.jeugdlidgeld_periode_eind) : null,
+  }
+}
+
 interface EditFormProps {
-  user
+  user: User
   onClose: () => void
-  onRefresh?: (updatedUser?: any) => void
+  onRefresh?: (updatedUser?: User) => void
 }
 
 export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const { trigger: saveUser, isMutating } = useSWRMutation("users", save)
+  const [isSaving, setIsSaving] = useState(false)
+  const [lidgeldForm, setLidgeldForm] = useState(() => initLidgeldState(user))
+  const { trigger: saveUser } = useSWRMutation("users", save)
+
+  useEffect(() => {
+    setLidgeldForm(initLidgeldState(user))
+  }, [user.user_id])
 
   const {
     register,
@@ -155,19 +261,21 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
     }
 
 
+    setIsSaving(true)
     try {
       const updatedUser = await saveUser(formattedValues)
+      await updateLidgeldStatus(user.user_id, buildLidgeldApiPayload(lidgeldForm))
+      await mutate("lidgeld-status")
+      const merged = mergeUserWithLidgeldResponse(updatedUser as User, lidgeldForm)
       setSuccessMessage("Speler correct gewijzigd")
-      
-      // Call onRefresh with the updated user data for optimistic update
+
       if (onRefresh) {
-        onRefresh(updatedUser)
+        onRefresh(merged)
       }
-      
+
       setTimeout(() => {
         setSuccessMessage(null)
         onClose()
-        // Force a final refresh after closing to ensure consistency in production
         if (onRefresh) {
           onRefresh()
         }
@@ -181,6 +289,8 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
         `Validatie fout: ${JSON.stringify(error.response.data.details)}` :
         error.response?.data?.error || error.message
       setSuccessMessage(`Er is een fout opgetreden: ${errorMessage}`)
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -206,7 +316,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
         {/* Personal Information */}
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200 flex flex-col gap-y-3">
           <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-            <User className="h-3 w-3" />
+            <UserIcon className="h-3 w-3" />
             Persoonlijke Gegevens
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -474,6 +584,162 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
           </div>
         </div>
 
+        {/* Lidgeld */}
+        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg p-3 border border-emerald-200">
+          <h3 className="text-sm font-semibold text-emerald-900 mb-3 flex items-center gap-2">
+            <Euro className="h-3 w-3" />
+            Lidgeld en bondslidgeld
+          </h3>
+          <div
+            className={`grid gap-4 ${watch("is_youth") ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"}`}
+          >
+            <div className="space-y-3 rounded-md bg-white/60 p-3 border border-emerald-100">
+              <h4 className="text-xs font-medium text-emerald-900">Club lidgeld</h4>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="lf_lidgeld"
+                  checked={lidgeldForm.lidgeld_betaald}
+                  onCheckedChange={(checked) => {
+                    const today = new Date()
+                    const aug = getAugust31st()
+                    setLidgeldForm((prev) => ({
+                      ...prev,
+                      lidgeld_betaald: !!checked,
+                      lidgeld_periode_start:
+                        checked && !prev.lidgeld_periode_start ? format(today, "yyyy-MM-dd") : prev.lidgeld_periode_start,
+                      lidgeld_periode_eind:
+                        checked && !prev.lidgeld_periode_eind ? format(aug, "yyyy-MM-dd") : prev.lidgeld_periode_eind,
+                    }))
+                  }}
+                />
+                <Label htmlFor="lf_lidgeld" className="text-xs font-medium text-gray-700">
+                  Betaald
+                </Label>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-700">Start</Label>
+                <Input
+                  type="date"
+                  className="mt-1 text-sm"
+                  value={lidgeldForm.lidgeld_periode_start}
+                  onChange={(e) => setLidgeldForm((p) => ({ ...p, lidgeld_periode_start: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-gray-700">Einde</Label>
+                <Input
+                  type="date"
+                  className="mt-1 text-sm"
+                  value={lidgeldForm.lidgeld_periode_eind}
+                  onChange={(e) => setLidgeldForm((p) => ({ ...p, lidgeld_periode_eind: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-md bg-white/60 p-3 border border-emerald-100">
+              <h4 className="text-xs font-medium text-emerald-900">Bondslidgeld</h4>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="lf_bonds"
+                  checked={lidgeldForm.bondslidgeld_betaald}
+                  onCheckedChange={(checked) => {
+                    const today = new Date()
+                    const aug = getAugust31st()
+                    setLidgeldForm((prev) => ({
+                      ...prev,
+                      bondslidgeld_betaald: !!checked,
+                      bondslidgeld_periode_start:
+                        checked && !prev.bondslidgeld_periode_start
+                          ? format(today, "yyyy-MM-dd")
+                          : prev.bondslidgeld_periode_start,
+                      bondslidgeld_periode_eind:
+                        checked && !prev.bondslidgeld_periode_eind ? format(aug, "yyyy-MM-dd") : prev.bondslidgeld_periode_eind,
+                    }))
+                  }}
+                />
+                <Label htmlFor="lf_bonds" className="text-xs font-medium text-gray-700">
+                  Betaald
+                </Label>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-700">Start</Label>
+                <Input
+                  type="date"
+                  className="mt-1 text-sm"
+                  value={lidgeldForm.bondslidgeld_periode_start}
+                  onChange={(e) =>
+                    setLidgeldForm((p) => ({ ...p, bondslidgeld_periode_start: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-gray-700">Einde</Label>
+                <Input
+                  type="date"
+                  className="mt-1 text-sm"
+                  value={lidgeldForm.bondslidgeld_periode_eind}
+                  onChange={(e) =>
+                    setLidgeldForm((p) => ({ ...p, bondslidgeld_periode_eind: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+
+            {watch("is_youth") && (
+              <div className="space-y-3 rounded-md bg-white/60 p-3 border border-emerald-100">
+                <h4 className="text-xs font-medium text-emerald-900">Jeugdlidgeld</h4>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="lf_jeugd"
+                    checked={lidgeldForm.jeugdlidgeld_betaald}
+                    onCheckedChange={(checked) => {
+                      const t = new Date()
+                      const y = t.getFullYear()
+                      const mo = t.getMonth()
+                      const da = t.getDate()
+                      const yearAug = mo > 7 || (mo === 7 && da > 31) ? y + 1 : y
+                      const aug = new Date(yearAug, 7, 31)
+                      setLidgeldForm((prev) => ({
+                        ...prev,
+                        jeugdlidgeld_betaald: !!checked,
+                        jeugdlidgeld_periode_start:
+                          checked && !prev.jeugdlidgeld_periode_start ? format(t, "yyyy-MM-dd") : prev.jeugdlidgeld_periode_start,
+                        jeugdlidgeld_periode_eind:
+                          checked && !prev.jeugdlidgeld_periode_eind ? format(aug, "yyyy-MM-dd") : prev.jeugdlidgeld_periode_eind,
+                      }))
+                    }}
+                  />
+                  <Label htmlFor="lf_jeugd" className="text-xs font-medium text-gray-700">
+                    Betaald
+                  </Label>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-700">Start</Label>
+                  <Input
+                    type="date"
+                    className="mt-1 text-sm"
+                    value={lidgeldForm.jeugdlidgeld_periode_start}
+                    onChange={(e) =>
+                      setLidgeldForm((p) => ({ ...p, jeugdlidgeld_periode_start: e.target.value }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-700">Einde</Label>
+                  <Input
+                    type="date"
+                    className="mt-1 text-sm"
+                    value={lidgeldForm.jeugdlidgeld_periode_eind}
+                    onChange={(e) =>
+                      setLidgeldForm((p) => ({ ...p, jeugdlidgeld_periode_eind: e.target.value }))
+                    }
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Admin Rights */}
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
           <div className="grid grid-cols-1 gap-4">
@@ -596,7 +862,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
                   className="data-[state=checked]:bg-mainAccent data-[state=checked]:border-mainAccent"
                 />
                 <Label htmlFor="isExlid" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <User className="h-3 w-3" />
+                  <UserIcon className="h-3 w-3" />
                   Ex-lid
                 </Label>
               </div>
@@ -638,8 +904,8 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
 
         {/* Submit Button */}
         <div className="flex gap-2">
-          <Button type="submit" disabled={isMutating} className="flex-1 bg-mainAccent hover:bg-mainAccentDark text-sm">
-            {isMutating ? (
+          <Button type="submit" disabled={isSaving} className="flex-1 bg-mainAccent hover:bg-mainAccentDark text-sm">
+            {isSaving ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                 Wijzigen...

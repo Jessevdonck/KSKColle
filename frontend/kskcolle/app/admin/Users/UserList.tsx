@@ -178,7 +178,8 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
           case "exlid":
             return userRoles.includes("exlid")
           case "user":
-            return userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("author") && !userRoles.includes("exlid") && !user.is_youth
+            // Volwassen clubleden: geldig lidgeld/bondslidgeld (jeugdleden zitten onder Jeugd)
+            return getMembershipStatus(user).isMember && user.is_youth !== true
           default:
             return true
         }
@@ -219,7 +220,7 @@ export default function UserList({ users, onDelete, isDeleting = false, paginati
       if (userRoles.includes("author")) counts.author++
       if (user.is_youth === true) counts.youth++
       if (userRoles.includes("exlid")) counts.exlid++
-      if (userRoles.includes("user") && !userRoles.includes("admin") && !userRoles.includes("bestuurslid") && !userRoles.includes("author") && !userRoles.includes("exlid") && !user.is_youth) {
+      if (getMembershipStatus(user).isMember && user.is_youth !== true) {
         counts.user++
       }
     })
