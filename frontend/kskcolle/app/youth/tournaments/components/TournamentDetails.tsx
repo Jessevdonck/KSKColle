@@ -19,7 +19,7 @@ type Game = {
   result: string | null
   speler1: { user_id: number; voornaam: string; achternaam: string }
   speler2: { user_id: number; voornaam: string; achternaam: string } | null
-  uitgestelde_datum?: Date
+  uitgestelde_datum?: string | null
 }
 
 type Round = {
