@@ -36,7 +36,7 @@ import { useAuth } from "../../contexts/auth";
 import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig";
 
 const MIN_PLAYERS = 10;
-const MAX_PLAYERS = 10;
+const MAX_PLAYERS = 11;
 const MAX_BUDGET = 1000;
 
 function useMegaschaakTeamDetails(expandedTeamId: number | null) {
@@ -379,10 +379,10 @@ export default function MegaschaakPage() {
   const handleSaveTeam = async () => {
     if (!activeTournament) return;
 
-    if (selectedPlayers.length !== MIN_PLAYERS) {
+    if (selectedPlayers.length < MIN_PLAYERS || selectedPlayers.length > MAX_PLAYERS) {
       toast({
         title: "Fout",
-        description: `Je moet precies ${MIN_PLAYERS} spelers selecteren (momenteel: ${selectedPlayers.length})`,
+        description: `Je moet ${MIN_PLAYERS} of ${MAX_PLAYERS} spelers selecteren (momenteel: ${selectedPlayers.length})`,
         variant: "destructive",
       });
       return;
@@ -661,7 +661,7 @@ export default function MegaschaakPage() {
               </p>
               <p className="leading-relaxed">
                 <strong>•</strong> Een ploeg moet bestaan uit{" "}
-                <strong>exact 10 schakers</strong>
+                <strong>10 schakers (uitzondering: 11)</strong>
               </p>
               <p className="leading-relaxed">
                 <strong>•</strong> Daarnaast mag je één reservespeler selecteren
@@ -978,7 +978,7 @@ export default function MegaschaakPage() {
                         {selectedPlayers.length} / {MAX_PLAYERS}
                       </div>
                       <div className="text-xs text-white">
-                        Precies {MAX_PLAYERS} spelers vereist
+                        {MIN_PLAYERS} of {MAX_PLAYERS} spelers vereist
                       </div>
                     </div>
 
@@ -1210,7 +1210,7 @@ export default function MegaschaakPage() {
                         <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                         <p>Selecteer spelers om je team samen te stellen</p>
                         <p className="text-sm mt-2">
-                          Selecteer {MAX_PLAYERS} spelers
+                          Selecteer {MIN_PLAYERS} of {MAX_PLAYERS} spelers
                         </p>
                       </div>
                     ) : (

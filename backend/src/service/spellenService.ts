@@ -2,6 +2,8 @@ import { prisma } from "./data/";
 import type { Spel, SpelCreateInput, SpelUpdateInput, GameWithRoundAndTournament } from "../types/spel";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
+import { RoundType } from "@prisma/client";
+import { undoAdminPostponeGame } from "./tournamentRoundService";
 
 export const getAllSpellen = async (): Promise<Spel[]> => {
   try {
@@ -195,10 +197,23 @@ export const updateSpel = async (game_id: number, data: SpelUpdateInput) => {
 
 export const removeSpel = async (game_id: number): Promise<void> => {
   try {
+    const game = await prisma.game.findUnique({
+      where: { game_id },
+      include: { round: true },
+    });
+
+    if (!game) {
+      throw ServiceError.notFound("No game with this id exists");
+    }
+
+    // Inhaalpartij met koppeling: eerst originele ronde terugzetten (zelfde logica als admin-undo)
+    if (game.round.type === RoundType.MAKEUP && game.original_game_id != null) {
+      await undoAdminPostponeGame(game.original_game_id, game_id);
+      return;
+    }
+
     await prisma.game.delete({
-      where: {
-        game_id,
-      },
+      where: { game_id },
     });
   } catch (error) {
     throw handleDBError(error);

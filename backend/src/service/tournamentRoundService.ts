@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "./data";
 import { RoundType } from "../types/Types";
 import ServiceError from "../core/serviceError";
@@ -358,37 +359,68 @@ export async function postponeGameToMakeupRound(
 
 /**
  * Maak een admin uitstel ongedaan (Admin versie)
- * Verwijdert de nieuwe game en herstelt de originele game
+ * Zelfde volgorde als speler-undo: eerst originele partij herstellen, dan inhaalpartij verwijderen (transactie).
  */
 export async function undoAdminPostponeGame(
   original_game_id: number,
   new_game_id: number
 ): Promise<any> {
+  const requestedOrigId = Number(original_game_id);
+  const makeupId = Number(new_game_id);
+
   try {
-    // 1. Verwijder de nieuwe game uit de inhaaldag
-    await prisma.game.delete({
-      where: { game_id: new_game_id }
+    const makeupGame = await prisma.game.findUnique({
+      where: { game_id: makeupId },
+      include: { round: true },
     });
 
-    // 2. Herstel de originele game naar "Nog te spelen" status
-    const restoredGame = await prisma.game.update({
-      where: { game_id: original_game_id },
-      data: {
-        result: null, // Reset naar "Nog te spelen"
-        uitgestelde_datum: null // Reset uitgestelde datum
-      },
-      include: {
-        speler1: true,
-        speler2: true,
-        round: true
-      }
+    if (!makeupGame) {
+      throw ServiceError.notFound("Inhaalpartij niet gevonden");
+    }
+
+    if (makeupGame.round.type !== RoundType.MAKEUP) {
+      throw ServiceError.validationFailed("Deze partij staat niet op een inhaaldag");
+    }
+
+    // Bron van waarheid is de database; voorkomt foutieve client-IDs
+    const origId =
+      makeupGame.original_game_id != null
+        ? Number(makeupGame.original_game_id)
+        : requestedOrigId;
+
+    if (
+      makeupGame.original_game_id != null &&
+      Number(makeupGame.original_game_id) !== requestedOrigId
+    ) {
+      throw ServiceError.validationFailed(
+        "Originele partij komt niet overeen met deze inhaalpartij",
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.game.update({
+        where: { game_id: origId },
+        data: {
+          result: null,
+          uitgestelde_datum: null,
+        },
+      });
+
+      await tx.game.delete({
+        where: { game_id: makeupId },
+      });
+    });
+
+    const restoredGame = await prisma.game.findUnique({
+      where: { game_id: origId },
+      include: { round: true },
     });
 
     return {
       success: true,
       message: `Uitstel ongedaan gemaakt. Game is teruggeplaatst naar originele ronde`,
-      original_game_id: original_game_id,
-      restored_round_id: restoredGame.round_id
+      original_game_id: origId,
+      restored_round_id: restoredGame?.round_id,
     };
   } catch (error) {
     throw handleDBError(error);
@@ -546,6 +578,36 @@ export async function updateMakeupRoundDate(
 }
 
 /**
+ * Voor elke inhaalpartij op deze ronde: originele partij in reguliere ronde terugzetten (niet meer "uitgesteld").
+ * Moet gebeuren vóór de inhaaldag-ronde wordt verwijderd (anders verdwijnt de koppeling).
+ */
+export async function restoreOriginalGamesForMakeupRoundTx(
+  tx: Prisma.TransactionClient,
+  makeupRoundId: number,
+): Promise<void> {
+  const games = await tx.game.findMany({
+    where: { round_id: makeupRoundId },
+    select: { original_game_id: true },
+  });
+  const origIds = [
+    ...new Set(
+      games
+        .map((g) => g.original_game_id)
+        .filter((id): id is number => id != null),
+    ),
+  ];
+  for (const oid of origIds) {
+    await tx.game.update({
+      where: { game_id: oid },
+      data: {
+        result: null,
+        uitgestelde_datum: null,
+      },
+    });
+  }
+}
+
+/**
  * Verwijder een inhaaldag ronde en verschuif andere rondes terug
  */
 export async function deleteMakeupRound(round_id: number): Promise<void> {
@@ -573,9 +635,11 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
 
     const calendarEventId = round.calendar_event_id;
 
-    // Verwijder de ronde (games worden automatisch verwijderd)
-    await prisma.round.delete({
-      where: { round_id }
+    await prisma.$transaction(async (tx) => {
+      await restoreOriginalGamesForMakeupRoundTx(tx, round_id);
+      await tx.round.delete({
+        where: { round_id },
+      });
     });
 
     // Verschuif alle rondes na deze ronde terug
@@ -603,9 +667,11 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
         });
 
         if (correspondingRound) {
-          // Verwijder de ronde
-          await prisma.round.delete({
-            where: { round_id: correspondingRound.round_id }
+          await prisma.$transaction(async (tx) => {
+            await restoreOriginalGamesForMakeupRoundTx(tx, correspondingRound.round_id);
+            await tx.round.delete({
+              where: { round_id: correspondingRound.round_id },
+            });
           });
 
           // Verschuif rondes terug

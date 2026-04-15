@@ -10,6 +10,7 @@ import { save } from "../../../api/index"
 import type { MakeupDay, Round, Game } from "@/data/types"
 import { format } from "date-fns"
 import { Calendar, Clock, ChevronRight, CheckCircle, XCircle, Minus } from "lucide-react"
+import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
@@ -133,8 +134,8 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
     if (uitgestelde_datum) {
       return "bg-amber-100 text-amber-800 border-amber-200"
     }
-    
-    switch (result) {
+    const r = normalizedResultForDisplay(result, uitgestelde_datum)
+    switch (r) {
       case "1-0":
       case "0-1":
         return "bg-green-100 text-green-800 border-green-200"
@@ -260,10 +261,10 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
 
                   {/* Result Selector */}
                   <div className="flex items-center gap-2">
-                    {getResultIcon(game.result)}
+                    {getResultIcon(normalizedResultForDisplay(game.result, game.uitgestelde_datum))}
                     <Select
                       onValueChange={(val) => handleResultChange(game.game_id, val)}
-                      defaultValue={game.result || "not_played"}
+                      defaultValue={normalizedResultForDisplay(game.result, game.uitgestelde_datum) || "not_played"}
                       disabled={isMutating}
                     >
                       <SelectTrigger className="w-32">
@@ -286,7 +287,10 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
                 <div className="mt-3 flex justify-end">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getResultColor(game.result, game.uitgestelde_datum)}`}>
                     {game.uitgestelde_datum ? "Uitgesteld" : 
-                     game.result === "not_played" || !game.result ? "Nog te spelen" : game.result}
+                     (() => {
+                       const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
+                       return r === "not_played" || !r ? "Nog te spelen" : r
+                     })()}
                   </span>
                 </div>
               </div>

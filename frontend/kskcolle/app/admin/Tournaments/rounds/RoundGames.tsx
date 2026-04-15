@@ -10,6 +10,7 @@ import { format } from "date-fns"
 import type { Game, MakeupDay } from "@/data/types"
 import { Clock, ChevronRight, CheckCircle, XCircle, Minus, X } from "lucide-react"
 import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from "@/lib/gameSorting"
+import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
@@ -47,9 +48,10 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
   const [selectedMD, setSelectedMD] = useState<number | "">("")
 
   // Check if a game is actually played (not just placeholder values)
-  const isGamePlayed = (result: string | null) => {
-    if (!result) return false
-    return result !== "..." && result !== "not_played" && result !== "null"
+  const isGamePlayed = (result: string | null, uitgestelde_datum?: Date | string | null) => {
+    const eff = normalizedResultForDisplay(result, uitgestelde_datum)
+    if (!eff) return false
+    return eff !== "..." && eff !== "not_played" && eff !== "null"
   }
 
   const handleResultChange = async (gameId: number, result: string) => {
@@ -115,8 +117,8 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
     if (uitgestelde_datum) {
       return "bg-amber-100 text-amber-800 border-amber-200"
     }
-    
-    switch (result) {
+    const r = normalizedResultForDisplay(result, uitgestelde_datum)
+    switch (r) {
       case "1-0":
       case "0-1":
         return "bg-green-100 text-green-800 border-green-200"
@@ -216,10 +218,10 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
               {/* Result Selector */}
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                {getResultIcon(game.result)}
+                {getResultIcon(normalizedResultForDisplay(game.result, game.uitgestelde_datum))}
                 <Select
                   onValueChange={(val) => handleResultChange(game.game_id, val)}
-                  defaultValue={game.result || "not_played"}
+                  defaultValue={normalizedResultForDisplay(game.result, game.uitgestelde_datum) || "not_played"}
                   disabled={isMutating}
                 >
                   <SelectTrigger className="w-full sm:w-28 text-sm">
@@ -238,7 +240,7 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
               </div>
 
               {/* Postpone Button - only show for non-postponed, non-played games */}
-              {!game.uitgestelde_datum && !isGamePlayed(game.result) && (
+              {!game.uitgestelde_datum && !isGamePlayed(game.result, game.uitgestelde_datum) && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -275,11 +277,14 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
           <div className="mt-2 flex justify-start sm:justify-end">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getResultColor(game.result, game.uitgestelde_datum)}`}>
             {game.uitgestelde_datum ? "Uitgesteld" :
-             game.result === "not_played" || game.result === "..." || !game.result ? "Nog te spelen" : 
-             game.result === "1-0FF" ? "Zwart forfait" :
-             game.result === "0-1FF" ? "Wit forfait" :
-             game.result === "0-0" ? "Scheidsrechterlijke beslissing" :
-             game.result}
+             (() => {
+               const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
+               return r === "not_played" || r === "..." || !r ? "Nog te spelen" :
+               r === "1-0FF" ? "Zwart forfait" :
+               r === "0-1FF" ? "Wit forfait" :
+               r === "0-0" ? "Scheidsrechterlijke beslissing" :
+               r
+             })()}
           </span>
           </div>
 

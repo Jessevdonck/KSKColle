@@ -1,6 +1,11 @@
 import Link from "next/link"
 import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from '@/lib/gameSorting'
+import {
+  hasActivePostpone,
+  hasConcretePairingResult,
+  normalizedResultForDisplay,
+} from "@/lib/gameResultDisplay"
 
 interface PlayerScore {
   user_id: number
@@ -262,18 +267,19 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   <td className="px-1 py-0.5 text-center w-[130px]">
                     <span
                       className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
-                        game.uitgestelde_datum
+                        hasActivePostpone(game.uitgestelde_datum)
                           ? "bg-amber-100 text-amber-800 border border-amber-200"
-                          : game.result && game.result !== "not_played" && game.result !== "..."
+                          : hasConcretePairingResult(game.result, game.uitgestelde_datum)
                           ? "bg-green-100 text-green-800 border border-green-200"
                           : "bg-gray-100 text-gray-600 border border-gray-200"
                       }`}
                     >
-                      {game.uitgestelde_datum
+                      {hasActivePostpone(game.uitgestelde_datum)
                         ? "Uitgesteld"
-                        : game.result && game.result !== "not_played" && game.result !== "..."
-                        ? game.result
-                        : "..."}
+                        : (() => {
+                            const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
+                            return r && r !== "not_played" && r !== "..." ? r : "..."
+                          })()}
                     </span>
                   </td>
                 </tr>
@@ -304,18 +310,19 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                 </div>
                 <span
                   className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                    game.uitgestelde_datum
+                    hasActivePostpone(game.uitgestelde_datum)
                       ? "bg-amber-100 text-amber-800 border border-amber-200"
-                      : game.result && game.result !== "not_played" && game.result !== "..."
+                      : hasConcretePairingResult(game.result, game.uitgestelde_datum)
                       ? "bg-green-100 text-green-800 border border-green-200"
                       : "bg-gray-100 text-gray-600 border border-gray-200"
                   }`}
                 >
-                  {game.uitgestelde_datum
+                  {hasActivePostpone(game.uitgestelde_datum)
                     ? "Uitgesteld"
-                    : game.result && game.result !== "not_played" && game.result !== "..."
-                    ? game.result
-                    : "..."}
+                    : (() => {
+                        const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
+                        return r && r !== "not_played" && r !== "..." ? r : "..."
+                      })()}
                 </span>
               </div>
 

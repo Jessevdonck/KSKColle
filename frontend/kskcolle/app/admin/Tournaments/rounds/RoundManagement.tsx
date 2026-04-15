@@ -15,6 +15,7 @@ import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar, Plus, Trophy, CheckCircle, Clock, Users, Gamepad2, X } from "lucide-react"
 import { sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from "@/lib/gameSorting"
+import { hasActivePostpone, normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 
 const getByeText = (result: string | null) => {
   if (!result) return "Bye"
@@ -44,7 +45,7 @@ export default function RoundManagement({ tournament }: Props) {
   const { data: allRounds = [], mutate: refetchRounds } = useSWR<Round[]>(
     ["tournamentRounds", tournament.tournament_id],
     () => getAllTournamentRounds(tournament.tournament_id),
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: true }
   )
 
   // 4) Mutations
@@ -858,7 +859,7 @@ export default function RoundManagement({ tournament }: Props) {
                         ? sortSevillaGamesWithPostponed(round.games)
                         : sortGamesByPairingOrder(round.games, round.is_sevilla_imported)).map((game, index) => (
                         <div 
-                          key={index} 
+                          key={game.game_id} 
                           className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
                             bulkPostponeMode && round.type === 'REGULAR'
                               ? selectedGames.has(game.game_id)
@@ -894,8 +895,13 @@ export default function RoundManagement({ tournament }: Props) {
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="text-sm text-gray-600">
-                              {game.uitgestelde_datum ? 'Uitgesteld' : 
-                               game.result ? (game.result.startsWith("ABS-") ? "Abs with msg" : game.result) : 'Nog niet gespeeld'}
+                              {hasActivePostpone(game.uitgestelde_datum)
+                                ? "Uitgesteld"
+                                : (() => {
+                                    const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
+                                    if (!r || r === "uitgesteld") return "..."
+                                    return r.startsWith("ABS-") ? "Abs with msg" : r
+                                  })()}
                             </div>
                             {!bulkPostponeMode && round.type === 'REGULAR' && makeupRounds.length > 0 && (
                               <Button
@@ -923,9 +929,9 @@ export default function RoundManagement({ tournament }: Props) {
                                     try {
                                       // Als deze game een original_game_id heeft, betekent het dat het een uitgestelde partij is
                                       // In dat geval moeten we de originele partij herstellen
-                                      if ((game as any).original_game_id) {
+                                      if (game.original_game_id != null) {
                                         await undoAdminPostponeMutation({ 
-                                          original_game_id: (game as any).original_game_id, 
+                                          original_game_id: game.original_game_id, 
                                           new_game_id: Number(gameId) 
                                         })
                                         toast({ title: "Success", description: "Partij verwijderd en originele partij hersteld." })
@@ -934,7 +940,7 @@ export default function RoundManagement({ tournament }: Props) {
                                         await deleteGameMutation(Number(gameId))
                                         toast({ title: "Success", description: "Partij verwijderd." })
                                       }
-                                      refetchRounds()
+                                      await refetchRounds()
                                     } catch (error) {
                                       console.error('Error deleting game:', error)
                                       toast({ title: "Error", description: "Kon partij niet verwijderen", variant: "destructive" })

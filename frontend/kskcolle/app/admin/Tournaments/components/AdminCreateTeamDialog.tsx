@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 const MIN_PLAYERS = 10
-const MAX_PLAYERS = 10
+const MAX_PLAYERS = 11
 const MAX_BUDGET = 1000
 
 interface AdminCreateTeamDialogProps {
@@ -181,10 +181,10 @@ export default function AdminCreateTeamDialog({
       return
     }
 
-    if (selectedPlayers.length !== MIN_PLAYERS) {
+    if (selectedPlayers.length < MIN_PLAYERS || selectedPlayers.length > MAX_PLAYERS) {
       toast({
         title: "Fout",
-        description: `Je moet precies ${MIN_PLAYERS} spelers selecteren (momenteel: ${selectedPlayers.length})`,
+        description: `Je moet ${MIN_PLAYERS} of ${MAX_PLAYERS} spelers selecteren (momenteel: ${selectedPlayers.length})`,
         variant: "destructive"
       })
       return
@@ -345,7 +345,7 @@ export default function AdminCreateTeamDialog({
               {selectedPlayers.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed">
                   <p className="text-sm">Nog geen spelers geselecteerd</p>
-                  <p className="text-xs mt-1">Selecteer {MAX_PLAYERS} spelers uit de lijst hieronder</p>
+                  <p className="text-xs mt-1">Selecteer {MIN_PLAYERS} of {MAX_PLAYERS} spelers uit de lijst hieronder</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 bg-gray-50 rounded-lg border">
@@ -541,7 +541,7 @@ export default function AdminCreateTeamDialog({
             </Button>
             <Button
               onClick={handleCreateTeam}
-              disabled={!selectedUserId || selectedPlayers.length !== MIN_PLAYERS || !reservePlayer || !teamName.trim()}
+              disabled={!selectedUserId || selectedPlayers.length < MIN_PLAYERS || selectedPlayers.length > MAX_PLAYERS || !reservePlayer || !teamName.trim()}
               className="bg-mainAccent hover:bg-mainAccentDark"
             >
               <Save className="h-4 w-4 mr-2" />

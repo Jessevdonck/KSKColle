@@ -743,10 +743,10 @@ export const createTeam = async (
   reservePlayerId?: number,
 ) => {
   try {
-    // Validate exactly 10 players
-    if (playerIds.length !== 10) {
+    // Validate team size (standard 10, exception 11)
+    if (playerIds.length < 10 || playerIds.length > 11) {
       throw ServiceError.validationFailed(
-        "Je moet precies 10 spelers selecteren",
+        "Je moet 10 of 11 spelers selecteren",
       );
     }
 
@@ -952,10 +952,10 @@ export const adminCreateTeam = async (
   reservePlayerId?: number,
 ) => {
   try {
-    // Validate exactly 10 players
-    if (playerIds.length !== 10) {
+    // Validate team size (standard 10, exception 11)
+    if (playerIds.length < 10 || playerIds.length > 11) {
       throw ServiceError.validationFailed(
-        "Je moet precies 10 spelers selecteren",
+        "Je moet 10 of 11 spelers selecteren",
       );
     }
 
@@ -1165,10 +1165,10 @@ export const updateTeam = async (
       throw ServiceError.notFound("Team niet gevonden of je hebt geen toegang");
     }
 
-    // Validate exactly 10 players
-    if (playerIds.length !== 10) {
+    // Validate team size (standard 10, exception 11)
+    if (playerIds.length < 10 || playerIds.length > 11) {
       throw ServiceError.validationFailed(
-        "Je moet precies 10 spelers selecteren",
+        "Je moet 10 of 11 spelers selecteren",
       );
     }
 

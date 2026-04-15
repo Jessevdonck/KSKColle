@@ -8,6 +8,7 @@ import AsyncData from "../../components/AsyncData"
 import { getById } from "../../api/index"
 import type { User, GameWithRoundAndTournament } from "../../../data/types"
 import { useAuth } from "../../contexts/auth"
+import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 
 export default function PlayerProfile({ name }: { name: string }) {
   const { user: currentUser } = useAuth()
@@ -70,8 +71,9 @@ export default function PlayerProfile({ name }: { name: string }) {
   twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
 
   const playedGamesWithResults = uniqueGames.filter(game => {
-    const result = game.result?.trim() ?? ''
-    if (!result || result === '...' || result.toLowerCase() === 'uitgesteld' || result === 'not_played') {
+    const result =
+      normalizedResultForDisplay(game.result?.trim() ?? null, game.uitgestelde_datum) ?? ""
+    if (!result || result === "..." || result.toLowerCase() === "uitgesteld" || result === "not_played") {
       return false
     }
     if (game.round?.ronde_datum) {

@@ -8,6 +8,11 @@ import { getById, getAll, getAllTournamentRounds, undoPostponeGame } from "../..
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useState, useEffect } from "react"
+import {
+  hasActivePostpone,
+  hasConcretePairingResult,
+  normalizedResultForDisplay,
+} from "@/lib/gameResultDisplay"
 
 type Game = {
   game_id: number
@@ -520,18 +525,19 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
                     <div className="flex items-center justify-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          g.uitgestelde_datum
+                          hasActivePostpone(g.uitgestelde_datum)
                             ? "bg-amber-100 text-amber-800 border border-amber-200"
-                            : g.result && g.result !== "not_played"
+                            : hasConcretePairingResult(g.result, g.uitgestelde_datum)
                             ? "bg-green-100 text-green-800 border border-green-200"
                             : "bg-gray-100 text-gray-600 border border-gray-200"
                         }`}
                       >
-                        {g.uitgestelde_datum
+                        {hasActivePostpone(g.uitgestelde_datum)
                           ? "Uitgesteld"
-                          : g.result && g.result !== "not_played"
-                          ? g.result
-                          : "Nog te spelen"}
+                          : (() => {
+                              const r = normalizedResultForDisplay(g.result, g.uitgestelde_datum)
+                              return r && r !== "not_played" ? r : "Nog te spelen"
+                            })()}
                       </span>
                       {isUserInvolvedInGame(g) && (
                         <button

@@ -27,6 +27,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { GameWithRoundAndTournament } from "@/data/types"
+import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 import { Trophy, Target, TrendingUp, Calendar, Activity, ChevronLeft, ChevronRight } from "lucide-react"
 import {
   format,
@@ -42,7 +43,7 @@ import { nl } from "date-fns/locale"
 type RangePreset = "1m" | "6m" | "12m" | "custom"
 
 function getScore(game: GameWithRoundAndTournament, playerId: number): number {
-  const result = (game.result ?? "").trim()
+  const result = (normalizedResultForDisplay(game.result ?? null, game.uitgestelde_datum) ?? "").trim()
   if (!result || result === "..." || result.toLowerCase() === "uitgesteld") return NaN
   const isWhite = game.speler1_id === playerId
   const isBlack = game.speler2_id === playerId

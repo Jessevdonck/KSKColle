@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Trophy, Medal, Award, User, X, Calendar } from "lucide-react"
 import { useState } from "react"
+import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 
 interface StandingsProps {
   tournament: {
@@ -33,6 +34,7 @@ interface StandingsProps {
       speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
       speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
       result: string | null
+      uitgestelde_datum?: string | null
       round?: { type: 'REGULAR' | 'MAKEUP' }
     }>
   }>
@@ -114,30 +116,31 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
         const isPlayer1 = playerGame.speler1.user_id === playerId
         const opponent = isPlayer1 ? playerGame.speler2 : playerGame.speler1
 
+        const eff = normalizedResultForDisplay(playerGame.result, playerGame.uitgestelde_datum)
         let score = 0
-        const r = playerGame.result || ""
+        const r = eff || ""
         if (r.startsWith("1-0")) {
           score = isPlayer1 ? 1 : 0
         } else if (r.startsWith("0-1")) {
           score = isPlayer1 ? 0 : 1
         } else if (
-          playerGame.result === "½-½" ||
-          playerGame.result === "1/2-1/2" ||
-          playerGame.result === "-" ||
-          playerGame.result === "�-�"
+          eff === "½-½" ||
+          eff === "1/2-1/2" ||
+          eff === "-" ||
+          eff === "�-�"
         ) {
           score = 0.5
-        } else if (playerGame.result === "0.5-0") {
+        } else if (eff === "0.5-0") {
           // Absent with message - player gets 0.5 points
           score = isPlayer1 ? 0.5 : 0
-        } else if (playerGame.result && playerGame.result.startsWith("ABS-")) {
+        } else if (eff && eff.startsWith("ABS-")) {
           // Absent with message from Sevilla import - extract score
-          const absScore = parseFloat(playerGame.result.substring(4)) || 0
+          const absScore = parseFloat(eff.substring(4)) || 0
           score = isPlayer1 ? absScore : 0
-        } else if (playerGame.result === 'uitgesteld') {
+        } else if (eff === "uitgesteld") {
           // Postponed game - no score
           score = 0
-        } else if (playerGame.result === '...') {
+        } else if (eff === "...") {
           // Game not played yet - no score
           score = 0
         }
@@ -152,19 +155,19 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           opponentRating = opponent.schaakrating_elo || null
         } else {
           // No opponent - check if result contains ABS
-          if (playerGame.result && playerGame.result.includes("ABS")) {
+          if (eff && eff.includes("ABS")) {
             opponentDisplay = "Abs with msg"
-          } else if (playerGame.result && playerGame.result.endsWith("-0") && !playerGame.result.includes("ABS")) {
+          } else if (eff && eff.endsWith("-0") && !eff.includes("ABS")) {
             // This is a BYE (result format like "1-0" or "0.5-0" from "Pairing alloc bye")
             // Extract the score from the result (e.g., "1-0" -> 1, "0.5-0" -> 0.5)
-            const byeScore = parseFloat(playerGame.result.split("-")[0]) || 0
+            const byeScore = parseFloat(eff.split("-")[0]) || 0
             if (Math.abs(byeScore - score) < 0.01) { // Check if score matches (accounting for floating point)
               opponentDisplay = null // Will be displayed as "BYE" in UI
               isRealBye = true
             } else {
               opponentDisplay = "Tegenstander onbekend"
             }
-          } else if (playerGame.result && playerGame.result.startsWith("1-0") && score === 1) {
+          } else if (eff && eff.startsWith("1-0") && score === 1) {
             // This is a real BYE (player gets 1 point)
             opponentDisplay = null // Will be displayed as "BYE" in UI
             isRealBye = true
@@ -178,7 +181,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           round: round.ronde_nummer,
           opponent: opponentDisplay,
           opponentRating: opponentRating,
-          result: playerGame.result,
+          result: eff,
           color: isPlayer1 ? "white" : "black",
           score,
           isRealBye,
@@ -567,33 +570,34 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     
     if (!isMakeupRound) {
       // First, process all games with results (only for regular rounds)
-      games.forEach(({ speler1, speler2, result }) => {
+      games.forEach(({ speler1, speler2, result, uitgestelde_datum }) => {
         const p1 = speler1.user_id
         const p2 = speler2?.user_id ?? null
 
+        const eff = normalizedResultForDisplay(result, uitgestelde_datum)
         // Only count games that are actually played (not postponed or not yet played)
-        const isPlayed = result && result !== "..." && result !== "uitgesteld" && result !== null
-        
+        const isPlayed = eff && eff !== "..." && eff !== "uitgesteld" && eff !== null
+
         if (isPlayed) {
           // Only count actual played games (not forfeits or absences) for gamesPlayed
-          if (isPlayedGame(result)) {
+          if (isPlayedGame(eff)) {
             gamesPlayed[p1]++
             if (p2) gamesPlayed[p2]++
           }
 
-          if (result.startsWith("1-0")) {
+          if (eff.startsWith("1-0")) {
             calculatedScoreMap[p1] += 1
-          } else if (result.startsWith("0-1") && p2) {
+          } else if (eff.startsWith("0-1") && p2) {
             calculatedScoreMap[p2] += 1
-          } else if (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") {
+          } else if (eff === "½-½" || eff === "1/2-1/2" || eff === "-" || eff === "�-�") {
             calculatedScoreMap[p1] += 0.5
             if (p2) calculatedScoreMap[p2] += 0.5
-          } else if (result === "0.5-0") {
+          } else if (eff === "0.5-0") {
             // Absent with message - player gets 0.5 points
             calculatedScoreMap[p1] += 0.5
-          } else if (result && result.startsWith("ABS-")) {
+          } else if (eff && eff.startsWith("ABS-")) {
             // Absent with message from Sevilla import - extract score
-            const absScore = parseFloat(result.substring(4)) || 0
+            const absScore = parseFloat(eff.substring(4)) || 0
             calculatedScoreMap[p1] += absScore
           }
         }
@@ -623,13 +627,14 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
   rounds.forEach(({ games, type: roundType }) => {
     const isMakeupRound = roundType === 'MAKEUP'
     if (isMakeupRound) return // Skip makeup rounds
-    games.forEach(({ speler1, speler2, result }) => {
+    games.forEach(({ speler1, speler2, result, uitgestelde_datum }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
 
+      const eff = normalizedResultForDisplay(result, uitgestelde_datum)
       // Skip games that are not played (absences, postponed, etc.)
       // IMPORTANT: Forfeits DO count for tie-breaks, only absences don't
-      if (!isPlayedGame(result)) return;
+      if (!isPlayedGame(eff)) return;
 
       // Skip BYE games (no opponent) - they should not count in Buchholz
       if (p2 == null) return;
@@ -647,12 +652,12 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       buchholzListForWorst[p2].push(scoreMap[p1])
 
       // SB-score (also use Sevilla scores)
-      if (result.startsWith("1-0") && p2) {
+      if (eff.startsWith("1-0") && p2) {
         sbMap[p1] += scoreMap[p2]
-      } else if (result.startsWith("0-1") && p2) {
+      } else if (eff.startsWith("0-1") && p2) {
         sbMap[p2] += scoreMap[p1]
       } else if (
-        (result === "½-½" || result === "1/2-1/2" || result === "-" || result === "�-�") &&
+        (eff === "½-½" || eff === "1/2-1/2" || eff === "-" || eff === "�-�") &&
         p2
       ) {
         sbMap[p1] += scoreMap[p2] * 0.5

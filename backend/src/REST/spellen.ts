@@ -133,8 +133,8 @@ updateSpel.validationScheme = {
  */
 const removeSpel = async (ctx: KoaContext<void, IdParams>) => {
   const spelId = Number(ctx.params.id);
-  spellenService.removeSpel(spelId);
-  ctx.status = 204; 
+  await spellenService.removeSpel(spelId);
+  ctx.status = 204;
 };
 
 removeSpel.validationScheme = {

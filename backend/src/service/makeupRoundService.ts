@@ -3,6 +3,7 @@ import { RoundType } from "../types/Types";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import * as calendarService from "./calendarService";
+import { restoreOriginalGamesForMakeupRoundTx } from "./tournamentRoundService";
 
 export interface MakeupRound {
   round_id: number;
@@ -113,9 +114,11 @@ export async function deleteMakeupRound(round_id: number): Promise<void> {
       await calendarService.deleteEvent(round.calendar_event_id);
     }
 
-    // Verwijder de ronde (games worden automatisch verwijderd door cascade)
-    await prisma.round.delete({
-      where: { round_id }
+    await prisma.$transaction(async (tx) => {
+      await restoreOriginalGamesForMakeupRoundTx(tx, round_id);
+      await tx.round.delete({
+        where: { round_id },
+      });
     });
   } catch (error) {
     throw handleDBError(error);

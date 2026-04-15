@@ -1,6 +1,11 @@
 import Link from "next/link"
 import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from '@/lib/gameSorting'
+import {
+  hasActivePostpone,
+  hasConcretePairingResult,
+  normalizedResultForDisplay,
+} from "@/lib/gameResultDisplay"
 
 interface PlayerScore {
   user_id: number
@@ -235,18 +240,19 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                 <td className="px-2 py-1 text-center">
                   <span
                     className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
-                      game.uitgestelde_datum
+                      hasActivePostpone(game.uitgestelde_datum)
                         ? "bg-amber-100 text-amber-800 border border-amber-200"
-                        : game.result && game.result !== "not_played"
+                        : hasConcretePairingResult(game.result, game.uitgestelde_datum)
                         ? "bg-green-100 text-green-800 border border-green-200"
                         : "bg-gray-100 text-gray-600 border border-gray-200"
                     }`}
                   >
-                    {game.uitgestelde_datum
+                    {hasActivePostpone(game.uitgestelde_datum)
                       ? "Uitgesteld"
-                      : game.result && game.result !== "not_played"
-                      ? game.result
-                      : "..."}
+                      : (() => {
+                          const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
+                          return r && r !== "not_played" ? r : "..."
+                        })()}
                   </span>
                 </td>
               </tr>
@@ -289,30 +295,30 @@ function calculateStandingsBeforeRound(
     if (ronde_nummer >= beforeRoundNumber) return
     
     // Process all games with results (only for regular rounds before current)
-    games.forEach(({ speler1, speler2, result }) => {
+    games.forEach(({ speler1, speler2, result, uitgestelde_datum }) => {
       const p1 = speler1.user_id
       const p2 = speler2?.user_id ?? null
 
-      // Only count games that are actually played (not postponed or not yet played)
-      const isPlayed = result && result !== "..." && result !== "uitgesteld" && result !== null
-      
+      const effective = normalizedResultForDisplay(result, uitgestelde_datum)
+      const isPlayed = effective && effective !== "..." && effective !== null
+
       if (isPlayed) {
         gamesPlayed[p1]++
         if (p2) gamesPlayed[p2]++
 
-        if (result === "1-0") {
+        if (effective === "1-0") {
           scoreMap[p1] += 1
-        } else if (result === "0-1" && p2) {
+        } else if (effective === "0-1" && p2) {
           scoreMap[p2] += 1
-        } else if (result === "½-½" || result === "1/2-1/2" || result === "�-�") {
+        } else if (effective === "½-½" || effective === "1/2-1/2" || effective === "�-�") {
           scoreMap[p1] += 0.5
           if (p2) scoreMap[p2] += 0.5
-        } else if (result === "0.5-0") {
+        } else if (effective === "0.5-0") {
           // Absent with message - player gets 0.5 points
           scoreMap[p1] += 0.5
-        } else if (result && result.startsWith("ABS-")) {
+        } else if (effective && effective.startsWith("ABS-")) {
           // Absent with message from Sevilla import - extract score
-          const absScore = parseFloat(result.substring(4)) || 0
+          const absScore = parseFloat(effective.substring(4)) || 0
           scoreMap[p1] += absScore
         }
       }

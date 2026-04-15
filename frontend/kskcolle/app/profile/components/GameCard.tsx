@@ -1,5 +1,6 @@
 import { GameWithRoundAndTournament } from "@/data/types"
 import { Card, CardContent } from "@/components/ui/card"
+import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 
 interface GameCardProps {
   game: GameWithRoundAndTournament
@@ -63,10 +64,12 @@ export function GameCard({ game, playerId, compact }: GameCardProps) {
 }
 
 function getGameResult(game: GameWithRoundAndTournament, playerId: number): string {
-  const result = game.result?.trim() ?? '';
+  const normalized =
+    normalizedResultForDisplay(game.result?.trim() ?? null, game.uitgestelde_datum) ?? ""
+  const result = normalized
 
-  if (result === '' || result === '...') return 'Nog te spelen';
-  if (result.toLowerCase() === 'uitgesteld') return 'Uitgesteld';
+  if (result === "" || result === "...") return "Nog te spelen"
+  if (result.toLowerCase() === "uitgesteld") return "Uitgesteld"
 
   // Remise (verschillende formaten)
   if (['½-½', '1/2-1/2', '�-�'].includes(result)) {

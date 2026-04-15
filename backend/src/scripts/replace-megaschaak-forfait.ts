@@ -5,8 +5,9 @@
  * Voorbeeld: npx tsx src/scripts/replace-megaschaak-forfait.ts "Thijs Vermeulen"
  *
  * Voor elk team dat de speler in de basis heeft en een reserve heeft:
- * - De speler in MegaschaakTeamPlayer wordt vervangen door de reservespeler van dat team
- * - De reserve van dat team wordt op null gezet (die is nu "gebruikt")
+ * - Bestaande speler blijft behouden (historische rondes blijven zo zichtbaar)
+ * - Reservespeler wordt als extra ploegspeler toegevoegd (uitzondering: 11 spelers)
+ * - Reserve-veld op het team blijft staan voor traceability
  *
  * Teams zonder reserve worden overgeslagen; je krijgt een melding.
  */
@@ -82,7 +83,7 @@ async function main() {
     return;
   }
 
-  console.log(`Vervangen in ${withReserve.length} team(s):\n`);
+  console.log(`Aanpassen in ${withReserve.length} team(s):\n`);
 
   for (const tp of withReserve) {
     const team = tp.team;
@@ -90,19 +91,30 @@ async function main() {
     const reserveCost = team.reserve_cost ?? 0;
     const reserve = team.reserve_player!;
 
-    await prisma.$transaction([
-      prisma.megaschaakTeamPlayer.update({
-        where: { id: tp.id },
-        data: { player_id: reserveId, cost: reserveCost },
-      }),
-      prisma.megaschaakTeam.update({
-        where: { team_id: team.team_id },
-        data: { reserve_player_id: null, reserve_cost: null },
-      }),
-    ]);
+    const existingReserveAsPlayer = await prisma.megaschaakTeamPlayer.findFirst({
+      where: {
+        team_id: team.team_id,
+        player_id: reserveId,
+      },
+    });
+
+    if (existingReserveAsPlayer) {
+      console.log(
+        `  • "${team.team_name}" (${team.user.voornaam} ${team.user.achternaam}): reserve ${reserve.voornaam} ${reserve.achternaam} stond al in ploegspelers, niets toegevoegd`,
+      );
+      continue;
+    }
+
+    await prisma.megaschaakTeamPlayer.create({
+      data: {
+        team_id: team.team_id,
+        player_id: reserveId,
+        cost: reserveCost,
+      },
+    });
 
     console.log(
-      `  ✓ "${team.team_name}" (${team.user.voornaam} ${team.user.achternaam}): ${user.voornaam} ${user.achternaam} → ${reserve.voornaam} ${reserve.achternaam} (reserve)`
+      `  ✓ "${team.team_name}" (${team.user.voornaam} ${team.user.achternaam}): ${user.voornaam} ${user.achternaam} blijft, reserve ${reserve.voornaam} ${reserve.achternaam} toegevoegd als 11de speler`
     );
   }
 
