@@ -200,7 +200,7 @@ export interface GameWithRoundAndTournament {
     ronde_nummer: number;
     ronde_datum: Date;
     startuur: string;
-    type: 'REGULAR' | 'MAKEUP';
+    type?: 'REGULAR' | 'MAKEUP';
     label?: string;
     tournament: {
       tournament_id: number;

@@ -5,6 +5,16 @@ import handleDBError from "./handleDBError";
 import { RoundType } from "@prisma/client";
 import { undoAdminPostponeGame } from "./tournamentRoundService";
 
+/** Toon inhaaldag (MAKEUP) i.p.v. reguliere ronde zolang de partij nog echt uitgesteld is. */
+function shouldUseMakeupRoundForDisplay(
+  original: { result: string | null; uitgestelde_datum: Date | null },
+): boolean {
+  const r = (original.result ?? "").trim().toLowerCase();
+  if (r === "uitgesteld") return true;
+  if (original.uitgestelde_datum != null) return true;
+  return false;
+}
+
 export const getAllSpellen = async (): Promise<Spel[]> => {
   try {
     const games = await prisma.game.findMany({
@@ -94,31 +104,79 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
       participations.map((p) => [p.tournament_id, p.sevilla_rating_change as number])
     );
 
-    return games.map((game): GameWithRoundAndTournament => ({
-      game_id: game.game_id,
-      round_id: game.round_id,
-      speler1_id: game.speler1_id,
-      speler2_id: game.speler2_id,
-      winnaar_id: game.winnaar_id,
-      result: game.result as any,
-      uitgestelde_datum: game.uitgestelde_datum,
-      speler1_naam: `${game.speler1.voornaam} ${game.speler1.achternaam}`,
-      speler2_naam: game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : null,
-      speler1_rating: game.speler1.schaakrating_elo ?? null,
-      speler2_rating: game.speler2?.schaakrating_elo ?? null,
-      rating_change_in_tournament: ratingChangeByTournament.get(game.round.tournament_id) ?? null,
-      round: {
-        round_id: game.round.round_id,
-        tournament_id: game.round.tournament_id,
-        ronde_nummer: game.round.ronde_nummer,
-        ronde_datum: game.round.ronde_datum,
-        tournament: {
-          tournament_id: game.round.tournament.tournament_id,
-          naam: game.round.tournament.naam,
-          rondes: game.round.tournament.rondes,
-        },
-      },
-    }));
+    const gameIds = games.map((g) => g.game_id);
+    const makeupGames =
+      gameIds.length === 0
+        ? []
+        : await prisma.game.findMany({
+            where: {
+              original_game_id: { in: gameIds },
+              round: { type: RoundType.MAKEUP },
+            },
+            include: {
+              round: { include: { tournament: true } },
+            },
+            orderBy: { game_id: "desc" },
+          });
+
+    const makeupByOriginalId = new Map<number, (typeof makeupGames)[number]>();
+    for (const mg of makeupGames) {
+      if (mg.original_game_id == null) continue;
+      if (!makeupByOriginalId.has(mg.original_game_id)) {
+        makeupByOriginalId.set(mg.original_game_id, mg);
+      }
+    }
+
+    return games.map((game): GameWithRoundAndTournament => {
+      const makeup = makeupByOriginalId.get(game.game_id);
+      const useMakeup = makeup && shouldUseMakeupRoundForDisplay(game);
+
+      const roundDto = useMakeup && makeup
+        ? {
+            round_id: makeup.round.round_id,
+            tournament_id: game.round.tournament_id,
+            ronde_nummer: makeup.round.ronde_nummer,
+            ronde_datum: makeup.round.ronde_datum,
+            startuur: makeup.round.startuur,
+            type: "MAKEUP" as const,
+            label: makeup.round.label ?? null,
+            tournament: {
+              tournament_id: game.round.tournament.tournament_id,
+              naam: game.round.tournament.naam,
+              rondes: game.round.tournament.rondes,
+            },
+          }
+        : {
+            round_id: game.round.round_id,
+            tournament_id: game.round.tournament_id,
+            ronde_nummer: game.round.ronde_nummer,
+            ronde_datum: game.round.ronde_datum,
+            startuur: game.round.startuur,
+            type: "REGULAR" as const,
+            label: game.round.label ?? null,
+            tournament: {
+              tournament_id: game.round.tournament.tournament_id,
+              naam: game.round.tournament.naam,
+              rondes: game.round.tournament.rondes,
+            },
+          };
+
+      return {
+        game_id: game.game_id,
+        round_id: game.round_id,
+        speler1_id: game.speler1_id,
+        speler2_id: game.speler2_id,
+        winnaar_id: game.winnaar_id,
+        result: game.result as any,
+        uitgestelde_datum: game.uitgestelde_datum,
+        speler1_naam: `${game.speler1.voornaam} ${game.speler1.achternaam}`,
+        speler2_naam: game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : null,
+        speler1_rating: game.speler1.schaakrating_elo ?? null,
+        speler2_rating: game.speler2?.schaakrating_elo ?? null,
+        rating_change_in_tournament: ratingChangeByTournament.get(game.round.tournament_id) ?? null,
+        round: roundDto,
+      };
+    });
   } catch (error) {
     throw handleDBError(error);
   }

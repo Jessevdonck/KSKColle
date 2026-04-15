@@ -13,6 +13,7 @@ export function GameCard({ game, playerId, compact }: GameCardProps) {
   const blackPlayerName = game.speler2_naam
   const result = getGameResult(game, playerId)
   const isProfilePlayerWhite = game.speler1_id === playerId
+  const roundTag = getRoundTag(game)
 
   return (
     <Card className={compact ? "border border-border/40" : undefined}>
@@ -31,7 +32,14 @@ export function GameCard({ game, playerId, compact }: GameCardProps) {
           {/* Tournament and Round */}
           {game.round && (
             <span className={`text-muted-foreground self-center truncate ${compact ? "text-[11px]" : "text-xs"}`} title={game.round.tournament?.naam || 'Onbekend'}>
-              {compact ? (game.round.tournament?.naam?.slice(0, 14) || 'Onbekend') + (game.round.tournament?.naam && game.round.tournament.naam.length > 14 ? '…' : '') + ` R${game.round.ronde_nummer}` : `${game.round.tournament?.naam || 'Onbekend'} R${game.round.ronde_nummer}`}
+              {compact
+                ? (game.round.tournament?.naam?.slice(0, 14) || 'Onbekend') +
+                  (game.round.tournament?.naam &&
+                  game.round.tournament.naam.length > 14
+                    ? '…'
+                    : '') +
+                  ` ${roundTag}`
+                : `${game.round.tournament?.naam || 'Onbekend'} ${roundTag}`}
             </span>
           )}
           
@@ -96,6 +104,16 @@ function getGameResult(game: GameWithRoundAndTournament, playerId: number): stri
   }
 
   return result; // fallback voor ongewone codes
+}
+
+function getRoundTag(game: GameWithRoundAndTournament): string {
+  if (game.round?.type === "MAKEUP") {
+    const label = game.round?.label || "";
+    const m = label.match(/(\d+)/);
+    if (m) return `I${m[1]}`;
+    return `I${game.round.ronde_nummer}`;
+  }
+  return `R${game.round?.ronde_nummer ?? ""}`;
 }
 
 

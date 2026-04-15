@@ -3,6 +3,7 @@
 import useSWR from "swr"
 import PlayerHeader from "./PlayerHeader"
 import RecentGames from "./RecentGames"
+import UpcomingGames from "./UpcomingGames"
 import ProfileStats from "./ProfileStats"
 import AsyncData from "../../components/AsyncData"
 import { getById } from "../../api/index"
@@ -83,6 +84,17 @@ export default function PlayerProfile({ name }: { name: string }) {
     return false
   })
 
+  const upcomingOrMakeupGames = uniqueGames.filter(game => {
+    const result =
+      normalizedResultForDisplay(game.result?.trim() ?? null, game.uitgestelde_datum) ?? ""
+    return (
+      !result ||
+      result === "..." ||
+      result === "not_played" ||
+      result.toLowerCase() === "uitgesteld"
+    )
+  })
+
   return (
     <AsyncData loading={isLoading} error={error}>
       {player && (
@@ -92,7 +104,10 @@ export default function PlayerProfile({ name }: { name: string }) {
             <div className="p-4 md:p-6">
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 lg:gap-6 items-start">
                 <div className="order-2 lg:order-1 min-w-0">
-                  <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
+                  <div className="space-y-4">
+                    <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
+                    <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
+                  </div>
                 </div>
                 <div className="order-1 lg:order-2 min-w-0">
                   <ProfileStats games={playedGamesWithResults} playerId={player.user_id} compact />

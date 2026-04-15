@@ -62,6 +62,9 @@ export interface GameWithRoundAndTournament {
     tournament_id: number;
     ronde_nummer: number;
     ronde_datum: Date;
+    startuur?: string;
+    type?: "REGULAR" | "MAKEUP";
+    label?: string | null;
     tournament: {
       tournament_id: number;
       naam: string;
