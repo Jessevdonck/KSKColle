@@ -5,13 +5,13 @@ import useSWR from "swr"
 import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
 import { getById, getAll, getAllTournamentRounds, undoPostponeGame } from "../../../api/index"
+import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKeys"
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useState, useEffect } from "react"
 import {
-  hasActivePostpone,
-  hasConcretePairingResult,
-  normalizedResultForDisplay,
+  pairingResultBadgeClass,
+  pairingResultBadgeText,
 } from "@/lib/gameResultDisplay"
 
 type Game = {
@@ -75,14 +75,16 @@ export default function TournamentDetails() {
     error: tournamentError,
     isLoading: tournamentLoading,
   } = useSWR<Tournament>(
-    tournamentId ? `tournament/${tournamentId}` : null,
+    tournamentId ? tournamentDetailKey(tournamentId) : null,
     () => getById(`tournament/${tournamentId}`),
+    { revalidateOnFocus: true },
   )
 
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<Round[]>(
-    tournamentId ? `tournamentRounds?tournament_id=${tournamentId}` : null,
+    tournamentId ? tournamentRoundsKey(tournamentId) : null,
     () => getAllTournamentRounds(tournamentId),
+    { revalidateOnFocus: true },
   )
 
   // Build timeline when data is available
@@ -117,13 +119,16 @@ export default function TournamentDetails() {
           )
           newTimeline.push({
             kind: "round",
-            round: found ?? {
-              round_id: round.round_id,
+            round: {
+              ...found,
+              round_id: round.round_id ?? found?.round_id ?? null,
               ronde_nummer: round.ronde_nummer,
-              games: round.games || [],
-              ronde_datum: round.ronde_datum,
-              startuur: round.startuur,
+              games: round.games ?? [],
+              ronde_datum: round.ronde_datum ?? found?.ronde_datum,
+              startuur: round.startuur ?? found?.startuur,
               type: "REGULAR",
+              label: round.label ?? found?.label,
+              is_sevilla_imported: round.is_sevilla_imported ?? found?.is_sevilla_imported,
             },
           })
         } else if (round.type === 'MAKEUP') {
@@ -524,20 +529,16 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
                   <td className="px-2 py-1 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          hasActivePostpone(g.uitgestelde_datum)
-                            ? "bg-amber-100 text-amber-800 border border-amber-200"
-                            : hasConcretePairingResult(g.result, g.uitgestelde_datum)
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : "bg-gray-100 text-gray-600 border border-gray-200"
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${pairingResultBadgeClass(
+                          g.result,
+                          g.uitgestelde_datum,
+                        )}`}
                       >
-                        {hasActivePostpone(g.uitgestelde_datum)
-                          ? "Uitgesteld"
-                          : (() => {
-                              const r = normalizedResultForDisplay(g.result, g.uitgestelde_datum)
-                              return r && r !== "not_played" ? r : "Nog te spelen"
-                            })()}
+                        {pairingResultBadgeText(
+                          g.result,
+                          g.uitgestelde_datum,
+                          "Nog te spelen",
+                        )}
                       </span>
                       {isUserInvolvedInGame(g) && (
                         <button

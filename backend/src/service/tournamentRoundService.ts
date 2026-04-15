@@ -240,9 +240,36 @@ export async function postponeGameToMakeupRound(
     // 2. Admin functie - geen validatie op gespeelde games
     // Admins kunnen altijd games uitstellen, zelfs als ze al gespeeld zijn
 
-    // 3. Controleer of de game al uitgesteld is
-    if (originalGame.uitgestelde_datum) {
+    // 3. Alleen blokkeren als er echt nog een inhaalpartij aan dit origineel hangt
+    const existingMakeup = await prisma.game.findFirst({
+      where: {
+        original_game_id: game_id,
+        round: { type: RoundType.MAKEUP },
+      },
+      select: { game_id: true },
+    });
+    if (existingMakeup) {
       throw ServiceError.validationFailed('Deze partij is al uitgesteld');
+    }
+
+    // Verweesde uitstel-status: uitgestelde_datum / result "uitgesteld" maar geen MAKEUP-rij meer (SQL, halve undo, …)
+    if (
+      originalGame.uitgestelde_datum != null ||
+      originalGame.result?.trim().toLowerCase() === 'uitgesteld'
+    ) {
+      const r = originalGame.result?.trim() ?? '';
+      const isPlaceholderResult =
+        r === '' ||
+        r.toLowerCase() === 'uitgesteld' ||
+        r === '...' ||
+        r === 'not_played';
+      await prisma.game.update({
+        where: { game_id },
+        data: {
+          uitgestelde_datum: null,
+          ...(isPlaceholderResult ? { result: null } : {}),
+        },
+      });
     }
 
     // 4. Controleer of de inhaaldag ronde bestaat

@@ -16,6 +16,19 @@ import { isLentecompetitieTieBreak } from "./tieBreakLente"
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../../contexts/auth'
 import Link from 'next/link'
+import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKeys"
+
+/**
+ * Overschrijft globale SWR-defaults (o.a. revalidateIfStale: false, lange deduping) voor deze pagina,
+ * zodat toernooi + rondes telkens opnieuw van de API komen — handig om cache vs. echte data te testen.
+ */
+const TOURNEY_DETAIL_SWR_OPTIONS = {
+  revalidateOnFocus: true,
+  revalidateOnReconnect: true,
+  revalidateIfStale: true,
+  revalidateOnMount: true,
+  dedupingInterval: 0,
+} as const
 
 type Game = {
   game_id: number
@@ -82,8 +95,9 @@ export default function TournamentDetails() {
     error: tournamentError,
     isLoading: tournamentLoading,
   } = useSWR<Tournament>(
-    selectedClassId ? `tournament/${selectedClassId}` : null,
+    selectedClassId ? tournamentDetailKey(selectedClassId) : null,
     () => getById(`tournament/${selectedClassId}`),
+    TOURNEY_DETAIL_SWR_OPTIONS,
   )
 
   const isLentecompetitie = tournament ? isLentecompetitieTieBreak(tournament) : false
@@ -150,8 +164,9 @@ export default function TournamentDetails() {
 
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<any[]>(
-    selectedClassId ? `tournamentRounds?tournament_id=${selectedClassId}` : null,
+    selectedClassId ? tournamentRoundsKey(selectedClassId) : null,
     () => getAllTournamentRounds(selectedClassId),
+    TOURNEY_DETAIL_SWR_OPTIONS,
   )
 
   // 3) Makeup days fetching (legacy system) - not used anymore
@@ -196,15 +211,19 @@ export default function TournamentDetails() {
             (x) => (round.round_id != null && x.round_id === round.round_id) ||
               (x.ronde_nummer === round.ronde_nummer && x.type === 'REGULAR')
           )
+          // `games` altijd van allRounds (actueel); embedded tournament.rounds kan achterlopen t.o.v. dezelfde SWR-cache.
           newTimeline.push({
             kind: "round",
-            round: found ?? {
-              round_id: round.round_id,
+            round: {
+              ...found,
+              round_id: round.round_id ?? found?.round_id ?? null,
               ronde_nummer: round.ronde_nummer,
-              games: round.games || [],
-              ronde_datum: round.ronde_datum,
-              startuur: round.startuur,
+              games: round.games ?? [],
+              ronde_datum: round.ronde_datum ?? found?.ronde_datum,
+              startuur: round.startuur ?? found?.startuur,
               type: "REGULAR",
+              label: round.label ?? found?.label,
+              is_sevilla_imported: round.is_sevilla_imported ?? found?.is_sevilla_imported,
             },
           })
         } else if (round.type === 'MAKEUP') {

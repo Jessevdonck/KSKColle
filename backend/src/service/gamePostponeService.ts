@@ -150,9 +150,36 @@ export async function postponeGame(data: PostponeGameData): Promise<PostponeGame
       });
     }
 
-    // 4. Controleer of de game al uitgesteld is
-    if (game.uitgestelde_datum) {
+    // 4. Alleen blokkeren als er echt nog een inhaalpartij aan dit origineel hangt
+    const existingMakeupPlayer = await prisma.game.findFirst({
+      where: {
+        original_game_id: game.game_id,
+        round: { type: RoundType.MAKEUP },
+      },
+      select: { game_id: true },
+    });
+    if (existingMakeupPlayer) {
       throw ServiceError.validationFailed('Deze partij is al uitgesteld');
+    }
+
+    // Verweesde uitstel-status zonder MAKEUP-rij: opruimen zodat opnieuw uitstellen kan
+    if (
+      game.uitgestelde_datum != null ||
+      game.result?.trim().toLowerCase() === 'uitgesteld'
+    ) {
+      const r = game.result?.trim() ?? '';
+      const isPlaceholderResult =
+        r === '' ||
+        r.toLowerCase() === 'uitgesteld' ||
+        r === '...' ||
+        r === 'not_played';
+      await prisma.game.update({
+        where: { game_id: game.game_id },
+        data: {
+          uitgestelde_datum: null,
+          ...(isPlaceholderResult ? { result: null } : {}),
+        },
+      });
     }
 
     // 5. Bepaal of het een herfst of lente toernooi is

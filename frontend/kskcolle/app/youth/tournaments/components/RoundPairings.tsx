@@ -2,9 +2,9 @@ import Link from "next/link"
 import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from '@/lib/gameSorting'
 import {
-  hasActivePostpone,
-  hasConcretePairingResult,
   normalizedResultForDisplay,
+  pairingResultBadgeClass,
+  pairingResultBadgeText,
 } from "@/lib/gameResultDisplay"
 
 interface PlayerScore {
@@ -239,20 +239,12 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
 
                 <td className="px-2 py-1 text-center">
                   <span
-                    className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
-                      hasActivePostpone(game.uitgestelde_datum)
-                        ? "bg-amber-100 text-amber-800 border border-amber-200"
-                        : hasConcretePairingResult(game.result, game.uitgestelde_datum)
-                        ? "bg-green-100 text-green-800 border border-green-200"
-                        : "bg-gray-100 text-gray-600 border border-gray-200"
-                    }`}
+                    className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${pairingResultBadgeClass(
+                      game.result,
+                      game.uitgestelde_datum,
+                    )}`}
                   >
-                    {hasActivePostpone(game.uitgestelde_datum)
-                      ? "Uitgesteld"
-                      : (() => {
-                          const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
-                          return r && r !== "not_played" ? r : "..."
-                        })()}
+                    {pairingResultBadgeText(game.result, game.uitgestelde_datum)}
                   </span>
                 </td>
               </tr>

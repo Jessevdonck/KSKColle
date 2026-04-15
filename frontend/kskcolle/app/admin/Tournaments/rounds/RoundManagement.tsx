@@ -15,7 +15,16 @@ import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { Calendar, Plus, Trophy, CheckCircle, Clock, Users, Gamepad2, X } from "lucide-react"
 import { sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from "@/lib/gameSorting"
-import { hasActivePostpone, normalizedResultForDisplay } from "@/lib/gameResultDisplay"
+import {
+  hasActivePostpone,
+  hasConcretePairingResult,
+  normalizedResultForDisplay,
+} from "@/lib/gameResultDisplay"
+import {
+  revalidateTournamentData,
+  tournamentDetailKey,
+  tournamentRoundsKey,
+} from "@/lib/swrTournamentKeys"
 
 const getByeText = (result: string | null) => {
   if (!result) return "Bye"
@@ -31,8 +40,9 @@ export default function RoundManagement({ tournament }: Props) {
   const { toast } = useToast()
 
   // 1) Fetch toernooi + rondes
-  const { data: T, mutate: refetchT } = useSWR<Toernooi>(`tournament/${tournament.tournament_id}`, () =>
-    getById(`tournament/${tournament.tournament_id}`),
+  const { data: T } = useSWR<Toernooi>(
+    tournamentDetailKey(tournament.tournament_id),
+    () => getById(`tournament/${tournament.tournament_id}`),
   )
 
   // 2) Fetch alle inhaaldagen (oude systeem) - niet meer gebruikt
@@ -42,10 +52,10 @@ export default function RoundManagement({ tournament }: Props) {
   // )
 
   // 3) Fetch alle rondes (nieuwe systeem voor inhaaldagen als rondes)
-  const { data: allRounds = [], mutate: refetchRounds } = useSWR<Round[]>(
-    ["tournamentRounds", tournament.tournament_id],
+  const { data: allRounds = [] } = useSWR<Round[]>(
+    tournamentRoundsKey(tournament.tournament_id),
     () => getAllTournamentRounds(tournament.tournament_id),
-    { revalidateOnFocus: true }
+    { revalidateOnFocus: true },
   )
 
   // 4) Mutations
@@ -150,7 +160,7 @@ export default function RoundManagement({ tournament }: Props) {
           label: newLabel || undefined,
         },
       })
-      refetchRounds()
+      await revalidateTournamentData(T.tournament_id)
       setAddingNew(false)
       toast({ title: "Success", description: "Inhaaldag toegevoegd." })
     } catch (error) {
@@ -186,7 +196,7 @@ export default function RoundManagement({ tournament }: Props) {
           startuur: newStartuurRound,
         },
       })
-      refetchRounds()
+      await revalidateTournamentData(T.tournament_id)
       setAddingNewRound(false)
       toast({ title: "Success", description: "Inhaaldag ronde toegevoegd." })
     } catch (error) {
@@ -201,7 +211,7 @@ export default function RoundManagement({ tournament }: Props) {
       await deleteMakeupRoundMutation({
         roundId
       })
-      refetchRounds()
+      await revalidateTournamentData(T.tournament_id)
       toast({ title: "Success", description: "Inhaaldag ronde verwijderd." })
     } catch (error) {
       console.error('Error in handleDeleteMakeupRound:', error);
@@ -232,7 +242,7 @@ export default function RoundManagement({ tournament }: Props) {
         result: newGameResult || undefined,
       })
       
-      refetchRounds()
+      await revalidateTournamentData(T.tournament_id)
       setAddingGameToRound(null)
       setNewGameSpeler1("")
       setNewGameSpeler2("")
@@ -260,7 +270,7 @@ export default function RoundManagement({ tournament }: Props) {
         }
       })
       
-      refetchRounds()
+      await revalidateTournamentData(T.tournament_id)
       setEditingRoundDate(null)
       setEditDate("")
       setEditStartuur("")
@@ -285,7 +295,7 @@ export default function RoundManagement({ tournament }: Props) {
         },
       })
       
-      refetchRounds()
+      await revalidateTournamentData(T.tournament_id)
       setPostponingGame(null)
       setSelectedMakeupRound(null)
       toast({ title: "Success", description: "Game uitgesteld naar inhaaldag." })
@@ -312,7 +322,7 @@ export default function RoundManagement({ tournament }: Props) {
       )
       
       await Promise.all(promises)
-      refetchRounds()
+      await revalidateTournamentData(T.tournament_id)
       setSelectedGames(new Set())
       setBulkPostponeMode(false)
       setSelectedMakeupRound(null)
@@ -550,7 +560,7 @@ export default function RoundManagement({ tournament }: Props) {
                   }))}
                   participations={T.participations}
                   isSevillaImported={e.roundData?.is_sevilla_imported || false}
-                  onUpdate={() => refetchT()}
+                  onUpdate={() => void revalidateTournamentData(T.tournament_id)}
                 />
               )
             } else if (e.kind === "makeupRound") {
@@ -895,13 +905,19 @@ export default function RoundManagement({ tournament }: Props) {
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="text-sm text-gray-600">
-                              {hasActivePostpone(game.uitgestelde_datum)
-                                ? "Uitgesteld"
-                                : (() => {
+                              {hasConcretePairingResult(game.result, game.uitgestelde_datum)
+                                ? (() => {
                                     const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
-                                    if (!r || r === "uitgesteld") return "..."
+                                    if (!r) return "..."
                                     return r.startsWith("ABS-") ? "Abs with msg" : r
-                                  })()}
+                                  })()
+                                : hasActivePostpone(game.uitgestelde_datum)
+                                  ? "Uitgesteld"
+                                  : (() => {
+                                      const r = normalizedResultForDisplay(game.result, game.uitgestelde_datum)
+                                      if (!r || r === "uitgesteld") return "..."
+                                      return r.startsWith("ABS-") ? "Abs with msg" : r
+                                    })()}
                             </div>
                             {!bulkPostponeMode && round.type === 'REGULAR' && makeupRounds.length > 0 && (
                               <Button
@@ -940,7 +956,7 @@ export default function RoundManagement({ tournament }: Props) {
                                         await deleteGameMutation(Number(gameId))
                                         toast({ title: "Success", description: "Partij verwijderd." })
                                       }
-                                      await refetchRounds()
+                                      await revalidateTournamentData(T.tournament_id)
                                     } catch (error) {
                                       console.error('Error deleting game:', error)
                                       toast({ title: "Error", description: "Kon partij niet verwijderen", variant: "destructive" })
