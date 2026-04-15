@@ -26,7 +26,7 @@ interface StandingsProps {
     }>
   }
   rounds: Array<{
-    round_id: number
+    round_id: number | null
     ronde_nummer: number
     type: 'REGULAR' | 'MAKEUP'
     games: Array<{
