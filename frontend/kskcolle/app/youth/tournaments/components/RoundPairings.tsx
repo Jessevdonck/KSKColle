@@ -19,7 +19,7 @@ interface PlayerScore {
 
 interface RoundPairingsProps {
   round: {
-    round_id: number
+    round_id: number | null
     ronde_nummer: number
     ronde_datum?: string | null
     startuur?: string
@@ -28,7 +28,7 @@ interface RoundPairingsProps {
       speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
       speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
       result: string | null
-      uitgestelde_datum?: Date | null
+      uitgestelde_datum?: string | null
     }>
   }
   tournament?: {
@@ -49,7 +49,7 @@ interface RoundPairingsProps {
     }>
   }
   allRounds?: Array<{
-    round_id: number
+    round_id: number | null
     ronde_nummer: number
     type: 'REGULAR' | 'MAKEUP'
     games: Array<{
@@ -57,7 +57,7 @@ interface RoundPairingsProps {
       speler1: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number }
       speler2: { user_id: number; voornaam: string; achternaam: string; schaakrating_elo?: number } | null
       result: string | null
-      uitgestelde_datum?: Date | null
+      uitgestelde_datum?: string | null
     }>
   }>
 }
