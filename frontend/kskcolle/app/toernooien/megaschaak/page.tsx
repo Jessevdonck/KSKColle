@@ -69,6 +69,13 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   );
 };
 
+const isJesseVaerendonck = (voornaam?: string, achternaam?: string) =>
+  (voornaam || "").trim().toLowerCase() === "jesse" &&
+  (achternaam || "").trim().toLowerCase() === "vaerendonck";
+
+const getDisplayedTeamPlayerCount = (actualCount: number) =>
+  actualCount > 10 ? 10 : actualCount;
+
 export default function MegaschaakPage() {
   const { toast } = useToast();
   const { isAuthed } = useAuth();
@@ -902,7 +909,8 @@ export default function MegaschaakPage() {
                           </div>
                           <div className="text-xs text-gray-400">•</div>
                           <div className="text-xs text-gray-500">
-                            {team.players.length} spelers
+                            {getDisplayedTeamPlayerCount(team.players.length)}{" "}
+                            spelers
                           </div>
                         </div>
                       </button>
@@ -1236,6 +1244,16 @@ export default function MegaschaakPage() {
                                     (reserve)
                                   </span>
                                 )}
+                                {reservePlayer &&
+                                  reservePlayer.user_id !== player.user_id &&
+                                  isJesseVaerendonck(
+                                    player.voornaam,
+                                    player.achternaam,
+                                  ) && (
+                                    <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                                      (vervangen)
+                                    </span>
+                                  )}
                                 {player.class_name && (
                                   <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-white/80 text-mainAccent border border-mainAccent/30 flex-shrink-0">
                                     {player.class_name}
@@ -1396,7 +1414,7 @@ function MyTeamsOverview({
                     )}
                   </div>
                   <p className="text-sm text-gray-600">
-                    {team.players.length} spelers
+                    {getDisplayedTeamPlayerCount(team.players.length)} spelers
                   </p>
                 </div>
                 <Button
@@ -1876,7 +1894,7 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
             <div className="text-xl font-bold text-mainAccent">
-              {teamDetails.players.length}
+              {getDisplayedTeamPlayerCount(teamDetails.players.length)}
             </div>
             <div className="text-xs text-gray-600">Spelers</div>
           </div>
@@ -1944,7 +1962,18 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                         <span className="text-[10px] text-blue-700 ml-1">
                           (reserve)
                         </span>
-                      )}{" "}
+                      )}
+                      {teamDetails.reserve_player_id &&
+                        teamDetails.reserve_player_id !==
+                          playerData.player.user_id &&
+                        isJesseVaerendonck(
+                          playerData.player.voornaam,
+                          playerData.player.achternaam,
+                        ) && (
+                          <span className="text-[10px] text-amber-700 ml-1">
+                            (vervangen)
+                          </span>
+                        )}{" "}
                       {playerData.cost !== undefined &&
                         `(${playerData.cost} pts)`}
                     </Link>

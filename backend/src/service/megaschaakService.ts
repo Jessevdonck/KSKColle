@@ -2800,8 +2800,7 @@ export const getMostPopularPlayers = async (tournamentId: number) => {
 
     // Convert to array and sort by selection count
     const popularPlayers = Array.from(playerSelectionCount.values())
-      .sort((a, b) => b.selectionCount - a.selectionCount)
-      .slice(0, 20); // Top 20
+      .sort((a, b) => b.selectionCount - a.selectionCount);
 
     return popularPlayers.map((p) => ({
       user_id: p.player.user_id,
