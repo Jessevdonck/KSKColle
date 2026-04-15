@@ -1727,6 +1727,18 @@ function getJesseReserveReplacementIds(
   };
 }
 
+/** Som van basisspelerskosten (max 10); reservespeler niet mee — ook niet als die als 11e ploegspeler staat. */
+function megaschaakTeamPloegWaardeCost(team: {
+  reserve_player_id?: number | null;
+  players: Array<{ player_id: number; cost: number }>;
+}): number {
+  const rid = team.reserve_player_id ?? null;
+  return team.players.reduce((sum, tp) => {
+    if (rid != null && tp.player_id === rid) return sum;
+    return sum + tp.cost;
+  }, 0);
+}
+
 function getAdjustedReserveScoreAndGamesForJesseReplacement(
   team: {
     tournament_id: number;
@@ -2276,8 +2288,8 @@ export const getCrossTableData = async (tournamentId: number) => {
         0,
       );
 
-      // Calculate total cost: sum of all player costs only (reserve cost not included)
-      const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
+      // Totaal ploegwaarde: basisspelers; reserve (ook als 11e rij) telt niet mee
+      const totalCost = megaschaakTeamPloegWaardeCost(team);
 
       return {
         team_id: team.team_id,
@@ -2481,8 +2493,7 @@ export const getTeamStandings = async (tournamentId: number) => {
         0,
       );
 
-      // Calculate total cost: sum of all player costs only (reserve cost not included)
-      const totalCost = team.players.reduce((sum, tp) => sum + tp.cost, 0);
+      const totalCost = megaschaakTeamPloegWaardeCost(team);
 
       return {
         ...team,
@@ -2978,11 +2989,12 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       }
     });
 
-    // Calculate value ratio (include all players, even those without games)
+    // Calculate value ratio based on effectief gespeelde partijen (BYE telt niet als partij)
     const valuePlayers = Array.from(playerData.values())
       .map((p) => {
-        // Get total rounds for this player's class
-        const totalRounds = roundsPerClassMap[p.className] || 11; // Default to 11 if not found
+        // Ratio: behaalde punten per gespeelde partij (niet per geplande ronde)
+        const playedGames = p.gamesPlayed;
+        const valueRatio = playedGames > 0 ? p.totalScore / playedGames : 0;
 
         return {
           user_id: p.player.user_id,
@@ -2991,8 +3003,8 @@ export const getBestValuePlayers = async (tournamentId: number) => {
           schaakrating_elo: p.player.schaakrating_elo,
           cost: p.cost,
           totalScore: p.totalScore,
-          gamesPlayed: p.gamesPlayed,
-          valueRatio: p.totalScore / totalRounds, // Points per total rounds to be played
+          gamesPlayed: playedGames,
+          valueRatio,
           className: p.className,
         };
       })
