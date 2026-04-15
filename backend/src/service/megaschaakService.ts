@@ -1635,6 +1635,155 @@ function countMegaschaakGamesPlayedFromRoundResolution(
   return count;
 }
 
+function isNamedPlayer(
+  voornaam: string | null | undefined,
+  achternaam: string | null | undefined,
+  expectedVoornaam: string,
+  expectedAchternaam: string,
+): boolean {
+  const v = (voornaam || "").trim().toLowerCase();
+  const a = (achternaam || "").trim().toLowerCase();
+  return v === expectedVoornaam.toLowerCase() && a === expectedAchternaam.toLowerCase();
+}
+
+function getRoundScoreFromRoundResolution(
+  playerId: number,
+  teamTournamentId: number,
+  rondeNummer: number,
+  playerCompetitionTournamentId: Map<number, number>,
+  allClassesTournaments: Array<{
+    tournament_id: number;
+    rounds?: Array<{ ronde_nummer: number; games?: any[] }>;
+  }>,
+  makeupByOriginalId: Map<number, any>,
+  gamesByRound: Map<number, any[]>,
+): number | null {
+  const playerTid =
+    playerCompetitionTournamentId.get(playerId) ?? teamTournamentId;
+  const playerTournament = allClassesTournaments.find(
+    (t) => t.tournament_id === playerTid,
+  );
+
+  let effectiveGame: any | null = null;
+  if (playerTournament) {
+    effectiveGame = resolveEffectiveGameForPlayerInRegularRound(
+      playerTournament,
+      rondeNummer,
+      playerId,
+      makeupByOriginalId,
+    );
+  }
+
+  if (!effectiveGame) {
+    const games = gamesByRound.get(rondeNummer) ?? [];
+    effectiveGame =
+      games.find(
+        (game: any) =>
+          game._megaschaak_round?.tournament_id === playerTid &&
+          (game.speler1_id === playerId || game.speler2_id === playerId),
+      ) ??
+      games.find(
+        (game: any) => game.speler1_id === playerId || game.speler2_id === playerId,
+      ) ??
+      null;
+  }
+
+  if (!effectiveGame || effectiveGame.speler2_id === null) {
+    return null;
+  }
+  return calculateGameScore(effectiveGame, playerId);
+}
+
+function getJesseReserveReplacementIds(
+  team: {
+    reserve_player_id?: number | null;
+    players?: Array<{
+      player_id: number;
+      player?: { voornaam?: string | null; achternaam?: string | null };
+    }>;
+  },
+): { forfaitPlayerId: number; reservePlayerId: number } | null {
+  const reservePlayerId = team.reserve_player_id ?? null;
+  if (!reservePlayerId || !team.players?.length) return null;
+
+  const hasReserveAsTeamPlayer = team.players.some(
+    (tp) => tp.player_id === reservePlayerId,
+  );
+  if (!hasReserveAsTeamPlayer) return null;
+
+  const forfaitPlayer = team.players.find((tp) =>
+    isNamedPlayer(
+      tp.player?.voornaam,
+      tp.player?.achternaam,
+      "Jesse",
+      "Vaerendonck",
+    ),
+  );
+  if (!forfaitPlayer) return null;
+
+  return {
+    forfaitPlayerId: forfaitPlayer.player_id,
+    reservePlayerId,
+  };
+}
+
+function getAdjustedReserveScoreAndGamesForJesseReplacement(
+  team: {
+    tournament_id: number;
+    reserve_player_id?: number | null;
+    players?: Array<{
+      player_id: number;
+      player?: { voornaam?: string | null; achternaam?: string | null };
+    }>;
+  },
+  playerCompetitionTournamentId: Map<number, number>,
+  allClassesTournaments: Array<{
+    tournament_id: number;
+    rounds?: Array<{ ronde_nummer: number; games?: any[] }>;
+  }>,
+  makeupByOriginalId: Map<number, any>,
+  gamesByRound: Map<number, any[]>,
+  roundsSorted: number[],
+): { reservePlayerId: number; adjustedScore: number; adjustedGames: number } | null {
+  const replacement = getJesseReserveReplacementIds(team);
+  if (!replacement) return null;
+
+  let adjustedScore = 0;
+  let adjustedGames = 0;
+  for (const rondeNummer of roundsSorted) {
+    const forfaitScore = getRoundScoreFromRoundResolution(
+      replacement.forfaitPlayerId,
+      team.tournament_id,
+      rondeNummer,
+      playerCompetitionTournamentId,
+      allClassesTournaments,
+      makeupByOriginalId,
+      gamesByRound,
+    );
+    const reserveScore = getRoundScoreFromRoundResolution(
+      replacement.reservePlayerId,
+      team.tournament_id,
+      rondeNummer,
+      playerCompetitionTournamentId,
+      allClassesTournaments,
+      makeupByOriginalId,
+      gamesByRound,
+    );
+
+    // Reserve telt alleen in rondes waar Jesse niet gespeeld heeft.
+    if (forfaitScore === null && reserveScore !== null) {
+      adjustedScore += reserveScore;
+      adjustedGames += 1;
+    }
+  }
+
+  return {
+    reservePlayerId: replacement.reservePlayerId,
+    adjustedScore,
+    adjustedGames,
+  };
+}
+
 /**
  * Reguliere partij met echte uitslag op de speeldag, of anders de inhaalpartij
  * (zelfde koppel, zelfde geplande ronde; geen MAKEUP-rondes in de UI).
@@ -2074,6 +2223,14 @@ export const getCrossTableData = async (tournamentId: number) => {
 
     // Calculate scores for each team-player combination
     const crossTable = teams.map((team) => {
+      const replacementAdjustments = getAdjustedReserveScoreAndGamesForJesseReplacement(
+        team,
+        playerCompetitionTournamentIdCross,
+        allClassesTournaments,
+        makeupByOriginalIdCross,
+        gamesByRoundCross,
+        roundsSortedCross,
+      );
       const playerScores = uniquePlayersWithGames.map((player) => {
         // Check if this player is in the team
         const isInTeam = team.players.some(
@@ -2086,7 +2243,11 @@ export const getCrossTableData = async (tournamentId: number) => {
 
         // Officiële stand (Sevilla / participation.score) — zelfde als toernooipagina; niet herberekenen uit
         // gededupliceerde partijen (forfaits, import-randen, enz. wijken daar soms van af).
-        const score = player.tournamentScore;
+        const score =
+          replacementAdjustments &&
+          player.user_id === replacementAdjustments.reservePlayerId
+            ? replacementAdjustments.adjustedScore
+            : player.tournamentScore;
 
         return { player_id: player.user_id, score, inTeam: true };
       });
@@ -2100,15 +2261,18 @@ export const getCrossTableData = async (tournamentId: number) => {
       const gamesPlayed = team.players.reduce(
         (sum, tp) =>
           sum +
-          countMegaschaakGamesPlayedFromRoundResolution(
-            tp.player_id,
-            tournamentId,
-            playerCompetitionTournamentIdCross,
-            allClassesTournaments,
-            makeupByOriginalIdCross,
-            gamesByRoundCross,
-            roundsSortedCross,
-          ),
+          (replacementAdjustments &&
+          tp.player_id === replacementAdjustments.reservePlayerId
+            ? replacementAdjustments.adjustedGames
+            : countMegaschaakGamesPlayedFromRoundResolution(
+                tp.player_id,
+                tournamentId,
+                playerCompetitionTournamentIdCross,
+                allClassesTournaments,
+                makeupByOriginalIdCross,
+                gamesByRoundCross,
+                roundsSortedCross,
+              )),
         0,
       );
 
@@ -2272,11 +2436,22 @@ export const getTeamStandings = async (tournamentId: number) => {
 
     // Calculate scores for each team
     const teamsWithScores = teams.map((team) => {
+      const replacementAdjustments = getAdjustedReserveScoreAndGamesForJesseReplacement(
+        team,
+        playerCompetitionTournamentIdStandings,
+        allClassesTournaments,
+        makeupByOriginalIdStandings,
+        gamesByRoundStandings,
+        roundsSortedStandings,
+      );
       let totalScore = 0;
 
       const playerScores = team.players.map((tp) => {
         const playerScore =
-          officialScoreByUserIdForStandings.get(tp.player_id) ?? 0;
+          replacementAdjustments &&
+          tp.player_id === replacementAdjustments.reservePlayerId
+            ? replacementAdjustments.adjustedScore
+            : (officialScoreByUserIdForStandings.get(tp.player_id) ?? 0);
 
         totalScore += playerScore;
 
@@ -2291,15 +2466,18 @@ export const getTeamStandings = async (tournamentId: number) => {
       const gamesPlayed = team.players.reduce(
         (sum, tp) =>
           sum +
-          countMegaschaakGamesPlayedFromRoundResolution(
-            tp.player_id,
-            team.tournament_id,
-            playerCompetitionTournamentIdStandings,
-            allClassesTournaments,
-            makeupByOriginalIdStandings,
-            gamesByRoundStandings,
-            roundsSortedStandings,
-          ),
+          (replacementAdjustments &&
+          tp.player_id === replacementAdjustments.reservePlayerId
+            ? replacementAdjustments.adjustedGames
+            : countMegaschaakGamesPlayedFromRoundResolution(
+                tp.player_id,
+                team.tournament_id,
+                playerCompetitionTournamentIdStandings,
+                allClassesTournaments,
+                makeupByOriginalIdStandings,
+                gamesByRoundStandings,
+                roundsSortedStandings,
+              )),
         0,
       );
 
@@ -2459,47 +2637,21 @@ export const getTeamDetailedScores = async (teamId: number) => {
       planRounds.add(k);
     }
     const roundsSorted = [...planRounds].sort((a, b) => a - b);
+    const replacementIds = getJesseReserveReplacementIds(team);
 
     // Calculate scores per player per round
     const playerScoresByRound = team.players.map((tp) => {
-      const playerTid =
-        playerCompetitionTournamentId.get(tp.player_id) ?? teamTid;
-
       const roundScores = roundsSorted.map((rondeNummer) => {
-        const playerTournament = allClassesTournaments.find(
-          (t) => t.tournament_id === playerTid,
+        const score = getRoundScoreFromRoundResolution(
+          tp.player_id,
+          teamTid,
+          rondeNummer,
+          playerCompetitionTournamentId,
+          allClassesTournaments,
+          makeupByOriginalId,
+          gamesByRound,
         );
-
-        // Bron: REGULAR-ronde van het competitietoernooi van de speler (alle partijen, incl. 1-0R/0-1R).
-        let effectiveGame: any | null = null;
-        if (playerTournament) {
-          effectiveGame = resolveEffectiveGameForPlayerInRegularRound(
-            playerTournament,
-            rondeNummer,
-            tp.player_id,
-            makeupByOriginalId,
-          );
-        }
-
-        // Fallback: wees-inhaal / randgevallen uit gededupliceerde megaschaak-lijst
-        if (!effectiveGame) {
-          const games = gamesByRound.get(rondeNummer) ?? [];
-          effectiveGame =
-            games.find(
-              (game: any) =>
-                game._megaschaak_round?.tournament_id === playerTid &&
-                (game.speler1_id === tp.player_id ||
-                  game.speler2_id === tp.player_id),
-            ) ??
-            games.find(
-              (game: any) =>
-                game.speler1_id === tp.player_id ||
-                game.speler2_id === tp.player_id,
-            ) ??
-            null;
-        }
-
-        if (!effectiveGame) {
+        if (score === null) {
           return {
             ronde_nummer: rondeNummer,
             score: null,
@@ -2507,15 +2659,27 @@ export const getTeamDetailedScores = async (teamId: number) => {
           };
         }
 
-        if (effectiveGame.speler2_id === null) {
-          return {
-            ronde_nummer: rondeNummer,
-            score: null,
-            hasGame: true,
-          };
+        if (
+          replacementIds &&
+          tp.player_id === replacementIds.reservePlayerId
+        ) {
+          const forfaitScore = getRoundScoreFromRoundResolution(
+            replacementIds.forfaitPlayerId,
+            teamTid,
+            rondeNummer,
+            playerCompetitionTournamentId,
+            allClassesTournaments,
+            makeupByOriginalId,
+            gamesByRound,
+          );
+          if (forfaitScore !== null) {
+            return {
+              ronde_nummer: rondeNummer,
+              score: null,
+              hasGame: false,
+            };
+          }
         }
-
-        const score = calculateGameScore(effectiveGame, tp.player_id);
 
         return {
           ronde_nummer: rondeNummer,
@@ -2528,7 +2692,10 @@ export const getTeamDetailedScores = async (teamId: number) => {
         0,
       );
       const totalScore =
-        officialTotalScoreByPlayer.get(tp.player_id) ?? totalScoreFromRounds;
+        replacementIds &&
+        tp.player_id === replacementIds.reservePlayerId
+          ? totalScoreFromRounds
+          : (officialTotalScoreByPlayer.get(tp.player_id) ?? totalScoreFromRounds);
 
       return {
         ...tp,

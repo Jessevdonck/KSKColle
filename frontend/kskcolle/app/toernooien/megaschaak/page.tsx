@@ -1231,6 +1231,11 @@ export default function MegaschaakPage() {
                                 >
                                   {player.voornaam} {player.achternaam}
                                 </Link>
+                                {reservePlayer?.user_id === player.user_id && (
+                                  <span className="text-[10px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">
+                                    (reserve)
+                                  </span>
+                                )}
                                 {player.class_name && (
                                   <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-white/80 text-mainAccent border border-mainAccent/30 flex-shrink-0">
                                     {player.class_name}
@@ -1725,7 +1730,7 @@ function StandingsView({
   }
 
   return (
-    <div className="space-y-2 max-w-2xl mx-auto">
+    <div className="space-y-2 max-w-4xl mx-auto">
       {/* Leaderboard */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
@@ -1933,7 +1938,13 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                       className="text-gray-800 hover:text-mainAccent transition-colors block"
                     >
                       {playerData.player.voornaam}{" "}
-                      {playerData.player.achternaam}{" "}
+                      {playerData.player.achternaam}
+                      {teamDetails.reserve_player_id ===
+                        playerData.player.user_id && (
+                        <span className="text-[10px] text-blue-700 ml-1">
+                          (reserve)
+                        </span>
+                      )}{" "}
                       {playerData.cost !== undefined &&
                         `(${playerData.cost} pts)`}
                     </Link>
