@@ -15,7 +15,7 @@ export interface GameWithScore {
   round?: {
     ronde_nummer: number;
   };
-  uitgestelde_datum?: Date | null;
+  uitgestelde_datum?: string | Date | null;
   board_position?: number | null;
 }
 
