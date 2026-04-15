@@ -2201,7 +2201,7 @@ function ValuePlayersView({
                 Klasse
               </th>
               <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-gray-600 uppercase">
-                Elo
+                Elio
               </th>
               <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-gray-600 uppercase">
                 Kost
