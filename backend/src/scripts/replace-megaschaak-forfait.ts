@@ -19,8 +19,12 @@ const prisma = new PrismaClient();
 async function main() {
   const nameArg = process.argv[2];
   if (!nameArg) {
-    console.error("Gebruik: npx tsx src/scripts/replace-megaschaak-forfait.ts \"Voornaam Achternaam\"");
-    console.error('Voorbeeld: npx tsx src/scripts/replace-megaschaak-forfait.ts "Thijs Vermeulen"');
+    console.error(
+      'Gebruik: npx tsx src/scripts/replace-megaschaak-forfait.ts "Voornaam Achternaam"',
+    );
+    console.error(
+      'Voorbeeld: npx tsx src/scripts/replace-megaschaak-forfait.ts "Thijs Vermeulen"',
+    );
     process.exit(1);
   }
 
@@ -45,7 +49,9 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Gevonden: ${user.voornaam} ${user.achternaam} (user_id=${user.user_id})\n`);
+  console.log(
+    `Gevonden: ${user.voornaam} ${user.achternaam} (user_id=${user.user_id})\n`,
+  );
 
   const teamPlayers = await prisma.megaschaakTeamPlayer.findMany({
     where: { player_id: user.user_id },
@@ -61,25 +67,35 @@ async function main() {
   });
 
   if (teamPlayers.length === 0) {
-    console.log("Deze speler staat in geen enkel Megaschaak-team. Niets te doen.");
+    console.log(
+      "Deze speler staat in geen enkel Megaschaak-team. Niets te doen.",
+    );
     return;
   }
 
-  const withReserve = teamPlayers.filter((tp) => tp.team.reserve_player_id != null);
-  const withoutReserve = teamPlayers.filter((tp) => tp.team.reserve_player_id == null);
+  const withReserve = teamPlayers.filter(
+    (tp) => tp.team.reserve_player_id != null,
+  );
+  const withoutReserve = teamPlayers.filter(
+    (tp) => tp.team.reserve_player_id == null,
+  );
 
   if (withoutReserve.length > 0) {
     console.log(
-      `Waarschuwing: ${withoutReserve.length} team(s) hebben deze speler maar geen reserve (worden overgeslagen):`
+      `Waarschuwing: ${withoutReserve.length} team(s) hebben deze speler maar geen reserve (worden overgeslagen):`,
     );
     for (const tp of withoutReserve) {
-      console.log(`  - Team "${tp.team.team_name}" (eigenaar: ${tp.team.user.voornaam} ${tp.team.user.achternaam})`);
+      console.log(
+        `  - Team "${tp.team.team_name}" (eigenaar: ${tp.team.user.voornaam} ${tp.team.user.achternaam})`,
+      );
     }
     console.log("");
   }
 
   if (withReserve.length === 0) {
-    console.log("Geen enkel team heeft zowel deze speler als een reserve. Niets gewijzigd.");
+    console.log(
+      "Geen enkel team heeft zowel deze speler als een reserve. Niets gewijzigd.",
+    );
     return;
   }
 
@@ -91,12 +107,14 @@ async function main() {
     const reserveCost = team.reserve_cost ?? 0;
     const reserve = team.reserve_player!;
 
-    const existingReserveAsPlayer = await prisma.megaschaakTeamPlayer.findFirst({
-      where: {
-        team_id: team.team_id,
-        player_id: reserveId,
+    const existingReserveAsPlayer = await prisma.megaschaakTeamPlayer.findFirst(
+      {
+        where: {
+          team_id: team.team_id,
+          player_id: reserveId,
+        },
       },
-    });
+    );
 
     if (existingReserveAsPlayer) {
       console.log(
@@ -114,7 +132,7 @@ async function main() {
     });
 
     console.log(
-      `  ✓ "${team.team_name}" (${team.user.voornaam} ${team.user.achternaam}): ${user.voornaam} ${user.achternaam} blijft, reserve ${reserve.voornaam} ${reserve.achternaam} toegevoegd als 11de speler`
+      `  ✓ "${team.team_name}" (${team.user.voornaam} ${team.user.achternaam}): ${user.voornaam} ${user.achternaam} blijft, reserve ${reserve.voornaam} ${reserve.achternaam} toegevoegd als 11de speler`,
     );
   }
 
