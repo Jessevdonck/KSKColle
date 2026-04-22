@@ -1819,15 +1819,6 @@ function getAdjustedReserveScoreAndGamesForJesseReplacement(
       forfaitRawRoundGame,
       replacement.forfaitPlayerId,
     );
-    const forfaitScore = getRoundScoreFromRoundResolution(
-      replacement.forfaitPlayerId,
-      team.tournament_id,
-      rondeNummer,
-      playerCompetitionTournamentId,
-      allClassesTournaments,
-      makeupByOriginalId,
-      gamesByRound,
-    );
     const reserveScore = getRoundScoreFromRoundResolution(
       replacement.reservePlayerId,
       team.tournament_id,
