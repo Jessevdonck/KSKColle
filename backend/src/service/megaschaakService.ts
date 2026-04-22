@@ -1629,10 +1629,6 @@ function countMegaschaakGamesPlayedFromRoundResolution(
     if (!effectiveGame || effectiveGame.speler2_id === null) {
       continue;
     }
-    // 1-0R / 0-1R telt als forfait voor de verliezer: niet als gespeelde partij.
-    if (isForfeitLossForPlayer(effectiveGame, playerId)) {
-      continue;
-    }
     count += 1;
   }
   return count;
@@ -2720,6 +2716,17 @@ export const getTeamDetailedScores = async (teamId: number) => {
     // Calculate scores per player per round
     const playerScoresByRound = team.players.map((tp) => {
       const roundScores = roundsSorted.map((rondeNummer) => {
+        const playerTid =
+          playerCompetitionTournamentId.get(tp.player_id) ?? teamTid;
+        const rawRoundGame = getRawRoundGameForPlayer(
+          tp.player_id,
+          playerTid,
+          rondeNummer,
+          allClassesTournaments,
+        );
+        const isForfeitLoss =
+          rawRoundGame != null && isForfeitLossForPlayer(rawRoundGame, tp.player_id);
+
         if (replacementIds && tp.player_id === replacementIds.forfaitPlayerId) {
           const forfaitPlayerTid =
             playerCompetitionTournamentId.get(replacementIds.forfaitPlayerId) ??
@@ -2741,6 +2748,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
               ronde_nummer: rondeNummer,
               score: null,
               hasGame: false,
+              isForfeitLoss: true,
             };
           }
         }
@@ -2759,6 +2767,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
             ronde_nummer: rondeNummer,
             score: null,
             hasGame: false,
+            isForfeitLoss,
           };
         }
 
@@ -2785,6 +2794,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
               ronde_nummer: rondeNummer,
               score: null,
               hasGame: false,
+              isForfeitLoss: false,
             };
           }
         }
@@ -2792,6 +2802,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
         return {
           ronde_nummer: rondeNummer,
           score,
+          isForfeitLoss,
         };
       });
 
@@ -3064,9 +3075,7 @@ export const getBestValuePlayers = async (tournamentId: number) => {
     // Alleen gamesPlayed uit gededupliceerde partijen; punten = officiële participation (zelfde als toernooi)
     for (const [playerId, data] of playerData.entries()) {
       const gamesForPlayer = dedupedMegaschaakGames.filter(
-        (g) =>
-          (g.speler1_id === playerId || g.speler2_id === playerId) &&
-          !isForfeitLossForPlayer(g, playerId),
+        (g) => g.speler1_id === playerId || g.speler2_id === playerId,
       );
       data.gamesPlayed = gamesForPlayer.length;
     }

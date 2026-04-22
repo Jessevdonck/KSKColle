@@ -67,16 +67,24 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
     return calculateStandings(tournament, rounds)
   }, [tournament, rounds])
 
-  // Build cross table data - map of playerId -> opponentId -> result (1, 0.5, 0, or null)
+  type CrossTableCell = {
+    score: number | null
+    isForfeitLoss: boolean
+  }
+
+  // Build cross table data - map of playerId -> opponentId -> result metadata
   const crossTableData = React.useMemo(() => {
-    const data = new Map<number, Map<number, number | null>>()
+    const data = new Map<number, Map<number, CrossTableCell>>()
 
     // Initialize all player combinations
     standings.forEach(player1 => {
-      const playerMap = new Map<number, number | null>()
+      const playerMap = new Map<number, CrossTableCell>()
       standings.forEach(player2 => {
         if (player1.user_id !== player2.user_id) {
-          playerMap.set(player2.user_id, null)
+          playerMap.set(player2.user_id, {
+            score: null,
+            isForfeitLoss: false,
+          })
         }
       })
       data.set(player1.user_id, playerMap)
@@ -106,16 +114,30 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
           }
         }
 
+        const compactResult = String(game.result || "").replace(/\s+/g, "")
+        const isForfeitResult =
+          compactResult === "1-0R" || compactResult === "0-1R"
+        const player1ForfeitLoss =
+          isForfeitResult && compactResult === "0-1R"
+        const player2ForfeitLoss =
+          isForfeitResult && compactResult === "1-0R"
+
         // Store result from player1's perspective
         const player1Map = data.get(player1Id)
         if (player1Map && result !== null) {
-          player1Map.set(player2Id, result)
+          player1Map.set(player2Id, {
+            score: result,
+            isForfeitLoss: player1ForfeitLoss,
+          })
         }
 
         // Store result from player2's perspective (inverted)
         const player2Map = data.get(player2Id)
         if (player2Map && result !== null) {
-          player2Map.set(player1Id, result === 1 ? 0 : result === 0 ? 1 : 0.5)
+          player2Map.set(player1Id, {
+            score: result === 1 ? 0 : result === 0 ? 1 : 0.5,
+            isForfeitLoss: player2ForfeitLoss,
+          })
         }
       })
     })
@@ -124,7 +146,8 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
   }, [standings, rounds])
 
   // Get result cell class
-  const getResultClass = (result: number | null) => {
+  const getResultClass = (result: number | null, isForfeitLoss: boolean) => {
+    if (isForfeitLoss) return "bg-gray-500 text-white"
     if (result === 1) return "bg-green-100 text-green-800"
     if (result === 0) return "bg-red-100 text-red-800"
     if (result === 0.5) return "bg-yellow-100 text-yellow-800"
@@ -250,11 +273,12 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                           </td>
                         )
                       }
-                      const result = playerResults?.get(opponent.user_id)
+                      const cell = playerResults?.get(opponent.user_id)
+                      const result = cell?.score ?? null
                       return (
                         <td
                           key={opponent.user_id}
-                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result ?? null)}`}
+                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false)}`}
                           style={{ width: '35px', minWidth: '30px' }}
                         >
                           {result !== null && result !== undefined ? result : "-"}
@@ -378,11 +402,12 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                           </td>
                         )
                       }
-                      const result = playerResults?.get(opponent.user_id)
+                      const cell = playerResults?.get(opponent.user_id)
+                      const result = cell?.score ?? null
                       return (
                         <td
                           key={opponent.user_id}
-                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result ?? null)}`}
+                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false)}`}
                           style={{ width: '35px', minWidth: '30px' }}
                         >
                           {result !== null && result !== undefined ? result : "-"}
