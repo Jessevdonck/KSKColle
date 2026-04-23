@@ -1995,7 +1995,7 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                         <span
                           className={`inline-block px-1.5 py-0.5 rounded ${
                             isForfeitLoss
-                              ? "bg-gray-500 text-white"
+                              ? "bg-gray-300 text-gray-700"
                               : score === 1
                                 ? "bg-green-100 text-green-800 font-semibold"
                                 : score === 0.5
