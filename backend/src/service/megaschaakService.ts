@@ -2399,7 +2399,12 @@ export const getCrossTableData = async (tournamentId: number) => {
     });
 
     // Sort teams by total score
-    crossTable.sort((a, b) => b.totalScore - a.totalScore);
+    crossTable.sort((a, b) => {
+      if (Math.abs(b.totalScore - a.totalScore) > 0.001) {
+        return b.totalScore - a.totalScore;
+      }
+      return a.totalCost - b.totalCost;
+    });
 
     return {
       teams: crossTable,
@@ -2611,8 +2616,13 @@ export const getTeamStandings = async (tournamentId: number) => {
       };
     });
 
-    // Sort teams by total score (descending)
-    teamsWithScores.sort((a, b) => b.totalScore - a.totalScore);
+    // Sort teams by total score (descending), then lowest team value (ascending)
+    teamsWithScores.sort((a, b) => {
+      if (Math.abs(b.totalScore - a.totalScore) > 0.001) {
+        return b.totalScore - a.totalScore;
+      }
+      return a.totalCost - b.totalCost;
+    });
 
     return teamsWithScores;
   } catch (error) {
