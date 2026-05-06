@@ -1825,15 +1825,18 @@ function getAdjustedReserveScoreAndGamesForJesseReplacement(
   gamesByRound: Map<number, any[]>,
   roundsSorted: number[],
 ): {
+  forfaitPlayerId: number;
   reservePlayerId: number;
   adjustedScore: number;
   adjustedGames: number;
+  adjustedForfaitGames: number;
 } | null {
   const replacement = getJesseReserveReplacementIds(team);
   if (!replacement) return null;
 
   let adjustedScore = 0;
   let adjustedGames = 0;
+  let adjustedForfaitGames = 0;
   for (const rondeNummer of roundsSorted) {
     const forfaitTid =
       playerCompetitionTournamentId.get(replacement.forfaitPlayerId) ??
@@ -1858,18 +1861,34 @@ function getAdjustedReserveScoreAndGamesForJesseReplacement(
       makeupByOriginalId,
       gamesByRound,
     );
+    const forfaitScore = getRoundScoreFromRoundResolution(
+      replacement.forfaitPlayerId,
+      team.tournament_id,
+      rondeNummer,
+      playerCompetitionTournamentId,
+      allClassesTournaments,
+      makeupByOriginalId,
+      gamesByRound,
+    );
 
     // Alleen forfait-rondes vervangen; BYE nooit vervangen.
     if (!forfaitHasBye && forfaitForfeitLoss && reserveScore !== null) {
       adjustedScore += reserveScore;
       adjustedGames += 1;
     }
+
+    // Forfaitnederlagen van de vervangen speler tellen niet mee als gespeelde partij.
+    if (forfaitScore !== null && !forfaitForfeitLoss) {
+      adjustedForfaitGames += 1;
+    }
   }
 
   return {
+    forfaitPlayerId: replacement.forfaitPlayerId,
     reservePlayerId: replacement.reservePlayerId,
     adjustedScore,
     adjustedGames,
+    adjustedForfaitGames,
   };
 }
 
@@ -2339,9 +2358,20 @@ export const getCrossTableData = async (tournamentId: number) => {
       const gamesPlayed = team.players.reduce(
         (sum, tp) =>
           sum +
-          (replacementAdjustments &&
-          tp.player_id === replacementAdjustments.reservePlayerId
-            ? replacementAdjustments.adjustedGames
+          (replacementAdjustments
+            ? tp.player_id === replacementAdjustments.reservePlayerId
+              ? replacementAdjustments.adjustedGames
+              : tp.player_id === replacementAdjustments.forfaitPlayerId
+                ? replacementAdjustments.adjustedForfaitGames
+                : countMegaschaakGamesPlayedFromRoundResolution(
+                    tp.player_id,
+                    tournamentId,
+                    playerCompetitionTournamentIdCross,
+                    allClassesTournaments,
+                    makeupByOriginalIdCross,
+                    gamesByRoundCross,
+                    roundsSortedCross,
+                  )
             : countMegaschaakGamesPlayedFromRoundResolution(
                 tp.player_id,
                 tournamentId,
@@ -2544,9 +2574,20 @@ export const getTeamStandings = async (tournamentId: number) => {
       const gamesPlayed = team.players.reduce(
         (sum, tp) =>
           sum +
-          (replacementAdjustments &&
-          tp.player_id === replacementAdjustments.reservePlayerId
-            ? replacementAdjustments.adjustedGames
+          (replacementAdjustments
+            ? tp.player_id === replacementAdjustments.reservePlayerId
+              ? replacementAdjustments.adjustedGames
+              : tp.player_id === replacementAdjustments.forfaitPlayerId
+                ? replacementAdjustments.adjustedForfaitGames
+                : countMegaschaakGamesPlayedFromRoundResolution(
+                    tp.player_id,
+                    team.tournament_id,
+                    playerCompetitionTournamentIdStandings,
+                    allClassesTournaments,
+                    makeupByOriginalIdStandings,
+                    gamesByRoundStandings,
+                    roundsSortedStandings,
+                  )
             : countMegaschaakGamesPlayedFromRoundResolution(
                 tp.player_id,
                 team.tournament_id,
@@ -3104,12 +3145,12 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       }
     });
 
-    // Calculate value ratio based on effectief gespeelde partijen (BYE telt niet als partij)
+    // Calculate value ratio based on punten per kost
     const valuePlayers = Array.from(playerData.values())
       .map((p) => {
-        // Ratio: behaalde punten per gespeelde partij (niet per geplande ronde)
+        // Ratio: behaalde punten per budgetpunt
         const playedGames = p.gamesPlayed;
-        const valueRatio = playedGames > 0 ? p.totalScore / playedGames : 0;
+        const valueRatio = p.cost > 0 ? p.totalScore / p.cost : 0;
 
         return {
           user_id: p.player.user_id,

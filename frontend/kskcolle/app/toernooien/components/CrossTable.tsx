@@ -70,6 +70,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
   type CrossTableCell = {
     score: number | null;
     isForfeitLoss: boolean;
+    displayValue?: string;
   };
 
   // Build cross table data - map of playerId -> opponentId -> result metadata
@@ -98,27 +99,32 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
         const player1Id = game.speler1.user_id;
         const player2Id = game.speler2.user_id;
 
+        const compactResult = String(game.result || "").replace(/\s+/g, "");
+
         // Determine result from player1's perspective (1 = win, 0.5 = draw, 0 = loss)
         let result: number | null = null;
-        if (game.result) {
-          if (game.result === "1-0" || game.result === "1-0R") {
+        let displayValue: string | undefined;
+        if (compactResult) {
+          if (compactResult === "1-0" || compactResult === "1-0R") {
             result = 1; // Player1 wins
-          } else if (game.result === "0-1" || game.result === "0-1R") {
+          } else if (compactResult === "0-1" || compactResult === "0-1R") {
             result = 0; // Player1 loses
           } else if (
-            game.result === "1/2-1/2" ||
-            game.result === "½-½" ||
-            game.result === "-"
+            compactResult === "1/2-1/2" ||
+            compactResult === "½-½" ||
+            compactResult === "-"
           ) {
             result = 0.5; // Draw (Sevilla gebruikt vaak "-")
+          } else if (compactResult === "0-0R") {
+            result = 0;
+            displayValue = "0-0";
           }
         }
 
-        const compactResult = String(game.result || "").replace(/\s+/g, "");
-        const isForfeitResult =
-          compactResult === "1-0R" || compactResult === "0-1R";
-        const player1ForfeitLoss = isForfeitResult && compactResult === "0-1R";
-        const player2ForfeitLoss = isForfeitResult && compactResult === "1-0R";
+        const player1ForfeitLoss =
+          compactResult === "0-1R" || compactResult === "0-0R";
+        const player2ForfeitLoss =
+          compactResult === "1-0R" || compactResult === "0-0R";
 
         // Store result from player1's perspective
         const player1Map = data.get(player1Id);
@@ -126,15 +132,25 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
           player1Map.set(player2Id, {
             score: result,
             isForfeitLoss: player1ForfeitLoss,
+            displayValue,
           });
         }
 
         // Store result from player2's perspective (inverted)
         const player2Map = data.get(player2Id);
         if (player2Map && result !== null) {
+          const player2Score =
+            compactResult === "0-0R"
+              ? 0
+              : result === 1
+                ? 0
+                : result === 0
+                  ? 1
+                  : 0.5;
           player2Map.set(player1Id, {
-            score: result === 1 ? 0 : result === 0 ? 1 : 0.5,
+            score: player2Score,
             isForfeitLoss: player2ForfeitLoss,
+            displayValue,
           });
         }
       });
@@ -326,9 +342,10 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                           className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false)}`}
                           style={{ width: "35px", minWidth: "30px" }}
                         >
-                          {result !== null && result !== undefined
-                            ? result
-                            : "-"}
+                          {cell?.displayValue ??
+                            (result !== null && result !== undefined
+                              ? result
+                              : "-")}
                         </td>
                       );
                     })}
@@ -504,9 +521,10 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                           className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false)}`}
                           style={{ width: "35px", minWidth: "30px" }}
                         >
-                          {result !== null && result !== undefined
-                            ? result
-                            : "-"}
+                          {cell?.displayValue ??
+                            (result !== null && result !== undefined
+                              ? result
+                              : "-")}
                         </td>
                       );
                     })}
