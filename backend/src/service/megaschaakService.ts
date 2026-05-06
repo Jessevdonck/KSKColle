@@ -1625,6 +1625,7 @@ function countMegaschaakGamesPlayedFromRoundResolution(
   makeupByOriginalId: Map<number, any>,
   gamesByRound: Map<number, any[]>,
   roundsSorted: number[],
+  requireResult: boolean = false,
 ): number {
   const playerTid =
     playerCompetitionTournamentId.get(playerId) ?? teamTournamentId;
@@ -1659,6 +1660,9 @@ function countMegaschaakGamesPlayedFromRoundResolution(
     if (!effectiveGame || effectiveGame.speler2_id === null) {
       continue;
     }
+    if (requireResult && effectiveGame.result == null) {
+      continue;
+    }
     count += 1;
   }
   return count;
@@ -1666,7 +1670,8 @@ function countMegaschaakGamesPlayedFromRoundResolution(
 
 function isForfeitLossForPlayer(game: any, playerId: number): boolean {
   if (!game || game.speler2_id == null) return false;
-  if (game.speler1_id !== playerId && game.speler2_id !== playerId) return false;
+  if (game.speler1_id !== playerId && game.speler2_id !== playerId)
+    return false;
 
   const raw = String(game.result ?? "").trim();
   const flat = raw.replace(/\s+/g, "").toUpperCase();
@@ -1692,7 +1697,9 @@ function getRawRoundGameForPlayer(
     (t) => t.tournament_id === playerTid,
   );
   if (!playerTournament) return null;
-  const round = playerTournament.rounds?.find((r) => r.ronde_nummer === rondeNummer);
+  const round = playerTournament.rounds?.find(
+    (r) => r.ronde_nummer === rondeNummer,
+  );
   if (!round?.games?.length) return null;
   return (
     [...round.games]
@@ -2782,7 +2789,8 @@ export const getTeamDetailedScores = async (teamId: number) => {
           allClassesTournaments,
         );
         const isForfeitLoss =
-          rawRoundGame != null && isForfeitLossForPlayer(rawRoundGame, tp.player_id);
+          rawRoundGame != null &&
+          isForfeitLossForPlayer(rawRoundGame, tp.player_id);
 
         if (replacementIds && tp.player_id === replacementIds.forfaitPlayerId) {
           const forfaitPlayerTid =
@@ -3028,9 +3036,20 @@ export const getBestValuePlayers = async (tournamentId: number) => {
 
     const tournamentIds = allClassesTournaments.map((t) => t.tournament_id);
 
-    const dedupedMegaschaakGames = await collectDedupedMegaschaakGames(
+    const makeupByOriginalIdValue = await buildMakeupByOriginalIdMap(
       allClassesTournaments,
     );
+    const allGamesValue = await collectDedupedMegaschaakGames(
+      allClassesTournaments,
+      makeupByOriginalIdValue,
+    );
+    const gamesByRoundValue = new Map<number, any[]>();
+    for (const g of allGamesValue) {
+      const rn = g._megaschaak_round?.ronde_nummer ?? 0;
+      if (!gamesByRoundValue.has(rn)) gamesByRoundValue.set(rn, []);
+      gamesByRoundValue.get(rn)!.push(g);
+    }
+    const roundsSortedValue = getPlannedMegaschaakRounds(allClassesTournaments);
 
     // Get all teams for this tournament
     const teams = await prisma.megaschaakTeam.findMany({
@@ -3086,6 +3105,18 @@ export const getBestValuePlayers = async (tournamentId: number) => {
         },
       },
     });
+    const playerCompetitionTournamentIdValue = new Map<number, number>();
+    const participationPlayerIds = [
+      ...new Set(allParticipations.map((p) => p.user.user_id)),
+    ];
+    for (const pid of participationPlayerIds) {
+      const rows = allParticipations.filter((p) => p.user.user_id === pid);
+      const preferred =
+        rows.find((p) => p.tournament_id === tournamentId) ?? rows[0];
+      if (preferred) {
+        playerCompetitionTournamentIdValue.set(pid, preferred.tournament_id);
+      }
+    }
 
     // Collect unique players (all participants, not just those in teams); exclude Lode e.a. uit megaschaak
     const playerData = new Map<
@@ -3129,12 +3160,18 @@ export const getBestValuePlayers = async (tournamentId: number) => {
       }
     }
 
-    // Alleen gamesPlayed uit gededupliceerde partijen; punten = officiële participation (zelfde als toernooi)
+    // Gebruik exact dezelfde gamesPlayed-resolutie als in de andere megaschaak-overzichten.
     for (const [playerId, data] of playerData.entries()) {
-      const gamesForPlayer = dedupedMegaschaakGames.filter(
-        (g) => g.speler1_id === playerId || g.speler2_id === playerId,
+      data.gamesPlayed = countMegaschaakGamesPlayedFromRoundResolution(
+        playerId,
+        tournamentId,
+        playerCompetitionTournamentIdValue,
+        allClassesTournaments,
+        makeupByOriginalIdValue,
+        gamesByRoundValue,
+        roundsSortedValue,
+        true,
       );
-      data.gamesPlayed = gamesForPlayer.length;
     }
 
     // Get total rounds per class for value ratio calculation
