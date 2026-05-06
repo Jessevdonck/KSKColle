@@ -117,7 +117,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
             result = 0.5; // Draw (Sevilla gebruikt vaak "-")
           } else if (compactResult === "0-0R") {
             result = 0;
-            displayValue = "0-0";
+            displayValue = "0";
           }
         }
 

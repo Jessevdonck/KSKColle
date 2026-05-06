@@ -55,11 +55,19 @@ const BADGE_POSTPONED =
   "bg-amber-100 text-amber-800 border border-amber-200"
 const BADGE_OPEN = "bg-gray-100 text-gray-600 border border-gray-200"
 
+export function isDoubleForfeitResult(
+  result: string | null | undefined,
+): boolean {
+  if (!result) return false
+  return result.replace(/\s+/g, "").toUpperCase() === "0-0R"
+}
+
 /** Badge: eerst echte uitslag (groen), dan pas uitgesteld (amber). */
 export function pairingResultBadgeClass(
   result: string | null | undefined,
   uitgestelde_datum: unknown,
 ): string {
+  if (isDoubleForfeitResult(result)) return BADGE_OPEN
   if (hasConcretePairingResult(result, uitgestelde_datum)) return BADGE_PLAYED
   if (hasActivePostpone(uitgestelde_datum)) return BADGE_POSTPONED
   return BADGE_OPEN

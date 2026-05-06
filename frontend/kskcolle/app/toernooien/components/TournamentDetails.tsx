@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '../../contexts/auth'
 import Link from 'next/link'
 import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKeys"
+import { isDoubleForfeitResult } from "@/lib/gameResultDisplay"
 
 /**
  * Overschrijft globale SWR-defaults (o.a. revalidateIfStale: false, lange deduping) voor deze pagina,
@@ -1055,7 +1056,10 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
                       <div className="flex items-center justify-center gap-2">
                         <span
                           className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
-                            g.result && g.result !== "not_played" && g.result !== "..."
+                            g.result &&
+                            g.result !== "not_played" &&
+                            g.result !== "..." &&
+                            !isDoubleForfeitResult(g.result)
                               ? "bg-green-100 text-green-800 border border-green-200"
                               : "bg-gray-100 text-gray-600 border border-gray-200"
                           }`}
@@ -1097,7 +1101,10 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
                   <div className="flex items-center gap-2">
                     <span
                       className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                        g.result && g.result !== "not_played" && g.result !== "..."
+                        g.result &&
+                        g.result !== "not_played" &&
+                        g.result !== "..." &&
+                        !isDoubleForfeitResult(g.result)
                           ? "bg-green-100 text-green-800 border border-green-200"
                           : "bg-gray-100 text-gray-600 border border-gray-200"
                       }`}

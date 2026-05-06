@@ -1657,7 +1657,11 @@ function countMegaschaakGamesPlayedFromRoundResolution(
         ) ??
         null;
     }
-    if (!effectiveGame || effectiveGame.speler2_id === null) {
+    if (
+      !effectiveGame ||
+      effectiveGame.speler1_id == null ||
+      effectiveGame.speler2_id == null
+    ) {
       continue;
     }
     if (requireResult && effectiveGame.result == null) {
