@@ -1,6 +1,6 @@
 /**
  * Bepaalt of een partij meetelt als "gespeelde partij" (kolom Partijen, megaschaak, profiel).
- * Alleen echte speeldag-partijen met tegenstander: geen bye, geen forfait, geen absentie.
+ * Met tegenstander: normale partijen en forfait (winst/verlies) tellen mee; geen bye, absentie of 0-0.
  */
 export function countsAsSpeeldagPartij(
   result: string | null | undefined,
@@ -15,7 +15,6 @@ export function countsAsSpeeldagPartij(
 
   const flat = r.replace(/\s+/g, "").toUpperCase();
   if (flat === "0-0" || flat === "0-0R" || flat === "0-0FF") return false;
-  if (flat.endsWith("R") || flat.includes("FF")) return false;
 
   if (r.startsWith("1-0") || r.startsWith("0-1")) return true;
   return r === "½-½" || r === "1/2-1/2" || r === "-";
