@@ -8,10 +8,16 @@ import AsyncData from "../../components/AsyncData";
 import type { User } from "@/data/types";
 import { Users, Trophy } from "lucide-react";
 
-/** Actief lid = `lidgeld_betaald` in DB; API stuurt ook `membership_valid` (zelfde betekenis). */
+/** Actief lid: API `membership_valid`, anders lidgeld of (jeugd) jeugdlidgeld. */
 function isActiveMember(u: User): boolean {
-  const paid = u.membership_valid ?? u.lidgeld_betaald;
-  return paid !== false;
+  if (u.membership_valid === true) return true;
+  if (u.membership_valid === false) return false;
+  if (u.lidgeld_betaald === true) return true;
+  if (u.jeugdlidgeld_betaald === true) {
+    const end = u.jeugdlidgeld_periode_eind;
+    if (!end || new Date(end) > new Date()) return true;
+  }
+  return false;
 }
 
 export type PlayerRankingProps = {

@@ -7,7 +7,8 @@ export default function YouthMembersPage() {
       pageTitle="Jeugdleden — clubrating"
       registeredCountLabel="jeugdleden in de lijst"
       sortHint="Gesorteerd op ELIO rating"
-      tableTitle="Jeugdleden (clubrating)"
+      tableTitle="Actieve jeugdleden (clubrating)"
+      fullListTableTitle="Alle jeugdleden met clubrating"
     />
   )
 }

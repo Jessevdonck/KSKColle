@@ -9,14 +9,15 @@ import jwt from 'jsonwebtoken';
 import { getLogger } from "../core/logging";
 import { generateJWT, verifyJWT } from "../core/jwt";
 import type { SessionInfo } from '../types/auth';
+import { isUserMember } from './lidgeldService';
 
 /** Clubrating > 0 telt als “heeft rating” (ELIO). */
 const hasClubRating = (u: { schaakrating_elo: number | null | undefined }): boolean =>
   (u.schaakrating_elo ?? 0) > 0;
 
-/** Publieke spelerslijst: geen ex-leden zonder rating; actieve leden altijd (ook rating 0). Lid = lidgeld_betaald in DB. */
+/** Publieke spelerslijst: actieve leden (lid/jeugd/bond) of spelers met clubrating > 0. */
 const includeInPublicPlayersList = (u: PublicUser): boolean =>
-  Boolean(u.lidgeld_betaald || hasClubRating(u));
+  Boolean(u.membership_valid || hasClubRating(u));
 
 const makeExposedUser = ({ 
   user_id, 
@@ -159,7 +160,8 @@ const mapUsersToPublicUsersWithRating = async (
         ...user,
         rating_difference: ratingDifference,
       }),
-      membership_valid: user.lidgeld_betaald === true,
+      membership_valid: isUserMember(user),
+      is_youth: user.is_youth === true,
     };
   });
 };
