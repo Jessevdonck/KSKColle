@@ -9,25 +9,29 @@ import { Swords, Users, Search, Plus, Trash2, Save, TrendingUp, Trophy, X, Clock
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "../../contexts/auth"
 import { format, isPast } from "date-fns"
 
 interface MegaschaakTabProps {
   tournamentId: number
   tournamentName: string
   megaschaakDeadline?: string | null
+  tournamentFinished?: boolean
 }
 
 const MAX_PLAYERS = 10
 const MAX_BUDGET = 1000
 
-export default function MegaschaakTab({ tournamentId, tournamentName, megaschaakDeadline }: MegaschaakTabProps) {
+export default function MegaschaakTab({ tournamentId, tournamentName, megaschaakDeadline, tournamentFinished = false }: MegaschaakTabProps) {
   const { toast } = useToast()
+  const { isAuthed } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [teamName, setTeamName] = useState("Mijn Team")
   const [selectedPlayers, setSelectedPlayers] = useState<MegaschaakPlayer[]>([])
 
-  // Check if deadline has passed
-  const isDeadlinePassed = megaschaakDeadline ? isPast(new Date(megaschaakDeadline)) : false
+  const isDeadlinePassed =
+    tournamentFinished ||
+    (megaschaakDeadline ? isPast(new Date(megaschaakDeadline)) : false)
 
   // Fetch standings if deadline has passed
   const { data: standings = [], isLoading: standingsLoading } = useSWR<any[]>(
@@ -59,14 +63,16 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
     }
   }, [mutatePlayers])
 
-  // Fetch user's current team
-  const { data: currentTeam, mutate: mutateTeam } = useSWR<MegaschaakTeam | null>(
-    `megaschaak/tournament/${tournamentId}/my-team`,
+  // Fetch user's teams (all classes of this competition share megaschaak teams)
+  const { data: myTeams = [], mutate: mutateTeam } = useSWR<MegaschaakTeam[]>(
+    isAuthed ? `megaschaak/tournament/${tournamentId}/my-teams` : null,
     async () => {
-      const response = await axios.get(`/megaschaak/tournament/${tournamentId}/my-team`)
-      return response.data
+      const response = await axios.get(`/megaschaak/tournament/${tournamentId}/my-teams`)
+      return response.data.items ?? []
     }
   )
+
+  const currentTeam = myTeams[0] ?? null
 
   // Load current team into selected players when data arrives
   React.useEffect(() => {

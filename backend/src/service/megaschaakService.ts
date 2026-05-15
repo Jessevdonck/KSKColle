@@ -512,36 +512,102 @@ export const calculatePlayerCost = async (
   }
 };
 
+const activeMegaschaakTournamentInclude = {
+  participations: {
+    include: {
+      user: {
+        select: {
+          user_id: true,
+          voornaam: true,
+          achternaam: true,
+          schaakrating_elo: true,
+          is_youth: true,
+          avatar_url: true,
+        },
+      },
+    },
+  },
+} as const;
+
+/** All tournament_ids for the same competition (all classes share megaschaak teams). */
+async function getMegaschaakCompetitionTournamentIds(
+  tournamentId: number,
+): Promise<number[]> {
+  const tournament = await prisma.tournament.findUnique({
+    where: { tournament_id: tournamentId },
+    select: { naam: true },
+  });
+  if (!tournament) {
+    throw ServiceError.notFound("Toernooi niet gevonden");
+  }
+  const siblings = await prisma.tournament.findMany({
+    where: { naam: tournament.naam },
+    select: { tournament_id: true },
+  });
+  return siblings.map((t) => t.tournament_id);
+}
+
 /**
- * Get the active megaschaak tournament (there should only be one)
+ * Get the megaschaak tournament to display: prefer an ongoing one, otherwise the most recent (even if finished).
+ * Returns the class row that holds megaschaak teams when possible (teams are shared across classes via naam).
  */
 export const getActiveMegaschaakTournament = async () => {
   try {
-    // Find any active tournament with megaschaak enabled
-    const tournament = await prisma.tournament.findFirst({
-      where: {
-        megaschaak_enabled: true,
-        finished: false,
+    const candidates = await prisma.tournament.findMany({
+      where: { megaschaak_enabled: true },
+      select: {
+        tournament_id: true,
+        naam: true,
+        finished: true,
+        _count: { select: { megaschaakTeams: true } },
       },
-      include: {
-        participations: {
-          include: {
-            user: {
-              select: {
-                user_id: true,
-                voornaam: true,
-                achternaam: true,
-                schaakrating_elo: true,
-                is_youth: true,
-                avatar_url: true,
-              },
-            },
-          },
-        },
-      },
+      orderBy: { tournament_id: "desc" },
     });
 
-    return tournament;
+    if (candidates.length === 0) return null;
+
+    const groups = new Map<string, typeof candidates>();
+    for (const t of candidates) {
+      const group = groups.get(t.naam) ?? [];
+      group.push(t);
+      groups.set(t.naam, group);
+    }
+
+    let selectedGroup: typeof candidates = [];
+    for (const group of groups.values()) {
+      if (selectedGroup.length === 0) {
+        selectedGroup = group;
+        continue;
+      }
+      const groupUnfinished = group.some((t) => !t.finished);
+      const selectedUnfinished = selectedGroup.some((t) => !t.finished);
+      if (groupUnfinished && !selectedUnfinished) {
+        selectedGroup = group;
+        continue;
+      }
+      if (!groupUnfinished && selectedUnfinished) continue;
+      const groupMaxId = Math.max(...group.map((t) => t.tournament_id));
+      const selectedMaxId = Math.max(
+        ...selectedGroup.map((t) => t.tournament_id),
+      );
+      if (groupMaxId > selectedMaxId) selectedGroup = group;
+    }
+
+    const withTeams = selectedGroup.filter((t) => t._count.megaschaakTeams > 0);
+    const pool = withTeams.length > 0 ? withTeams : selectedGroup;
+    pool.sort((a, b) => {
+      if (b._count.megaschaakTeams !== a._count.megaschaakTeams) {
+        return b._count.megaschaakTeams - a._count.megaschaakTeams;
+      }
+      return a.tournament_id - b.tournament_id;
+    });
+
+    const representativeId = pool[0]!.tournament_id;
+
+    return prisma.tournament.findUnique({
+      where: { tournament_id: representativeId },
+      include: activeMegaschaakTournamentInclude,
+    });
   } catch (error) {
     throw handleDBError(error);
   }
@@ -565,7 +631,6 @@ export const getAvailablePlayers = async () => {
     const allClassesTournaments = await prisma.tournament.findMany({
       where: {
         naam: activeTournament.naam,
-        finished: false,
       },
       include: {
         participations: {
@@ -642,10 +707,13 @@ export const getAvailablePlayers = async () => {
  */
 export const getUserTeams = async (userId: number, tournamentId: number) => {
   try {
+    const competitionTournamentIds =
+      await getMegaschaakCompetitionTournamentIds(tournamentId);
+
     const teams = await prisma.megaschaakTeam.findMany({
       where: {
         user_id: userId,
-        tournament_id: tournamentId,
+        tournament_id: { in: competitionTournamentIds },
       },
       include: {
         players: {
@@ -2113,7 +2181,6 @@ export const getCrossTableData = async (tournamentId: number) => {
     const allClassesTournaments = await prisma.tournament.findMany({
       where: {
         naam: tournament.naam,
-        finished: false,
       },
       include: {
         rounds: {
@@ -2152,9 +2219,12 @@ export const getCrossTableData = async (tournamentId: number) => {
     }
     const roundsSortedCross = getPlannedMegaschaakRounds(allClassesTournaments);
 
-    // Get all teams for this tournament
+    const competitionTournamentIds =
+      await getMegaschaakCompetitionTournamentIds(tournamentId);
+
+    // Get all teams for this competition (all classes)
     const teams = await prisma.megaschaakTeam.findMany({
-      where: { tournament_id: tournamentId },
+      where: { tournament_id: { in: competitionTournamentIds } },
       include: {
         user: {
           select: {
@@ -2444,7 +2514,6 @@ export const getTeamStandings = async (tournamentId: number) => {
     const allClassesTournaments = await prisma.tournament.findMany({
       where: {
         naam: tournament.naam,
-        finished: false,
       },
       include: {
         rounds: {
@@ -2482,9 +2551,12 @@ export const getTeamStandings = async (tournamentId: number) => {
       allClassesTournaments,
     );
 
-    // Get all teams for this tournament
+    const competitionTournamentIds =
+      await getMegaschaakCompetitionTournamentIds(tournamentId);
+
+    // Get all teams for this competition (all classes)
     const teams = await prisma.megaschaakTeam.findMany({
-      where: { tournament_id: tournamentId },
+      where: { tournament_id: { in: competitionTournamentIds } },
       include: {
         user: {
           select: {
@@ -3236,9 +3308,12 @@ export const getBestValuePlayers = async (tournamentId: number) => {
  */
 export const getAllTeamsForTournament = async (tournamentId: number) => {
   try {
+    const competitionTournamentIds =
+      await getMegaschaakCompetitionTournamentIds(tournamentId);
+
     const teams = await prisma.megaschaakTeam.findMany({
       where: {
-        tournament_id: tournamentId,
+        tournament_id: { in: competitionTournamentIds },
       },
       include: {
         user: {

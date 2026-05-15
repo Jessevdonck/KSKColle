@@ -103,18 +103,35 @@ export default function TournamentDetails() {
 
   const isLentecompetitie = tournament ? isLentecompetitieTieBreak(tournament) : false
 
-  // Fetch all active tournaments to find other classes
-  const { data: allTournaments = [] } = useSWR<Tournament[]>(
+  // Fetch active + archived tournaments so all classes remain visible after close
+  const { data: activeTournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
     () => getAll('tournament', { active: 'true', is_youth: 'false' }),
   )
 
+  const { data: inactiveTournaments = [] } = useSWR<Tournament[]>(
+    tournament?.naam ? 'tournament?active=false&is_youth=false' : null,
+    () => getAll('tournament', { active: 'false', is_youth: 'false' }),
+  )
+
+  const allTournamentsForClasses = React.useMemo(() => {
+    const byId = new Map<number, Tournament>()
+    for (const t of [...activeTournaments, ...inactiveTournaments]) {
+      byId.set(t.tournament_id, t)
+    }
+    return Array.from(byId.values())
+  }, [activeTournaments, inactiveTournaments])
+
   // Find all classes of this tournament (tournaments with same naam)
   const tournamentClasses = React.useMemo(() => {
-    if (!tournament || !allTournaments) return []
-    
-    const classes = allTournaments.filter(t => t.naam === tournament.naam)
-    
+    if (!tournament) return []
+
+    const classes = allTournamentsForClasses.filter(t => t.naam === tournament.naam)
+
+    if (!classes.some(t => t.tournament_id === tournament.tournament_id)) {
+      classes.push(tournament)
+    }
+
     // Custom sort order for class names
     const classOrder = [
       'Eerste Klasse',
@@ -149,7 +166,7 @@ export default function TournamentDetails() {
       // If neither is in the list, use alphabetical
       return a.class_name.localeCompare(b.class_name)
     })
-  }, [tournament, allTournaments])
+  }, [tournament, allTournamentsForClasses])
 
   const hasMultipleClasses = tournamentClasses.length > 1
 
@@ -584,6 +601,7 @@ export default function TournamentDetails() {
               tournamentId={selectedClassId} 
               tournamentName={tournament.naam}
               megaschaakDeadline={tournament.megaschaak_deadline}
+              tournamentFinished={tournament.finished}
             />
           </div>
         )}
@@ -595,6 +613,7 @@ export default function TournamentDetails() {
               tournamentId={selectedClassId} 
               tournamentName={tournament.naam}
               megaschaakDeadline={tournament.megaschaak_deadline}
+              tournamentFinished={tournament.finished}
             />
           </div>
         )}

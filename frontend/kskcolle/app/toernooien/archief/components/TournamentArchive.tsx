@@ -8,6 +8,47 @@ import { Archive, Trophy, Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+const CLASS_ORDER = [
+  "Eerste Klasse",
+  "Tweede Klasse",
+  "Derde Klasse",
+  "Vierde Klasse",
+  "Vijfde Klasse",
+  "Vierde en Vijfde Klasse",
+  "Zesde Klasse",
+  "Zevende Klasse",
+]
+
+function groupTournamentsByName<T extends { naam: string; class_name?: string | null; participations: unknown[]; rondes: number; tournament_id: number }>(
+  tournaments: T[],
+) {
+  const groups = new Map<string, T[]>()
+
+  tournaments.forEach((tournament) => {
+    const group = groups.get(tournament.naam) ?? []
+    group.push(tournament)
+    groups.set(tournament.naam, group)
+  })
+
+  return Array.from(groups.entries()).map(([name, groupTournaments]) => ({
+    name,
+    tournaments: groupTournaments.sort((a, b) => {
+      if (!a.class_name && !b.class_name) return 0
+      if (!a.class_name) return 1
+      if (!b.class_name) return -1
+
+      const aIndex = CLASS_ORDER.indexOf(a.class_name)
+      const bIndex = CLASS_ORDER.indexOf(b.class_name)
+
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+      if (aIndex !== -1) return -1
+      if (bIndex !== -1) return 1
+
+      return a.class_name.localeCompare(b.class_name)
+    }),
+  }))
+}
+
 export default function TournamentArchive() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -40,6 +81,29 @@ export default function TournamentArchive() {
       return nameMatch || locationMatch || descriptionMatch
     })
   }, [archivedTournaments, searchTerm])
+
+  const displayTournaments = useMemo(() => {
+    const grouped = groupTournamentsByName(filteredTournaments)
+
+    return grouped.map((group) => {
+      const firstTournament = group.tournaments[0]
+      const totalPlayers = group.tournaments.reduce((sum, t) => sum + t.participations.length, 0)
+      const maxRounds = Math.max(...group.tournaments.map((t) => t.rondes))
+
+      return {
+        ...firstTournament,
+        participations: Array.from({ length: totalPlayers }, (_, i) => ({
+          user_id: i,
+          voornaam: `Player ${i + 1}`,
+          achternaam: "",
+        })),
+        rondes: maxRounds,
+        _isMultiClass: group.tournaments.length > 1,
+        _classCount: group.tournaments.length,
+        _allTournamentIds: group.tournaments.map((t) => t.tournament_id),
+      }
+    })
+  }, [filteredTournaments])
 
   const clearSearch = () => {
     setSearchTerm("")
@@ -105,18 +169,18 @@ export default function TournamentArchive() {
               <p>Er is een fout opgetreden bij het laden van het archief</p>
             </div>
           </div>
-        ) : filteredTournaments && filteredTournaments.length > 0 ? (
+        ) : displayTournaments && displayTournaments.length > 0 ? (
           <>
             <div className="mb-8 text-center">
               <p className="text-lg text-[#2e2c2c]">
                 <Trophy className="inline mr-2 h-5 w-5 text-mainAccent" />
                 {searchTerm
-                  ? `${filteredTournaments.length} van ${archivedTournaments.length} toernooi${filteredTournaments.length !== 1 ? "en" : ""}`
-                  : `${archivedTournaments.length} afgelopen toernooi${archivedTournaments.length !== 1 ? "en" : ""}`}
+                  ? `${displayTournaments.length} van ${groupTournamentsByName(archivedTournaments).length} toernooi${displayTournaments.length !== 1 ? "en" : ""}`
+                  : `${displayTournaments.length} afgelopen toernooi${displayTournaments.length !== 1 ? "en" : ""}`}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredTournaments.map((tournament) => (
+              {displayTournaments.map((tournament) => (
                 <div key={tournament.tournament_id} className="relative">
                   <TournamentCard tournament={tournament} />
                   <div className="absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded-full text-xs font-semibold">

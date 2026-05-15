@@ -105,10 +105,12 @@ export default function MegaschaakPage() {
       DEFAULT_SWR_OPTIONS,
     );
 
-  // Check if registration is closed (must be before using it in other hooks)
-  const isRegistrationClosed = activeTournament?.megaschaak_deadline
-    ? isPast(new Date(activeTournament.megaschaak_deadline))
-    : false;
+  // Registration closed after deadline or when the competition is finished
+  const isRegistrationClosed =
+    activeTournament?.finished === true ||
+    (activeTournament?.megaschaak_deadline
+      ? isPast(new Date(activeTournament.megaschaak_deadline))
+      : false);
 
   // Reset to 'team' view if deadline hasn't passed and user tries to access other views
   React.useEffect(() => {
@@ -165,6 +167,25 @@ export default function MegaschaakPage() {
     },
     DEFAULT_SWR_OPTIONS,
   );
+
+  // After close: show standings when user has no teams (stand/crosstable remain visible)
+  React.useEffect(() => {
+    if (
+      isRegistrationClosed &&
+      !tournamentLoading &&
+      activeTournament &&
+      myTeams.length === 0 &&
+      activeView === "team"
+    ) {
+      setActiveView("standings");
+    }
+  }, [
+    isRegistrationClosed,
+    tournamentLoading,
+    activeTournament,
+    myTeams.length,
+    activeView,
+  ]);
 
   // Fetch standings (always fetch, even before deadline, to show scores)
   const {
@@ -591,10 +612,10 @@ export default function MegaschaakPage() {
               <Swords className="h-10 w-10 text-mainAccent" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-800 mb-3">
-              Geen Actief Megaschaak Toernooi
+              Geen Megaschaak Toernooi Gevonden
             </h2>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Er is momenteel geen megaschaak aan de gang.
+              Er is nog geen megaschaak-toernooi ingesteld.
             </p>
             <Link href="/toernooien">
               <Button className="bg-mainAccent hover:bg-mainAccentDark">
@@ -806,7 +827,7 @@ export default function MegaschaakPage() {
         ) : isRegistrationClosed && myTeams.length > 0 ? (
           // Show all teams when registration is closed
           <MyTeamsOverview myTeams={myTeams} standings={standings} />
-        ) : isRegistrationClosed && myTeams.length === 0 ? (
+        ) : isRegistrationClosed && myTeams.length === 0 && activeView === "team" ? (
           // No teams and registration closed
           <div className="space-y-6">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">

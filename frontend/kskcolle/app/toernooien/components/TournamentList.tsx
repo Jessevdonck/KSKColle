@@ -174,6 +174,27 @@ export default function TournamentList() {
     }))
   }
 
+  const toGroupedTournamentCards = (tournaments: Tournament[]) => {
+    return groupTournamentsByName(tournaments).map((group) => {
+      const firstTournament = group.tournaments[0]
+      const totalPlayers = group.tournaments.reduce((sum, t) => sum + t.participations.length, 0)
+      const maxRounds = Math.max(...group.tournaments.map((t) => t.rondes))
+
+      return {
+        ...firstTournament,
+        participations: Array.from({ length: totalPlayers }, (_, i) => ({
+          user_id: i,
+          voornaam: `Player ${i + 1}`,
+          achternaam: "",
+        })),
+        rondes: maxRounds,
+        _isMultiClass: group.tournaments.length > 1,
+        _classCount: group.tournaments.length,
+        _allTournamentIds: group.tournaments.map((t) => t.tournament_id),
+      }
+    })
+  }
+
   const categorizeTournaments = (tournaments: Tournament[]): CategorizedTournaments => {
     const categorized: CategorizedTournaments = {
       herfstcompetitie: [],
@@ -453,7 +474,7 @@ export default function TournamentList() {
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredArchiveTournaments.map(tournament => (
+                    {toGroupedTournamentCards(filteredArchiveTournaments).map(tournament => (
                       <TournamentCard key={tournament.tournament_id} tournament={tournament} />
                     ))}
                   </div>
@@ -535,7 +556,7 @@ export default function TournamentList() {
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredTournaments.map(tournament => (
+                    {toGroupedTournamentCards(filteredTournaments).map(tournament => (
                       <TournamentCard key={tournament.tournament_id} tournament={tournament} />
                     ))}
                   </div>
