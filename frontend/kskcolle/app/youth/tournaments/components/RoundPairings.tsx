@@ -6,6 +6,7 @@ import {
   pairingResultBadgeClass,
   pairingResultBadgeText,
 } from "@/lib/gameResultDisplay"
+import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 
 interface PlayerScore {
   user_id: number
@@ -295,8 +296,10 @@ function calculateStandingsBeforeRound(
       const isPlayed = effective && effective !== "..." && effective !== null
 
       if (isPlayed) {
-        gamesPlayed[p1]++
-        if (p2) gamesPlayed[p2]++
+        if (countsAsSpeeldagPartij(effective, p2)) {
+          gamesPlayed[p1]++
+          if (p2) gamesPlayed[p2]++
+        }
 
         if (effective === "1-0") {
           scoreMap[p1] += 1

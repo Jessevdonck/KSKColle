@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Medal, User, X, Calendar } from "lucide-react"
 import { useState } from "react"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
+import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import { isLentecompetitieTieBreak } from "./tieBreakLente"
 
 interface StandingsProps {
@@ -605,15 +606,12 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     sbSquaredMap[user.user_id] = 0
   })
 
-  // Helper: gespeelde partijen voor kolom Partijen
-  // Excludes: uitgesteld/niet gespeeld, inhaal-absenties en invalid "0-0"
-  // Includes ook forfaits: 1-0R, 0-1R
+  // Tie-break / Buchholz: forfaits tellen nog mee
   const isPlayedGame = (result: string | null): boolean => {
     if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
     if (result.startsWith("ABS-")) return false;
     if (result === "0.5-0") return false;
     if (result === "0-0") return false;
-    // Zelfde als RoundPairings / inhaaldag-stand: alle 1-0* en 0-1* (incl. forfait)
     if (result.startsWith("1-0") || result.startsWith("0-1")) return true;
     return (
       result === "½-½" ||
@@ -643,8 +641,7 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
         const isPlayed = eff && eff !== "..." && eff !== "uitgesteld" && eff !== null
 
         if (isPlayed) {
-          // Only count actual played games (not forfeits or absences) for gamesPlayed
-          if (isPlayedGame(eff)) {
+          if (countsAsSpeeldagPartij(eff, p2)) {
             gamesPlayed[p1]++
             if (p2) gamesPlayed[p2]++
           }

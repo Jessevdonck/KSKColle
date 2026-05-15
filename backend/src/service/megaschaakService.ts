@@ -1,4 +1,5 @@
 import { RoundType } from "@prisma/client";
+import { countsAsSpeeldagPartij } from "../core/countsAsSpeeldagPartij";
 import { prisma } from "./data";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
@@ -1628,7 +1629,7 @@ const calculateGameScore = (game: any, playerId: number): number => {
   return 0;
 };
 
-/** Whether a game counts as "played" (for games-played count); BYE en no-result tellen niet mee. Forfaits tellen wel mee. */
+/** Of de partij meetelt voor punten/score-resolutie (incl. forfait). */
 const isPlayedGame = (
   result: string | null,
   speler2_id: number | null,
@@ -1798,6 +1799,9 @@ function countMegaschaakGamesPlayedFromRoundResolution(
     if (requireResult && effectiveGame.result == null) {
       continue;
     }
+    if (!countsAsSpeeldagPartij(effectiveGame.result, effectiveGame.speler2_id)) {
+      continue;
+    }
     count += 1;
   }
   return count;
@@ -1810,7 +1814,7 @@ function isForfeitLossForPlayer(game: any, playerId: number): boolean {
 
   const raw = String(game.result ?? "").trim();
   const flat = raw.replace(/\s+/g, "").toUpperCase();
-  const hasForfeitMarker = flat.endsWith("R");
+  const hasForfeitMarker = flat.endsWith("R") || flat.includes("FF");
   if (!hasForfeitMarker) return false;
 
   const playerIsSpeler1 = game.speler1_id === playerId;

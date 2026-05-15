@@ -18,6 +18,7 @@ import { useAuth } from '../../contexts/auth'
 import Link from 'next/link'
 import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKeys"
 import { isDoubleForfeitResult } from "@/lib/gameResultDisplay"
+import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 
 /**
  * Overschrijft globale SWR-defaults (o.a. revalidateIfStale: false, lange deduping) voor deze pagina,
@@ -1256,8 +1257,10 @@ function calculateStandingsForMakeupDay(
       const isPlayed = result && result !== "..." && result !== "uitgesteld" && result !== null
       
       if (isPlayed) {
-        gamesPlayed[p1]++
-        if (p2) gamesPlayed[p2]++
+        if (countsAsSpeeldagPartij(result, p2)) {
+          gamesPlayed[p1]++
+          if (p2) gamesPlayed[p2]++
+        }
 
         if (result?.startsWith("1-0")) {
           scoreMap[p1] += 1

@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { GameWithRoundAndTournament } from "@/data/types"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
+import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import { Trophy, Target, TrendingUp, Calendar, Activity, ChevronLeft, ChevronRight } from "lucide-react"
 import {
   format,
@@ -113,6 +114,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
       { firstDate: Date; naam: string; ratingChange: number; partijen: number }
     >()
     for (const g of games) {
+      if (!countsAsSpeeldagPartij(g.result, g.speler2_id)) continue
       if (getOutcome(g, playerId) === null) continue
       const change = g.rating_change_in_tournament
       const round = g.round
@@ -178,6 +180,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
     })
 
     for (const g of filteredGames) {
+      if (!countsAsSpeeldagPartij(g.result, g.speler2_id)) continue
       const outcome = getOutcome(g, playerId)
       if (outcome === null) continue
       if (outcome === "win") wins++
