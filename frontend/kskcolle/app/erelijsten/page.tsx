@@ -4,34 +4,40 @@ import { Crown, Medal, Trophy } from "lucide-react"
 import { useEffect, useState } from "react"
 import * as XLSX from 'xlsx'
 import Link from 'next/link'
-import { getById } from "../api/index"
 
 // Helper function to create URL-friendly names
 const createUrlFriendlyName = (voornaam: string, achternaam: string): string => {
   return `${voornaam}_${achternaam}`.replace(/\s+/g, '_')
 }
 
-// Helper function to create clickable name links with ELO rating
-const createClickableName = (name: string, eloRating?: number | null) => {
-  if (!name || name.trim() === '' || name === '-') {
-    return <span className="text-gray-500">{name || '-'}</span>
+/** Strip trailing ELO suffix from Excel cells, e.g. "Jan Janssen (2150)" → "Jan Janssen" */
+const cleanPlayerName = (name: string): string => {
+  if (!name || typeof name !== 'string') return name
+  return name.trim().replace(/\s*\(\d{3,4}\)\s*$/, '')
+}
+
+const cellName = (value: unknown): string => {
+  if (typeof value !== 'string' || !value.trim()) return ''
+  return cleanPlayerName(value)
+}
+
+const createClickableName = (name: string) => {
+  const displayName = cleanPlayerName(name)
+  if (!displayName || displayName === '-') {
+    return <span className="text-gray-500">{displayName || '-'}</span>
   }
-  
-  // Split name into first and last name
-  const nameParts = name.trim().split(' ')
+
+  const nameParts = displayName.split(' ')
   if (nameParts.length < 2) {
-    return <span className="text-gray-700">{name}</span>
+    return <span className="text-gray-700">{displayName}</span>
   }
-  
+
   const voornaam = nameParts[0]
   const achternaam = nameParts.slice(1).join(' ')
   const profileUrl = `/profile/${createUrlFriendlyName(voornaam, achternaam)}`
-  
-  // Create display name with ELO rating if available
-  const displayName = eloRating ? `${name} (${eloRating})` : name
-  
+
   return (
-    <Link 
+    <Link
       href={profileUrl}
       className="text-gray-900 hover:text-mainAccent hover:underline transition-colors cursor-pointer"
     >
@@ -118,52 +124,12 @@ export default function ErelijstenPage() {
   const [selectedTournament, setSelectedTournament] = useState<string>("")
   const [loading, setLoading] = useState(false)
   const [currentFormat, setCurrentFormat] = useState<'simple' | 'klasses' | 'zomer' | 'quiz' | 'konijn' | 'megalijst' | 'ranking' | 'records'>('simple')
-  const [eloRatings, setEloRatings] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (selectedTournament) {
       loadExcelData(selectedTournament)
     }
   }, [selectedTournament])
-
-  // Test function to check if files are accessible
-  useEffect(() => {
-    const testFileAccess = async () => {
-      try {
-        const response = await fetch('/data/erelijsten/herfst.xlsx')
-      } catch (error) {
-      }
-    }
-    testFileAccess()
-  }, [])
-
-  // Function to fetch ELO ratings for a list of player names
-  const fetchEloRatings = async (playerNames: string[]) => {
-    const ratings: Record<string, number> = {}
-    
-    for (const name of playerNames) {
-      if (!name || name.trim() === '' || name === '-') continue
-      
-      // Split name into first and last name
-      const nameParts = name.trim().split(' ')
-      if (nameParts.length < 2) continue
-      
-      const voornaam = nameParts[0]
-      const achternaam = nameParts.slice(1).join(' ')
-      
-      try {
-        const user = await getById(`users/by-name/public?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`)
-        if (user && user.schaakrating_elo) {
-          ratings[name] = user.schaakrating_elo
-        }
-      } catch (error) {
-        // Player not found or other error, continue without ELO rating
-        console.log(`Could not fetch ELO for ${name}:`, error)
-      }
-    }
-    
-    return ratings
-  }
 
   const loadExcelData = async (tournamentName: string) => {
     setLoading(true)
@@ -200,7 +166,6 @@ export default function ErelijstenPage() {
         setRankingResults([]) // Clear ranking results
         setRecordResults([]) // Clear record results
         setRawData([]) // Clear raw data
-        setEloRatings({}) // Clear ELO ratings
       } else if (tournament.format === 'konijn') {
         // Process konijn format
         const processedKonijnResults = processKonijnData(jsonData)
@@ -212,11 +177,6 @@ export default function ErelijstenPage() {
         setRankingResults([]) // Clear ranking results
         setRecordResults([]) // Clear record results
         setRawData([]) // Clear raw data
-        
-        // Fetch ELO ratings for all player names in the konijn results
-        const allPlayerNames = processedKonijnResults.map(r => r.winnaar).filter(Boolean)
-        const ratings = await fetchEloRatings(allPlayerNames)
-        setEloRatings(ratings)
       } else if (tournament.format === 'megalijst') {
         // Process megalijst format
         const processedMegalijstResults = processMegalijstData(jsonData)
@@ -228,11 +188,6 @@ export default function ErelijstenPage() {
         setRankingResults([]) // Clear ranking results
         setRecordResults([]) // Clear record results
         setRawData([]) // Clear raw data
-        
-        // Fetch ELO ratings for all player names in the megalijst results
-        const allPlayerNames = processedMegalijstResults.flatMap(r => [r.eerste, r.tweede, r.derde]).filter(Boolean)
-        const ratings = await fetchEloRatings(allPlayerNames)
-        setEloRatings(ratings)
       } else if (tournament.format === 'ranking') {
         // Process ranking format
         const processedRankingResults = processRankingData(jsonData)
@@ -244,11 +199,6 @@ export default function ErelijstenPage() {
         setMegalijstResults([]) // Clear megalijst results
         setRecordResults([]) // Clear record results
         setRawData([]) // Clear raw data
-        
-        // Fetch ELO ratings for all player names in the ranking results
-        const allPlayerNames = processedRankingResults.map(r => r.speler).filter(Boolean)
-        const ratings = await fetchEloRatings(allPlayerNames)
-        setEloRatings(ratings)
       } else if (tournament.format === 'records') {
         // Process records format
         const processedRecordResults = processRecordsData(jsonData)
@@ -260,13 +210,6 @@ export default function ErelijstenPage() {
         setMegalijstResults([]) // Clear megalijst results
         setRankingResults([]) // Clear ranking results
         setRawData([]) // Clear raw data
-        
-        // Fetch ELO ratings for all player names in the record results
-        const allPlayerNames = processedRecordResults.flatMap(record => 
-          record.entries.map(entry => entry.winnaar)
-        ).filter(Boolean)
-        const ratings = await fetchEloRatings(allPlayerNames)
-        setEloRatings(ratings)
       } else if (tournament.format === 'klasses') {
         // Process klasses format - check if it's snelschaak or lentekampioenschap
         let processedKlasseResults
@@ -278,24 +221,12 @@ export default function ErelijstenPage() {
         setKlasseResults(processedKlasseResults)
         setRawData([]) // Clear raw data
         setResults([]) // Clear simple results
-        
-        // Fetch ELO ratings for all player names in the klasse results
-        const allPlayerNames = processedKlasseResults.flatMap(yearData => 
-          yearData.klasses.flatMap(klasse => [klasse.eerste, klasse.tweede, klasse.derde])
-        ).filter(Boolean)
-        const ratings = await fetchEloRatings(allPlayerNames)
-        setEloRatings(ratings)
       } else if (tournament.format === 'zomer') {
         // Process zomer format
         const processedZomerResults = processZomerData(jsonData)
         setResults(processedZomerResults)
         setKlasseResults([]) // Clear klasse results
         setRawData([]) // Clear raw data
-        
-        // Fetch ELO ratings for all player names in the zomer results
-        const allPlayerNames = processedZomerResults.map(r => r.eerste).filter(Boolean)
-        const ratings = await fetchEloRatings(allPlayerNames)
-        setEloRatings(ratings)
       } else {
         // Process simple format
         const dataRows = jsonData.slice(2) // Skip first two rows (headers)
@@ -315,26 +246,20 @@ export default function ErelijstenPage() {
           
           processedResults.push({
             jaar: jaar,
-            eerste: row[2] || '',
-            tweede: row[4] || '',
-            derde: row[6] || '',
-            ratingprijs: row[8] || ''
+            eerste: cellName(row[2]),
+            tweede: cellName(row[4]),
+            derde: cellName(row[6]),
+            ratingprijs: cellName(row[8])
           })
         }
         
         setResults(processedResults)
         setKlasseResults([]) // Clear klasse results
-        
-        // Fetch ELO ratings for all player names in the results
-        const allPlayerNames = processedResults.flatMap(r => [r.eerste, r.tweede, r.derde, r.ratingprijs]).filter(Boolean)
-        const ratings = await fetchEloRatings(allPlayerNames)
-        setEloRatings(ratings)
       }
     } catch (error) {
       console.error('Error loading Excel data:', error)
       setResults([]) // Set empty results on error
       setKlasseResults([])
-      setEloRatings({})
     } finally {
       setLoading(false)
     }
@@ -383,18 +308,18 @@ export default function ErelijstenPage() {
           let derde = ''
           
           // Row 0: 1st places (names are in the name columns)
-          if (yearData[0] && yearData[0][nameColIndex] && typeof yearData[0][nameColIndex] === 'string') {
-            eerste = yearData[0][nameColIndex]
+          if (yearData[0] && yearData[0][nameColIndex]) {
+            eerste = cellName(yearData[0][nameColIndex])
           }
           
           // Row 1: 2nd places (names are in the name columns)
-          if (yearData[1] && yearData[1][nameColIndex] && typeof yearData[1][nameColIndex] === 'string') {
-            tweede = yearData[1][nameColIndex]
+          if (yearData[1] && yearData[1][nameColIndex]) {
+            tweede = cellName(yearData[1][nameColIndex])
           }
           
           // Row 2: 3rd places (names are in the name columns)
-          if (yearData[2] && yearData[2][nameColIndex] && typeof yearData[2][nameColIndex] === 'string') {
-            derde = yearData[2][nameColIndex]
+          if (yearData[2] && yearData[2][nameColIndex]) {
+            derde = cellName(yearData[2][nameColIndex])
           }
           
           // Only add klasse if it has any data
@@ -442,10 +367,11 @@ export default function ErelijstenPage() {
         const winnaar = row[1]
         
         
-        if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100 && winnaar && winnaar !== '') {
+        const cleanedWinnaar = cellName(winnaar)
+        if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100 && cleanedWinnaar) {
           results.push({
             jaar: jaar,
-            eerste: winnaar,
+            eerste: cleanedWinnaar,
             tweede: '',
             derde: '',
             ratingprijs: ''
@@ -459,10 +385,11 @@ export default function ErelijstenPage() {
         const winnaar = row[4]
         
         
-        if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100 && winnaar && winnaar !== '') {
+        const cleanedWinnaar = cellName(winnaar)
+        if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100 && cleanedWinnaar) {
           results.push({
             jaar: jaar,
-            eerste: winnaar,
+            eerste: cleanedWinnaar,
             tweede: '',
             derde: '',
             ratingprijs: ''
@@ -503,10 +430,10 @@ export default function ErelijstenPage() {
         
         for (let k = 0; k < klasseColumns.length; k++) {
           const klasseColIndex = klasseColumns[k]
-          const winnaar = row[klasseColIndex]
+          const winnaar = cellName(row[klasseColIndex])
           
           
-          if (winnaar && winnaar !== '') {
+          if (winnaar) {
             klasses.push({
               klasse: klasseNames[k],
               eerste: winnaar,
@@ -576,7 +503,7 @@ export default function ErelijstenPage() {
       // Check if this row has a year in the first column
       const jaar = row[0]
       if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100) {
-        const winnaar = row[1] || ''
+        const winnaar = cellName(row[1])
         
         
         if (winnaar) {
@@ -608,9 +535,9 @@ export default function ErelijstenPage() {
       if (typeof jaar === 'number' && jaar > 1900 && jaar < 2100) {
         // Kolommen: Jaar, /, Eerste Plaats, /, Tweede Plaats, /, Derde Plaats
         // Dus indices: 0, 1, 2, 3, 4, 5, 6
-        const eerste = row[2] || '' // Kolom 2: Eerste Plaats
-        const tweede = row[4] || '' // Kolom 4: Tweede Plaats  
-        const derde = row[6] || ''  // Kolom 6: Derde Plaats
+        const eerste = cellName(row[2])
+        const tweede = cellName(row[4])
+        const derde = cellName(row[6])
         
         
         if (eerste || tweede || derde) {
@@ -665,9 +592,9 @@ export default function ErelijstenPage() {
         if (!row || row.length === 0) continue
         
         // Check if this row has a speler name for this klasse
-        const speler = row[config.spelerCol]
+        const speler = cellName(row[config.spelerCol])
         
-        if (typeof speler === 'string' && speler.trim() !== '') {
+        if (speler) {
           const eerste = row[config.eersteCol] || 0 // Aantal 1ste plaatsen
           const tweede = row[config.tweedeCol] || 0 // Aantal 2de plaatsen
           const derde = row[config.derdeCol] || 0  // Aantal 3de plaatsen
@@ -743,7 +670,7 @@ export default function ErelijstenPage() {
           if (isValidYear && isValidWinner) {
             currentSection.entries.push({
               jaar: yearValue,
-              winnaar: winnaar.trim()
+              winnaar: cellName(winnaar)
             })
           }
         }
@@ -764,7 +691,7 @@ export default function ErelijstenPage() {
                 if (!alreadyExists) {
                   currentSection.entries.push({
                     jaar: cellValue,
-                    winnaar: nextCell.trim()
+                    winnaar: cellName(nextCell)
                   })
                 }
               }
@@ -808,26 +735,6 @@ export default function ErelijstenPage() {
     const totalB = b[1].goud + b[1].zilver + b[1].brons + b[1].ratingprijs
     return totalB - totalA
   })
-
-  // Fetch ELO ratings for multiple winners if not already loaded
-  useEffect(() => {
-    const fetchMultipleWinnersElo = async () => {
-      if (spelersGesorteerd.length > 0 && Object.keys(eloRatings).length === 0) {
-        const multipleWinners = spelersGesorteerd
-          .filter(([_, telling]) => (telling.goud + telling.zilver + telling.brons) >= 2)
-          .map(([speler, _]) => speler)
-        
-        if (multipleWinners.length > 0) {
-          const ratings = await fetchEloRatings(multipleWinners)
-          setEloRatings(prev => ({ ...prev, ...ratings }))
-        }
-      }
-    }
-    
-    fetchMultipleWinnersElo()
-  }, [spelersGesorteerd])
-
-  // Remove the initial loading screen
 
   return (
     <main className="container mx-auto px-4 py-6">
@@ -922,7 +829,7 @@ export default function ErelijstenPage() {
                   {konijnResults.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.winnaar || "-", r.winnaar ? eloRatings[r.winnaar] : null)}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.winnaar || "-")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -944,9 +851,9 @@ export default function ErelijstenPage() {
                   {megalijstResults.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-", r.eerste ? eloRatings[r.eerste] : null)}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-", r.tweede ? eloRatings[r.tweede] : null)}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-", r.derde ? eloRatings[r.derde] : null)}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -990,7 +897,7 @@ export default function ErelijstenPage() {
                             const klasseData = r.klasses[klasseIndex]
                             return (
                               <tr key={index} className="even:bg-neutral-50">
-                                <td className="p-2 border font-medium">{createClickableName(r.speler, eloRatings[r.speler])}</td>
+                                <td className="p-2 border font-medium">{createClickableName(r.speler)}</td>
                                 <td className="p-2 border text-center">
                                   <span className="text-green-600 font-semibold">{klasseData.eerste}</span>
                                 </td>
@@ -1031,7 +938,7 @@ export default function ErelijstenPage() {
                           .map((entry, entryIndex) => (
                             <tr key={entryIndex} className="even:bg-neutral-50">
                               <td className="p-2 border font-medium">{entry.jaar}</td>
-                                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(entry.winnaar, eloRatings[entry.winnaar])}</td>
+                                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(entry.winnaar)}</td>
                             </tr>
                           ))}
                       </tbody>
@@ -1062,9 +969,9 @@ export default function ErelijstenPage() {
                         {yearData.klasses.map((klasse, klasseIndex) => (
                           <tr key={klasseIndex} className={klasseIndex % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                             <td className="p-3 border-r border-gray-300 font-medium">{klasse.klasse}</td>
-                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.eerste || "-", klasse.eerste ? eloRatings[klasse.eerste] : null)}</td>
-                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.tweede || "-", klasse.tweede ? eloRatings[klasse.tweede] : null)}</td>
-                            <td className="p-3 text-center">{createClickableName(klasse.derde || "-", klasse.derde ? eloRatings[klasse.derde] : null)}</td>
+                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.eerste || "-")}</td>
+                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.tweede || "-")}</td>
+                            <td className="p-3 text-center">{createClickableName(klasse.derde || "-")}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1087,7 +994,7 @@ export default function ErelijstenPage() {
                   {results.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-", r.eerste ? eloRatings[r.eerste] : null)}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1111,10 +1018,10 @@ export default function ErelijstenPage() {
                   {results.map((r, index) => (
                     <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-", r.eerste ? eloRatings[r.eerste] : null)}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-", r.tweede ? eloRatings[r.tweede] : null)}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-", r.derde ? eloRatings[r.derde] : null)}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.ratingprijs || "-", r.ratingprijs ? eloRatings[r.ratingprijs] : null)}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-")}</td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.ratingprijs || "-")}</td>
               </tr>
             ))}
           </tbody>
@@ -1145,7 +1052,7 @@ export default function ErelijstenPage() {
                 )
                 .map(([speler, telling]) => (
                 <tr key={speler} className="even:bg-neutral-50">
-                    <td className="p-2 border">{createClickableName(speler, eloRatings[speler])}</td>
+                    <td className="p-2 border">{createClickableName(speler)}</td>
                     <td className="p-2 border">{telling.goud}</td>
                     <td className="p-2 border">{telling.zilver}</td>
                     <td className="p-2 border">{telling.brons}</td>
