@@ -18,6 +18,16 @@ const getActiveTournament = async (ctx: KoaContext) => {
 };
 
 /**
+ * @api {get} /megaschaak/archive List all megaschaak competitions (for archive picker)
+ * @apiName GetMegaschaakArchive
+ * @apiGroup Megaschaak
+ */
+const getArchive = async (ctx: KoaContext) => {
+  const items = await megaschaakService.getMegaschaakArchive();
+  ctx.body = { items };
+};
+
+/**
  * @api {get} /megaschaak/players Get all available players with costs
  * @apiName GetAvailablePlayers
  * @apiGroup Megaschaak
@@ -403,6 +413,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
 
   // Public routes (read-only, no authentication required)
   router.get('/active-tournament', getActiveTournament);
+  router.get('/archive', getArchive);
   router.get('/players', getAvailablePlayers);
   router.get('/tournament/:tournamentId/standings', validate(getTeamStandings.validationScheme), getTeamStandings);
   router.get('/tournament/:tournamentId/crosstable', validate(getCrossTable.validationScheme), getCrossTable);

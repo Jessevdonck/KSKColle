@@ -529,6 +529,76 @@ const activeMegaschaakTournamentInclude = {
   },
 } as const;
 
+type MegaschaakCompetitionCandidate = {
+  tournament_id: number;
+  naam: string;
+  finished: boolean;
+  megaschaak_deadline: Date | null;
+  _count: { megaschaakTeams: number };
+};
+
+type MegaschaakCompetitionGroup = {
+  naam: string;
+  representativeId: number;
+  finished: boolean;
+  megaschaak_deadline: Date | null;
+  teamCount: number;
+  maxTournamentId: number;
+};
+
+function buildMegaschaakCompetitionGroups(
+  candidates: MegaschaakCompetitionCandidate[],
+): MegaschaakCompetitionGroup[] {
+  const byNaam = new Map<string, MegaschaakCompetitionCandidate[]>();
+  for (const t of candidates) {
+    const group = byNaam.get(t.naam) ?? [];
+    group.push(t);
+    byNaam.set(t.naam, group);
+  }
+
+  const groups: MegaschaakCompetitionGroup[] = [];
+  for (const [naam, group] of byNaam) {
+    const withTeams = group.filter((t) => t._count.megaschaakTeams > 0);
+    const pool = withTeams.length > 0 ? withTeams : group;
+    pool.sort((a, b) => {
+      if (b._count.megaschaakTeams !== a._count.megaschaakTeams) {
+        return b._count.megaschaakTeams - a._count.megaschaakTeams;
+      }
+      return a.tournament_id - b.tournament_id;
+    });
+    const rep = pool[0]!;
+    groups.push({
+      naam,
+      representativeId: rep.tournament_id,
+      finished: group.every((t) => t.finished),
+      megaschaak_deadline: rep.megaschaak_deadline,
+      teamCount: group.reduce((sum, t) => sum + t._count.megaschaakTeams, 0),
+      maxTournamentId: Math.max(...group.map((t) => t.tournament_id)),
+    });
+  }
+
+  return groups.sort((a, b) => b.maxTournamentId - a.maxTournamentId);
+}
+
+function pickCurrentMegaschaakGroup(
+  groups: MegaschaakCompetitionGroup[],
+): MegaschaakCompetitionGroup | null {
+  if (groups.length === 0) return null;
+
+  let selected = groups[0]!;
+  for (const group of groups) {
+    if (!group.finished && selected.finished) {
+      selected = group;
+      continue;
+    }
+    if (group.finished && !selected.finished) continue;
+    if (group.maxTournamentId > selected.maxTournamentId) {
+      selected = group;
+    }
+  }
+  return selected;
+}
+
 /** All tournament_ids for the same competition (all classes share megaschaak teams). */
 async function getMegaschaakCompetitionTournamentIds(
   tournamentId: number,
@@ -551,63 +621,56 @@ async function getMegaschaakCompetitionTournamentIds(
  * Get the megaschaak tournament to display: prefer an ongoing one, otherwise the most recent (even if finished).
  * Returns the class row that holds megaschaak teams when possible (teams are shared across classes via naam).
  */
+async function loadMegaschaakCompetitionCandidates() {
+  return prisma.tournament.findMany({
+    where: { megaschaak_enabled: true },
+    select: {
+      tournament_id: true,
+      naam: true,
+      finished: true,
+      megaschaak_deadline: true,
+      _count: { select: { megaschaakTeams: true } },
+    },
+    orderBy: { tournament_id: "desc" },
+  });
+}
+
 export const getActiveMegaschaakTournament = async () => {
   try {
-    const candidates = await prisma.tournament.findMany({
-      where: { megaschaak_enabled: true },
-      select: {
-        tournament_id: true,
-        naam: true,
-        finished: true,
-        _count: { select: { megaschaakTeams: true } },
-      },
-      orderBy: { tournament_id: "desc" },
-    });
-
+    const candidates = await loadMegaschaakCompetitionCandidates();
     if (candidates.length === 0) return null;
 
-    const groups = new Map<string, typeof candidates>();
-    for (const t of candidates) {
-      const group = groups.get(t.naam) ?? [];
-      group.push(t);
-      groups.set(t.naam, group);
-    }
-
-    let selectedGroup: typeof candidates = [];
-    for (const group of groups.values()) {
-      if (selectedGroup.length === 0) {
-        selectedGroup = group;
-        continue;
-      }
-      const groupUnfinished = group.some((t) => !t.finished);
-      const selectedUnfinished = selectedGroup.some((t) => !t.finished);
-      if (groupUnfinished && !selectedUnfinished) {
-        selectedGroup = group;
-        continue;
-      }
-      if (!groupUnfinished && selectedUnfinished) continue;
-      const groupMaxId = Math.max(...group.map((t) => t.tournament_id));
-      const selectedMaxId = Math.max(
-        ...selectedGroup.map((t) => t.tournament_id),
-      );
-      if (groupMaxId > selectedMaxId) selectedGroup = group;
-    }
-
-    const withTeams = selectedGroup.filter((t) => t._count.megaschaakTeams > 0);
-    const pool = withTeams.length > 0 ? withTeams : selectedGroup;
-    pool.sort((a, b) => {
-      if (b._count.megaschaakTeams !== a._count.megaschaakTeams) {
-        return b._count.megaschaakTeams - a._count.megaschaakTeams;
-      }
-      return a.tournament_id - b.tournament_id;
-    });
-
-    const representativeId = pool[0]!.tournament_id;
+    const groups = buildMegaschaakCompetitionGroups(candidates);
+    const current = pickCurrentMegaschaakGroup(groups);
+    if (!current) return null;
 
     return prisma.tournament.findUnique({
-      where: { tournament_id: representativeId },
+      where: { tournament_id: current.representativeId },
       include: activeMegaschaakTournamentInclude,
     });
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
+/** All megaschaak competitions (one entry per toernooi-naam), newest first. */
+export const getMegaschaakArchive = async () => {
+  try {
+    const candidates = await loadMegaschaakCompetitionCandidates();
+    if (candidates.length === 0) return [];
+
+    const groups = buildMegaschaakCompetitionGroups(candidates);
+    const current = pickCurrentMegaschaakGroup(groups);
+    const currentNaam = current?.naam ?? null;
+
+    return groups.map((g) => ({
+      tournament_id: g.representativeId,
+      naam: g.naam,
+      finished: g.finished,
+      megaschaak_deadline: g.megaschaak_deadline,
+      team_count: g.teamCount,
+      is_current: g.naam === currentNaam,
+    }));
   } catch (error) {
     throw handleDBError(error);
   }

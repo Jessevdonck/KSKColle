@@ -26,6 +26,7 @@ import {
   Zap,
   HelpCircle,
   UserPlus,
+  Archive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,9 @@ import Link from "next/link";
 import { format, isPast } from "date-fns";
 import { useAuth } from "../../contexts/auth";
 import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig";
+import MegaschaakHeader, {
+  type MegaschaakArchiveItem as MegaschaakArchiveEntry,
+} from "./MegaschaakHeader";
 
 const MIN_PLAYERS = 10;
 const MAX_PLAYERS = 11;
@@ -93,6 +97,9 @@ export default function MegaschaakPage() {
   const [currentEditingTeam, setCurrentEditingTeam] =
     useState<MegaschaakTeam | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [selectedArchiveId, setSelectedArchiveId] = useState<number | null>(
+    null,
+  );
 
   // Fetch active megaschaak tournament
   const { data: activeTournament, isLoading: tournamentLoading } =
@@ -105,11 +112,42 @@ export default function MegaschaakPage() {
       DEFAULT_SWR_OPTIONS,
     );
 
-  // Registration closed after deadline or when the competition is finished
+  const { data: archiveList = [] } = useSWR<MegaschaakArchiveEntry[]>(
+    "megaschaak/archive",
+    async () => {
+      const response = await axios.get("/megaschaak/archive");
+      return response.data.items ?? [];
+    },
+    DEFAULT_SWR_OPTIONS,
+  );
+
+  const displayTournament = React.useMemo((): Toernooi | null => {
+    if (!activeTournament) return null;
+    if (selectedArchiveId === null) return activeTournament;
+    const archived = archiveList.find(
+      (item) => item.tournament_id === selectedArchiveId,
+    );
+    if (!archived) return activeTournament;
+    return {
+      ...activeTournament,
+      tournament_id: archived.tournament_id,
+      naam: archived.naam,
+      finished: archived.finished,
+      megaschaak_deadline: archived.megaschaak_deadline,
+    };
+  }, [activeTournament, selectedArchiveId, archiveList]);
+
+  const isViewingArchive =
+    selectedArchiveId !== null &&
+    archiveList.find((item) => item.tournament_id === selectedArchiveId)
+      ?.is_current !== true;
+
+  // Registration closed after deadline, when finished, or when viewing archive
   const isRegistrationClosed =
-    activeTournament?.finished === true ||
-    (activeTournament?.megaschaak_deadline
-      ? isPast(new Date(activeTournament.megaschaak_deadline))
+    isViewingArchive ||
+    displayTournament?.finished === true ||
+    (displayTournament?.megaschaak_deadline
+      ? isPast(new Date(displayTournament.megaschaak_deadline))
       : false);
 
   // Reset to 'team' view if deadline hasn't passed and user tries to access other views
@@ -125,7 +163,9 @@ export default function MegaschaakPage() {
     isLoading: playersLoading,
     mutate: mutatePlayers,
   } = useSWR<MegaschaakPlayer[]>(
-    activeTournament ? "megaschaak/players" : null,
+    displayTournament && !isViewingArchive && !isRegistrationClosed
+      ? "megaschaak/players"
+      : null,
     async () => {
       const response = await axios.get("/megaschaak/players");
       return response.data.items;
@@ -150,14 +190,14 @@ export default function MegaschaakPage() {
 
   // Fetch user's teams for this tournament (only if authenticated)
   const { data: myTeams = [], mutate: mutateTeams } = useSWR<MegaschaakTeam[]>(
-    activeTournament && isAuthed
-      ? `megaschaak/tournament/${activeTournament.tournament_id}/my-teams`
+    displayTournament && isAuthed
+      ? `megaschaak/tournament/${displayTournament.tournament_id}/my-teams`
       : null,
     async () => {
-      if (!activeTournament) return [];
+      if (!displayTournament) return [];
       try {
         const response = await axios.get(
-          `/megaschaak/tournament/${activeTournament.tournament_id}/my-teams`,
+          `/megaschaak/tournament/${displayTournament.tournament_id}/my-teams`,
         );
         return response.data.items;
       } catch (error) {
@@ -173,7 +213,7 @@ export default function MegaschaakPage() {
     if (
       isRegistrationClosed &&
       !tournamentLoading &&
-      activeTournament &&
+      displayTournament &&
       myTeams.length === 0 &&
       activeView === "team"
     ) {
@@ -182,7 +222,7 @@ export default function MegaschaakPage() {
   }, [
     isRegistrationClosed,
     tournamentLoading,
-    activeTournament,
+    displayTournament,
     myTeams.length,
     activeView,
   ]);
@@ -193,13 +233,13 @@ export default function MegaschaakPage() {
     isLoading: standingsLoading,
     mutate: mutateStandings,
   } = useSWR<any[]>(
-    activeTournament
-      ? `megaschaak/tournament/${activeTournament.tournament_id}/standings`
+    displayTournament
+      ? `megaschaak/tournament/${displayTournament.tournament_id}/standings`
       : null,
     async () => {
-      if (!activeTournament) return [];
+      if (!displayTournament) return [];
       const response = await axios.get(
-        `/megaschaak/tournament/${activeTournament.tournament_id}/standings`,
+        `/megaschaak/tournament/${displayTournament.tournament_id}/standings`,
       );
       return response.data.items;
     },
@@ -212,13 +252,13 @@ export default function MegaschaakPage() {
     isLoading: crossTableLoading,
     mutate: mutateCrossTable,
   } = useSWR<any>(
-    activeTournament && isRegistrationClosed
-      ? `megaschaak/tournament/${activeTournament.tournament_id}/crosstable`
+    displayTournament && isRegistrationClosed
+      ? `megaschaak/tournament/${displayTournament.tournament_id}/crosstable`
       : null,
     async () => {
-      if (!activeTournament) return null;
+      if (!displayTournament) return null;
       const response = await axios.get(
-        `/megaschaak/tournament/${activeTournament.tournament_id}/crosstable`,
+        `/megaschaak/tournament/${displayTournament.tournament_id}/crosstable`,
       );
       return response.data;
     },
@@ -231,13 +271,13 @@ export default function MegaschaakPage() {
     isLoading: popularPlayersLoading,
     mutate: mutatePopularPlayers,
   } = useSWR<any>(
-    activeTournament && isRegistrationClosed
-      ? `megaschaak/tournament/${activeTournament.tournament_id}/popular-players`
+    displayTournament && isRegistrationClosed
+      ? `megaschaak/tournament/${displayTournament.tournament_id}/popular-players`
       : null,
     async () => {
-      if (!activeTournament) return null;
+      if (!displayTournament) return null;
       const response = await axios.get(
-        `/megaschaak/tournament/${activeTournament.tournament_id}/popular-players`,
+        `/megaschaak/tournament/${displayTournament.tournament_id}/popular-players`,
       );
       return response.data;
     },
@@ -250,13 +290,13 @@ export default function MegaschaakPage() {
     isLoading: valuePlayersLoading,
     mutate: mutateValuePlayers,
   } = useSWR<any>(
-    activeTournament && isRegistrationClosed
-      ? `megaschaak/tournament/${activeTournament.tournament_id}/value-players`
+    displayTournament && isRegistrationClosed
+      ? `megaschaak/tournament/${displayTournament.tournament_id}/value-players`
       : null,
     async () => {
-      if (!activeTournament) return null;
+      if (!displayTournament) return null;
       const response = await axios.get(
-        `/megaschaak/tournament/${activeTournament.tournament_id}/value-players`,
+        `/megaschaak/tournament/${displayTournament.tournament_id}/value-players`,
       );
       return response.data;
     },
@@ -405,7 +445,7 @@ export default function MegaschaakPage() {
   };
 
   const handleSaveTeam = async () => {
-    if (!activeTournament) return;
+    if (!displayTournament || isViewingArchive) return;
 
     if (selectedPlayers.length < MIN_PLAYERS || selectedPlayers.length > MAX_PLAYERS) {
       toast({
@@ -441,7 +481,7 @@ export default function MegaschaakPage() {
       } else {
         // Create new team
         await axios.post(
-          `/megaschaak/tournament/${activeTournament.tournament_id}/team`,
+          `/megaschaak/tournament/${displayTournament.tournament_id}/team`,
           {
             playerIds: selectedPlayers.map((p) => p.user_id),
             teamName: teamName,
@@ -588,7 +628,7 @@ export default function MegaschaakPage() {
   }
 
   // No active tournament
-  if (!activeTournament) {
+  if (!displayTournament) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
         <div className="bg-white shadow-sm border-b border-neutral-200">
@@ -629,7 +669,10 @@ export default function MegaschaakPage() {
     );
   }
 
-  if (playersLoading) {
+  const needsPlayerList =
+    displayTournament && !isViewingArchive && !isRegistrationClosed;
+
+  if (playersLoading && needsPlayerList) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
         <div className="bg-white shadow-sm border-b border-neutral-200">
@@ -642,7 +685,7 @@ export default function MegaschaakPage() {
                 <h1 className="text-3xl font-bold text-textColor">
                   Megaschaak
                 </h1>
-                <p className="text-gray-600 mt-1">{activeTournament.naam}</p>
+                <p className="text-gray-600 mt-1">{displayTournament.naam}</p>
               </div>
             </div>
           </div>
@@ -662,19 +705,37 @@ export default function MegaschaakPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-mainAccent/10 p-3 rounded-xl">
-              <Swords className="h-8 w-8 text-mainAccent" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-textColor">Megaschaak</h1>
-              <p className="text-gray-600 mt-1">{activeTournament.naam}</p>
-            </div>
-          </div>
+          <MegaschaakHeader
+            tournamentName={displayTournament.naam}
+            archiveList={archiveList}
+            selectedArchiveId={selectedArchiveId}
+            currentTournamentId={displayTournament.tournament_id}
+            onSelectArchive={(id) => {
+              const currentItem = archiveList.find((item) => item.is_current);
+              if (currentItem && id === currentItem.tournament_id) {
+                setSelectedArchiveId(null);
+              } else {
+                setSelectedArchiveId(id);
+                setActiveView("standings");
+              }
+            }}
+          />
         </div>
       </div>
 
+      {isViewingArchive && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-2.5">
+            <p className="text-sm text-amber-900 flex items-center gap-2">
+              <Archive className="h-4 w-4 shrink-0" />
+              Archiefweergave — je bekijkt een eerdere megaschaak. Alleen stand en statistieken zijn beschikbaar.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Reglement */}
+      {!isViewingArchive && (
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-12 py-3 sm:py-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
@@ -720,6 +781,7 @@ export default function MegaschaakPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Tabs */}
       <div className="bg-white border-b border-neutral-200">
@@ -840,7 +902,7 @@ export default function MegaschaakPage() {
                   De deadline is verstreken op{" "}
                   <strong>
                     {format(
-                      new Date(activeTournament.megaschaak_deadline!),
+                      new Date(displayTournament.megaschaak_deadline!),
                       "dd/MM/yyyy 'om' HH:mm",
                     )}
                   </strong>
@@ -853,7 +915,7 @@ export default function MegaschaakPage() {
         ) : (
           <div className="space-y-6">
             {/* Deadline Info Banner */}
-            {activeTournament?.megaschaak_deadline && (
+            {displayTournament?.megaschaak_deadline && !isViewingArchive && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
                 <Clock className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div>
@@ -864,7 +926,7 @@ export default function MegaschaakPage() {
                     Je hebt tot{" "}
                     <strong>
                       {format(
-                        new Date(activeTournament.megaschaak_deadline),
+                        new Date(displayTournament.megaschaak_deadline),
                         "dd/MM/yyyy 'om' HH:mm",
                       )}
                     </strong>{" "}
