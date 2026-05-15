@@ -2070,6 +2070,7 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                     );
                     const score = roundScore?.score ?? null;
                     const isForfeitLoss = roundScore?.isForfeitLoss === true;
+                    const isBye = roundScore?.isBye === true;
                     return (
                       <td
                         key={round}
@@ -2077,18 +2078,24 @@ function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                       >
                         <span
                           className={`inline-block px-1.5 py-0.5 rounded ${
-                            isForfeitLoss
-                              ? "bg-gray-300 text-gray-700"
-                              : score === 1
-                                ? "bg-green-100 text-green-800 font-semibold"
-                                : score === 0.5
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : score === 0
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-gray-50 text-gray-400"
+                            isBye
+                              ? "bg-blue-100 text-blue-800 font-semibold"
+                              : isForfeitLoss
+                                ? "bg-gray-300 text-gray-700"
+                                : score === 1
+                                  ? "bg-green-100 text-green-800 font-semibold"
+                                  : score === 0.5
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : score === 0
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-gray-50 text-gray-400"
                           }`}
                         >
-                          {score !== null ? score.toFixed(1) : "-"}
+                          {isBye
+                            ? "BYE"
+                            : score !== null
+                              ? score.toFixed(1)
+                              : "-"}
                         </span>
                       </td>
                     );

@@ -1847,6 +1847,70 @@ function getRawRoundGameForPlayer(
   );
 }
 
+function getMegaschaakByeRoundScore(game: any | null): number {
+  if (!game || game.speler2_id != null) return 0.5;
+  const raw = String(game.result ?? "").trim();
+  if (!raw || raw === "..." || raw === "uitgesteld") return 0.5;
+  const firstPart = raw.split("-")[0] ?? "";
+  const first = parseFloat(firstPart);
+  if (!Number.isNaN(first)) return first;
+  return 0.5;
+}
+
+function isMegaschaakSpeeldagBye(
+  playerId: number,
+  playerTid: number,
+  rondeNummer: number,
+  allClassesTournaments: Array<{
+    tournament_id: number;
+    rounds?: Array<{
+      ronde_nummer: number;
+      type?: string;
+      games?: any[];
+    }>;
+  }>,
+  rawRoundGame: any | null,
+): boolean {
+  if (rawRoundGame?.speler2_id == null) {
+    const result = String(rawRoundGame.result ?? "").trim();
+    if (result === "uitgesteld" || result === "...") return false;
+    return rawRoundGame.speler1_id === playerId;
+  }
+  if (rawRoundGame != null) return false;
+
+  const playerTournament = allClassesTournaments.find(
+    (t) => t.tournament_id === playerTid,
+  );
+  const round = playerTournament?.rounds?.find(
+    (r) => r.ronde_nummer === rondeNummer,
+  );
+  if (!round || (round.type !== RoundType.REGULAR && round.type !== "REGULAR")) {
+    return false;
+  }
+
+  const roundGames = round.games ?? [];
+  const roundHasStarted = roundGames.some((g) => {
+    const r = String(g.result ?? "").trim();
+    return r && r !== "..." && r !== "uitgesteld";
+  });
+  if (!roundHasStarted) return false;
+
+  const playerHasPostponed = roundGames.some(
+    (g) =>
+      (g.speler1_id === playerId || g.speler2_id === playerId) &&
+      String(g.result ?? "").trim() === "uitgesteld",
+  );
+  if (playerHasPostponed) return false;
+
+  const playerPlayedRealGame = roundGames.some(
+    (g) =>
+      (g.speler1_id === playerId || g.speler2_id === playerId) &&
+      g.speler2_id != null &&
+      String(g.result ?? "").trim() !== "uitgesteld",
+  );
+  return !playerPlayedRealGame;
+}
+
 function isNamedPlayer(
   voornaam: string | null | undefined,
   achternaam: string | null | undefined,
@@ -2913,6 +2977,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
           score: null,
           hasGame: false,
           isForfeitLoss: false,
+          isBye: false,
         }));
 
         return {
@@ -2971,11 +3036,29 @@ export const getTeamDetailedScores = async (teamId: number) => {
           gamesByRound,
         );
         if (score === null) {
+          if (
+            isMegaschaakSpeeldagBye(
+              tp.player_id,
+              playerTid,
+              rondeNummer,
+              allClassesTournaments,
+              rawRoundGame,
+            )
+          ) {
+            return {
+              ronde_nummer: rondeNummer,
+              score: getMegaschaakByeRoundScore(rawRoundGame),
+              hasGame: false,
+              isForfeitLoss: false,
+              isBye: true,
+            };
+          }
           return {
             ronde_nummer: rondeNummer,
             score: null,
             hasGame: false,
             isForfeitLoss,
+            isBye: false,
           };
         }
 
@@ -3011,6 +3094,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
           ronde_nummer: rondeNummer,
           score,
           isForfeitLoss,
+          isBye: false,
         };
       });
 
