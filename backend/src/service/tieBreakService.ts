@@ -1,6 +1,11 @@
 // src/service/tieBreakService.ts
 import { prisma } from "../data";
 import ServiceError from "../core/serviceError";
+import {
+  isDecidedGameWithOpponentResult,
+  isDrawResult,
+  normalizeResultFlat,
+} from "../core/countsAsSpeeldagPartij";
 
 export async function updateTieBreakAndWins(tournament_id: number): Promise<void> {
   // 1) Haal alle deelnemers MET hun huidige scores en tie_break (voor Buchholz berekening)
@@ -63,21 +68,7 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     buchholzList[user_id] = [];
   }
 
-  // Helper function: check if result represents a game that should count as played
-  // Excludes: null, "not_played", "...", "uitgesteld", absences ("ABS-", "0.5-0"), and invalid results ("0-0")
-  // Includes: regular games ("1-0", "0-1", "½-½", "1/2-1/2", "-"), forfeits ("1-0R", "0-1R")
-  const isPlayedGame = (result: string | null): boolean => {
-    if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
-    // Exclude absences with message (results starting with 'ABS-')
-    if (result.startsWith("ABS-")) return false;
-    // Exclude "0.5-0" which is an absence with message
-    if (result === "0.5-0") return false;
-    // Exclude "0-0" which is an invalid/unplayed result
-    if (result === "0-0") return false;
-    // Only count valid game results: wins, losses, draws, and forfeits
-    return result === "1-0" || result === "0-1" || result === "1-0R" || result === "0-1R" ||
-           result === "½-½" || result === "1/2-1/2" || result === "-";
-  };
+  const isPlayedGame = isDecidedGameWithOpponentResult;
 
   /** Eén partij per spelerskoppel: bij uitstel staat het resultaat op de inhaaldag; die wint bij dubbel. */
   function dedupeGamesByPair(
@@ -114,9 +105,10 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
   // Note: Forfeits count as played games, only absences don't
   for (const { p1, p2, result } of games) {
     // Count wins for played games
-    if (result === "1-0" || result === "1-0R") {
+    const flat = normalizeResultFlat(result);
+    if (flat.startsWith("1-0")) {
       winCount[p1]! += 1;
-    } else if (result === "0-1" || result === "0-1R") {
+    } else if (flat.startsWith("0-1")) {
       winCount[p2]! += 1;
     }
     // Draws don't count as wins, so no need to increment winCount
@@ -148,13 +140,14 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     // Sonneborn–Berger (klassiek): win = PT_tegenstander, remise = ½ PT, verlies = 0
     const o1 = scoreMap[p2] ?? 0;
     const o2 = scoreMap[p1] ?? 0;
-    if (result === "1-0" || result === "1-0R") {
+    const flat = normalizeResultFlat(result);
+    if (flat.startsWith("1-0")) {
       sbMap[p1]! += o1;
       if (isLentecompetitie) sbSqMap[p1]! += o1 * o1;
-    } else if (result === "0-1" || result === "0-1R") {
+    } else if (flat.startsWith("0-1")) {
       sbMap[p2]! += o2;
       if (isLentecompetitie) sbSqMap[p2]! += o2 * o2;
-    } else if (result === "½-½" || result === "1/2-1/2" || result === "-") {
+    } else if (isDrawResult(result)) {
       sbMap[p1]! += o1 * 0.5;
       sbMap[p2]! += o2 * 0.5;
       if (isLentecompetitie) {

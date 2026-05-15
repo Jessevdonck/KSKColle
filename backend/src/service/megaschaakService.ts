@@ -34,9 +34,46 @@ function isExcludedFromMegaschaak(
   const v = (voornaam || "").trim().toLowerCase();
   const a = (achternaam || "").trim().toLowerCase();
   if (v === "piet" && a === "vermeiren") return true; // bestaande uitsluiting lentecompetitie
-  if (v === "lode" && (a.includes("landeghem") || a.includes("van landeghem")))
-    return true;
+  if (isLodeVanLandeghem(voornaam, achternaam)) return true;
   return false;
+}
+
+/** Hardcoded: Lode Van Landeghem (lentecompetitie megaschaak-teamdetail). */
+function isLodeVanLandeghem(
+  voornaam: string | null | undefined,
+  achternaam: string | null | undefined,
+): boolean {
+  const v = (voornaam || "").trim().toLowerCase();
+  const a = (achternaam || "").trim().toLowerCase();
+  return v === "lode" && (a.includes("landeghem") || a.includes("van landeghem"));
+}
+
+function isMegaschaakLentecompetitieNaam(
+  naam: string,
+  class_name?: string | null,
+): boolean {
+  const n = naam.toLowerCase();
+  if (n.includes("lentecompetitie") || n.includes("lente competitie")) {
+    return true;
+  }
+  return n.includes("lente") && (class_name ?? "").trim().length > 0;
+}
+
+async function getLodeVanLandeghemUserId(): Promise<number | null> {
+  const candidates = await prisma.user.findMany({
+    where: {
+      voornaam: { in: ["Lode", "LODE", "lode"] },
+      OR: [
+        { achternaam: { contains: "Landeghem" } },
+        { achternaam: { contains: "landeghem" } },
+      ],
+    },
+    select: { user_id: true, voornaam: true, achternaam: true },
+  });
+  for (const u of candidates) {
+    if (isLodeVanLandeghem(u.voornaam, u.achternaam)) return u.user_id;
+  }
+  return null;
 }
 
 /**
@@ -1840,10 +1877,15 @@ function getRawRoundGameForPlayer(
     (r) => r.ronde_nummer === rondeNummer,
   );
   if (!round?.games?.length) return null;
+  const playerGames = round.games.filter(
+    (g) => g.speler1_id === playerId || g.speler2_id === playerId,
+  );
+  const explicitBye = playerGames.find(
+    (g) => g.speler2_id == null && g.speler1_id === playerId,
+  );
+  if (explicitBye) return explicitBye;
   return (
-    [...round.games]
-      .filter((g) => g.speler1_id === playerId || g.speler2_id === playerId)
-      .sort((a, b) => b.game_id - a.game_id)[0] ?? null
+    [...playerGames].sort((a, b) => b.game_id - a.game_id)[0] ?? null
   );
 }
 
@@ -1855,6 +1897,69 @@ function getMegaschaakByeRoundScore(game: any | null): number {
   const first = parseFloat(firstPart);
   if (!Number.isNaN(first)) return first;
   return 0.5;
+}
+
+function getMegaschaakOpponentIdFromGame(
+  playerId: number,
+  game: any | null,
+): number | null {
+  if (!game || game.speler2_id == null) return null;
+  if (game.speler1_id === playerId) return game.speler2_id ?? null;
+  if (game.speler2_id === playerId) return game.speler1_id ?? null;
+  return null;
+}
+
+/**
+ * Lentecompetitie: tegenstander was Lode Van Landeghem → toon BYE (import/bye-situatie).
+ * Alleen deze hardcoded uitzondering, geen algemene bye-tegenstander-regel.
+ */
+function isMegaschaakRoundVsLodeVanLandeghem(
+  playerId: number,
+  rawRoundGame: any | null,
+  lodeUserId: number | null,
+): boolean {
+  if (lodeUserId == null) return false;
+  const opponentId = getMegaschaakOpponentIdFromGame(playerId, rawRoundGame);
+  return opponentId === lodeUserId;
+}
+
+function resolveMegaschaakRoundByeDisplay(
+  playerId: number,
+  playerTid: number,
+  rondeNummer: number,
+  allClassesTournaments: Array<{
+    tournament_id: number;
+    rounds?: Array<{
+      ronde_nummer: number;
+      type?: string;
+      games?: any[];
+    }>;
+  }>,
+  rawRoundGame: any | null,
+  lenteLodeUserId: number | null,
+  isLenteCompetition: boolean,
+): { isBye: true; score: number } | null {
+  if (
+    isMegaschaakSpeeldagBye(
+      playerId,
+      playerTid,
+      rondeNummer,
+      allClassesTournaments,
+      rawRoundGame,
+    )
+  ) {
+    return {
+      isBye: true,
+      score: getMegaschaakByeRoundScore(rawRoundGame),
+    };
+  }
+  if (
+    isLenteCompetition &&
+    isMegaschaakRoundVsLodeVanLandeghem(playerId, rawRoundGame, lenteLodeUserId)
+  ) {
+    return { isBye: true, score: 0.5 };
+  }
+  return null;
 }
 
 function isMegaschaakSpeeldagBye(
@@ -1944,6 +2049,19 @@ function getRoundScoreFromRoundResolution(
   );
 
   let effectiveGame: any | null = null;
+  const rawRoundGame = getRawRoundGameForPlayer(
+    playerId,
+    playerTid,
+    rondeNummer,
+    allClassesTournaments,
+  );
+  if (
+    rawRoundGame?.speler1_id === playerId &&
+    rawRoundGame.speler2_id == null
+  ) {
+    return null;
+  }
+
   if (playerTournament) {
     effectiveGame = resolveEffectiveGameForPlayerInRegularRound(
       playerTournament,
@@ -2966,6 +3084,13 @@ export const getTeamDetailedScores = async (teamId: number) => {
     }
 
     const roundsSorted = getPlannedMegaschaakRounds(allClassesTournaments);
+    const isLenteCompetition = isMegaschaakLentecompetitieNaam(
+      team.tournament.naam,
+      team.tournament.class_name,
+    );
+    const lodeUserId = isLenteCompetition
+      ? await getLodeVanLandeghemUserId()
+      : null;
     const replacementIds = getJesseReserveReplacementIds(team);
     const megaschaakExcludedUserIds = await getMegaschaakExcludedUserIds();
 
@@ -2996,6 +3121,26 @@ export const getTeamDetailedScores = async (teamId: number) => {
           rondeNummer,
           allClassesTournaments,
         );
+
+        const byeDisplay = resolveMegaschaakRoundByeDisplay(
+          tp.player_id,
+          playerTid,
+          rondeNummer,
+          allClassesTournaments,
+          rawRoundGame,
+          lodeUserId,
+          isLenteCompetition,
+        );
+        if (byeDisplay) {
+          return {
+            ronde_nummer: rondeNummer,
+            score: byeDisplay.score,
+            hasGame: false,
+            isForfeitLoss: false,
+            isBye: true,
+          };
+        }
+
         const isForfeitLoss =
           rawRoundGame != null &&
           isForfeitLossForPlayer(rawRoundGame, tp.player_id);
@@ -3022,6 +3167,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
               score: null,
               hasGame: false,
               isForfeitLoss: true,
+              isBye: false,
             };
           }
         }
@@ -3036,23 +3182,6 @@ export const getTeamDetailedScores = async (teamId: number) => {
           gamesByRound,
         );
         if (score === null) {
-          if (
-            isMegaschaakSpeeldagBye(
-              tp.player_id,
-              playerTid,
-              rondeNummer,
-              allClassesTournaments,
-              rawRoundGame,
-            )
-          ) {
-            return {
-              ronde_nummer: rondeNummer,
-              score: getMegaschaakByeRoundScore(rawRoundGame),
-              hasGame: false,
-              isForfeitLoss: false,
-              isBye: true,
-            };
-          }
           return {
             ronde_nummer: rondeNummer,
             score: null,
@@ -3086,6 +3215,7 @@ export const getTeamDetailedScores = async (teamId: number) => {
               score: null,
               hasGame: false,
               isForfeitLoss: false,
+              isBye: false,
             };
           }
         }

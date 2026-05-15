@@ -4,7 +4,12 @@ import Link from "next/link"
 import { Medal, User, X, Calendar } from "lucide-react"
 import { useState } from "react"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
-import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
+import {
+  countsAsSpeeldagPartij,
+  isDecidedGameWithOpponentResult,
+  isDrawResult,
+  normalizeResultFlat,
+} from "@/lib/countsAsSpeeldagPartij"
 import { isLentecompetitieTieBreak } from "./tieBreakLente"
 
 interface StandingsProps {
@@ -606,19 +611,8 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     sbSquaredMap[user.user_id] = 0
   })
 
-  // Tie-break / Buchholz: forfaits tellen nog mee
-  const isPlayedGame = (result: string | null): boolean => {
-    if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
-    if (result.startsWith("ABS-")) return false;
-    if (result === "0.5-0") return false;
-    if (result === "0-0") return false;
-    if (result.startsWith("1-0") || result.startsWith("0-1")) return true;
-    return (
-      result === "½-½" ||
-      result === "1/2-1/2" ||
-      result === "-"
-    );
-  };
+  // Tie-break / Buchholz / SB²: zelfde besliste partijen als kolom Partijen (incl. forfait, geen 0-0)
+  const isPlayedGame = isDecidedGameWithOpponentResult;
 
   // 2) score & gamesPlayed
   rounds.forEach(({ games, type: roundType }) => {
@@ -701,18 +695,14 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     buchholzListForWorst[p2].push(scoreMap[p1] ?? 0)
 
     // Klassieke SB; Lente SB²: Σ(PT_eind_tegenstander)² bij winst, ½× bij remise (Sevilla-eindstand)
-    if (result.startsWith("1-0")) {
+    const flat = normalizeResultFlat(result)
+    if (flat.startsWith("1-0")) {
       sbMap[p1] += oppScore1
       if (isLentecompetitie) sbSquaredMap[p1] += oppScore1 * oppScore1
-    } else if (result.startsWith("0-1")) {
+    } else if (flat.startsWith("0-1")) {
       sbMap[p2] += oppScore2
       if (isLentecompetitie) sbSquaredMap[p2] += oppScore2 * oppScore2
-    } else if (
-      result === "½-½" ||
-      result === "1/2-1/2" ||
-      result === "-" ||
-      result === "�-�"
-    ) {
+    } else if (isDrawResult(result)) {
       sbMap[p1] += oppScore1 * 0.5
       sbMap[p2] += oppScore2 * 0.5
       if (isLentecompetitie) {

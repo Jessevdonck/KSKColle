@@ -4,7 +4,12 @@ import Link from "next/link"
 import { Trophy, Medal, Award, User, X, Calendar } from "lucide-react"
 import { useState } from "react"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
-import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
+import {
+  countsAsSpeeldagPartij,
+  isDecidedGameWithOpponentResult,
+  isDrawResult,
+  normalizeResultFlat,
+} from "@/lib/countsAsSpeeldagPartij"
 
 interface StandingsProps {
   tournament: {
@@ -548,18 +553,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     sbMap[user.user_id] = 0
   })
 
-  const isPlayedGame = (result: string | null): boolean => {
-    if (!result || result === "not_played" || result === "..." || result === "uitgesteld") return false;
-    if (result.startsWith("ABS-")) return false;
-    if (result === "0.5-0") return false;
-    if (result === "0-0") return false;
-    if (result.startsWith("1-0") || result.startsWith("0-1")) return true;
-    return (
-      result === "½-½" ||
-      result === "1/2-1/2" ||
-      result === "-"
-    );
-  };
+  const isPlayedGame = isDecidedGameWithOpponentResult;
 
   // 2) score & gamesPlayed
   rounds.forEach(({ games, type: roundType }) => {
@@ -649,14 +643,12 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
       buchholzListForWorst[p2].push(scoreMap[p1])
 
       // SB-score (also use Sevilla scores)
-      if (eff.startsWith("1-0") && p2) {
+      const flat = normalizeResultFlat(eff)
+      if (flat.startsWith("1-0") && p2) {
         sbMap[p1] += scoreMap[p2]
-      } else if (eff.startsWith("0-1") && p2) {
+      } else if (flat.startsWith("0-1") && p2) {
         sbMap[p2] += scoreMap[p1]
-      } else if (
-        (eff === "½-½" || eff === "1/2-1/2" || eff === "-" || eff === "�-�") &&
-        p2
-      ) {
+      } else if (isDrawResult(eff) && p2) {
         sbMap[p1] += scoreMap[p2] * 0.5
         sbMap[p2] += scoreMap[p1] * 0.5
       }
