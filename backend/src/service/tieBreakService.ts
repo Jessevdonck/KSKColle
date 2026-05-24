@@ -1,6 +1,7 @@
 // src/service/tieBreakService.ts
 import { prisma } from "../data";
 import ServiceError from "../core/serviceError";
+import { collectTieBreakGamesFromRaw } from "../core/collectTieBreakGames";
 import {
   isDecidedGameWithOpponentResult,
   isDrawResult,
@@ -49,6 +50,11 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     nLower.includes("lentecompetitie") ||
     nLower.includes("lente competitie") ||
     (nLower.includes("lente") && (tour.class_name ?? "").trim().length > 0);
+  const isBlitzkampioenschap =
+    nLower.includes("blitz") ||
+    nLower.includes("snel") ||
+    nLower.includes("snelschaak") ||
+    nLower.includes("blitzkampioenschap");
 
   // 3) Initialiseer maps
   // Gebruik de scores uit de participation tabel (zoals Sevilla ze berekent)
@@ -70,36 +76,16 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
 
   const isPlayedGame = isDecidedGameWithOpponentResult;
 
-  /** Eén partij per spelerskoppel: bij uitstel staat het resultaat op de inhaaldag; die wint bij dubbel. */
-  function dedupeGamesByPair(
-    rows: typeof gamesRaw
-  ): Array<{ p1: number; p2: number; result: string }> {
-    const played = rows.filter(
-      (g) => g.speler2_id != null && isPlayedGame(g.result)
-    );
-    played.sort((a, b) => {
-      const aM = a.round.type === "MAKEUP" ? 1 : 0;
-      const bM = b.round.type === "MAKEUP" ? 1 : 0;
-      if (bM !== aM) return bM - aM;
-      const aO = a.original_game_id != null ? 1 : 0;
-      const bO = b.original_game_id != null ? 1 : 0;
-      if (bO !== aO) return bO - aO;
-      return b.game_id - a.game_id;
-    });
-    const seen = new Set<string>();
-    const out: Array<{ p1: number; p2: number; result: string }> = [];
-    for (const g of played) {
-      const p1 = g.speler1_id;
-      const p2 = g.speler2_id!;
-      const key = p1 < p2 ? `${p1}-${p2}` : `${p2}-${p1}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ p1, p2, result: g.result! });
-    }
-    return out;
-  }
+  const countEveryPairMeeting =
+    isBlitzkampioenschap ||
+    isLentecompetitie ||
+    tour.type === "ROUND_ROBIN";
 
-  const games = dedupeGamesByPair(gamesRaw);
+  const games = collectTieBreakGamesFromRaw(
+    gamesRaw,
+    isPlayedGame,
+    countEveryPairMeeting,
+  );
 
   // 4) Bereken winCount (scoreMap wordt al gevuld met scores uit participation tabel)
   // Note: Forfeits count as played games, only absences don't
@@ -168,6 +154,8 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
       if (isLentecompetitie) {
         // Lentecompetitie (Sevilla SB²): Σ PT_opp² bij winst, ½×PT_opp² bij remise
         tieValue = sbSqMap[user_id] ?? 0;
+      } else if (isBlitzkampioenschap || tour.type === "ROUND_ROBIN") {
+        tieValue = sbMap[user_id] ?? 0;
       } else if (tour.type === "SWISS") {
         // Buchholz-worst: Buchholz (includes forfeits) minus de laagste opponent-score (from ALL games)
         // Standard definition: subtract the lowest opponent score from total Buchholz

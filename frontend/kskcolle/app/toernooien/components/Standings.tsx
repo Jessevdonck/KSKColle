@@ -10,7 +10,16 @@ import {
   isDrawResult,
   normalizeResultFlat,
 } from "@/lib/countsAsSpeeldagPartij"
-import { isLentecompetitieTieBreak } from "./tieBreakLente"
+import { collectTieBreakGames } from "@/lib/collectTieBreakGames"
+import {
+  countsEveryPairMeetingForTieBreak,
+  getTieBreakColumnLabel,
+  isBlitzkampioenschapTieBreak,
+  isLentecompetitieTieBreak,
+  isLodeBuitenCompetitieLente2026,
+  isLodeVanLandeghem,
+  usesBuchholzWorstTieBreak,
+} from "./tieBreakLente"
 
 interface StandingsProps {
   tournament: {
@@ -73,65 +82,11 @@ interface PlayerGame {
 const createUrlFriendlyName = (voornaam: string, achternaam: string) =>
   `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
 
-function pairKeyTieBreak(a: number, b: number): string {
-  return a < b ? `${a}-${b}` : `${b}-${a}`
-}
-
-/**
- * REGULAR + MAKEUP: één partij per koppel (inhaaldag wint bij dubbele regel).
- * Voorkomt dubbeltelling bij uitgestelde partijen.
- */
-function dedupePlayedGamesForTieBreak(
-  rounds: StandingsProps["rounds"],
-  isPlayedGame: (r: string | null) => boolean
-): Array<{ p1: number; p2: number; result: string }> {
-  type Row = {
-    p1: number
-    p2: number
-    result: string
-    isMakeup: boolean
-    gameId: number
-    /** Uitgestelde partij op inhaaldag (koppel aan origineel) */
-    hasOriginalLink: boolean
-  }
-  const rows: Row[] = []
-  for (const round of rounds) {
-    const isMakeup = round.type === "MAKEUP"
-    for (const g of round.games) {
-      const p2 = g.speler2?.user_id
-      if (p2 == null) continue
-      const res = normalizedResultForDisplay(g.result, g.uitgestelde_datum)
-      if (!isPlayedGame(res)) continue
-      rows.push({
-        p1: g.speler1.user_id,
-        p2,
-        result: res!,
-        isMakeup,
-        gameId: g.game_id,
-        hasOriginalLink: g.original_game_id != null && g.original_game_id > 0,
-      })
-    }
-  }
-  rows.sort((a, b) => {
-    if (a.isMakeup !== b.isMakeup) return a.isMakeup ? -1 : 1
-    if (a.hasOriginalLink !== b.hasOriginalLink) return a.hasOriginalLink ? -1 : 1
-    return b.gameId - a.gameId
-  })
-  const seen = new Set<string>()
-  const out: Array<{ p1: number; p2: number; result: string }> = []
-  for (const r of rows) {
-    const k = pairKeyTieBreak(r.p1, r.p2)
-    if (seen.has(k)) continue
-    seen.add(k)
-    out.push({ p1: r.p1, p2: r.p2, result: r.result })
-  }
-  return out
-}
-
 export default function Standings({ tournament, rounds }: StandingsProps) {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerScore | null>(null)
 
   const isLentecompetitie = isLentecompetitieTieBreak(tournament)
+  const tieBreakLabel = getTieBreakColumnLabel(tournament)
 
   const playerScores = calculateStandings(tournament, rounds)
   
@@ -359,7 +314,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
             )}
             <div className="w-9 text-center text-[0.7em] font-semibold text-gray-600">Punten</div>
             <div className="w-14 text-center text-[0.7em] font-semibold text-gray-600">
-              {isLentecompetitie ? "SB²" : tournament.type === "SWISS" ? "Bhlz-W" : "SB"}
+              {tieBreakLabel}
             </div>
             <div className="w-10 text-center text-[0.7em] font-semibold text-gray-600">Partijen</div>
           </div>
@@ -500,7 +455,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                 <div className="text-center">
                   <div className="text-xl font-bold text-textColor">{selectedPlayer.tieBreak.toFixed(2)}</div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">
-                    {isLentecompetitie ? "SB²" : tournament.type === "SWISS" ? "Bh-W" : "SB"}
+                    {tieBreakLabel}
                   </div>
                 </div>
               </div>
@@ -572,13 +527,6 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   )
 }
 
-/** Speler "buiten competitie" (disregard results): uitslagen worden getoond in partijen maar tellen niet mee voor stand/tie-break */
-function isBuitenCompetitie(voornaam: string, achternaam: string): boolean {
-  const v = (voornaam || '').trim().toLowerCase()
-  const a = (achternaam || '').trim().toLowerCase()
-  return v === 'lode' && (a.includes('landeghem') || a.includes('van landeghem'))
-}
-
 export function calculateStandings(tournament: StandingsProps["tournament"], rounds: StandingsProps["rounds"]): PlayerScore[] {
   // 1) init
   // Use scores from participation table (Sevilla scores) for Buchholz calculation
@@ -590,13 +538,19 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
   /** Lente (Sevilla): Σ(PT_opp²) bij winst, ½×PT_opp² bij remise */
   const sbSquaredMap: Record<number, number> = {}
 
+  const lodeBuitenCompetitie = isLodeBuitenCompetitieLente2026(tournament)
   const buitenCompetitieIds = new Set(
-    tournament.participations
-      .filter((p) => isBuitenCompetitie(p.user.voornaam, p.user.achternaam))
-      .map((p) => p.user.user_id)
+    lodeBuitenCompetitie
+      ? tournament.participations
+          .filter((p) =>
+            isLodeVanLandeghem(p.user.voornaam, p.user.achternaam),
+          )
+          .map((p) => p.user.user_id)
+      : [],
   )
   
   const isLentecompetitie = isLentecompetitieTieBreak(tournament)
+  const isBlitzkampioenschap = isBlitzkampioenschapTieBreak(tournament)
 
   // Initialize with scores from participation table (Sevilla scores)
   // Separate list for worst calculation (excludes forfeits)
@@ -680,9 +634,13 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     }
   })
 
-  // 3) Buchholz & SB: REGULAR + MAKEUP, maar één regel per koppel (inhaaldag wint bij dubbel)
-  const dedupedTieGames = dedupePlayedGamesForTieBreak(rounds, isPlayedGame)
-  dedupedTieGames.forEach(({ p1, p2, result }) => {
+  // 3) Buchholz & SB: Swiss = één partij per koppel; dubbel RR = elke ontmoeting (blitz/lente)
+  const tieBreakGames = collectTieBreakGames(
+    rounds,
+    isPlayedGame,
+    countsEveryPairMeetingForTieBreak(tournament),
+  )
+  tieBreakGames.forEach(({ p1, p2, result }) => {
     // Buiten competitie: partij telt niet mee voor tie-break
     if (buitenCompetitieIds.has(p1) || buitenCompetitieIds.has(p2)) return
 
@@ -720,12 +678,15 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     const participation = tournament.participations.find(p => p.user.user_id === id)
     let tie: number
 
-    // Lente: altijd SB² herberekend (Sevilla; DB kan oude Bh-W zijn). Andere: DB eerst.
+    // Lente: altijd SB² herberekend (Sevilla; DB kan oude Bh-W zijn).
+    // Blitz / round robin: altijd SB herberekend (import staat vaak op SWISS + Bh-W in DB).
     if (isLentecompetitie) {
       tie = sbSquaredMap[id] ?? 0
+    } else if (isBlitzkampioenschap || tournament.type === "ROUND_ROBIN") {
+      tie = sbMap[id] ?? 0
     } else if (participation?.tie_break !== null && participation?.tie_break !== undefined) {
       tie = participation.tie_break
-    } else if (tournament.type === "SWISS") {
+    } else if (usesBuchholzWorstTieBreak(tournament)) {
       // Buchholz-worst: Buchholz (includes forfeits) minus de laagste opponent-score (from ALL games)
       const opps = buchholzList[id]
       const sum = opps.reduce((a, b) => a + b, 0)

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { calculateStandings } from "./Standings";
-import { isLentecompetitieTieBreak } from "./tieBreakLente";
+import { getTieBreakColumnLabel } from "./tieBreakLente";
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) =>
   `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_");
@@ -54,13 +54,7 @@ interface CrossTableProps {
 }
 
 export default function CrossTable({ tournament, rounds }: CrossTableProps) {
-  const isLentecompetitie = isLentecompetitieTieBreak(tournament);
-  // Lente staat in DB vaak als SWISS maar gebruikt SB², niet Bh-W
-  const tieBreakColumnLabel = isLentecompetitie
-    ? "SB²"
-    : tournament.type === "SWISS"
-      ? "Bh-W"
-      : "SB";
+  const tieBreakColumnLabel = getTieBreakColumnLabel(tournament);
 
   // Calculate standings to get sorted players and their stats
   const standings = React.useMemo(() => {

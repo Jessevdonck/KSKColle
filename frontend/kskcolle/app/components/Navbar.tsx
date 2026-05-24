@@ -36,6 +36,40 @@ interface Tournament {
   }>
 }
 
+function isBlitzTournament(naam: string): boolean {
+  const name = naam.toLowerCase()
+  return (
+    name.includes('blitz') ||
+    name.includes('snel') ||
+    name.includes('snelschaak') ||
+    name.includes('blitzkampioenschap')
+  )
+}
+
+function getLastRoundDate(tournament: Tournament): Date | null {
+  const sortedRounds = [...tournament.rounds].sort((a, b) => {
+    const dateA = new Date(a.ronde_datum).getTime()
+    const dateB = new Date(b.ronde_datum).getTime()
+    return dateB - dateA
+  })
+  return sortedRounds.length > 0 ? new Date(sortedRounds[0].ronde_datum) : null
+}
+
+function pickLatestTournament(
+  current: Tournament | null,
+  currentDate: Date | null,
+  candidate: Tournament,
+  candidateDate: Date | null,
+): Tournament {
+  if (!current) return candidate
+  if (candidateDate && currentDate && candidateDate > currentDate) return candidate
+  if (!currentDate && candidateDate) return candidate
+  if (!currentDate && !candidateDate && candidate.tournament_id > current.tournament_id) {
+    return candidate
+  }
+  return current
+}
+
 export default function Navbar() {
   const { isAuthed } = useAuth()
   const pathname = usePathname()
@@ -47,63 +81,71 @@ export default function Navbar() {
   const [isMobileLinksOpen, setIsMobileLinksOpen] = useState(false)
   const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false)
 
-  // Fetch tournaments to find latest herfstcompetitie and lentecompetitie
+  // Fetch tournaments for navbar shortcuts (herfst, lente, blitz)
   const { data: tournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
     getAll,
   )
 
-  // Find latest herfstcompetitie and lentecompetitie
-  const { latestHerfst, latestLente } = useMemo(() => {
+  const { latestHerfst, latestLente, latestBlitz } = useMemo(() => {
     let latestHerfst: Tournament | null = null
     let latestLente: Tournament | null = null
     let latestHerfstDate: Date | null = null
     let latestLenteDate: Date | null = null
 
+    const blitzEditions = new Map<
+      string,
+      { representative: Tournament; lastRoundDate: Date | null }
+    >()
+
     tournaments.forEach((tournament) => {
       const name = tournament.naam.toLowerCase()
       const isHerfst = name.includes('herfst') || name.includes('herfstcompetitie')
       const isLente = name.includes('lente') || name.includes('lentecompetitie')
+      const lastRoundDate = getLastRoundDate(tournament)
 
-      if (isHerfst || isLente) {
-        // Sort rounds by date to find the latest one
-        const sortedRounds = [...tournament.rounds].sort((a, b) => {
-          const dateA = new Date(a.ronde_datum).getTime()
-          const dateB = new Date(b.ronde_datum).getTime()
-          return dateB - dateA // Descending order
-        })
-        
-        const lastRoundDate = sortedRounds.length > 0 
-          ? new Date(sortedRounds[0].ronde_datum)
-          : null
+      if (isHerfst) {
+        latestHerfst = pickLatestTournament(latestHerfst, latestHerfstDate, tournament, lastRoundDate)
+        if (latestHerfst === tournament) latestHerfstDate = lastRoundDate
+      }
 
-        if (isHerfst) {
-          if (!latestHerfst || (lastRoundDate && latestHerfstDate && lastRoundDate > latestHerfstDate)) {
-            latestHerfst = tournament
-            latestHerfstDate = lastRoundDate
-          } else if (!latestHerfstDate && lastRoundDate) {
-            latestHerfst = tournament
-            latestHerfstDate = lastRoundDate
-          } else if (!latestHerfstDate && !lastRoundDate && tournament.tournament_id > (latestHerfst?.tournament_id || 0)) {
-            latestHerfst = tournament
+      if (isLente) {
+        latestLente = pickLatestTournament(latestLente, latestLenteDate, tournament, lastRoundDate)
+        if (latestLente === tournament) latestLenteDate = lastRoundDate
+      }
+
+      if (isBlitzTournament(tournament.naam)) {
+        const editionKey = tournament.naam
+        const existing = blitzEditions.get(editionKey)
+        if (!existing) {
+          blitzEditions.set(editionKey, { representative: tournament, lastRoundDate })
+        } else {
+          if (
+            lastRoundDate &&
+            (!existing.lastRoundDate || lastRoundDate > existing.lastRoundDate)
+          ) {
+            existing.lastRoundDate = lastRoundDate
           }
-        }
-
-        if (isLente) {
-          if (!latestLente || (lastRoundDate && latestLenteDate && lastRoundDate > latestLenteDate)) {
-            latestLente = tournament
-            latestLenteDate = lastRoundDate
-          } else if (!latestLenteDate && lastRoundDate) {
-            latestLente = tournament
-            latestLenteDate = lastRoundDate
-          } else if (!latestLenteDate && !lastRoundDate && tournament.tournament_id > (latestLente?.tournament_id || 0)) {
-            latestLente = tournament
+          if (tournament.tournament_id < existing.representative.tournament_id) {
+            existing.representative = tournament
           }
         }
       }
     })
 
-    return { latestHerfst, latestLente }
+    let latestBlitz: Tournament | null = null
+    let latestBlitzDate: Date | null = null
+    for (const edition of blitzEditions.values()) {
+      latestBlitz = pickLatestTournament(
+        latestBlitz,
+        latestBlitzDate,
+        edition.representative,
+        edition.lastRoundDate,
+      )
+      if (latestBlitz === edition.representative) latestBlitzDate = edition.lastRoundDate
+    }
+
+    return { latestHerfst, latestLente, latestBlitz }
   }, [tournaments])
 
   useEffect(() => {
@@ -195,7 +237,7 @@ export default function Navbar() {
                 <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Interclub
                 </a>
-                {(latestHerfst || latestLente) && (
+                {(latestHerfst || latestLente || latestBlitz) && (
                   <>
                     <div className="border-t border-gray-200 my-1"></div>
                     {latestHerfst && (
@@ -206,6 +248,11 @@ export default function Navbar() {
                     {latestLente && (
                       <Link href={`/toernooien/${latestLente.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                         Lentecompetitie
+                      </Link>
+                    )}
+                    {latestBlitz && (
+                      <Link href={`/toernooien/${latestBlitz.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                        Blitzkampioenschap
                       </Link>
                     )}
                   </>
@@ -473,7 +520,7 @@ export default function Navbar() {
                   >
                     Interclub
                   </a>
-                  {(latestHerfst || latestLente) && (
+                  {(latestHerfst || latestLente || latestBlitz) && (
                     <>
                       <div className="border-t border-gray-200 my-2"></div>
                       {latestHerfst && (
@@ -492,6 +539,15 @@ export default function Navbar() {
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Lentecompetitie
+                        </Link>
+                      )}
+                      {latestBlitz && (
+                        <Link
+                          href={`/toernooien/${latestBlitz.tournament_id}`}
+                          className="block font-medium hover:text-mainAccent transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Blitzkampioenschap
                         </Link>
                       )}
                     </>
