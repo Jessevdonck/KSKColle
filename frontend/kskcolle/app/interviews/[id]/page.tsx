@@ -7,13 +7,14 @@ import Link from "next/link"
 import Image from "next/image"
 
 interface InterviewPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function InterviewPage({ params }: InterviewPageProps) {
-  const interview = interviews.find((i) => i.id === params.id)
+export default async function InterviewPage({ params }: InterviewPageProps) {
+  const { id } = await params
+  const interview = interviews.find((i) => i.id === id)
 
   if (!interview) {
     notFound()
@@ -84,7 +85,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: InterviewPageProps) {
-  const interview = interviews.find((i) => i.id === params.id)
+  const { id } = await params
+  const interview = interviews.find((i) => i.id === id)
 
   if (!interview) {
     return {
