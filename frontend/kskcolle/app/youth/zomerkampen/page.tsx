@@ -21,7 +21,7 @@ export default function ZomerkampenPage() {
           <Card className="border-mainAccent/20 shadow-lg">
             <CardContent className="pt-6">
               <p className="text-gray-700 text-lg leading-relaxed">
-                Tijdens de zomer van 2026 organiseert Schaakclub KSK Colle samen met de stad Sint-Niklaas een zomerkamp schaken.
+                Tijdens de zomer van 2026 organiseert Schaakclub KSK Colle samen met de stad Sint-Niklaas twee zomerkampen schaken.
               </p>
             </CardContent>
           </Card>
@@ -66,20 +66,12 @@ export default function ZomerkampenPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                  <p className="font-semibold text-blue-800 mb-2">Juli 2026</p>
-                  <ul className="text-blue-700 space-y-1">
-                    <li>1 – 3 juli</li>
-                    <li>6 – 10 juli</li>
-                    <li>27 – 31 juli</li>
-                  </ul>
+                  <p className="font-semibold text-blue-800 mb-1">Kamp 1</p>
+                  <p className="text-blue-700">1 – 3 juli 2026</p>
                 </div>
-                <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                  <p className="font-semibold text-green-800 mb-2">Augustus 2026</p>
-                  <ul className="text-green-700 space-y-1">
-                    <li>3 – 7 augustus</li>
-                    <li>17 – 21 augustus</li>
-                    <li>24 – 28 augustus</li>
-                  </ul>
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                  <p className="font-semibold text-blue-800 mb-1">Kamp 2</p>
+                  <p className="text-blue-700">6 – 10 juli 2026</p>
                 </div>
               </div>
             </CardContent>
@@ -98,7 +90,7 @@ export default function ZomerkampenPage() {
                 <div className="flex items-start">
                   <div className="w-2 h-2 bg-mainAccent rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <p className="text-gray-700">
-                    Iedereen geboren in 2010 tot en met 2017, het aantal deelnemers zal begrensd worden op 20 deelnemers.
+                    Iedereen geboren in 2014 tot en met 2019 (lagere schoolleeftijd). Het aantal deelnemers zal begrensd worden op 20 deelnemers per kamp.
                   </p>
                 </div>
               </div>
@@ -195,12 +187,12 @@ export default function ZomerkampenPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-gray-900 mb-1">€ 45</p>
-                  <p className="text-sm text-gray-600">Standaard prijs</p>
+                  <p className="text-sm text-gray-600 mb-1">Kamp 1 · 1 – 3 juli</p>
+                  <p className="text-2xl font-bold text-gray-900">€ 15</p>
                 </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-green-800 mb-1">€ 22,50</p>
-                  <p className="text-sm text-green-600">Met kansenpas</p>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                  <p className="text-sm text-gray-600 mb-1">Kamp 2 · 6 – 10 juli</p>
+                  <p className="text-2xl font-bold text-gray-900">€ 25</p>
                 </div>
               </div>
             </CardContent>
