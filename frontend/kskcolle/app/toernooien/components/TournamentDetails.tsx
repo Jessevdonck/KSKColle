@@ -19,18 +19,7 @@ import Link from 'next/link'
 import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKeys"
 import { isDoubleForfeitResult } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
-
-/**
- * Overschrijft globale SWR-defaults (o.a. revalidateIfStale: false, lange deduping) voor deze pagina,
- * zodat toernooi + rondes telkens opnieuw van de API komen — handig om cache vs. echte data te testen.
- */
-const TOURNEY_DETAIL_SWR_OPTIONS = {
-  revalidateOnFocus: true,
-  revalidateOnReconnect: true,
-  revalidateIfStale: true,
-  revalidateOnMount: true,
-  dedupingInterval: 0,
-} as const
+import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig"
 
 type Game = {
   game_id: number
@@ -99,7 +88,7 @@ export default function TournamentDetails() {
   } = useSWR<Tournament>(
     selectedClassId ? tournamentDetailKey(selectedClassId) : null,
     () => getById(`tournament/${selectedClassId}`),
-    TOURNEY_DETAIL_SWR_OPTIONS,
+    DEFAULT_SWR_OPTIONS,
   )
 
   const isLentecompetitie = tournament ? isLentecompetitieTieBreak(tournament) : false
@@ -108,11 +97,13 @@ export default function TournamentDetails() {
   const { data: activeTournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
     () => getAll('tournament', { active: 'true', is_youth: 'false' }),
+    DEFAULT_SWR_OPTIONS,
   )
 
   const { data: inactiveTournaments = [] } = useSWR<Tournament[]>(
     tournament?.naam ? 'tournament?active=false&is_youth=false' : null,
     () => getAll('tournament', { active: 'false', is_youth: 'false' }),
+    DEFAULT_SWR_OPTIONS,
   )
 
   const allTournamentsForClasses = React.useMemo(() => {
@@ -185,7 +176,7 @@ export default function TournamentDetails() {
   const { data: allRounds = [], error: roundsError } = useSWR<any[]>(
     selectedClassId ? tournamentRoundsKey(selectedClassId) : null,
     () => getAllTournamentRounds(selectedClassId),
-    TOURNEY_DETAIL_SWR_OPTIONS,
+    DEFAULT_SWR_OPTIONS,
   )
 
   // 3) Makeup days fetching (legacy system) - not used anymore

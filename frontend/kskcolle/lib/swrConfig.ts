@@ -10,5 +10,5 @@ export const DEFAULT_SWR_OPTIONS = {
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
   revalidateIfStale: false,
-  dedupingInterval: 120_000,
+  dedupingInterval: 180_000,
 } as const;

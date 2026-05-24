@@ -7,8 +7,12 @@ const store = new Map<string, { value: unknown; expires: number }>();
 
 export const SHORT_CACHE_TTL_MS = {
   tournamentList: 30_000,
+  tournamentDetail: 30_000,
   calendarList: 30_000,
   tournamentRounds: 20_000,
+  megaschaakRead: 45_000,
+  megaschaakPlayers: 60_000,
+  publicUsers: 120_000,
 } as const;
 
 export function shortLivedCacheGet<T>(key: string): T | undefined {
@@ -42,5 +46,32 @@ export function shortLivedCacheDelete(key: string): void {
 /** Vaste prefixes voor invalidatie buiten de REST-module (bv. close-route). */
 export const SHORT_CACHE_KEY_PREFIX = {
   tournamentList: "tournament:list:",
+  tournamentDetail: "tournament:detail:",
   calendarList: "calendar:list:",
+  tournamentRounds: "tournamentRounds:",
+  megaschaak: "megaschaak:",
+  publicUsers: "users:publicUsers",
+  publicYouth: "users:publicYouth",
 } as const;
+
+export function invalidateTournamentDetailCache(tournamentId?: number) {
+  if (tournamentId != null) {
+    shortLivedCacheDelete(`${SHORT_CACHE_KEY_PREFIX.tournamentDetail}${tournamentId}`);
+    return;
+  }
+  shortLivedCacheInvalidatePrefix(SHORT_CACHE_KEY_PREFIX.tournamentDetail);
+}
+
+export function invalidateTournamentRoundsCache(tournamentId: number) {
+  shortLivedCacheDelete(`${SHORT_CACHE_KEY_PREFIX.tournamentRounds}${tournamentId}`);
+  invalidateTournamentDetailCache(tournamentId);
+}
+
+export function invalidateMegaschaakCache() {
+  shortLivedCacheInvalidatePrefix(SHORT_CACHE_KEY_PREFIX.megaschaak);
+}
+
+export function invalidatePublicUsersCache() {
+  shortLivedCacheDelete(SHORT_CACHE_KEY_PREFIX.publicUsers);
+  shortLivedCacheDelete(SHORT_CACHE_KEY_PREFIX.publicYouth);
+}

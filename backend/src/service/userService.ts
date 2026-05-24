@@ -103,56 +103,45 @@ const mapUsersToPublicUsersWithRating = async (
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-  const usersWithLastRatingUpdate = await Promise.all(
-    users.map(async (user) => {
-      const participationsWithRatingChange = await prisma.participation.findMany({
-        where: {
-          user_id: user.user_id,
-          sevilla_rating_change: { not: null },
-        },
-        include: {
-          tournament: {
-            include: {
-              rounds: {
-                orderBy: {
-                  ronde_datum: "desc",
-                },
-                take: 1,
-              },
+  const userIds = users.map((u) => u.user_id);
+  const lastRatingByUser = new Map<number, Date>();
+
+  if (userIds.length > 0) {
+    const participationsWithRatingChange = await prisma.participation.findMany({
+      where: {
+        user_id: { in: userIds },
+        sevilla_rating_change: { not: null },
+      },
+      include: {
+        tournament: {
+          include: {
+            rounds: {
+              orderBy: { ronde_datum: "desc" },
+              take: 1,
             },
           },
         },
-      });
+      },
+    });
 
-      let lastRatingUpdateDate: Date | null = null;
-      if (participationsWithRatingChange.length > 0) {
-        const dates = participationsWithRatingChange
-          .map((p) => p.tournament.rounds[0]?.ronde_datum)
-          .filter((date): date is Date => date !== undefined && date !== null);
+    for (const p of participationsWithRatingChange) {
+      const date = p.tournament.rounds[0]?.ronde_datum;
+      if (!date) continue;
+      const prev = lastRatingByUser.get(p.user_id);
+      if (!prev || date > prev) lastRatingByUser.set(p.user_id, date);
+    }
+  }
 
-        if (dates.length > 0) {
-          lastRatingUpdateDate = dates.reduce((latest, current) =>
-            current > latest ? current : latest,
-          );
-        }
-      }
+  const usersWithLastRatingUpdate = users.map((user) => {
+    const lastRatingUpdateDate = lastRatingByUser.get(user.user_id) ?? null;
+    let ratingDifference = user.schaakrating_difference;
 
-      let ratingDifference = user.schaakrating_difference;
+    if (lastRatingUpdateDate && lastRatingUpdateDate < oneYearAgo) {
+      ratingDifference = null;
+    }
 
-      if (lastRatingUpdateDate) {
-        if (lastRatingUpdateDate < oneYearAgo) {
-          ratingDifference = null;
-        }
-      } else if (user.schaakrating_difference != null) {
-        // zie getAllPublicUsers: geen exacte datum beschikbaar
-      }
-
-      return {
-        user,
-        ratingDifference,
-      };
-    }),
-  );
+    return { user, ratingDifference };
+  });
 
   return usersWithLastRatingUpdate.map(({ user, ratingDifference }) => {
     return {

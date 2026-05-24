@@ -24,6 +24,13 @@ import { requireAuthentication, makeRequireRole, authDelay } from '../core/auth'
 import { generateJWT } from '../core/jwt';
 import { prisma } from '../service/data';
 import type { Next } from 'koa';
+import {
+  shortLivedCacheGet,
+  shortLivedCacheSet,
+  SHORT_CACHE_KEY_PREFIX,
+  SHORT_CACHE_TTL_MS,
+  invalidatePublicUsersCache,
+} from '../core/shortLivedCache';
 
 /**
  * @api {get} /users Get all users
@@ -95,19 +102,20 @@ getPaginatedUsers.validationScheme = {
  * @apiError (404) NotFound The requested resource could not be found.
  */
 const getAllPublicUsers = async (ctx: KoaContext<GetAllPublicUserResponse>): Promise<PublicUser[]> => {
-  const users =  await userService.getAllPublicUsers();
-  
-  // Map rating_difference to schaakrating_difference for frontend compatibility
-  // The frontend expects schaakrating_difference but backend uses rating_difference
+  const cached = shortLivedCacheGet<GetAllPublicUserResponse>(SHORT_CACHE_KEY_PREFIX.publicUsers);
+  if (cached) {
+    ctx.body = cached;
+    return cached.items as PublicUser[];
+  }
+
+  const users = await userService.getAllPublicUsers();
   const mappedUsers = users.map((user: any) => ({
     ...user,
     schaakrating_difference: user.rating_difference,
   }));
-  
-  ctx.body = {
-    items: mappedUsers,
-  };
-
+  const body = { items: mappedUsers };
+  shortLivedCacheSet(SHORT_CACHE_KEY_PREFIX.publicUsers, body, SHORT_CACHE_TTL_MS.publicUsers);
+  ctx.body = body;
   return users;
 }
 getAllPublicUsers.validationScheme = null;
@@ -118,17 +126,20 @@ getAllPublicUsers.validationScheme = null;
  * @apiGroup User
  */
 const getPublicYouthUsers = async (ctx: KoaContext<GetAllPublicUserResponse>): Promise<PublicUser[]> => {
-  const users = await userService.getPublicYouthUsers();
+  const cached = shortLivedCacheGet<GetAllPublicUserResponse>(SHORT_CACHE_KEY_PREFIX.publicYouth);
+  if (cached) {
+    ctx.body = cached;
+    return cached.items as PublicUser[];
+  }
 
+  const users = await userService.getPublicYouthUsers();
   const mappedUsers = users.map((user: any) => ({
     ...user,
     schaakrating_difference: user.rating_difference,
   }));
-
-  ctx.body = {
-    items: mappedUsers,
-  };
-
+  const body = { items: mappedUsers };
+  shortLivedCacheSet(SHORT_CACHE_KEY_PREFIX.publicYouth, body, SHORT_CACHE_TTL_MS.publicUsers);
+  ctx.body = body;
   return users;
 };
 getPublicYouthUsers.validationScheme = null;
@@ -281,9 +292,9 @@ getUserById.validationScheme = {
  */
 const updateUser = async (ctx: KoaContext<UpdateUserResponse, IdParams, UpdateUserRequest>) => {
   const userId = Number(ctx.params.id); 
-  const updatedUser = await userService.updateUser(userId, ctx.request.body); 
-  
-  ctx.body = updatedUser; 
+  const updatedUser = await userService.updateUser(userId, ctx.request.body);
+  invalidatePublicUsersCache();
+  ctx.body = updatedUser;
 };
 updateUser.validationScheme = {
   params: {

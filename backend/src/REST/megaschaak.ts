@@ -5,7 +5,14 @@ import Joi from 'joi';
 import validate from '../core/validation';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import Role from '../core/roles';
-import { getLogger } from '../core/logging';
+import {
+  SHORT_CACHE_KEY_PREFIX,
+  SHORT_CACHE_TTL_MS,
+  invalidateMegaschaakCache,
+} from '../core/shortLivedCache';
+import { withShortLivedCache } from '../core/withShortLivedCache';
+
+const megaschaakKey = (suffix: string) => `${SHORT_CACHE_KEY_PREFIX.megaschaak}${suffix}`;
 
 /**
  * @api {get} /megaschaak/active-tournament Get the active megaschaak tournament
@@ -13,8 +20,14 @@ import { getLogger } from '../core/logging';
  * @apiGroup Megaschaak
  */
 const getActiveTournament = async (ctx: KoaContext) => {
-  const tournament = await megaschaakService.getActiveMegaschaakTournament();
-  ctx.body = tournament || null;
+  ctx.body = await withShortLivedCache(
+    megaschaakKey('active-tournament'),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    async () => {
+      const tournament = await megaschaakService.getActiveMegaschaakTournament();
+      return tournament || null;
+    },
+  );
 };
 
 /**
@@ -23,8 +36,14 @@ const getActiveTournament = async (ctx: KoaContext) => {
  * @apiGroup Megaschaak
  */
 const getArchive = async (ctx: KoaContext) => {
-  const items = await megaschaakService.getMegaschaakArchive();
-  ctx.body = { items };
+  ctx.body = await withShortLivedCache(
+    megaschaakKey('archive'),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    async () => {
+      const items = await megaschaakService.getMegaschaakArchive();
+      return { items };
+    },
+  );
 };
 
 /**
@@ -33,8 +52,14 @@ const getArchive = async (ctx: KoaContext) => {
  * @apiGroup Megaschaak
  */
 const getAvailablePlayers = async (ctx: KoaContext) => {
-  const players = await megaschaakService.getAvailablePlayers();
-  ctx.body = { items: players };
+  ctx.body = await withShortLivedCache(
+    megaschaakKey('players'),
+    SHORT_CACHE_TTL_MS.megaschaakPlayers,
+    async () => {
+      const players = await megaschaakService.getAvailablePlayers();
+      return { items: players };
+    },
+  );
 };
 
 /**
@@ -46,8 +71,14 @@ const getMyTeams = async (ctx: KoaContext) => {
   const userId = ctx.state.session.userId;
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   
-  const teams = await megaschaakService.getUserTeams(userId, tournamentId);
-  ctx.body = { items: teams };
+  ctx.body = await withShortLivedCache(
+    megaschaakKey(`my-teams:${tournamentId}:${userId}`),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    async () => {
+      const teams = await megaschaakService.getUserTeams(userId, tournamentId);
+      return { items: teams };
+    },
+  );
 };
 
 getMyTeams.validationScheme = {
@@ -85,19 +116,8 @@ const createTeam = async (ctx: KoaContext) => {
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const { playerIds, teamName, reservePlayerId } = ctx.request.body as { playerIds: number[], teamName: string, reservePlayerId?: number };
   
-  // Debug logging to identify user mismatch issue
-  const logger = getLogger();
-  logger.info('Creating megaschaak team', {
-    userId,
-    tournamentId,
-    teamName,
-    playerIdsCount: playerIds?.length,
-    sessionUserId: ctx.state.session?.userId,
-    sessionRoles: ctx.state.session?.roles,
-    authorizationHeader: ctx.headers.authorization ? 'present (first 20 chars: ' + ctx.headers.authorization.substring(0, 20) + '...)' : 'missing'
-  });
-  
   const team = await megaschaakService.createTeam(userId, tournamentId, playerIds, teamName, reservePlayerId);
+  invalidateMegaschaakCache();
   ctx.status = 201;
   ctx.body = team;
 };
@@ -124,6 +144,7 @@ const updateTeam = async (ctx: KoaContext) => {
   const { playerIds, teamName, reservePlayerId } = ctx.request.body as { playerIds: number[], teamName?: string, reservePlayerId?: number | null };
   
   const team = await megaschaakService.updateTeam(teamId, userId, playerIds, teamName, reservePlayerId);
+  invalidateMegaschaakCache();
   ctx.body = team;
 };
 
@@ -148,6 +169,7 @@ const deleteTeamHandler = async (ctx: KoaContext) => {
   const teamId = Number((ctx.params as { teamId: string }).teamId);
   
   await megaschaakService.deleteTeam(teamId, userId);
+  invalidateMegaschaakCache();
   ctx.status = 204;
 };
 
@@ -167,6 +189,7 @@ const toggleMegaschaak = async (ctx: KoaContext) => {
   const { enabled } = ctx.request.body as { enabled: boolean };
   
   const tournament = await megaschaakService.toggleMegaschaak(tournamentId, enabled);
+  invalidateMegaschaakCache();
   ctx.body = tournament;
 };
 
@@ -190,6 +213,7 @@ const setMegaschaakDeadline = async (ctx: KoaContext) => {
   
   const deadlineDate = deadline ? new Date(deadline) : null;
   const tournament = await megaschaakService.setMegaschaakDeadline(tournamentId, deadlineDate);
+  invalidateMegaschaakCache();
   ctx.body = tournament;
 };
 
@@ -209,9 +233,14 @@ setMegaschaakDeadline.validationScheme = {
  */
 const getTeamStandings = async (ctx: KoaContext) => {
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
-  
-  const standings = await megaschaakService.getTeamStandings(tournamentId);
-  ctx.body = { items: standings };
+  ctx.body = await withShortLivedCache(
+    megaschaakKey(`standings:${tournamentId}`),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    async () => {
+      const standings = await megaschaakService.getTeamStandings(tournamentId);
+      return { items: standings };
+    },
+  );
 };
 
 getTeamStandings.validationScheme = {
@@ -227,9 +256,11 @@ getTeamStandings.validationScheme = {
  */
 const getCrossTable = async (ctx: KoaContext) => {
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
-  
-  const crossTable = await megaschaakService.getCrossTableData(tournamentId);
-  ctx.body = crossTable;
+  ctx.body = await withShortLivedCache(
+    megaschaakKey(`crosstable:${tournamentId}`),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    () => megaschaakService.getCrossTableData(tournamentId),
+  );
 };
 
 getCrossTable.validationScheme = {
@@ -245,9 +276,11 @@ getCrossTable.validationScheme = {
  */
 const getTeamDetails = async (ctx: KoaContext) => {
   const teamId = Number((ctx.params as { teamId: string }).teamId);
-  
-  const details = await megaschaakService.getTeamDetailedScores(teamId);
-  ctx.body = details;
+  ctx.body = await withShortLivedCache(
+    megaschaakKey(`team-details:${teamId}`),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    () => megaschaakService.getTeamDetailedScores(teamId),
+  );
 };
 
 getTeamDetails.validationScheme = {
@@ -263,8 +296,14 @@ getTeamDetails.validationScheme = {
  */
 const getPopularPlayers = async (ctx: KoaContext) => {
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
-  const players = await megaschaakService.getMostPopularPlayers(tournamentId);
-  ctx.body = { items: players };
+  ctx.body = await withShortLivedCache(
+    megaschaakKey(`popular:${tournamentId}`),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    async () => {
+      const players = await megaschaakService.getMostPopularPlayers(tournamentId);
+      return { items: players };
+    },
+  );
 };
 
 getPopularPlayers.validationScheme = {
@@ -280,8 +319,14 @@ getPopularPlayers.validationScheme = {
  */
 const getValuePlayers = async (ctx: KoaContext) => {
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
-  const players = await megaschaakService.getBestValuePlayers(tournamentId);
-  ctx.body = { items: players };
+  ctx.body = await withShortLivedCache(
+    megaschaakKey(`value:${tournamentId}`),
+    SHORT_CACHE_TTL_MS.megaschaakRead,
+    async () => {
+      const players = await megaschaakService.getBestValuePlayers(tournamentId);
+      return { items: players };
+    },
+  );
 };
 
 getValuePlayers.validationScheme = {
@@ -328,6 +373,7 @@ const adminCreateTeam = async (ctx: KoaContext) => {
   }
   
   const team = await megaschaakService.adminCreateTeam(userId, tournamentId, playerIds, teamName, reservePlayerId);
+  invalidateMegaschaakCache();
   ctx.status = 201;
   ctx.body = team;
 };
@@ -352,6 +398,7 @@ adminCreateTeam.validationScheme = {
 const adminDeleteTeam = async (ctx: KoaContext) => {
   const teamId = Number((ctx.params as { teamId: string }).teamId);
   await megaschaakService.adminDeleteTeam(teamId);
+  invalidateMegaschaakCache();
   ctx.status = 204;
 };
 
@@ -387,6 +434,7 @@ const updateMegaschaakConfig = async (ctx: KoaContext) => {
   const tournamentId = Number((ctx.params as { tournamentId: string }).tournamentId);
   const config = ctx.request.body as any;
   const updatedConfig = await megaschaakService.updateMegaschaakConfiguration(tournamentId, config);
+  invalidateMegaschaakCache();
   ctx.body = updatedConfig;
 };
 

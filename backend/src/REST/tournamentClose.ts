@@ -5,6 +5,9 @@ import { prisma } from '../data';
 import {
   shortLivedCacheInvalidatePrefix,
   SHORT_CACHE_KEY_PREFIX,
+  invalidateTournamentDetailCache,
+  invalidateTournamentRoundsCache,
+  invalidatePublicUsersCache,
 } from '../core/shortLivedCache';
 
 const requireAdmin = makeRequireRole('admin');
@@ -56,6 +59,9 @@ export function installTournamentCloseRouter(router: Router) {
       });
 
       shortLivedCacheInvalidatePrefix(SHORT_CACHE_KEY_PREFIX.tournamentList);
+      invalidateTournamentDetailCache(tournamentId);
+      invalidateTournamentRoundsCache(tournamentId);
+      if (updateRatings) invalidatePublicUsersCache();
 
       ctx.status = 200;
       ctx.body = {

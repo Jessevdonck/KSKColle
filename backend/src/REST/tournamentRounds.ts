@@ -9,6 +9,33 @@ import { getLogger } from '../core/logging';
 const logger = getLogger();
 import { prisma } from '../service/data';
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa';
+import {
+  shortLivedCacheGet,
+  shortLivedCacheSet,
+  SHORT_CACHE_KEY_PREFIX,
+  SHORT_CACHE_TTL_MS,
+  invalidateTournamentRoundsCache,
+} from '../core/shortLivedCache';
+
+function roundsCacheKey(tournamentId: number) {
+  return `${SHORT_CACHE_KEY_PREFIX.tournamentRounds}${tournamentId}`;
+}
+
+async function invalidateRoundsForRoundId(roundId: number) {
+  const round = await prisma.round.findUnique({
+    where: { round_id: roundId },
+    select: { tournament_id: true },
+  });
+  if (round) invalidateTournamentRoundsCache(round.tournament_id);
+}
+
+async function invalidateRoundsForGameId(gameId: number) {
+  const game = await prisma.game.findUnique({
+    where: { game_id: gameId },
+    select: { round: { select: { tournament_id: true } } },
+  });
+  if (game?.round) invalidateTournamentRoundsCache(game.round.tournament_id);
+}
 
 const router = new Router<ChessAppState, ChessAppContext>({
   prefix: '/tournamentRounds',
@@ -23,9 +50,16 @@ const getAllTournamentRounds = async (
   ctx: KoaContext<{ items: any[] }>
 ) => {
   const tournamentId = Number(ctx.query.tournament_id);
-  // Geen in-memory cache: wijzigingen (admin/SQL) moeten meteen zichtbaar zijn; invalidatie was niet overal gekoppeld.
+  const cacheKey = roundsCacheKey(tournamentId);
+  const cached = shortLivedCacheGet<{ items: unknown[] }>(cacheKey);
+  if (cached) {
+    ctx.body = cached;
+    return;
+  }
   const items = await tournamentRoundService.getAllTournamentRounds(tournamentId);
-  ctx.body = { items };
+  const body = { items };
+  shortLivedCacheSet(cacheKey, body, SHORT_CACHE_TTL_MS.tournamentRounds);
+  ctx.body = body;
 };
 getAllTournamentRounds.validationScheme = {
   query: {
@@ -66,6 +100,7 @@ const createMakeupRound = async (
     label
   );
 
+  invalidateTournamentRoundsCache(tournament_id);
   ctx.status = 201;
   ctx.body = makeupRound;
 };
@@ -96,6 +131,7 @@ const addGameToMakeupRound = async (
     result ?? undefined
   );
 
+  await invalidateRoundsForRoundId(roundId);
   ctx.status = 201;
   ctx.body = game;
 };
@@ -121,10 +157,6 @@ const updateMakeupRoundDate = async (
 
   const { date, startuur } = body;
 
-  // Debug logging
-  console.log('updateMakeupRoundDate body:', body);
-  console.log('updateMakeupRoundDate date:', date, 'type:', typeof date);
-
   // Check if date exists and is a valid type
   if (date === undefined || date === null) {
     ctx.throw(400, 'Datum ontbreekt in updateMakeupRoundDate PUT');
@@ -148,6 +180,7 @@ const updateMakeupRoundDate = async (
     startuur ?? undefined
   );
 
+  await invalidateRoundsForRoundId(roundId);
   ctx.body = updatedRound;
 };
 
@@ -171,6 +204,7 @@ const postponeGameToMakeupRound = async (
     makeup_round_id
   );
 
+  await invalidateRoundsForGameId(game_id);
   ctx.status = 200;
   ctx.body = updatedGame;
 };
@@ -184,6 +218,7 @@ const deleteMakeupRound = async (
 ) => {
   const roundId = Number(ctx.params.round_id);
   await tournamentRoundService.deleteMakeupRound(roundId);
+  await invalidateRoundsForRoundId(roundId);
   ctx.status = 204;
 };
 
@@ -217,6 +252,7 @@ const postponeGame = async (
 
     logger.info('Postpone game completed successfully', { game_id, user_id, makeup_round_id });
 
+    await invalidateRoundsForGameId(game_id);
     ctx.status = 200;
     ctx.body = result;
   } catch (error) {
@@ -378,6 +414,7 @@ const undoPostponeGame = async (
 
     logger.info('Undo postpone game completed successfully', { game_id, user_id });
 
+    await invalidateRoundsForGameId(game_id);
     ctx.status = 200;
     ctx.body = result;
   } catch (error) {
@@ -424,6 +461,7 @@ const undoAdminPostponeGame = async (
 
     logger.info('Undo admin postpone game completed successfully', { original_game_id, new_game_id });
 
+    await invalidateRoundsForGameId(original_game_id);
     ctx.status = 200;
     ctx.body = result;
   } catch (error) {

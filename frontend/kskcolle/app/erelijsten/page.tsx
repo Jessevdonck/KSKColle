@@ -394,12 +394,10 @@ export default function ErelijstenPage() {
             derde: '',
             ratingprijs: ''
           })
-        } else {
         }
       }
     }
     
-    // Sort by year (oldest first, newest last)
     results.sort((a, b) => a.jaar - b.jaar)
     
     return results
@@ -440,7 +438,6 @@ export default function ErelijstenPage() {
               tweede: '',
               derde: ''
             })
-          } else {
           }
         }
         
@@ -575,11 +572,6 @@ export default function ErelijstenPage() {
       { name: 'Vierde Klasse', spelerCol: 17, eersteCol: 18, tweedeCol: 19, derdeCol: 20 }, // R, S, T, U
       { name: 'Vijfde Klasse', spelerCol: 22, eersteCol: 23, tweedeCol: 24, derdeCol: 25 }  // W, X, Y, Z
     ]
-    
-    // Debug: let's check what's in the fifth class columns
-    for (let debugRow = 0; debugRow < Math.min(10, jsonData.length); debugRow++) {
-      const debugRowData = jsonData[debugRow]
-    }
     
     for (let k = 0; k < 5; k++) {
       const config = klasseConfigs[k]

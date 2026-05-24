@@ -5,6 +5,7 @@ import {
   shortLivedCacheInvalidatePrefix,
   SHORT_CACHE_TTL_MS,
   SHORT_CACHE_KEY_PREFIX,
+  invalidateTournamentDetailCache,
 } from '../core/shortLivedCache';
 import * as tournamentService from '../service/tournamentService';
 import type { GetAllTournamentenResponse, GetTournamentByIdResponse, UpdateTournamentRequest, UpdateTournamentResponse } from '../types/tournament';
@@ -73,7 +74,16 @@ getAllTournament.validationScheme = {
  * @apiError (404) NotFound The requested resource could not be found.
  */
 const getTournamentById = async (ctx: KoaContext<GetTournamentByIdResponse, IdParams>) => {
-  ctx.body = await tournamentService.getTournamentById(Number(ctx.params.id));
+  const id = Number(ctx.params.id);
+  const cacheKey = `${SHORT_CACHE_KEY_PREFIX.tournamentDetail}${id}`;
+  const cached = shortLivedCacheGet<GetTournamentByIdResponse>(cacheKey);
+  if (cached) {
+    ctx.body = cached;
+    return;
+  }
+  const body = await tournamentService.getTournamentById(id);
+  shortLivedCacheSet(cacheKey, body, SHORT_CACHE_TTL_MS.tournamentDetail);
+  ctx.body = body;
 };
 getTournamentById.validationScheme = {
   params: {
@@ -100,6 +110,7 @@ const updateTournament = async (ctx: KoaContext<UpdateTournamentResponse, IdPara
   const tournamentId = Number(ctx.params.id); 
   const updatedSpeler = await tournamentService.updateTournament(tournamentId, ctx.request.body); 
   invalidateTournamentListCache();
+  invalidateTournamentDetailCache(tournamentId);
   ctx.body = updatedSpeler; 
 };
 updateTournament.validationScheme = {
@@ -130,6 +141,7 @@ const removeTournament = async (ctx: KoaContext<void, IdParams>) => {
   const tournament_id = Number(ctx.params.id);
   tournamentService.removeTournament(tournament_id);
   invalidateTournamentListCache();
+  invalidateTournamentDetailCache(tournament_id);
   ctx.status = 204; 
 };
 removeTournament.validationScheme = {
@@ -142,6 +154,7 @@ const finalizeRatings = async (ctx: any) => {
   const id = Number(ctx.params.id);
   await tournamentService.finalizeTournamentRatings(id);
   invalidateTournamentListCache();
+  invalidateTournamentDetailCache(id);
   ctx.status = 204;
 };
 finalizeRatings.validationScheme = {
@@ -154,6 +167,7 @@ const endTournamentHandler = async (ctx: any) => {
   const id = Number(ctx.params.id);
   await tournamentService.endTournament(id);
   invalidateTournamentListCache();
+  invalidateTournamentDetailCache(id);
   ctx.status = 204;
 };
 endTournamentHandler.validationScheme = {

@@ -6,6 +6,7 @@ import RoundPairings from "./RoundPairings"
 import StandingsWithModal from "./Standings"
 import { getById, getAll, getAllTournamentRounds, undoPostponeGame } from "../../../api/index"
 import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKeys"
+import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig"
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -77,14 +78,14 @@ export default function TournamentDetails() {
   } = useSWR<Tournament>(
     tournamentId ? tournamentDetailKey(tournamentId) : null,
     () => getById(`tournament/${tournamentId}`),
-    { revalidateOnFocus: true },
+    DEFAULT_SWR_OPTIONS,
   )
 
   // 2) All tournament rounds fetching (includes makeup days)
   const { data: allRounds = [], error: roundsError } = useSWR<Round[]>(
     tournamentId ? tournamentRoundsKey(tournamentId) : null,
     () => getAllTournamentRounds(tournamentId),
-    { revalidateOnFocus: true },
+    DEFAULT_SWR_OPTIONS,
   )
 
   // Build timeline when data is available
