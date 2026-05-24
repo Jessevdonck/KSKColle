@@ -13,7 +13,8 @@ function pairKey(a: number, b: number): string {
 
 function sortTieBreakRows(a: TieBreakGameRow, b: TieBreakGameRow): number {
   if (a.isMakeup !== b.isMakeup) return a.isMakeup ? -1 : 1;
-  if (a.hasOriginalLink !== b.hasOriginalLink) return a.hasOriginalLink ? -1 : 1;
+  if (a.hasOriginalLink !== b.hasOriginalLink)
+    return a.hasOriginalLink ? -1 : 1;
   return b.gameId - a.gameId;
 }
 
@@ -71,14 +72,13 @@ export function collectTieBreakGamesFromRaw(
   const out: Array<{ p1: number; p2: number; result: string }> = [];
   for (const group of byPair.values()) {
     const isPostponedDuplicate =
-      group.length > 1 &&
-      group.some((r) => r.isMakeup || r.hasOriginalLink);
+      group.length > 1 && group.some((r) => r.isMakeup || r.hasOriginalLink);
     if (isPostponedDuplicate) {
       const sorted = [...group].sort(sortTieBreakRows);
       out.push({
-        p1: sorted[0].p1,
-        p2: sorted[0].p2,
-        result: sorted[0].result,
+        p1: sorted[0]?.p1 ?? 0,
+        p2: sorted[0]?.p2 ?? 0,
+        result: sorted[0]?.result ?? "",
       });
     } else {
       for (const r of group) {

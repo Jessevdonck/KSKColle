@@ -9,7 +9,9 @@ type SortKey = keyof UserType
 type SortOrder = "asc" | "desc"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
-  return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
+  const slugPart = (s: string) =>
+    encodeURIComponent((s ?? "").trim().toLowerCase().replace(/\s+/g, "_"))
+  return `${slugPart(voornaam)}_${slugPart(achternaam)}`
 }
 
 interface PlayerTableProps {
@@ -54,15 +56,23 @@ export default function PlayerTable({
     )
   }
 
-  const getRatingDifferenceIcon = (difference: number | null) => {
-    if (!difference) return <Minus className="h-3 w-3 text-gray-400" />
+  const formatRatingDifference = (difference: number | null | undefined) => {
+    if (difference === null || difference === undefined) return "-"
+    if (difference > 0) return `+${difference}`
+    return String(difference)
+  }
+
+  const getRatingDifferenceIcon = (difference: number | null | undefined) => {
+    if (difference === null || difference === undefined) {
+      return <Minus className="h-3 w-3 text-gray-400" />
+    }
     if (difference > 0) return <TrendingUp className="h-3 w-3 text-green-500" />
     if (difference < 0) return <TrendingDown className="h-3 w-3 text-red-500" />
     return <Minus className="h-3 w-3 text-gray-400" />
   }
 
-  const getRatingDifferenceColor = (difference: number | null) => {
-    if (!difference) return "text-gray-500"
+  const getRatingDifferenceColor = (difference: number | null | undefined) => {
+    if (difference === null || difference === undefined) return "text-gray-500"
     if (difference > 0) return "text-green-600 font-semibold"
     if (difference < 0) return "text-red-600 font-semibold"
     return "text-gray-500"
@@ -154,11 +164,7 @@ export default function PlayerTable({
                     <div className="flex items-center gap-2">
                       {getRatingDifferenceIcon(player.schaakrating_difference)}
                       <span className={`${getRatingDifferenceColor(player.schaakrating_difference)} text-sm`}>
-                        {player.schaakrating_difference
-                          ? player.schaakrating_difference > 0
-                            ? `+${player.schaakrating_difference}`
-                            : player.schaakrating_difference
-                          : "-"}
+                        {formatRatingDifference(player.schaakrating_difference)}
                       </span>
                     </div>
                   </td>
@@ -213,11 +219,7 @@ export default function PlayerTable({
                       <span className="text-gray-500">Verschil</span>
                     </div>
                     <div className={`${getRatingDifferenceColor(player.schaakrating_difference)} text-sm`}>
-                      {player.schaakrating_difference
-                        ? player.schaakrating_difference > 0
-                          ? `+${player.schaakrating_difference}`
-                          : player.schaakrating_difference
-                        : "-"}
+                      {formatRatingDifference(player.schaakrating_difference)}
                     </div>
                   </div>
                   <div className="text-center">

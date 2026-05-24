@@ -1,6 +1,7 @@
 import Router from '@koa/router';
 import { SevillaImporterService } from '../service/sevillaImporterService';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
+import { invalidatePublicUsersCache } from '../core/shortLivedCache';
 import type { ChessAppContext, ChessAppState } from '../types/koa';
 
 const sevillaImporter = new SevillaImporterService();
@@ -33,6 +34,7 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
 
     // Import tournament (incremental or full)
     const result = await sevillaImporter.importTournament(sevillaData, tournamentName, incremental || false);
+    invalidatePublicUsersCache();
 
     ctx.status = 201;
     
@@ -83,6 +85,7 @@ export default (router: Router<ChessAppState, ChessAppContext>) => {
 
     // Import tournament incrementally
     const result = await sevillaImporter.importTournament(sevillaData, tournamentName, true);
+    invalidatePublicUsersCache();
 
     ctx.status = 201;
     

@@ -1,9 +1,11 @@
 /**
  * Eenvoudige in-memory TTL-cache voor veelgebruikte GET-responses.
- * Vermindert DB-load en CPU op Railway; max. enkele seconden “vertraagde” data.
+ * Vermindert DB-load en CPU op Railway.
  */
 
 const store = new Map<string, { value: unknown; expires: number }>();
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const SHORT_CACHE_TTL_MS = {
   tournamentList: 30_000,
@@ -12,7 +14,8 @@ export const SHORT_CACHE_TTL_MS = {
   tournamentRounds: 20_000,
   megaschaakRead: 45_000,
   megaschaakPlayers: 60_000,
-  publicUsers: 120_000,
+  /** Spelerslijst (clubrating): zelden gewijzigd; ververs na import/sluiting via invalidatePublicUsersCache. */
+  publicUsers: 3 * DAY_MS,
 } as const;
 
 export function shortLivedCacheGet<T>(key: string): T | undefined {

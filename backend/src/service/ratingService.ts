@@ -1,4 +1,5 @@
 import { prisma } from '../data';
+import { invalidatePublicUsersCache } from '../core/shortLivedCache';
 
 export class RatingService {
   private readonly K_FACTOR = 32; // Standard K-factor for tournaments
@@ -73,6 +74,7 @@ export class RatingService {
       } 
     }
 
+    invalidatePublicUsersCache();
   }
 }
 

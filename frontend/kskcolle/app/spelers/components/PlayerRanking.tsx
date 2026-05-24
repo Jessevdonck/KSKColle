@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { getAll } from "../../api/index";
 import PlayerTable from "./PlayerTable";
 import useSWR from "swr";
+import { PLAYER_LIST_SWR_OPTIONS } from "@/lib/swrConfig";
 import AsyncData from "../../components/AsyncData";
 import type { User } from "@/data/types";
 import { Users, Trophy } from "lucide-react";
@@ -54,7 +55,7 @@ export default function PlayerRanking({
     data: users = [],
     isLoading,
     error,
-  } = useSWR<User[]>(apiPath, () => getAll(apiPath));
+  } = useSWR<User[]>(apiPath, () => getAll(apiPath), PLAYER_LIST_SWR_OPTIONS);
 
   /** Uit = alleen actieve leden; aan = volledige API-lijst (actief + niet-actief met clubrating > 0). */
   const [showFullList, setShowFullList] = useState(false);

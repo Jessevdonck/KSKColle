@@ -6,13 +6,14 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'react-icons'],
-    serverComponentsExternalPackages: ['@prisma/client'],
   },
-  
-  // Bundle optimization
+  serverExternalPackages: ['@prisma/client'],
+  // Next 16: dev draait op Turbopack; webpack-config blijft voor production build
+  turbopack: {},
+
+  // Bundle optimization (production build via webpack)
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
       // Tree shaking optimization
@@ -68,18 +69,23 @@ const nextConfig = {
   // Compression
   compress: true,
   
-  // Headers for better caching
+  // Headers for better caching (niet op /_next/static in dev — breekt anders HMR)
   async headers() {
+    const isProd = process.env.NODE_ENV === 'production';
     return [
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
+      ...(isProd
+        ? [
+            {
+              source: '/_next/static/(.*)',
+              headers: [
+                {
+                  key: 'Cache-Control',
+                  value: 'public, max-age=31536000, immutable',
+                },
+              ],
+            },
+          ]
+        : []),
       {
         source: '/images/(.*)',
         headers: [
@@ -109,10 +115,6 @@ const nextConfig = {
       },
     ];
   },
-
-  eslint: {
-    ignoreDuringBuilds: true,
-  }
 };
 
 export default withBundleAnalyzer(nextConfig);

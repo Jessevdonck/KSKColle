@@ -12,3 +12,11 @@ export const DEFAULT_SWR_OPTIONS = {
   revalidateIfStale: false,
   dedupingInterval: 180_000,
 } as const;
+
+/** Spelerslijst (/spelers): zelfde TTL-gedachte als backend (enkele dagen). */
+const PLAYER_LIST_DEDUPE_MS = 3 * 24 * 60 * 60 * 1000;
+
+export const PLAYER_LIST_SWR_OPTIONS = {
+  ...DEFAULT_SWR_OPTIONS,
+  dedupingInterval: PLAYER_LIST_DEDUPE_MS,
+} as const;

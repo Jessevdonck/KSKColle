@@ -1,6 +1,7 @@
 "use client"
 
 import useSWR from "swr"
+import { useParams } from "next/navigation"
 import PlayerHeader from "./PlayerHeader"
 import RecentGames from "./RecentGames"
 import UpcomingGames from "./UpcomingGames"
@@ -11,23 +12,36 @@ import type { User, GameWithRoundAndTournament } from "../../../data/types"
 import { useAuth } from "../../contexts/auth"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 
-export default function PlayerProfile({ name }: { name: string }) {
+function slugToNameParts(slug: string | undefined): { voornaam: string; achternaam: string } | null {
+  if (!slug?.trim()) return null
+  const decoded = decodeURIComponent(slug)
+  const parts = decoded.split("_").filter(Boolean)
+  if (parts.length === 0) return null
+  const formatPart = (part: string) =>
+    part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+  return {
+    voornaam: formatPart(parts[0]),
+    achternaam: parts.slice(1).map(formatPart).join(" "),
+  }
+}
+
+export default function PlayerProfile() {
   const { user: currentUser } = useAuth()
+  const params = useParams()
+  const slug = typeof params.name === "string" ? params.name : params.name?.[0]
+  const nameParts = slugToNameParts(slug)
+  const voornaam = nameParts?.voornaam ?? ""
+  const achternaam = nameParts?.achternaam ?? ""
 
-  // Split name into first and last
-  const [voornaam, ...achternaamParts] = name
-    .split("_")
-    .map(part => decodeURIComponent(part.charAt(0).toUpperCase() + part.slice(1)))
-  const achternaam = achternaamParts.join(" ")
-
-  // Endpoint for player
-  const userEndpoint = currentUser
-    ? `users/by-name?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`
-    : `users/by-name/public?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`
+  const userEndpoint = nameParts
+    ? currentUser
+      ? `users/by-name?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`
+      : `users/by-name/public?voornaam=${encodeURIComponent(voornaam)}&achternaam=${encodeURIComponent(achternaam)}`
+    : null
 
   const { data: player, error: playerError } = useSWR<User>(
-    ["player", voornaam, achternaam, currentUser?.user_id],
-    () => getById(userEndpoint)
+    nameParts ? ["player", voornaam, achternaam, currentUser?.user_id] : null,
+    () => getById(userEndpoint!),
   )
 
   // Endpoint for recent games
@@ -94,6 +108,14 @@ export default function PlayerProfile({ name }: { name: string }) {
       result.toLowerCase() === "uitgesteld"
     )
   })
+
+  if (!nameParts) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <p className="text-gray-600">Speler niet gevonden.</p>
+      </div>
+    )
+  }
 
   return (
     <AsyncData loading={isLoading} error={error}>

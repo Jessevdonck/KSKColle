@@ -96,52 +96,119 @@ export const getUsersPaginated = async (page: number = 1, limit: number = 50): P
   }
 };
 
-/** Zelfde rating-/verschil-logica als voor de openbare spelerslijst, voor een gegeven user-lijst. */
-const mapUsersToPublicUsersWithRating = async (
-  users: PrismaUser[],
-): Promise<PublicUser[]> => {
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+type HerfstLenteParticipation = {
+  user_id: number;
+  sevilla_rating_change: number | null;
+  tournament_id: number;
+  tournament: {
+    naam: string;
+    class_name: string | null;
+    rounds: { ronde_datum: Date }[];
+  };
+};
 
-  const userIds = users.map((u) => u.user_id);
-  const lastRatingByUser = new Map<number, Date>();
+/** Herfst- of lentecompetitie (geen blitz, zomer, …). */
+function isHerfstOrLenteCompetitie(naam: string, className?: string | null): boolean {
+  const n = naam.toLowerCase();
+  if (n.includes("herfst") || n.includes("herfstcompetitie")) return true;
+  if (n.includes("lentecompetitie") || n.includes("lente competitie")) return true;
+  if (n.includes("lente") && (className ?? "").trim().length > 0) return true;
+  return false;
+}
 
-  if (userIds.length > 0) {
-    const participationsWithRatingChange = await prisma.participation.findMany({
-      where: {
-        user_id: { in: userIds },
-        sevilla_rating_change: { not: null },
-      },
-      include: {
-        tournament: {
-          include: {
-            rounds: {
-              orderBy: { ronde_datum: "desc" },
-              take: 1,
-            },
+/**
+ * Verschil = sevilla_rating_change uit de meest recente herfst- of lentecompetitie.
+ * Geen deelname aan die editie → null ("-"). Blitz/overige toernooien tellen niet mee.
+ */
+async function getRatingDifferenceFromLatestHerfstOrLente(
+  userIds: number[],
+  isYouth: boolean,
+): Promise<Map<number, number | null>> {
+  const result = new Map<number, number | null>();
+  for (const id of userIds) result.set(id, null);
+
+  if (userIds.length === 0) return result;
+
+  const participations = await prisma.participation.findMany({
+    where: {
+      tournament: { rating_enabled: true, is_youth: isYouth },
+    },
+    select: {
+      user_id: true,
+      sevilla_rating_change: true,
+      tournament_id: true,
+      tournament: {
+        select: {
+          naam: true,
+          class_name: true,
+          rounds: {
+            orderBy: { ronde_datum: "desc" },
+            take: 1,
+            select: { ronde_datum: true },
           },
         },
       },
-    });
+    },
+  });
 
-    for (const p of participationsWithRatingChange) {
-      const date = p.tournament.rounds[0]?.ronde_datum;
-      if (!date) continue;
-      const prev = lastRatingByUser.get(p.user_id);
-      if (!prev || date > prev) lastRatingByUser.set(p.user_id, date);
+  const herfstLente = participations.filter((p) =>
+    isHerfstOrLenteCompetitie(p.tournament.naam, p.tournament.class_name),
+  );
+
+  if (herfstLente.length === 0) return result;
+
+  let latestRoundDate: Date | null = null;
+  let latestEditionNaam: string | null = null;
+
+  for (const p of herfstLente as HerfstLenteParticipation[]) {
+    const roundDate = p.tournament.rounds[0]?.ronde_datum;
+    if (!roundDate) continue;
+    if (!latestRoundDate || roundDate > latestRoundDate) {
+      latestRoundDate = roundDate;
+      latestEditionNaam = p.tournament.naam;
     }
   }
 
-  const usersWithLastRatingUpdate = users.map((user) => {
-    const lastRatingUpdateDate = lastRatingByUser.get(user.user_id) ?? null;
-    let ratingDifference = user.schaakrating_difference;
+  if (!latestEditionNaam) return result;
 
-    if (lastRatingUpdateDate && lastRatingUpdateDate < oneYearAgo) {
-      ratingDifference = null;
-    }
+  const editionTournamentIds = new Set(
+    herfstLente
+      .filter((p) => p.tournament.naam === latestEditionNaam)
+      .map((p) => p.tournament_id),
+  );
 
-    return { user, ratingDifference };
-  });
+  for (const userId of userIds) {
+    const inEdition = herfstLente.filter(
+      (p) => p.user_id === userId && editionTournamentIds.has(p.tournament_id),
+    );
+    if (inEdition.length === 0) continue;
+
+    const withRating = inEdition.filter((p) => p.sevilla_rating_change != null);
+    if (withRating.length === 0) continue;
+
+    const totalChange = withRating.reduce(
+      (sum, p) => sum + (p.sevilla_rating_change ?? 0),
+      0,
+    );
+    result.set(userId, totalChange);
+  }
+
+  return result;
+}
+
+/** Zelfde rating-/verschil-logica als voor de openbare spelerslijst, voor een gegeven user-lijst. */
+const mapUsersToPublicUsersWithRating = async (
+  users: PrismaUser[],
+  isYouth: boolean,
+): Promise<PublicUser[]> => {
+  const userIds = users.map((u) => u.user_id);
+  const ratingDifferenceByUser =
+    await getRatingDifferenceFromLatestHerfstOrLente(userIds, isYouth);
+
+  const usersWithLastRatingUpdate = users.map((user) => ({
+    user,
+    ratingDifference: ratingDifferenceByUser.get(user.user_id) ?? null,
+  }));
 
   return usersWithLastRatingUpdate.map(({ user, ratingDifference }) => {
     return {
@@ -160,7 +227,7 @@ export const getAllPublicUsers = async (): Promise<PublicUser[]> => {
     const users = await prisma.user.findMany({
       where: { NOT: { is_youth: true } },
     });
-    const mapped = await mapUsersToPublicUsersWithRating(users);
+    const mapped = await mapUsersToPublicUsersWithRating(users, false);
     return mapped.filter(includeInPublicPlayersList);
   } catch (error) {
     throw handleDBError(error);
@@ -173,7 +240,7 @@ export const getPublicYouthUsers = async (): Promise<PublicUser[]> => {
     const users = await prisma.user.findMany({
       where: { is_youth: true },
     });
-    const mapped = await mapUsersToPublicUsersWithRating(users);
+    const mapped = await mapUsersToPublicUsersWithRating(users, true);
     return mapped.filter(includeInPublicPlayersList);
   } catch (error) {
     throw handleDBError(error);
