@@ -10,11 +10,33 @@ import { getAll } from "../../api/index"
 import { ArrowLeft, Download, Loader2, Camera, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
 const ImageWithLoader = ({ src, alt, className, width, height, priority = false, onLoad, style = {}, ...props }: any) => {
   // Check if it's a Google Drive URL - if so, skip optimization for speed
   const isGoogleDrive = src && (src.includes('drive.google.com') || src.includes('googleusercontent.com'))
+
+  if (isGoogleDrive) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className={className}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+        referrerPolicy="no-referrer"
+        onLoad={onLoad || undefined}
+        style={{
+          imageRendering: "auto",
+          ...style,
+        }}
+        {...props}
+      />
+    )
+  }
   
   return (
     <Image
@@ -25,8 +47,6 @@ const ImageWithLoader = ({ src, alt, className, width, height, priority = false,
       className={className}
       priority={priority}
       onLoad={onLoad || undefined}
-      quality={isGoogleDrive ? 100 : 70}
-      unoptimized={isGoogleDrive}
       loading={priority ? "eager" : "lazy"}
       style={{
         imageRendering: "auto",
@@ -182,7 +202,7 @@ export default function PhotoAlbumPage() {
                         width={400}
                         height={400}
                         className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                        priority={index < 20}
+                        priority={index < 4}
                       />
                     </div>
 
@@ -199,10 +219,15 @@ export default function PhotoAlbumPage() {
           <Dialog open={selectedPhotoIndex !== null} onOpenChange={closeLightbox}>
             <DialogContent
               className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-0 overflow-hidden"
+              aria-describedby={undefined}
               onKeyDown={handleKeyDown}
             >
               {selectedPhoto && (
                 <div className="relative w-full h-full flex items-center justify-center">
+                  <DialogTitle className="sr-only">
+                    {selectedPhoto.title || "Foto bekijken"}
+                  </DialogTitle>
+
                   {/* Loading Spinner for Lightbox */}
                   {lightboxImageLoading && (
                     <div className="absolute inset-0 flex items-center justify-center z-40">

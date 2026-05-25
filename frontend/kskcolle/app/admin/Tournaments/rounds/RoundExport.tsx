@@ -6,7 +6,6 @@ import { Download, FileText, Loader2 } from "lucide-react"
 import { getRoundForExport } from "../../../api/index"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import jsPDF from "jspdf"
 import { sortSevillaGamesWithPostponed, sortGamesByPairingOrder, GameWithScore } from "@/lib/gameSorting"
 
 interface GameWithScoreAndOriginal extends GameWithScore {
@@ -86,6 +85,7 @@ export default function RoundExport({
       const isMakeupRound = roundData.round.type === 'MAKEUP'
       
       // Create PDF with smaller margins
+      const { default: jsPDF } = await import("jspdf")
       const pdf = new jsPDF()
       
       // Set font

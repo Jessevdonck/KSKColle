@@ -35,12 +35,15 @@ interface CategorizedArchiveTournaments {
 }
 
 export default function TournamentList() {
-  const [isLoading, setIsLoading] = useState(true)
   const [activeSection, setActiveSection] = useState<string>('')
   const [selectedType, setSelectedType] = useState<string>('all') // 'all', 'herfst', 'lente', 'blitz', 'zomer', 'other'
   const [showArchive, setShowArchive] = useState(false)
   const { data: tournaments, error } = useSWR('tournament?active=true&is_youth=false', getAll)
-  const { data: archiveTournaments, error: archiveError } = useSWR('tournament?active=false&is_youth=false', getAll)
+  const { data: archiveTournaments, error: archiveError } = useSWR(
+    showArchive ? 'tournament?active=false&is_youth=false' : null,
+    getAll,
+  )
+  const isLoading = (!tournaments && !error) || (showArchive && !archiveTournaments && !archiveError)
 
   // Refs for each section
   const sectionRefs = {
@@ -60,12 +63,6 @@ export default function TournamentList() {
     zomertoernooi: useRef<HTMLDivElement>(null),
     other: useRef<HTMLDivElement>(null)
   }
-
-  useEffect(() => {
-    if ((tournaments || error) && (archiveTournaments || archiveError)) {
-      setIsLoading(false)
-    }
-  }, [tournaments, error, archiveTournaments, archiveError])
 
   // Intersection Observer to track active section
   useEffect(() => {

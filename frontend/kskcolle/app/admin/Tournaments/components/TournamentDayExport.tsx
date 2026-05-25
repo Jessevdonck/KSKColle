@@ -6,7 +6,6 @@ import { FileText, Loader2, Calendar } from "lucide-react"
 import { axios } from "../../../api/index"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import jsPDF from "jspdf"
 import { sortSevillaGamesWithPostponed, GameWithScore } from "@/lib/gameSorting"
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL
@@ -57,6 +56,7 @@ export default function TournamentDayExport({
       const nextDate = roundsData.date ? new Date(roundsData.date) : new Date()
 
       // Create PDF
+      const { default: jsPDF } = await import("jspdf")
       const pdf = new jsPDF()
       pdf.setFont("helvetica")
       

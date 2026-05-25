@@ -13,11 +13,18 @@ interface ApiCallStats {
 class ApiMonitor {
   private stats: Map<string, ApiCallStats> = new Map();
   private readonly logger = getLogger();
+  private readonly maxTrackedEndpoints = 200;
 
   recordCall(ctx: KoaContext, duration: number, isError: boolean) {
     const endpoint = ctx.url?.split('?')[0] || ctx.url || '/';
     const key = `${ctx.method} ${endpoint}`; // Remove query params
-    const existing = this.stats.get(key) || {
+    const existing = this.stats.get(key);
+
+    if (!existing && this.stats.size >= this.maxTrackedEndpoints) {
+      return;
+    }
+
+    const stat = existing || {
       endpoint: endpoint,
       method: ctx.method,
       count: 0,
@@ -26,12 +33,12 @@ class ApiMonitor {
       lastCalled: new Date(),
     };
 
-    existing.count++;
-    existing.totalTime += duration;
-    if (isError) existing.errors++;
-    existing.lastCalled = new Date();
+    stat.count++;
+    stat.totalTime += duration;
+    if (isError) stat.errors++;
+    stat.lastCalled = new Date();
 
-    this.stats.set(key, existing);
+    this.stats.set(key, stat);
   }
 
   getStats(): ApiCallStats[] {
@@ -94,7 +101,8 @@ export function apiMonitoringMiddleware() {
 
 // Log summary every 5 minutes
 if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
+  const summaryInterval = setInterval(() => {
     apiMonitor.logSummary();
   }, 5 * 60 * 1000); // 5 minutes
+  summaryInterval.unref?.();
 }

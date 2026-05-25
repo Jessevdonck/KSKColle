@@ -1,19 +1,40 @@
 "use client"
 import useSWR from "swr"
 import Link from "next/link"
-import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { getAll } from "../api/index"
 import { Camera, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
-const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
+const AlbumCard = ({ album, priority = false }: { album: { id: string; name: string }; priority?: boolean }) => {
   const [firstPhoto, setFirstPhoto] = useState<any>(null)
   const [isLoadingPhoto, setIsLoadingPhoto] = useState(true)
   const [photoError, setPhotoError] = useState(false)
   const [srcIndex, setSrcIndex] = useState(0)
+  const [shouldLoadPhoto, setShouldLoadPhoto] = useState(priority)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (shouldLoadPhoto || !cardRef.current) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setShouldLoadPhoto(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: "300px" },
+    )
+
+    observer.observe(cardRef.current)
+
+    return () => observer.disconnect()
+  }, [shouldLoadPhoto])
+
+  useEffect(() => {
+    if (!shouldLoadPhoto) return
+
     const fetchFirstPhoto = async () => {
       try {
         setIsLoadingPhoto(true)
@@ -37,7 +58,7 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
     }
 
     fetchFirstPhoto()
-  }, [album.id])
+  }, [album.id, shouldLoadPhoto])
 
   // Reset fallback state whenever the first photo updates
   useEffect(() => {
@@ -62,9 +83,9 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
   return (
     <Link href={`/photos/${album.id}`}>
       <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer border-0 shadow-md">
-        <CardContent className="p-0">
+        <CardContent ref={cardRef} className="p-0">
           <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 rounded-t-lg overflow-hidden flex items-center justify-center relative">
-            {isLoadingPhoto ? (
+            {!shouldLoadPhoto || isLoadingPhoto ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Loader2 className="animate-spin text-gray-400" size={32} />
               </div>
@@ -73,9 +94,9 @@ const AlbumCard = ({ album }: { album: { id: string; name: string } }) => {
                 src={activeSrc}
                 alt={`${album.name} preview`}
                 className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                loading="eager"
+                loading={priority ? "eager" : "lazy"}
                 decoding="async"
-                fetchPriority="high"
+                fetchPriority={priority ? "high" : "auto"}
                 referrerPolicy="no-referrer"
                 onLoad={() => {
                   if (photoError) setPhotoError(false)
@@ -151,8 +172,8 @@ export default function PhotosPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {albums.map((album: { id: string; name: string }) => (
-                <AlbumCard key={album.id} album={album} />
+              {albums.map((album: { id: string; name: string }, index: number) => (
+                <AlbumCard key={album.id} album={album} priority={index < 2} />
               ))}
             </div>
           )}

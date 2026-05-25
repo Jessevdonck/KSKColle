@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { FileText, Download, Eye, ChevronLeft } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { FileText, Download, Eye, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 interface Document {
-  id: string
-  name: string
-  filename: string
-  description: string
-  year?: number
+  id: string;
+  name: string;
+  filename: string;
+  description: string;
+  year?: number;
 }
 
 // Lijst van beschikbare documenten
@@ -20,34 +20,38 @@ const documents: Document[] = [
     id: "historische-documenten",
     name: "Historische Documenten",
     filename: "HistorischeDocumenten.pdf",
-    description: "Verzameling van historische documenten en archiefstukken van KSK Colle Sint-Niklaas"
+    description:
+      "Verzameling van historische documenten en archiefstukken van KSK Colle Sint-Niklaas",
   },
   {
     id: "jubileumboek-1994",
     name: "Jubileumboek 1994",
     filename: "Julileumboek1994.pdf",
-    description: "Jubileumboek ter gelegenheid van het 25-jarig bestaan van KSK Colle Sint-Niklaas",
-    year: 1994
-  }
-]
+    description:
+      "Jubileumboek ter gelegenheid van het 25-jarig bestaan van KSK Colle Sint-Niklaas",
+    year: 1994,
+  },
+];
 
 export default function HistorischeDocumentenPage() {
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(documents[0]) // Direct de eerste PDF laden
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null,
+  );
 
   const handleViewDocument = (document: Document) => {
-    setSelectedDocument(document)
-  }
+    setSelectedDocument(document);
+  };
 
   const handleDownload = (document: Document) => {
-    if (typeof window !== 'undefined') {
-      const link = window.document.createElement('a')
-      link.href = `/pdf/${document.filename}`
-      link.download = document.filename
-      window.document.body.appendChild(link)
-      link.click()
-      window.document.body.removeChild(link)
+    if (typeof window !== "undefined") {
+      const link = window.document.createElement("a");
+      link.href = `/pdf/${document.filename}`;
+      link.download = document.filename;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -55,17 +59,14 @@ export default function HistorischeDocumentenPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-2 mb-4">
-            <Link 
-              href="/historiek" 
-              className="text-mainAccent hover:text-mainAccentDark transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Historische Documenten</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Historische Documenten
+            </h1>
           </div>
           <p className="text-gray-600 max-w-3xl">
-            Ontdek de rijke geschiedenis van KSK Colle Sint-Niklaas door onze verzameling 
-            historische documenten, jubileumboeken en archiefstukken.
+            Ontdek de rijke geschiedenis van KSK Colle Sint-Niklaas door onze
+            verzameling historische documenten, jubileumboeken en
+            archiefstukken.
           </p>
         </div>
 
@@ -103,9 +104,9 @@ export default function HistorischeDocumentenPage() {
                       title={selectedDocument.name}
                     >
                       <p className="p-4 text-center text-gray-500">
-                        Uw browser ondersteunt geen PDF weergave. 
-                        <a 
-                          href={`/pdf/${selectedDocument.filename}`} 
+                        Uw browser ondersteunt geen PDF weergave.
+                        <a
+                          href={`/pdf/${selectedDocument.filename}`}
                           className="text-mainAccent hover:underline ml-1"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -115,8 +116,11 @@ export default function HistorischeDocumentenPage() {
                       </p>
                     </iframe>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      Selecteer een document om te bekijken
+                    <div className="flex h-full flex-col items-center justify-center px-6 text-center text-gray-500">
+                      <FileText className="mb-4 text-gray-400" size={48} />
+                      <p className="font-medium">
+                        Selecteer een document om te bekijken
+                      </p>
                     </div>
                   )}
                 </div>
@@ -126,12 +130,16 @@ export default function HistorischeDocumentenPage() {
 
           {/* Document List - Takes up 1/3 of the space */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Beschikbare Documenten</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Beschikbare Documenten
+            </h3>
             {documents.map((document) => (
-              <Card 
-                key={document.id} 
+              <Card
+                key={document.id}
                 className={`border-mainAccent/20 shadow-lg hover:shadow-xl transition-shadow cursor-pointer ${
-                  selectedDocument?.id === document.id ? 'ring-2 ring-mainAccent' : ''
+                  selectedDocument?.id === document.id
+                    ? "ring-2 ring-mainAccent"
+                    : ""
                 }`}
                 onClick={() => handleViewDocument(document)}
               >
@@ -141,9 +149,7 @@ export default function HistorischeDocumentenPage() {
                     {document.name}
                   </CardTitle>
                   {document.year && (
-                    <div className="text-xs text-gray-500">
-                      {document.year}
-                    </div>
+                    <div className="text-xs text-gray-500">{document.year}</div>
                   )}
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -153,8 +159,8 @@ export default function HistorischeDocumentenPage() {
                   <div className="flex space-x-2">
                     <Button
                       onClick={(e) => {
-                        e.stopPropagation()
-                        handleViewDocument(document)
+                        e.stopPropagation();
+                        handleViewDocument(document);
                       }}
                       size="sm"
                       className="flex-1 bg-mainAccent hover:bg-mainAccentDark text-white"
@@ -164,8 +170,8 @@ export default function HistorischeDocumentenPage() {
                     </Button>
                     <Button
                       onClick={(e) => {
-                        e.stopPropagation()
-                        handleDownload(document)
+                        e.stopPropagation();
+                        handleDownload(document);
                       }}
                       variant="outline"
                       size="sm"
@@ -180,9 +186,7 @@ export default function HistorischeDocumentenPage() {
             ))}
           </div>
         </div>
-
-
       </div>
     </div>
-  )
+  );
 }

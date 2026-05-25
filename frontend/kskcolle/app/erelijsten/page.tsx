@@ -2,7 +2,6 @@
 
 import { Crown, Medal, Trophy } from "lucide-react"
 import { useEffect, useState } from "react"
-import * as XLSX from 'xlsx'
 import Link from 'next/link'
 
 // Helper function to create URL-friendly names
@@ -146,6 +145,7 @@ export default function ErelijstenPage() {
       }
       
       const arrayBuffer = await response.arrayBuffer()
+      const XLSX = await import('xlsx')
       const workbook = XLSX.read(arrayBuffer, { type: 'array' })
       
       const sheetName = workbook.SheetNames[0]

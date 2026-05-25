@@ -11,31 +11,47 @@ interface ImageUploadProps {
   onClose: () => void
 }
 
+const MAX_INLINE_IMAGE_SIZE_BYTES = 500 * 1024
+
 export default function ImageUpload({ onImageSelect, onClose }: ImageUploadProps) {
   const [imageUrl, setImageUrl] = useState("")
   const [dragOver, setDragOver] = useState(false)
+  const [error, setError] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleUrlSubmit = () => {
     if (imageUrl.trim()) {
+      setError("")
       onImageSelect(imageUrl.trim())
       onClose()
     }
   }
 
+  const selectInlineFile = (file?: File) => {
+    if (!file) return
+
+    if (!file.type.startsWith("image/")) {
+      setError("Selecteer een geldig afbeeldingsbestand.")
+      return
+    }
+
+    if (file.size > MAX_INLINE_IMAGE_SIZE_BYTES) {
+      setError("Deze afbeelding is te groot. Gebruik voor grote afbeeldingen een externe URL.")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      onImageSelect(result)
+      onClose()
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file) {
-      // Voor nu gebruiken we een placeholder URL
-      // In productie zou je hier een echte upload service gebruiken
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target?.result as string
-        onImageSelect(result)
-        onClose()
-      }
-      reader.readAsDataURL(file)
-    }
+    selectInlineFile(file)
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -52,16 +68,7 @@ export default function ImageUpload({ onImageSelect, onClose }: ImageUploadProps
     e.preventDefault()
     setDragOver(false)
     
-    const file = e.dataTransfer.files[0]
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target?.result as string
-        onImageSelect(result)
-        onClose()
-      }
-      reader.readAsDataURL(file)
-    }
+    selectInlineFile(e.dataTransfer.files[0])
   }
 
   return (
@@ -83,7 +90,10 @@ export default function ImageUpload({ onImageSelect, onClose }: ImageUploadProps
               type="url"
               placeholder="https://example.com/image.jpg"
               value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              onChange={(e) => {
+                setImageUrl(e.target.value)
+                setError("")
+              }}
               onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
             />
             <Button type="button" onClick={handleUrlSubmit} disabled={!imageUrl.trim()}>
@@ -139,8 +149,9 @@ export default function ImageUpload({ onImageSelect, onClose }: ImageUploadProps
         </div>
 
         <p className="text-xs text-gray-500">
-          Ondersteunde formaten: JPG, PNG, GIF, WebP
+          Ondersteunde formaten: JPG, PNG, GIF, WebP. Lokale bestanden worden inline opgeslagen en mogen maximaal 500KB zijn.
         </p>
+        {error && <p className="text-xs text-red-600">{error}</p>}
       </CardContent>
     </Card>
   )
