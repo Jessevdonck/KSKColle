@@ -246,7 +246,6 @@ export const updateSpel = async (game_id: number, data: SpelUpdateInput) => {
         speler2: true,
       },
     });
-    console.log('Updated game:', updatedGame);
     return updatedGame as any;
   } catch (error) {
     throw handleDBError(error);

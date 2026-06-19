@@ -75,7 +75,6 @@ export async function deleteAvatar(publicId: string): Promise<void> {
         console.error('Cloudinary delete error:', error);
         reject(new Error('Failed to delete image from Cloudinary'));
       } else {
-        console.log('Cloudinary delete result:', result);
         resolve();
       }
     });

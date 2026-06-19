@@ -42,14 +42,9 @@ export function installTournamentCloseRouter(router: Router) {
         return;
       }
 
-      console.log(`Closing tournament ${tournamentId}: ${tournament.naam} (updateRatings: ${updateRatings})`);
-
       // Update ratings for all players if requested
       if (updateRatings) {
         await ratingService.updateRatingsForTournament(tournamentId);
-        console.log(`✅ Ratings updated for tournament ${tournamentId}`);
-      } else {
-        console.log(`⏭️ Skipping rating updates for tournament ${tournamentId}`);
       }
 
       // Mark tournament as finished

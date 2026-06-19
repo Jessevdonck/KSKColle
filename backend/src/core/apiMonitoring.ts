@@ -100,9 +100,10 @@ export function apiMonitoringMiddleware() {
 }
 
 // Log summary every 5 minutes
+export let summaryInterval: ReturnType<typeof setInterval> | undefined;
 if (typeof setInterval !== 'undefined') {
-  const summaryInterval = setInterval(() => {
+  summaryInterval = setInterval(() => {
     apiMonitor.logSummary();
-  }, 5 * 60 * 1000); // 5 minutes
+  }, 5 * 60 * 1000);
   summaryInterval.unref?.();
 }

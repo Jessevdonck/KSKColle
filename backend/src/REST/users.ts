@@ -170,8 +170,6 @@ getPublicYouthUsers.validationScheme = null;
 const registerUser = async (
   ctx: KoaContext<LoginResponse, void, RegisterUserRequest>,
 ) => {
-  console.log("body: ", ctx.request.body);
-  
   // Parse dates
   const parsedUserData = {
     ...ctx.request.body,

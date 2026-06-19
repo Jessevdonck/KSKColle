@@ -51,7 +51,6 @@ const createMakeupRound = async (
 
   const { tournament_id, round_after, date, startuur, label } = body;
 
-  console.log("BODY binnen:", body);
 
   if (
     typeof tournament_id !== 'number' ||

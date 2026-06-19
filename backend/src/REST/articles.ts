@@ -70,8 +70,6 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
         select: { roles: true }
       })
       
-      console.log('User from DB:', { userId, rawRoles: user?.roles, type: typeof user?.roles })
-      
       // Parse roles - it's stored as JSON in the database
       let roles: string[] = []
       if (user?.roles) {
@@ -89,26 +87,14 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
         }
       }
       
-      console.log('Parsed roles:', roles)
-      
       isAdmin = roles.includes('admin')
       isBestuurslid = roles.includes('bestuurslid')
       isAuthor = roles.includes('author')
       
-      console.log('Articles - Authenticated user:', { userId, isAdmin, isBestuurslid, isAuthor, roles })
     } catch (error) {
       // Invalid/expired token - treat as guest
-      console.log('Articles - Invalid token, treating as guest')
     }
   }
-
-  console.log('Articles query params:', { 
-    rawPublished: ctx.query.published, 
-    parsedPublished: params.published,
-    userId,
-    isAdmin,
-    isBestuurslid
-  })
 
   // Apply authorization rules based on user role
   if (userId) {
@@ -142,17 +128,14 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
       // If published=true, that's fine - show published articles
     }
     
-    console.log('Final params:', { published: params.published, author_id: params.author_id, showAllForAuthor: params.showAllForAuthor })
   } else {
     // Not authenticated - only show published articles
     if (params.published === undefined) {
       params.published = true
     }
-    console.log('Not authenticated, forcing published=true')
   }
 
   const result = await getArticlesService(params)
-  console.log('Articles result:', { total: result.total, items: result.items.length })
   ctx.body = result
 }
 getArticles.validationScheme = {

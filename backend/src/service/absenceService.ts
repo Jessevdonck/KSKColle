@@ -106,7 +106,6 @@ Deze speler meldt zich af voor ronde ${nextRoundNumber} en wenst niet uitgeloot 
         }
       })
 
-      console.log(`Found ${admins.length} admins for absence notifications`)
 
       for (const admin of admins) {
         try {
@@ -117,7 +116,6 @@ Deze speler meldt zich af voor ronde ${nextRoundNumber} en wenst niet uitgeloot 
             message: `${playerName} heeft zich afgemeld voor ronde ${nextRoundNumber} in ${tournament.naam}`,
           })
           
-          console.log(`Notification sent to admin ${admin.user_id} (${admin.email})`)
         } catch (notifError) {
           console.error(`Failed to send notification to admin ${admin.user_id}:`, notifError)
           // Continue met de volgende admin
@@ -127,8 +125,6 @@ Deze speler meldt zich af voor ronde ${nextRoundNumber} en wenst niet uitgeloot 
       console.error('Failed to get or notify admins about absence:', error)
       // We gooien de error niet door omdat de afwezigheid wel succesvol is gemeld
     }
-
-    console.log(`Afwezigheid gemeld voor ${playerName} in toernooi ${tournament.naam} voor ronde ${nextRoundNumber}`)
 
     return { round_number: nextRoundNumber }
 

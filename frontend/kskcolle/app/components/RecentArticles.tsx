@@ -1,34 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import useSWR from "swr"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { getRecentArticles } from "../api/index"
+import { getAll } from "../api/index"
 import { Article } from "../../data/article"
-import { Calendar, User, Tag, Star, ArrowRight } from "lucide-react"
+import { Calendar, User, Tag, ArrowRight } from "lucide-react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 
 export default function RecentArticles() {
-  const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchRecentArticles()
-  }, [])
-
-  const fetchRecentArticles = async () => {
-    try {
-      const data = await getRecentArticles(3) // Get 3 most recent articles
-      setArticles(data)
-    } catch (error) {
-      console.error("Error fetching recent articles:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { data: articles = [], isLoading: loading } = useSWR<Article[]>(
+    'articles/recent?limit=3',
+    getAll,
+    { dedupingInterval: 5 * 60 * 1000 },
+  )
 
   const getArticleTypeLabel = (type: string) => {
     switch (type) {

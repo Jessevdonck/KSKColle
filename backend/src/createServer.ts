@@ -5,6 +5,7 @@ import { getLogger } from './core/logging';
 import { initializeData, shutdownData } from './data/index';
 import installMiddlewares from './core/installMiddlewares';
 import installRest from './REST';
+import { summaryInterval } from './core/apiMonitoring';
 import type {
   KoaApplication,
   ChessAppContext,
@@ -44,6 +45,7 @@ export default async function createServer(): Promise<Server> {
     },
 
     async stop() {
+      if (summaryInterval) clearInterval(summaryInterval);
       app.removeAllListeners();
       await shutdownData();
       getLogger().info('Goodbye! 👋');

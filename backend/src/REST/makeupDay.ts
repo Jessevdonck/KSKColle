@@ -36,7 +36,6 @@ const createMakeupDay = async (
 
   const { tournament_id, round_after, date, startuur } = body;
 
-  console.log("BODY binnen:", body);
 
   if (
     typeof tournament_id !== 'number' ||

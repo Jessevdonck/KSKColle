@@ -85,6 +85,7 @@ export default function Navbar() {
   const { data: tournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
     getAll,
+    { dedupingInterval: 10 * 60 * 1000 }, // 10 minutes
   )
 
   const { latestHerfst, latestLente, latestBlitz } = useMemo(() => {

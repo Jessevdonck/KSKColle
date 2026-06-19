@@ -462,15 +462,6 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
       }))
     };
 
-    console.log('🔍 Backend - Tournament is_youth:', tournamentWithSevillaFlag.is_youth, 'naam:', tournamentWithSevillaFlag.naam);
-    console.log('🔍 Backend - Tournament rounds with Sevilla flags:', tournamentWithSevillaFlag.rounds.map(r => ({
-      round_id: r.round_id,
-      ronde_nummer: r.ronde_nummer,
-      type: r.type,
-      label: r.label,
-      is_sevilla_imported: r.is_sevilla_imported
-    })));
-
     return tournamentWithSevillaFlag;
   } catch (error) {
     throw handleDBError(error);
