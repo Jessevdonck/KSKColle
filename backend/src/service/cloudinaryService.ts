@@ -70,7 +70,7 @@ export async function uploadAvatar(
 
 export async function deleteAvatar(publicId: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.destroy(publicId, (error, result) => {
+    cloudinary.uploader.destroy(publicId, (error, _result) => {
       if (error) {
         console.error('Cloudinary delete error:', error);
         reject(new Error('Failed to delete image from Cloudinary'));
