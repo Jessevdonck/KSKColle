@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../data/index'
 import handleDBError from './handleDBError'
 import type { 
   CommentWithAuthor, 
@@ -12,7 +12,6 @@ import {
   createCommentReplyNotification 
 } from './notificationService'
 
-const prisma = new PrismaClient()
 
 export const createComment = async (authorId: number, commentData: CreateCommentRequest): Promise<CommentWithAuthor> => {
   try {

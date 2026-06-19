@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../data/index';
 import * as cloudinaryService from './cloudinaryService';
-
-const prisma = new PrismaClient();
 
 export async function updateUserAvatar(userId: number, fileBuffer: Buffer, originalName: string) {
   try {

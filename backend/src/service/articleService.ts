@@ -1,4 +1,5 @@
-import { PrismaClient, ArticleType } from '@prisma/client'
+import { ArticleType } from '@prisma/client'
+import { prisma } from '../data/index'
 import handleDBError from './handleDBError'
 import type { 
   ArticleWithAuthor, 
@@ -8,7 +9,6 @@ import type {
   GetArticlesResponse
 } from '../types/article'
 
-const prisma = new PrismaClient()
 
 export const createArticle = async (authorId: number, articleData: CreateArticleRequest): Promise<ArticleWithAuthor> => {
   try {

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../data/index'
 import handleDBError from './handleDBError'
 import type { 
   Notification, 
@@ -8,7 +8,6 @@ import type {
 } from '../types/notification'
 import { NotificationTypes } from '../types/notification'
 
-const prisma = new PrismaClient()
 
 export const createNotification = async (notificationData: CreateNotificationRequest): Promise<Notification> => {
   try {

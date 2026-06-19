@@ -11,7 +11,7 @@ import { likeArticle as likeArticleService, unlikeArticle as unlikeArticleServic
 import { requireAuthentication, makeRequireRole } from '../core/auth'
 import validate from '../core/validation'
 import Joi from 'joi'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../data/index'
 import * as userService from '../service/userService'
 import type { ChessAppContext, ChessAppState, KoaContext } from '../types/koa'
 import type { 
@@ -22,7 +22,6 @@ import type {
   ArticleType 
 } from '../types/article'
 
-const prisma = new PrismaClient()
 
 /**
  * @api {get} /articles Get articles with pagination and filters
