@@ -18,6 +18,7 @@ import {
   isLentecompetitieTieBreak,
   isLodeBuitenCompetitieLente2026,
   isLodeVanLandeghem,
+  showsElioRatingChange,
   usesBuchholzWorstTieBreak,
 } from "./tieBreakLente"
 
@@ -87,6 +88,8 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
 
   const isLentecompetitie = isLentecompetitieTieBreak(tournament)
   const tieBreakLabel = getTieBreakColumnLabel(tournament)
+  // Ratingwinst (+/-) enkel bij ELIO-competities (herfst & lente)
+  const showRatingChange = showsElioRatingChange(tournament)
 
   const playerScores = calculateStandings(tournament, rounds)
   
@@ -353,7 +356,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
                   {tournament.is_youth !== true && (
                     <div className="hidden lg:flex w-14 text-center text-[0.7em] font-medium text-gray-700 items-center justify-center gap-0.5">
                       <span>{player.schaakrating_elo || '-'}</span>
-                      {player.ratingDifference !== null && player.ratingDifference !== undefined && (
+                      {showRatingChange && player.ratingDifference !== null && player.ratingDifference !== undefined && (
                         <span className={`text-xs font-bold ${
                           isBiggestRatingGain
                             ? "px-1 py-0.5 rounded bg-green-500 text-white shadow-lg"

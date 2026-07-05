@@ -63,6 +63,18 @@ export function countsEveryPairMeetingForTieBreak(tournament: {
   )
 }
 
+/**
+ * ELIO-competities: enkel de herfst- en lentecompetitie tellen voor de ELIO-rating.
+ * Alleen daar tonen we de ratingwinst (+/-) naast de ELIO in de stand.
+ */
+export function showsElioRatingChange(tournament: {
+  naam: string
+  class_name?: string | null
+}): boolean {
+  const n = tournament.naam.toLowerCase()
+  return n.includes("herfst") || isLentecompetitieTieBreak(tournament)
+}
+
 /** Lode Van Landeghem: uitslagen tellen niet mee (alleen lentecompetitie seizoen 2026). */
 export function isLodeVanLandeghem(voornaam: string, achternaam: string): boolean {
   const v = (voornaam || "").trim().toLowerCase()
