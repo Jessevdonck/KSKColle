@@ -69,6 +69,7 @@ model User {
   reserveTeams       MegaschaakTeam[] @relation("ReservePlayer")
   puzzleAttempts     PuzzleAttempt[]
   createdPuzzles     Puzzle[]         @relation("PuzzleCreator")
+  tournamentHonors   TournamentHonor[]
 
   @@index([is_youth])
 }
@@ -86,13 +87,14 @@ model Tournament {
   megaschaak_deadline DateTime?      // Deadline voor megaschaak team registratie
   megaschaak_config  Json?           // Configuratie voor megaschaak formule (bonus points per klasse, correctie multiplier, etc.)
   
-  participations     Participation[]  
-  rounds             Round[]          
-  makeupDays         MakeupDay[]    
+  participations     Participation[]
+  rounds             Round[]
+  makeupDays         MakeupDay[]
   calendarEvents     CalendarEvent[] // Calendar events gerelateerd aan dit toernooi
   megaschaakTeams    MegaschaakTeam[]
+  honors             TournamentHonor[]
 
-  @@index([is_youth])  
+  @@index([is_youth])
 }
 
 model Round {
@@ -339,6 +341,24 @@ model Puzzle {
   
   @@index([created_by])
   @@index([created_at])
+}
+
+// Erelijst/palmares: podiumplaatsen die bij het afsluiten van een toernooi
+// automatisch worden vastgelegd. Getoond op de erelijsten-pagina en op profielen.
+model TournamentHonor {
+  honor_id       Int      @id @default(autoincrement())
+  tournament_id  Int
+  user_id        Int
+  position       Int      // 1 = winnaar, 2 = tweede, 3 = derde
+  jaar           Int      // Jaar van afsluiting (voor weergave in de erelijsten)
+  created_at     DateTime @default(now())
+
+  tournament     Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
+  user           User       @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([tournament_id, position])
+  @@index([user_id])
+  @@index([jaar])
 }
 
 model PuzzleAttempt {

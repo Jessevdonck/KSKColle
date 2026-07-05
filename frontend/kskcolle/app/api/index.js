@@ -278,6 +278,17 @@ export const getUserPuzzleAttempt = async (puzzleId) => {
   return data;
 };
 
+// Honor/palmares functions
+export const getAllHonors = async () => {
+  const { data } = await axios.get(`${baseUrl}/honors`);
+  return data.items;
+};
+
+export const getUserHonors = async (userId) => {
+  const { data } = await axios.get(`${baseUrl}/honors/user/${userId}`);
+  return data.items;
+};
+
 // Game postpone functions
 export const postponeGame = async (url, { arg: { game_id, makeup_round_id } }) => {
   const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { 

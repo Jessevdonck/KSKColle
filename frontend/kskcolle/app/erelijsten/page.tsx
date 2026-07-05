@@ -3,6 +3,8 @@
 import { Crown, Medal, Trophy } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from 'next/link'
+import useSWR from "swr"
+import { getAllHonors } from "../api/index"
 
 // Helper function to create URL-friendly names
 const createUrlFriendlyName = (voornaam: string, achternaam: string): string => {
@@ -99,6 +101,90 @@ interface PrijzenTelling {
   ratingprijs: number
 }
 
+/** Automatisch vastgelegde podia van afgesloten toernooien (uit de database). */
+interface HonorTournament {
+  tournament_id: number
+  naam: string
+  class_name?: string | null
+  is_youth: boolean
+  jaar: number
+  podium: Array<{
+    position: number
+    user: { user_id: number; voornaam: string; achternaam: string }
+  }>
+}
+
+const honorName = (honor: HonorTournament, position: number): string => {
+  const entry = honor.podium.find((p) => p.position === position)
+  return entry ? `${entry.user.voornaam} ${entry.user.achternaam}` : ''
+}
+
+const honorsForCompetition = (honors: HonorTournament[], keywords: string[]): HonorTournament[] =>
+  honors.filter(
+    (h) => !h.is_youth && keywords.some((k) => h.naam.toLowerCase().includes(k)),
+  )
+
+const KLASSE_ORDER = [
+  'Eerste Klasse', 'Tweede Klasse', 'Derde Klasse', 'Vierde Klasse', 'Vijfde Klasse',
+  'Vierde en Vijfde Klasse', 'Zesde Klasse', 'Zevende Klasse', 'Achtste Klasse',
+]
+
+const EMPTY_HONORS: HonorTournament[] = []
+
+/** Voeg automatische podia toe aan een simple/zomer-tabel (jaren die nog niet in de Excel staan). */
+const mergeSimpleHonors = (excelResults: Result[], honors: HonorTournament[], keywords: string[]): Result[] => {
+  const existingYears = new Set(excelResults.map((r) => r.jaar))
+  const byYear = new Map<number, HonorTournament>()
+  for (const h of honorsForCompetition(honors, keywords)) {
+    if (existingYears.has(h.jaar)) continue
+    // Meerdere klasses in hetzelfde jaar: toon de hoogste klasse in de simple tabel
+    const current = byYear.get(h.jaar)
+    if (!current) {
+      byYear.set(h.jaar, h)
+    } else {
+      const rank = (t: HonorTournament) =>
+        t.class_name ? KLASSE_ORDER.indexOf(t.class_name) : -1
+      if (rank(h) < rank(current)) byYear.set(h.jaar, h)
+    }
+  }
+  const extra: Result[] = [...byYear.values()]
+    .sort((a, b) => a.jaar - b.jaar)
+    .map((h) => ({
+      jaar: h.jaar,
+      eerste: honorName(h, 1),
+      tweede: honorName(h, 2),
+      derde: honorName(h, 3),
+      ratingprijs: '',
+    }))
+  return [...excelResults, ...extra]
+}
+
+/** Voeg automatische podia toe aan een klasses-tabel (jaren die nog niet in de Excel staan). */
+const mergeKlasseHonors = (excelResults: KlasseResult[], honors: HonorTournament[], keywords: string[]): KlasseResult[] => {
+  const existingYears = new Set(excelResults.map((r) => r.jaar))
+  const byYear = new Map<number, KlasseResult>()
+  for (const h of honorsForCompetition(honors, keywords)) {
+    if (existingYears.has(h.jaar)) continue
+    const year = byYear.get(h.jaar) ?? { jaar: h.jaar, klasses: [] }
+    year.klasses.push({
+      klasse: h.class_name || 'Hoofdtoernooi',
+      eerste: honorName(h, 1),
+      tweede: honorName(h, 2),
+      derde: honorName(h, 3),
+    })
+    byYear.set(h.jaar, year)
+  }
+  const extra = [...byYear.values()]
+    .map((y) => ({
+      ...y,
+      klasses: y.klasses.sort(
+        (a, b) => KLASSE_ORDER.indexOf(a.klasse) - KLASSE_ORDER.indexOf(b.klasse),
+      ),
+    }))
+    .sort((a, b) => a.jaar - b.jaar)
+  return [...excelResults, ...extra]
+}
+
 const EXCEL_FILES = [
   { name: 'Herfstkampioenschap', file: 'herfst.xlsx', format: 'simple' },
   { name: 'Lentekampioenschap', file: 'lente.xlsx', format: 'klasses' },
@@ -124,11 +210,21 @@ export default function ErelijstenPage() {
   const [loading, setLoading] = useState(false)
   const [currentFormat, setCurrentFormat] = useState<'simple' | 'klasses' | 'zomer' | 'quiz' | 'konijn' | 'megalijst' | 'ranking' | 'records'>('simple')
 
+  // Automatisch vastgelegde podia van afgesloten toernooien
+  // (geen `= []` default: een nieuwe array per render zou de effect-dependency
+  // hieronder blijven triggeren)
+  const { data: honorsData } = useSWR<HonorTournament[]>("honors", getAllHonors, {
+    revalidateOnFocus: false,
+  })
+  const honors = honorsData ?? EMPTY_HONORS
+
   useEffect(() => {
     if (selectedTournament) {
       loadExcelData(selectedTournament)
     }
-  }, [selectedTournament])
+    // Herlaad wanneer de automatische podia binnenkomen zodat ze meegenomen worden
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTournament, honorsData])
 
   const loadExcelData = async (tournamentName: string) => {
     setLoading(true)
@@ -215,8 +311,10 @@ export default function ErelijstenPage() {
         let processedKlasseResults
         if (tournament.name === 'Snelschaak') {
           processedKlasseResults = processSnelschaakData(jsonData)
+          processedKlasseResults = mergeKlasseHonors(processedKlasseResults, honors, ['snelschaak', 'blitz'])
         } else {
           processedKlasseResults = processKlasseData(jsonData)
+          processedKlasseResults = mergeKlasseHonors(processedKlasseResults, honors, ['lente'])
         }
         setKlasseResults(processedKlasseResults)
         setRawData([]) // Clear raw data
@@ -224,7 +322,7 @@ export default function ErelijstenPage() {
       } else if (tournament.format === 'zomer') {
         // Process zomer format
         const processedZomerResults = processZomerData(jsonData)
-        setResults(processedZomerResults)
+        setResults(mergeSimpleHonors(processedZomerResults, honors, ['zomer']))
         setKlasseResults([]) // Clear klasse results
         setRawData([]) // Clear raw data
       } else {
@@ -252,8 +350,8 @@ export default function ErelijstenPage() {
             ratingprijs: cellName(row[8])
           })
         }
-        
-        setResults(processedResults)
+
+        setResults(mergeSimpleHonors(processedResults, honors, ['herfst']))
         setKlasseResults([]) // Clear klasse results
       }
     } catch (error) {

@@ -1,6 +1,7 @@
 import Router from '@koa/router';
 import { requireAuthentication, makeRequireRole } from '../core/auth';
 import { ratingService } from '../service/ratingService';
+import { saveTournamentPodium, type PodiumEntry } from '../service/honorService';
 import { prisma } from '../data';
 import {
   shortLivedCacheInvalidatePrefix,
@@ -17,7 +18,10 @@ export function installTournamentCloseRouter(router: Router) {
   router.post('/tournament/:id/close', requireAuthentication, requireAdmin, async (ctx) => {
     try {
       const tournamentId = parseInt(ctx.params.id || '0');
-      const { updateRatings = true } = ctx.request.body as { updateRatings?: boolean };
+      const { updateRatings = true, podium } = ctx.request.body as {
+        updateRatings?: boolean;
+        podium?: PodiumEntry[];
+      };
       
       if (isNaN(tournamentId)) {
         ctx.status = 400;
@@ -45,6 +49,16 @@ export function installTournamentCloseRouter(router: Router) {
       // Update ratings for all players if requested
       if (updateRatings) {
         await ratingService.updateRatingsForTournament(tournamentId);
+      }
+
+      // Leg het podium vast in de erelijst/palmares. Het podium komt van de
+      // frontend (zelfde berekening als de getoonde eindstand); zonder podium
+      // valt de service terug op score/tie-break uit de deelnames.
+      try {
+        await saveTournamentPodium(tournamentId, podium);
+      } catch (honorError) {
+        // Afsluiten mag niet falen op de erelijst; log en ga verder
+        console.error('Error saving tournament podium:', honorError);
       }
 
       // Mark tournament as finished

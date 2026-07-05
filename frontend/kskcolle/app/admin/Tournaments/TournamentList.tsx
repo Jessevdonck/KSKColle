@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import useSWR from "swr"
 import useSWRMutation from "swr/mutation"
-import { getAll, deleteById } from "../../api/index"
+import { getAll, getById, deleteById } from "../../api/index"
+import { calculateStandings } from "../../toernooien/components/Standings"
 import type { Toernooi, MegaschaakTeam } from "@/data/types"
 import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X, Calculator, Plus } from "lucide-react"
 import MegaschaakConfigForm from "./components/MegaschaakConfigForm"
@@ -80,9 +81,23 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
   const { trigger: closeTournament, isMutating: isClosing } = useSWRMutation(
     "tournament?active=true",
     async (url, { arg }: { arg: { id: number; updateRatings: boolean } }) => {
+      // Bereken het podium met dezelfde logica als de getoonde eindstand,
+      // zodat winnaars automatisch in de erelijsten en palmaressen komen.
+      let podium: Array<{ user_id: number; position: number }> | undefined
+      try {
+        const tournament = await getById(`tournament/${arg.id}`)
+        const standings = calculateStandings(tournament, tournament.rounds)
+        podium = standings
+          .slice(0, 3)
+          .map((player, index) => ({ user_id: player.user_id, position: index + 1 }))
+      } catch (e) {
+        // Backend berekent zelf een fallback-podium als dit misgaat
+        console.error("Kon podium niet berekenen:", e)
+      }
+
       const { data } = await axios.post(
         `/tournament/${arg.id}/close`,
-        { updateRatings: arg.updateRatings }
+        { updateRatings: arg.updateRatings, podium }
       );
       return data;
     },
