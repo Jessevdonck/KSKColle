@@ -826,6 +826,49 @@ export default function ErelijstenPage() {
     return totalB - totalA
   })
 
+  // Meervoudige winnaars voor zomertoernooi en snelschaak (alleen titels/1ste plaatsen)
+  const titelsPerSpeler: Record<string, number> = {}
+  if (currentFormat === 'zomer') {
+    results.forEach(({ eerste }) => {
+      if (eerste) titelsPerSpeler[eerste] = (titelsPerSpeler[eerste] || 0) + 1
+    })
+  } else if (currentFormat === 'klasses' && selectedTournament === 'Snelschaak') {
+    klasseResults.forEach(({ klasses }) =>
+      klasses.forEach(({ eerste }) => {
+        if (eerste) titelsPerSpeler[eerste] = (titelsPerSpeler[eerste] || 0) + 1
+      }),
+    )
+  }
+  const meervoudigeTitels = Object.entries(titelsPerSpeler)
+    .filter(([, aantal]) => aantal >= 2)
+    .sort((a, b) => b[1] - a[1])
+
+  const meervoudigeWinnaarsSection = meervoudigeTitels.length > 0 ? (
+    <div className="mt-8">
+      <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
+        <Medal /> <span>Meervoudige Winnaars</span>
+      </h2>
+      <div className="overflow-auto">
+        <table className="min-w-full text-sm border border-gray-300">
+          <thead className="bg-neutral-100 text-left">
+            <tr>
+              <th className="p-2 border">Speler</th>
+              <th className="p-2 border">🥇 Titels</th>
+            </tr>
+          </thead>
+          <tbody>
+            {meervoudigeTitels.map(([speler, aantal]) => (
+              <tr key={speler} className="even:bg-neutral-50">
+                <td className="p-2 border">{createClickableName(speler)}</td>
+                <td className="p-2 border font-bold">{aantal}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ) : null
+
   return (
     <main className="container mx-auto px-4 py-6">
       <div className="text-center mb-6">
@@ -1039,6 +1082,7 @@ export default function ErelijstenPage() {
             </div>
           ) : currentFormat === 'klasses' ? (
             // Render klasses format with correct data
+            <>
             <div className="space-y-8">
               {klasseResults.map((yearData, yearIndex) => (
                 <div key={yearData.jaar} className="border border-gray-300 rounded-lg overflow-hidden">
@@ -1070,26 +1114,31 @@ export default function ErelijstenPage() {
                 </div>
               ))}
             </div>
+            {meervoudigeWinnaarsSection}
+            </>
           ) : currentFormat === 'zomer' ? (
             // Render zomer format (only winners)
-            <div className="overflow-auto">
-              <table className="min-w-full text-xs">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <tr>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Jaar</th>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🏆 Winnaar</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {results.map((r, index) => (
-                    <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
+            <>
+              <div className="overflow-auto">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <tr>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Jaar</th>
+                      <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🏆 Winnaar</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {results.map((r, index) => (
+                      <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
+                        <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
+                        <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {meervoudigeWinnaarsSection}
+            </>
           ) : (
             // Render simple format
             <>
