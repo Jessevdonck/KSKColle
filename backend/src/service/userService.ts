@@ -10,6 +10,7 @@ import { getLogger } from "../core/logging";
 import { generateJWT, verifyJWT } from "../core/jwt";
 import type { SessionInfo } from '../types/auth';
 import { isUserMember } from './lidgeldService';
+import { jubileumJaren, isJubileumJaar } from './jubileumService';
 
 /** Clubrating > 0 telt als “heeft rating” (ELIO). */
 const hasClubRating = (u: { schaakrating_elo: number | null | undefined }): boolean =>
@@ -19,35 +20,38 @@ const hasClubRating = (u: { schaakrating_elo: number | null | undefined }): bool
 const includeInPublicPlayersList = (u: PublicUser): boolean =>
   Boolean(u.membership_valid || hasClubRating(u));
 
-const makeExposedUser = ({ 
-  user_id, 
-  voornaam, 
-  achternaam, 
-  schaakrating_elo, 
-  fide_id,  
-  email,
-  guardian_email,
-  tel_nummer,
-  vast_nummer,
-  guardian_phone,
-  geboortedatum,
-  max_rating,
-  rating_difference,
-  lid_sinds,
-  roles,
-  avatar_url,
-  lidgeld_betaald,
-  lidgeld_periode_start,
-  lidgeld_periode_eind,
-  bondslidgeld_betaald,
-  bondslidgeld_periode_start,
-  bondslidgeld_periode_eind,
-  }: any): PublicUser => ({
-    user_id, 
-    voornaam, 
-    achternaam, 
-    schaakrating_elo, 
-    fide_id,  
+const makeExposedUser = (user: any): PublicUser => {
+  const {
+    user_id,
+    voornaam,
+    achternaam,
+    schaakrating_elo,
+    fide_id,
+    email,
+    guardian_email,
+    tel_nummer,
+    vast_nummer,
+    guardian_phone,
+    geboortedatum,
+    max_rating,
+    rating_difference,
+    lid_sinds,
+    roles,
+    avatar_url,
+    lidgeld_betaald,
+    lidgeld_periode_start,
+    lidgeld_periode_eind,
+    bondslidgeld_betaald,
+    bondslidgeld_periode_start,
+    bondslidgeld_periode_eind,
+  } = user;
+
+  return {
+    user_id,
+    voornaam,
+    achternaam,
+    schaakrating_elo,
+    fide_id,
     email,
     guardian_email,
     tel_nummer,
@@ -65,7 +69,12 @@ const makeExposedUser = ({
     bondslidgeld_betaald,
     bondslidgeld_periode_start,
     bondslidgeld_periode_eind,
-  } as PublicUser)
+    // Jubileum (25/50 jaar lid): alleen uitlichten wie op dit moment effectief lid is
+    jubileum_jaren: isUserMember(user) ? jubileumJaren(lid_sinds) : null,
+    // Viert dit jaar exact 25/50 jaar: voor de uitlichting in de spelerslijst
+    jubileum_dit_jaar: isUserMember(user) ? isJubileumJaar(lid_sinds) : false,
+  } as PublicUser;
+}
 
 export const getAllUsers = async (): Promise<User[]> => {
   try {

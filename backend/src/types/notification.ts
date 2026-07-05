@@ -39,4 +39,5 @@ export const NotificationTypes = {
   ARTICLE_LIKE: 'article_like',
   GAME_POSTPONED: 'game_postponed',
   ABSENCE_REPORTED: 'absence_reported',
+  JUBILEUM: 'jubileum',
 } as const

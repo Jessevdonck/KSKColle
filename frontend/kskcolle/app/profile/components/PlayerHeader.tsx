@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { User } from '../../../data/types'
-import { Mail, Phone, Smartphone, Lock } from 'lucide-react'
+import { Mail, Phone, Smartphone, Lock, Award } from 'lucide-react'
 import AvatarUpload from '../../components/AvatarUpload'
 import { useAuth } from '../../contexts/auth'
 import { canViewSensitiveInfo, canViewUserSensitiveInfo } from '../../../lib/roleUtils'
@@ -15,8 +15,11 @@ export default function PlayerHeader({ player }: { player: User }) {
     { name: 'Club Rating', value: player.schaakrating_elo },
   ]
 
+  // Jubileum (25/50 jaar lid): profiel uitlichten met gouden accenten
+  const jubileum = player.jubileum_jaren ?? null
+
   return (
-    <div className="bg-gray-50 p-8">
+    <div className={jubileum ? "bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 p-8 border-b-2 border-amber-300" : "bg-gray-50 p-8"}>
       <div className="max-w-7xl mx-auto">
         <div className="md:flex items-center justify-between">
           <div className="flex items-center mb-6 md:mb-0">
@@ -29,7 +32,7 @@ export default function PlayerHeader({ player }: { player: User }) {
                   size="lg"
                 />
               ) : (
-                <div className="h-40 w-40 rounded-full overflow-hidden border-4 border-mainAccent bg-gray-200">
+                <div className={`h-40 w-40 rounded-full overflow-hidden border-4 bg-gray-200 ${jubileum ? "border-amber-400" : "border-mainAccent"}`}>
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
@@ -53,6 +56,12 @@ export default function PlayerHeader({ player }: { player: User }) {
             <div>
               <div className="uppercase tracking-wide text-sm text-mainAccent font-semibold">Speler Profiel</div>
               <h1 className="mt-1 text-4xl font-bold text-textColor">{`${player.voornaam} ${player.achternaam}`}</h1>
+              {jubileum && (
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-3 py-1 text-sm font-semibold text-white shadow">
+                  <Award className="h-4 w-4" />
+                  {jubileum} jaar lid van KSK Colle
+                </div>
+              )}
               
               {/* Contact Information */}
               <div className="mt-4 space-y-2">

@@ -40,6 +40,10 @@ export interface User {
   jeugdlidgeld_periode_eind?: Date | null;
   /** Publieke API: zelfde als `lidgeld_betaald` in de database. */
   membership_valid?: boolean;
+  /** Jubileum-mijlpaal: 25 of 50 (jaar lid), alleen voor actieve leden. */
+  jubileum_jaren?: number | null;
+  /** Viert dit jaar exact 25 of 50 jaar lidmaatschap (uitlichting spelerslijst). */
+  jubileum_dit_jaar?: boolean;
 }
 
 export interface PasswordResetRequest {

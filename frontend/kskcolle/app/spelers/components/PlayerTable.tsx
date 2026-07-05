@@ -80,6 +80,20 @@ export default function PlayerTable({
 
   const sortedPlayers = [...users].sort(sortPlayers)
 
+  // Gouden badge, enkel voor wie dít jaar zijn jubileum viert (exact 25/50 jaar lid)
+  const JubileumBadge = ({ player }: { player: UserType }) => {
+    if (!player.jubileum_dit_jaar || !player.jubileum_jaren) return null
+    return (
+      <span
+        title={`Viert dit jaar ${player.jubileum_jaren} jaar lidmaatschap van KSK Colle`}
+        className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm shrink-0"
+      >
+        <Award className="h-3 w-3" />
+        {player.jubileum_jaren} jaar
+      </span>
+    )
+  }
+
   const columns = [
     { key: "achternaam" as SortKey, label: "Speler", icon: User },
     { key: "schaakrating_elo" as SortKey, label: "ELIO Rating", icon: Trophy },
@@ -152,6 +166,7 @@ export default function PlayerTable({
                       <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors text-sm">
                         {`${player.voornaam} ${player.achternaam}`}
                       </div>
+                      <JubileumBadge player={player} />
                     </Link>
                   </td>
                   <td className="p-3" data-cy="rating">
@@ -199,8 +214,11 @@ export default function PlayerTable({
                     href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
                     className="flex-1 group"
                   >
-                    <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors text-sm">
-                      {`${player.voornaam} ${player.achternaam}`}
+                    <div className="flex items-center gap-2">
+                      <div className="font-semibold text-textColor group-hover:text-mainAccent transition-colors text-sm">
+                        {`${player.voornaam} ${player.achternaam}`}
+                      </div>
+                      <JubileumBadge player={player} />
                     </div>
                   </Link>
                 </div>

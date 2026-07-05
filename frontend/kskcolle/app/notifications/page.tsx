@@ -8,7 +8,7 @@ import * as api from '../api/index.js'
 import { Notification, GetNotificationsResponse } from '../../data/notification'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
-import { Bell, Trash2, Check, CheckCheck, MessageSquare, Reply, Clock, Calendar } from 'lucide-react'
+import { Bell, Trash2, Check, CheckCheck, MessageSquare, Reply, Clock, Calendar, Award } from 'lucide-react'
 
 export default function NotificationsPage() {
   const [response, setResponse] = useState<GetNotificationsResponse | null>(null)
@@ -114,6 +114,8 @@ export default function NotificationsPage() {
         return <Clock className={iconClass} />
       case 'absence_reported':
         return <Calendar className={iconClass} />
+      case 'jubileum':
+        return <Award className={iconClass} />
       default:
         return <Bell className={iconClass} />
     }
@@ -129,6 +131,8 @@ export default function NotificationsPage() {
         return 'Partij uitgesteld'
       case 'absence_reported':
         return 'Afwezigheid gemeld'
+      case 'jubileum':
+        return 'Jubileum'
       default:
         return 'Notificatie'
     }

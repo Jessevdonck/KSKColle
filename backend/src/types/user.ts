@@ -40,6 +40,10 @@ export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achtern
   /** Geldig lidgeld, bondslidgeld of jeugdlidgeld (niet verlopen). */
   membership_valid?: boolean;
   is_youth?: boolean;
+  /** Jubileum-mijlpaal: 25 of 50 (jaar lid), alleen voor actieve leden. */
+  jubileum_jaren?: number | null;
+  /** Viert dit jaar exact 25 of 50 jaar lidmaatschap (uitlichting spelerslijst). */
+  jubileum_dit_jaar?: boolean;
 }
 
 

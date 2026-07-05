@@ -436,7 +436,8 @@ const getPublicUserByNaam = async (ctx: KoaContext<PublicUserInfo>) => {
         fide_id: user.fide_id,
         lid_sinds: user.lid_sinds,
         avatar_url: user.avatar_url,
-        roles: user.roles
+        roles: user.roles,
+        jubileum_jaren: user.jubileum_jaren,
       };
       ctx.body = publicUser;
     } else {
