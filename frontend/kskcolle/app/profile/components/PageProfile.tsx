@@ -128,12 +128,16 @@ export default function PlayerProfile() {
               <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 lg:gap-6 items-start">
                 <div className="order-2 lg:order-1 min-w-0">
                   <div className="space-y-4">
-                    <Palmares playerId={player.user_id} />
                     <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
                     <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
                   </div>
                 </div>
-                <div className="order-1 lg:order-2 min-w-0">
+                <div className="order-1 lg:order-2 min-w-0 space-y-4">
+                  <Palmares
+                    playerId={player.user_id}
+                    voornaam={player.voornaam}
+                    achternaam={player.achternaam}
+                  />
                   <ProfileStats games={playedGamesWithResults} playerId={player.user_id} compact />
                 </div>
               </div>
