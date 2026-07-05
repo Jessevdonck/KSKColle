@@ -4,6 +4,7 @@ import { RoundType } from "../types/Types";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import * as calendarService from "./calendarService";
+import { getInitialRatingsMap, withInitialRating } from "./initialRatings";
 import { emailService } from "./emailService";
 import { createNotification } from "./notificationService";
 import { NotificationTypes } from "../types/notification";
@@ -76,10 +77,17 @@ export async function getAllTournamentRounds(tournament_id: number): Promise<Tou
       ]
     });
 
+    // Toon de rating van bij de start van de competitie, niet de live rating
+    const initialRatings = await getInitialRatingsMap([tournament_id]);
+
     return rounds.map(round => ({
       ...round,
       is_sevilla_imported: round.type === 'REGULAR' && !round.label, // Sevilla rondes hebben geen label
-      games: round.games
+      games: round.games.map(game => ({
+        ...game,
+        speler1: withInitialRating(game.speler1, initialRatings),
+        speler2: withInitialRating(game.speler2, initialRatings),
+      }))
     }));
   } catch (error) {
     throw handleDBError(error);

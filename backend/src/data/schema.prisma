@@ -145,7 +145,7 @@ model Participation {
   wins               Int?             @default(0)
   
   // Sevilla rating data
-  sevilla_initial_rating Int?         // IRtg from Sevilla
+  sevilla_initial_rating Int?         // Rating bij start van de competitie (IRtg uit Sevilla, of snapshot bij inschrijving)
   sevilla_final_rating   Int?         // Rating from Sevilla
   sevilla_rating_change  Int?         // Rtg_W_We from Sevilla
   

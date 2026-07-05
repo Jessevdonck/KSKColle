@@ -3,6 +3,7 @@ import { prisma } from "../data";
 import type { Ronde, RondeUpdateInput } from "../types/ronde";
 import handleDBError from "./handleDBError";
 import ServiceError from "../core/serviceError";
+import { getInitialRatingsMap, withInitialRating } from "./initialRatings";
 
 export const getAllRondes = async (): Promise<Ronde[]> => {
   try {
@@ -217,6 +218,9 @@ export const getRoundForExport = async (
       throw ServiceError.notFound("Round not found");
     }
 
+    // Toon de rating van bij de start van de competitie, niet de live rating
+    const initialRatings = await getInitialRatingsMap([tournamentId]);
+
     return {
       round: {
         round_id: round.round_id,
@@ -229,8 +233,8 @@ export const getRoundForExport = async (
       tournament: round.tournament,
       games: round.games.map(game => ({
         game_id: game.game_id,
-        speler1: game.speler1,
-        speler2: game.speler2,
+        speler1: withInitialRating(game.speler1, initialRatings),
+        speler2: withInitialRating(game.speler2, initialRatings),
         winnaar: game.winnaar,
         result: game.result,
         uitgestelde_datum: game.uitgestelde_datum,
@@ -424,6 +428,11 @@ export const getNextRoundsForExport = async (
       };
     }
 
+    // Toon de rating van bij de start van de competitie, niet de live rating
+    const initialRatings = await getInitialRatingsMap(
+      allClassesTournaments.map(t => t.tournament_id)
+    );
+
     // Filter rounds for the next round date
     const nextRoundDateStart = new Date(nextRoundDate);
     nextRoundDateStart.setHours(0, 0, 0, 0);
@@ -485,8 +494,8 @@ export const getNextRoundsForExport = async (
         },
         games: round.games.map(game => ({
           game_id: game.game_id,
-          speler1: game.speler1,
-          speler2: game.speler2,
+          speler1: withInitialRating(game.speler1, initialRatings),
+          speler2: withInitialRating(game.speler2, initialRatings),
           winnaar: game.winnaar,
           result: game.result,
           uitgestelde_datum: game.uitgestelde_datum,
@@ -618,6 +627,11 @@ export const getRoundsByDateForExport = async (
       return aClass.localeCompare(bClass);
     });
 
+    // Toon de rating van bij de start van de competitie, niet de live rating
+    const initialRatings = await getInitialRatingsMap(
+      allClassesTournaments.map(t => t.tournament_id)
+    );
+
     return {
       tournamentName: tournament.naam,
       date: dateStart,
@@ -639,8 +653,8 @@ export const getRoundsByDateForExport = async (
         },
         games: round.games.map(game => ({
           game_id: game.game_id,
-          speler1: game.speler1,
-          speler2: game.speler2,
+          speler1: withInitialRating(game.speler1, initialRatings),
+          speler2: withInitialRating(game.speler2, initialRatings),
           winnaar: game.winnaar,
           result: game.result,
           uitgestelde_datum: game.uitgestelde_datum,

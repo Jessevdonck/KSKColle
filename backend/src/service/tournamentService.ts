@@ -4,6 +4,7 @@ import type { Tournament, TournamentUpdateInput } from "../types/tournament";
 import type { Participation } from "../types/participation";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
+import { withInitialRating } from "./initialRatings";
 
 export const getAllTournaments = async (
   active?: boolean,   // undefined | true | false
@@ -386,6 +387,8 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
             tie_break: true,
             wins: true,
             bye_round: true,
+            sevilla_initial_rating: true,
+            sevilla_rating_change: true,
             user: {
               select: {
                 user_id: true,
@@ -452,13 +455,31 @@ export const getTournamentById = async (tournament_id: number): Promise<Tourname
       throw ServiceError.notFound('No tournament with this id exists');
     }
 
+    // Toon binnen de competitie altijd de rating van bij de start (snapshot),
+    // zodat de elo's niet veranderen wanneer de competitie wordt afgesloten.
+    const initialRatings = new Map<number, number>();
+    for (const p of tournament.participations) {
+      if (p.sevilla_initial_rating != null) {
+        initialRatings.set(p.user_id, p.sevilla_initial_rating);
+      }
+    }
+
     // Add is_sevilla_imported flag to rounds and tournament for frontend sorting
     const tournamentWithSevillaFlag = {
       ...tournament,
+      participations: tournament.participations.map(p => ({
+        ...p,
+        user: withInitialRating(p.user, initialRatings),
+      })),
       is_sevilla_imported: tournament.rounds.some(round => round.type === 'REGULAR' && !round.label), // Check if any round is Sevilla imported
       rounds: tournament.rounds.map(round => ({
         ...round,
         is_sevilla_imported: round.type === 'REGULAR' && !round.label, // Sevilla rondes hebben geen label
+        games: round.games.map(game => ({
+          ...game,
+          speler1: withInitialRating(game.speler1, initialRatings),
+          speler2: withInitialRating(game.speler2, initialRatings),
+        })),
       }))
     };
 
@@ -554,16 +575,24 @@ export const updateTournament = async (tournament_id: number, changes: Tournamen
 
 export const addParticipation = async (tournament_id: number, user_id: number): Promise<Participation> => {
   try {
+    // Snapshot van de rating bij inschrijving: de getoonde elo binnen de competitie
+    // blijft die van bij de start, ook nadat de competitie is afgesloten.
+    const user = await prisma.user.findUnique({
+      where: { user_id },
+      select: { schaakrating_elo: true },
+    });
+
     return await prisma.participation.create({
       data: {
         tournament: { connect: { tournament_id } },
         user: { connect: { user_id } },
-        score: 0, 
-        buchholz: 0, 
-        sonnebornBerger: 0, 
-        opponents: '', 
+        score: 0,
+        buchholz: 0,
+        sonnebornBerger: 0,
+        opponents: '',
         color_history: '',
         bye_round: null,
+        sevilla_initial_rating: user?.schaakrating_elo ?? null,
       },
     });
   } catch (error) {
