@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3001 --turbopack",
     "build": "next build --webpack",
-    "start": "node --max-old-space-size=320 node_modules/next/dist/bin/next start",
+    "start": "node --max-old-space-size=512 node_modules/next/dist/bin/next start",
     "lint": "next lint",
     "export": "next build && next export",
     "test": "cypress open",
