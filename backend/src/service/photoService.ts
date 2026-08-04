@@ -1,13 +1,31 @@
-import { google } from 'googleapis';
-const key = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!);
-const auth = new google.auth.GoogleAuth({
-  credentials: key,
-  scopes: ['https://www.googleapis.com/auth/drive.readonly']
-});
-const drive = google.drive({ version: 'v3', auth });
+import { auth as googleAuth, drive as googleDrive, type drive_v3 } from '@googleapis/drive';
+
+/**
+ * Drive-client wordt lui aangemaakt: pas bij het eerste fotoverzoek.
+ * Zo kost de foto-integratie niets zolang niemand de galerij opent, en
+ * start de server ook zonder GOOGLE_SERVICE_ACCOUNT_KEY.
+ */
+let driveClient: drive_v3.Drive | null = null;
+
+function getDrive(): drive_v3.Drive {
+  if (driveClient) return driveClient;
+
+  const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  if (!rawKey) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is niet ingesteld');
+  }
+
+  const client = new googleAuth.GoogleAuth({
+    credentials: JSON.parse(rawKey),
+    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+  });
+
+  driveClient = googleDrive({ version: 'v3', auth: client });
+  return driveClient;
+}
 
 export async function listAlbums(rootFolderId: string) {
-  const res = await drive.files.list({
+  const res = await getDrive().files.list({
     q: `'${rootFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
     fields: 'files(id, name)',
   });
@@ -15,7 +33,7 @@ export async function listAlbums(rootFolderId: string) {
 }
 
 export async function listPhotos(albumId: string) {
-  const res = await drive.files.list({
+  const res = await getDrive().files.list({
     q: `'${albumId}' in parents and mimeType contains 'image/' and trashed = false`,
     fields: 'files(id, name, thumbnailLink, webContentLink)',
   });

@@ -7,6 +7,7 @@ import installMiddlewares from './core/installMiddlewares';
 import installRest from './REST';
 import { summaryInterval } from './core/apiMonitoring';
 import { startJubileumScheduler, stopJubileumScheduler } from './service/jubileumService';
+import { stopShortLivedCacheSweep } from './core/shortLivedCache';
 import type {
   KoaApplication,
   ChessAppContext,
@@ -50,6 +51,7 @@ export default async function createServer(): Promise<Server> {
     async stop() {
       if (summaryInterval) clearInterval(summaryInterval);
       stopJubileumScheduler();
+      stopShortLivedCacheSweep();
       app.removeAllListeners();
       await shutdownData();
       getLogger().info('Goodbye! 👋');

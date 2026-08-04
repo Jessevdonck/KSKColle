@@ -7,6 +7,32 @@ const store = new Map<string, { value: unknown; expires: number }>();
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Zonder periodieke opruiming blijven verlopen entries in het geheugen hangen
+ * tot iemand exact dezelfde sleutel opnieuw opvraagt. Een toernooidetail is
+ * al snel enkele honderden KB, dus dat loopt op.
+ */
+const SWEEP_INTERVAL_MS = 60_000;
+
+export let cacheSweepInterval: ReturnType<typeof setInterval> | undefined;
+
+function sweepExpired(): void {
+  const now = Date.now();
+  for (const [key, entry] of store) {
+    if (now > entry.expires) store.delete(key);
+  }
+}
+
+if (typeof setInterval !== 'undefined') {
+  cacheSweepInterval = setInterval(sweepExpired, SWEEP_INTERVAL_MS);
+  cacheSweepInterval.unref?.();
+}
+
+export function stopShortLivedCacheSweep(): void {
+  if (cacheSweepInterval) clearInterval(cacheSweepInterval);
+  store.clear();
+}
+
 export const SHORT_CACHE_TTL_MS = {
   tournamentList: 30_000,
   tournamentDetail: 30_000,
