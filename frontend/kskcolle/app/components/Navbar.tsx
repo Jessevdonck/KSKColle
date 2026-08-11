@@ -81,18 +81,20 @@ export default function Navbar() {
   const [isMobileLinksOpen, setIsMobileLinksOpen] = useState(false)
   const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false)
 
-  // Fetch tournaments for navbar shortcuts (herfst, lente, blitz)
+  // Fetch tournaments for navbar shortcuts (herfst, lente, blitz, zomer)
   const { data: tournaments = [] } = useSWR<Tournament[]>(
     'tournament?active=true&is_youth=false',
     getAll,
     { dedupingInterval: 10 * 60 * 1000 }, // 10 minutes
   )
 
-  const { latestHerfst, latestLente, latestBlitz } = useMemo(() => {
+  const { latestHerfst, latestLente, latestBlitz, latestZomer } = useMemo(() => {
     let latestHerfst: Tournament | null = null
     let latestLente: Tournament | null = null
+    let latestZomer: Tournament | null = null
     let latestHerfstDate: Date | null = null
     let latestLenteDate: Date | null = null
+    let latestZomerDate: Date | null = null
 
     const blitzEditions = new Map<
       string,
@@ -103,6 +105,7 @@ export default function Navbar() {
       const name = tournament.naam.toLowerCase()
       const isHerfst = name.includes('herfst') || name.includes('herfstcompetitie')
       const isLente = name.includes('lente') || name.includes('lentecompetitie')
+      const isZomer = name.includes('zomer')
       const lastRoundDate = getLastRoundDate(tournament)
 
       if (isHerfst) {
@@ -113,6 +116,11 @@ export default function Navbar() {
       if (isLente) {
         latestLente = pickLatestTournament(latestLente, latestLenteDate, tournament, lastRoundDate)
         if (latestLente === tournament) latestLenteDate = lastRoundDate
+      }
+
+      if (isZomer) {
+        latestZomer = pickLatestTournament(latestZomer, latestZomerDate, tournament, lastRoundDate)
+        if (latestZomer === tournament) latestZomerDate = lastRoundDate
       }
 
       if (isBlitzTournament(tournament.naam)) {
@@ -146,7 +154,7 @@ export default function Navbar() {
       if (latestBlitz === edition.representative) latestBlitzDate = edition.lastRoundDate
     }
 
-    return { latestHerfst, latestLente, latestBlitz }
+    return { latestHerfst, latestLente, latestBlitz, latestZomer }
   }, [tournaments])
 
   useEffect(() => {
@@ -208,7 +216,7 @@ export default function Navbar() {
                   Artikels
                 </Link>
                 <Link href="/nationale-elo" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
-                  Nationale ELO
+                  Nationaal ELO Archief
                 </Link>
               </div>
             </div>
@@ -238,7 +246,7 @@ export default function Navbar() {
                 <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Interclub
                 </a>
-                {(latestHerfst || latestLente || latestBlitz) && (
+                {(latestHerfst || latestLente || latestBlitz || latestZomer) && (
                   <>
                     <div className="border-t border-gray-200 my-1"></div>
                     {latestHerfst && (
@@ -254,6 +262,11 @@ export default function Navbar() {
                     {latestBlitz && (
                       <Link href={`/toernooien/${latestBlitz.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                         Blitzkampioenschap
+                      </Link>
+                    )}
+                    {latestZomer && (
+                      <Link href={`/toernooien/${latestZomer.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                        Zomertoernooi
                       </Link>
                     )}
                   </>
@@ -460,7 +473,7 @@ export default function Navbar() {
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Nationale ELO
+                    Nationaal ELO Archief
                   </Link>
                 </div>
               )}
@@ -521,7 +534,7 @@ export default function Navbar() {
                   >
                     Interclub
                   </a>
-                  {(latestHerfst || latestLente || latestBlitz) && (
+                  {(latestHerfst || latestLente || latestBlitz || latestZomer) && (
                     <>
                       <div className="border-t border-gray-200 my-2"></div>
                       {latestHerfst && (
@@ -549,6 +562,15 @@ export default function Navbar() {
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Blitzkampioenschap
+                        </Link>
+                      )}
+                      {latestZomer && (
+                        <Link
+                          href={`/toernooien/${latestZomer.tournament_id}`}
+                          className="block font-medium hover:text-mainAccent transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Zomertoernooi
                         </Link>
                       )}
                     </>

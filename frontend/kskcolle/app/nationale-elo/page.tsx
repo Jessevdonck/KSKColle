@@ -4,6 +4,16 @@ import { useState } from "react"
 import { ExternalLink, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+/** De nationale ELO-lijst is vervangen door het nationaal ELO-archief van de KBSB. */
+const ARCHIEF_URL = 'https://blog.frbe-kbsb-ksb.be/nl/nationaal-elo-archief/'
+
+/**
+ * De KBSB-pagina hierboven is zelf enkel een omhulsel rond deze zoektool.
+ * We tonen de tool rechtstreeks, anders staat er een iframe in een iframe met
+ * de volledige KBSB-navigatie en -footer eromheen.
+ */
+const ARCHIEF_EMBED_URL = 'https://www.frbe-kbsb-ksb.be/tools/national_elo_archive?locale=nl'
+
 export default function NationaleELOPage() {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -18,7 +28,7 @@ export default function NationaleELOPage() {
   }
 
   const handleOpenExternal = () => {
-    window.open('https://www.frbe-kbsb.be/sites/manager/GestionFICHES/FRBE_Club.php?club=410', '_blank')
+    window.open(ARCHIEF_URL, '_blank')
   }
 
   return (
@@ -29,10 +39,10 @@ export default function NationaleELOPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Nationale ELO - KSK Colle
+                Nationaal ELO Archief
               </h1>
               <p className="text-gray-600">
-                Officiële ELO-ranglijst van onze clubleden volgens de Belgische Schaakfederatie (FRBE-KBSB)
+                Het nationaal ELO-archief van de Belgische Schaakfederatie (FRBE-KBSB-KSB)
               </p>
             </div>
             <div className="flex gap-2">
@@ -61,15 +71,15 @@ export default function NationaleELOPage() {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="border-b border-gray-200 px-6 py-3 bg-gray-50">
             <h2 className="text-lg font-semibold text-gray-900">
-              FRBE-KBSB Club 410: SINT-NIKLAAS KSK Edg. Colle
+              Nationaal ELO-archief FRBE-KBSB-KSB
             </h2>
           </div>
           <div className="relative" style={{ height: '80vh' }}>
             <iframe
               id="frbe-iframe"
-              src="https://www.frbe-kbsb.be/sites/manager/GestionFICHES/FRBE_Club.php?club=410"
+              src={ARCHIEF_EMBED_URL}
               className="w-full h-full border-0"
-              title="FRBE-KBSB Club 410 ELO Ranglijst"
+              title="Nationaal ELO-archief FRBE-KBSB-KSB"
               loading="lazy"
               sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             />
@@ -89,13 +99,13 @@ export default function NationaleELOPage() {
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>
             Laatst bijgewerkt: {new Date().toLocaleDateString('nl-BE')} • 
-            <a 
-              href="https://www.frbe-kbsb.be" 
-              target="_blank" 
+            <a
+              href={ARCHIEF_URL}
+              target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-gray-700 ml-1"
             >
-              Bron: FRBE-KBSB
+              Bron: FRBE-KBSB-KSB
             </a>
           </p>
         </div>
