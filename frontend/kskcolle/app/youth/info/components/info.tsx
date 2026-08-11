@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Info, BookOpen, Award, Sword, Users } from "lucide-react"
+import { Info, BookOpen, Award, Users } from "lucide-react"
 
 export default function YouthInfo() {
   return (
@@ -81,17 +81,19 @@ export default function YouthInfo() {
                   <p className="text-sm text-gray-700">20 euro per jaar.</p>
                 </div>
                 <div className="rounded-lg p-4 border border-neutral-200 bg-gradient-to-br from-neutral-50 to-neutral-100">
-                  <h4 className="text-sm font-semibold text-textColor mb-1">Inschrijven</h4>
+                  <h4 className="text-sm font-semibold text-textColor mb-1">Instapmomenten</h4>
                   <p className="text-sm text-gray-700">
-                    Inschrijven kan op elk moment van het jaar. Meer info? Gebruik het contactformulier op de website.
+                    Nieuwe jeugdleden starten op een van de drie vaste instapmomenten:
+                    bij het begin van het schooljaar, na de kerstvakantie en na de paasvakantie.
+                    Zo starten nieuwkomers steeds samen en blijft de groep op hetzelfde tempo werken.
+                  </p>
+                  <p className="text-sm text-gray-700 mt-2">
+                    Interesse? Gebruik het contactformulier op de website.
                   </p>
                 </div>
               </div>
 
-              <div className="text-xs text-gray-600 flex items-center gap-2">
-                <Sword className="h-3.5 w-3.5 text-mainAccent" />
-                <span>{"Samen leren, samen spelen, samen sterker worden in schaken."}</span>
-              </div>
+
             </div>
           </div>
         </div>
