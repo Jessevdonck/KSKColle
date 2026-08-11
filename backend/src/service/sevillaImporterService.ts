@@ -1,4 +1,5 @@
 import { prisma } from '../data/index';
+import { getLogger } from '../core/logging';
 
 interface SevillaPlayer {
   Pos: number;
@@ -120,8 +121,20 @@ export class SevillaImporterService {
       normalized = normalized.replace("Devill", "Devillé");
     }
 
-    // Handle Unicode replacement characters
-    normalized = normalized.replace(/\uFFFD/g, "é");
+    // Vervangingstekens betekenen dat het bestand met de verkeerde codering is
+    // ingelezen. Vroeger werd hier blind "é" van gemaakt: dat klopte voor
+    // Devillé en Géry, maar maakte namen als Björn, Zoë, Kaïret en Baños stuk
+    // en leverde dubbele spelers op, omdat ze niet meer matchten met de
+    // bestaande gebruiker. De codering wordt nu bij het inlezen bepaald; komt
+    // er tóch nog een vervangingsteken binnen, dan laten we de naam ongemoeid
+    // en loggen we het, zodat het opvalt in plaats van stil verkeerd te gaan.
+    if (normalized.includes("�")) {
+      getLogger().warn(
+        "Spelersnaam bevat een vervangingsteken; het Sevilla-bestand is " +
+          "waarschijnlijk met de verkeerde tekencodering aangeleverd",
+        { naam: normalized },
+      );
+    }
 
     return normalized;
   }

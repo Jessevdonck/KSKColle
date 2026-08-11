@@ -52,21 +52,31 @@ export default function SevillaImportPage() {
     }
   );
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  /**
+   * Sevilla exporteert doorgaans in Windows-1252, niet in UTF-8. Lezen we zo'n
+   * bestand als UTF-8, dan wordt elk accentteken een vervangingsteken (�) en
+   * belandt bijvoorbeeld "Björn" verminkt in de database.
+   * We proberen daarom eerst strikt UTF-8 en vallen bij ongeldige bytes terug
+   * op Windows-1252, zodat beide exportvarianten correct ingelezen worden.
+   */
+  const decodeSevillaFile = (buffer: ArrayBuffer): string => {
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+    } catch {
+      return new TextDecoder('windows-1252').decode(buffer);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0];
     if (uploadedFile) {
       setFile(uploadedFile);
       setJsonContent('');
       setValidationResult(null);
       setImportResult(null);
-      
-      // Read file content
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        setJsonContent(content);
-      };
-      reader.readAsText(uploadedFile);
+
+      const buffer = await uploadedFile.arrayBuffer();
+      setJsonContent(decodeSevillaFile(buffer));
     }
   };
 
