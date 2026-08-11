@@ -15,8 +15,9 @@ export default function PlayerHeader({ player }: { player: User }) {
     { name: 'Club Rating', value: player.schaakrating_elo },
   ]
 
-  // Jubileum (25/50 jaar lid): profiel uitlichten met gouden accenten
-  const jubileum = player.jubileum_jaren ?? null
+  // Alleen uitlichten in het jubileumjaar zelf. Een badge tonen bij iedereen
+  // die ooit 25 jaar haalde, wekt de indruk dat zij dit jaar hun jubileum vieren.
+  const jubileum = player.jubileum_dit_jaar ? player.jubileum_jaren ?? null : null
 
   return (
     <div className={jubileum ? "bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 p-8 border-b-2 border-amber-300" : "bg-gray-50 p-8"}>
@@ -59,7 +60,7 @@ export default function PlayerHeader({ player }: { player: User }) {
               {jubileum && (
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-3 py-1 text-sm font-semibold text-white shadow">
                   <Award className="h-4 w-4" />
-                  {jubileum} jaar lid van KSK Colle
+                  Viert dit jaar {jubileum} jaar lidmaatschap
                 </div>
               )}
               
