@@ -15,15 +15,15 @@ export default function SponsoringOVJK2025Page() {
             <div className="flex items-center justify-center space-x-3 mb-6">
               <Trophy className="text-mainAccent" size={48} />
               <h1 className="text-4xl font-bold text-textColor">
-                Oost-Vlaams Jeugdkampioenschap Schaken 2025
+                Oost-Vlaams Jeugdkampioenschap 2026 & Rapidtoernooi Volwassenen
               </h1>
             </div>
             <p className="text-xl text-gray-600 mb-4">
-              & Rapidtoernooi Volwassenen
+              
             </p>
             <div className="flex items-center justify-center space-x-2 text-lg text-gray-500">
               <Calendar size={20} />
-              <span>25 & 26 oktober 2025</span>
+              <span>24 & 25 oktober 2026</span>
               <span>•</span>
               <span>OLVP Sint-Niklaas</span>
             </div>
@@ -65,7 +65,7 @@ export default function SponsoringOVJK2025Page() {
               <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
                 <p>
                   Schaakclub <strong>KSK Colle Sint-Niklaas</strong> en schaakclub <strong>LSV-Chesspirant</strong> 
-                  organiseren op zaterdag 25 en zondag 26 oktober na een geslaagde samenwerking in 2023 
+                  organiseren op zaterdag 24 en zondag 25 oktober na een geslaagde samenwerking in 2023 en 2025 
                   opnieuw het Oost-Vlaams Jeugdkampioenschap en een rapidtoernooi voor volwassenen in het 
                   OLVP te Sint-Niklaas.
                 </p>
@@ -141,7 +141,7 @@ export default function SponsoringOVJK2025Page() {
                   <p className="text-sm text-gray-600 mb-2">Storting op:</p>
                   <p className="font-mono text-lg font-bold text-mainAccent">BE28 1043 2441 3820</p>
                   <p className="text-sm text-gray-600 mt-2">
-                    Met vermelding: <strong>"Sponsoring OVJK 2025"</strong>
+                    Met vermelding: <strong>"Sponsoring OVJK 2026"</strong>
                   </p>
                 </div>
               </CardContent>
@@ -179,7 +179,7 @@ export default function SponsoringOVJK2025Page() {
                       href="mailto:OVJK2025schaken@gmail.com" 
                       className="text-mainAccent hover:text-mainAccentDark transition-colors font-medium"
                     >
-                      OVJK2025schaken@gmail.com
+                      ovjk.schaken.plezant@gmail.com
                     </a>
                   </div>
                   
