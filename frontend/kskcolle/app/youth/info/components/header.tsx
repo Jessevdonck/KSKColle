@@ -18,18 +18,17 @@ export default function YouthHeader() {
           <div className="mt-5 max-w-2xl mx-auto">
             <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 shadow-sm">
               <p className="text-sm sm:text-base text-amber-900 font-semibold">
-                Inschrijvingsstop jeugdwerking tot september.
+                Inschrijven kan nu tot en met eind september 2026.
               </p>
               <p className="mt-1 text-xs sm:text-sm text-amber-900">
-                Door de grote interesse zitten onze groepen tijdelijk vol.
-                Nieuwe inschrijvingen zijn opnieuw mogelijk vanaf september.
+                Inschrijven kan door een mail te sturen naar patrick.gillis3@telenet.be.
               </p>
             </div>
           </div>
           <div className="flex items-center justify-center gap-4 mt-4 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>Elke donderdag tijdens het schooljaar</span>
+              <span>Elke dinsdag (stap 1+2) en donderdag (stap 3+)tijdens het schooljaar</span>
             </div>
           </div>
         </div>

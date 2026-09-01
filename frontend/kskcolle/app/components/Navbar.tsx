@@ -632,7 +632,7 @@ export default function Navbar() {
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Jeugd Kampioenschap
+                    Jeugkampioenschap
                   </Link>
                   <Link
                     href="/youth/zomerkampen"
@@ -642,18 +642,18 @@ export default function Navbar() {
                     Zomerkampen
                   </Link>
                   <Link
-                    href="/youth/info-ovjk-2025"
+                    href="/youth/info-ovjk-2026"
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Info OVJK 2025
+                    Info OVJK 2026
                   </Link>
                   <Link
-                    href="/youth/sponsoring-ovjk-2025"
+                    href="/youth/sponsoring-ovjk-2026"
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Sponsoring OVJK 2025
+                    Sponsoring OVJK 2026
                   </Link>
                   <a
                     href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage"

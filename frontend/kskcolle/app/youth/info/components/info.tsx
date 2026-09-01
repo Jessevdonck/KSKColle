@@ -30,8 +30,9 @@ export default function YouthInfo() {
             {/* Text */}
             <div className="lg:col-span-2 space-y-4 text-textColor">
               <p className="text-sm text-gray-700">
-                De jeugdwerking van KSK Colle vindt elke donderdag van het schooljaar (niet in schoolvakanties) plaats
-                in zaal 4 achteraan Taverne De Graanmaat. Jeugd Stap 1 start om 19:00u, de andere stappen starten om 18:30u. We eindigen om 19:45u.
+                De jeugdwerking van KSK Colle vindt elke dinsdag (stap 1+2) en donderdag (stap 3+) van het schooljaar (niet in schoolvakanties) plaats.
+                Stap 1 en 2 gaat door op dinsdag van 17:30u tot 18:30u in de Wonderbar op de eerste verdieping van de Bib van Sint-Niklaas 
+                Stappen 3 en hoger starten om 18:30u tot 19:45 in zaal 4 "De Wintertuin" van Taverne De Graanmaat op de grote markt van Sint-Niklaas.
               </p>
 
               <div className="grid sm:grid-cols-2 gap-4">
@@ -78,7 +79,7 @@ export default function YouthInfo() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="rounded-lg p-4 border border-neutral-200 bg-gradient-to-br from-neutral-50 to-neutral-100">
                   <h4 className="text-sm font-semibold text-textColor mb-1">Lidgeld</h4>
-                  <p className="text-sm text-gray-700">20 euro per jaar.</p>
+                  <p className="text-sm text-gray-700">25 euro per jaar.</p>
                 </div>
                 <div className="rounded-lg p-4 border border-neutral-200 bg-gradient-to-br from-neutral-50 to-neutral-100">
                   <h4 className="text-sm font-semibold text-textColor mb-1">Instapmomenten</h4>
@@ -88,7 +89,7 @@ export default function YouthInfo() {
                     Zo starten nieuwkomers steeds samen en blijft de groep op hetzelfde tempo werken.
                   </p>
                   <p className="text-sm text-gray-700 mt-2">
-                    Interesse? Gebruik het contactformulier op de website.
+                    Interesse? Gebruik het contactformulier op de website of stuur een mail naar Patrick.Gillis3@telenet.be
                   </p>
                 </div>
               </div>
