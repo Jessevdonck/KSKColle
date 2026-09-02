@@ -382,22 +382,9 @@ export default function InfoOVJK2025Page() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="space-y-2 text-sm">
-                    <p className="font-semibold">Inschrijven via:</p>
+                    <p className="font-semibold">Inschrijven via het inschrijvingsformulier onderaan deze pagina</p>
                     <a 
-                      href="https://www.schaakligaoostvlaanderen.be" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-mainAccent hover:underline block"
                     >
-                      www.schaakligaoostvlaanderen.be
-                    </a>
-                    <a 
-                      href="https://www.kskcolle.be" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-mainAccent hover:underline block"
-                    >
-                      www.kskcolle.be → "OVJK"
                     </a>
                   </div>
                   
