@@ -22,89 +22,117 @@ export default function InfoOVJK2025Page() {
     { src: "/images/sponsoring/Sponsor8.png", alt: "Sponsor 8" }
   ]
 
+  const flyers = [
+    { src: "/images/Ovjk/flyer-ovjk-2026.png", alt: "Flyer Oost-Vlaams Jeugdkampioenschap 2026" },
+    { src: "/images/Ovjk/flyer-rapid-volwassenen-24-okt-2026.png", alt: "Flyer rapidtoernooi volwassenen 24 oktober 2026" }
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Oost-Vlaams Jeugdkampioenschap</h1>
-          <div className="bg-mainAccent/10 border border-mainAccent/20 rounded-lg p-4">
-            <p className="text-lg font-semibold text-mainAccent">
+        <div className="mb-5">
+          <h1 className="text-2xl font-bold text-gray-900">Oost-Vlaams Jeugdkampioenschap</h1>
+          <div className="bg-mainAccent/10 border border-mainAccent/20 rounded-lg p-2">
+            <p className="text-xs font-semibold text-mainAccent">
               SELECTIETORNOOI VOOR HET VLAAMS KAMPIOENSCHAP 2026
             </p>
           </div>
         </div>
 
+        {/* Flyers */}
+        <div className="mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
+            {flyers.map((flyer) => (
+              <button
+                key={flyer.src}
+                type="button"
+                onClick={() => setSelectedImage(flyer.src)}
+                className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+              >
+                <Image
+                  src={flyer.src}
+                  alt={flyer.alt}
+                  width={467}
+                  height={690}
+                  className="h-auto w-full object-contain"
+                  priority
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Results Links */}
-        <div className="mb-8">
-          <Card className="border-mainAccent/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center text-mainAccent">
-                <Trophy className="mr-2" size={24} />
+        <div className="mb-5">
+          <Card className="border-mainAccent/20 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-mainAccent text-lg">
+                <Trophy className="mr-2" size={20} />
                 Uitslagen
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <a 
-                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00019704-%7B79d92300-748c-496d-92c8-2ae7fccc048c%7D.html" 
-                  target="_blank" 
+            <CardContent className="pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                <a
+                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00019704-%7B79d92300-748c-496d-92c8-2ae7fccc048c%7D.html"
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all group"
+                  className="flex items-center justify-between p-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded hover:from-blue-100 hover:to-blue-200 transition-all group"
                 >
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="text-blue-700" size={18} />
-                    <span className="font-semibold text-gray-800">Groep A</span>
+                  <div className="flex items-center space-x-1">
+                    <Trophy className="text-blue-700" size={16} />
+                    <span className="font-semibold text-sm text-gray-800">Groep A</span>
                   </div>
-                  <ExternalLink className="text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                  <ExternalLink className="text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
                 </a>
                 <a 
                   href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-0002e1bf-%7B734b1d9b-d7e6-4b6a-8662-e2ba00064aa4%7D.html" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg hover:from-green-100 hover:to-green-200 transition-all group"
+                  className="flex items-center justify-between p-2 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded hover:from-green-100 hover:to-green-200 transition-all group"
                 >
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="text-green-700" size={18} />
-                    <span className="font-semibold text-gray-800">Groep B</span>
+                  <div className="flex items-center space-x-1">
+                    <Trophy className="text-green-700" size={16} />
+                    <span className="font-semibold text-sm text-gray-800">Groep B</span>
                   </div>
-                  <ExternalLink className="text-green-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                  <ExternalLink className="text-green-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
                 </a>
                 <a 
                   href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00035835-%7Bf45d423a-5e17-49f9-b4ef-ed2e49c585dc%7D.html" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all group"
+                  className="flex items-center justify-between p-2 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded hover:from-purple-100 hover:to-purple-200 transition-all group"
                 >
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="text-purple-700" size={18} />
-                    <span className="font-semibold text-gray-800">Groep C</span>
+                  <div className="flex items-center space-x-1">
+                    <Trophy className="text-purple-700" size={16} />
+                    <span className="font-semibold text-sm text-gray-800">Groep C</span>
                   </div>
-                  <ExternalLink className="text-purple-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                  <ExternalLink className="text-purple-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
                 </a>
                 <a 
                   href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-000390c6-%7B57f2d65b-c71d-4ec2-87cf-f53b5dd83d01%7D.html" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg hover:from-yellow-100 hover:to-yellow-200 transition-all group"
+                  className="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded hover:from-yellow-100 hover:to-yellow-200 transition-all group"
                 >
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="text-yellow-700" size={18} />
-                    <span className="font-semibold text-gray-800">Groep D</span>
+                  <div className="flex items-center space-x-1">
+                    <Trophy className="text-yellow-700" size={16} />
+                    <span className="font-semibold text-sm text-gray-800">Groep D</span>
                   </div>
-                  <ExternalLink className="text-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                  <ExternalLink className="text-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
                 </a>
                 <a 
                   href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00035491-%7Bbd543f46-4663-4b77-b9e9-eda3adce9cbb%7D.html" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg hover:from-orange-100 hover:to-orange-200 transition-all group"
+                  className="flex items-center justify-between p-2 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded hover:from-orange-100 hover:to-orange-200 transition-all group"
                 >
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="text-orange-700" size={18} />
-                    <span className="font-semibold text-gray-800">Groep E & F</span>
+                  <div className="flex items-center space-x-1">
+                    <Trophy className="text-orange-700" size={16} />
+                    <span className="font-semibold text-sm text-gray-800">Groep E & F</span>
                   </div>
-                  <ExternalLink className="text-orange-700 opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
+                  <ExternalLink className="text-orange-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
                 </a>
               </div>
             </CardContent>
@@ -112,20 +140,20 @@ export default function InfoOVJK2025Page() {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Main Content - 2/3 width */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-2">
             
             {/* Date and Location */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <Calendar className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Calendar className="mr-2" size={20} />
                   Datum & Locatie
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pt-2">
+                <div className="space-y-3">
                   <div className="flex items-center">
                     <Calendar className="mr-3 text-mainAccent" size={20} />
                     <div>
@@ -145,21 +173,21 @@ export default function InfoOVJK2025Page() {
             </Card>
 
             {/* Format */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <Clock className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Clock className="mr-2" size={20} />
                   Formule
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+              <CardContent className="pt-2">
+                <div className="space-y-2">
+                  <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
                     <p className="font-semibold text-blue-800 mb-2">A-B-C-D - Reeksen:</p>
                     <p className="text-blue-700">7 partijen 50'+10" per zet (2 dagen - 25/10 & 26/10)</p>
                   </div>
                   
-                  <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                  <div className="bg-green-50 border-l-4 border-green-400 p-3 rounded">
                     <p className="font-semibold text-green-800 mb-2">E-F - Reeksen:</p>
                     <p className="text-green-700">9 ronden van 20' per partij (1 dag - 26/10)</p>
                   </div>
@@ -168,39 +196,39 @@ export default function InfoOVJK2025Page() {
             </Card>
 
             {/* Categories */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <Users className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Users className="mr-2" size={20} />
                   Reeksen
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <span className="font-semibold">A-reeks:</span>
                       <Badge variant="outline">junioren (°2006,2007, 2008 en 2009)</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <span className="font-semibold">B-reeks:</span>
                       <Badge variant="outline">scholieren (°2010 of 2011)</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <span className="font-semibold">C-reeks:</span>
                       <Badge variant="outline">kadetten (°2012 of 2013)</Badge>
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <span className="font-semibold">D-Reeks:</span>
                       <Badge variant="outline">miniemen (°2014 of 2015)</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <span className="font-semibold">E-Reeks:</span>
                       <Badge variant="outline">pionnen (°2016 of 2017)</Badge>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                       <span className="font-semibold">F-reeks:</span>
                       <Badge variant="outline">pupillen (°2018 of later)</Badge>
                     </div>
@@ -210,15 +238,15 @@ export default function InfoOVJK2025Page() {
             </Card>
 
             {/* Program */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <Clock className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Clock className="mr-2" size={20} />
                   Programma
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
+              <CardContent className="pt-2">
+                <div className="space-y-3">
                   {/* A, B, C & D Reeksen Schema */}
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 mb-3">A, B, C & D Reeksen</h4>
@@ -226,49 +254,49 @@ export default function InfoOVJK2025Page() {
                       <table className="w-full border-collapse border border-gray-300">
                         <thead>
                           <tr className="bg-mainAccent/10">
-                            <th className="border border-gray-300 p-3 text-left font-semibold">Dag</th>
-                            <th className="border border-gray-300 p-3 text-left font-semibold">Tijd</th>
-                            <th className="border border-gray-300 p-3 text-left font-semibold">Activiteit</th>
+                            <th className="border border-gray-300 p-2 text-left font-semibold text-sm">Dag</th>
+                            <th className="border border-gray-300 p-2 text-left font-semibold text-sm">Tijd</th>
+                            <th className="border border-gray-300 p-2 text-left font-semibold text-sm">Activiteit</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
-                            <td className="border border-gray-300 p-3 font-semibold" rowSpan={5}>25/10</td>
-                            <td className="border border-gray-300 p-3">10:00</td>
-                            <td className="border border-gray-300 p-3">AANMELDEN TOT</td>
+                            <td className="border border-gray-300 p-2 text-sm font-semibold" rowSpan={5}>25/10</td>
+                            <td className="border border-gray-300 p-2 text-sm">10:00</td>
+                            <td className="border border-gray-300 p-2 text-sm">AANMELDEN TOT</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">10:10</td>
-                            <td className="border border-gray-300 p-3">RONDE 1</td>
+                            <td className="border border-gray-300 p-2 text-sm">10:10</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 1</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">12:45</td>
-                            <td className="border border-gray-300 p-3">RONDE 2</td>
+                            <td className="border border-gray-300 p-2 text-sm">12:45</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 2</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">15:00</td>
-                            <td className="border border-gray-300 p-3">RONDE 3</td>
+                            <td className="border border-gray-300 p-2 text-sm">15:00</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 3</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">17:15</td>
-                            <td className="border border-gray-300 p-3">RONDE 4</td>
+                            <td className="border border-gray-300 p-2 text-sm">17:15</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 4</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3 font-semibold" rowSpan={4}>26/10</td>
-                            <td className="border border-gray-300 p-3">11:00</td>
-                            <td className="border border-gray-300 p-3">RONDE 5</td>
+                            <td className="border border-gray-300 p-2 text-sm font-semibold" rowSpan={4}>26/10</td>
+                            <td className="border border-gray-300 p-2 text-sm">11:00</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 5</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">13:40</td>
-                            <td className="border border-gray-300 p-3">RONDE 6</td>
+                            <td className="border border-gray-300 p-2 text-sm">13:40</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 6</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">16:00</td>
-                            <td className="border border-gray-300 p-3">RONDE 7</td>
+                            <td className="border border-gray-300 p-2 text-sm">16:00</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 7</td>
                           </tr>
                           <tr className="bg-yellow-50">
-                            <td className="border border-gray-300 p-3 font-semibold">18:30</td>
-                            <td className="border border-gray-300 p-3 font-semibold">PRIJSUITREIKING</td>
+                            <td className="border border-gray-300 p-2 text-sm font-semibold">18:30</td>
+                            <td className="border border-gray-300 p-2 text-sm font-semibold">PRIJSUITREIKING</td>
                           </tr>
                         </tbody>
                       </table>
@@ -282,56 +310,56 @@ export default function InfoOVJK2025Page() {
                       <table className="w-full border-collapse border border-gray-300">
                         <thead>
                           <tr className="bg-mainAccent/10">
-                            <th className="border border-gray-300 p-3 text-left font-semibold">Dag</th>
-                            <th className="border border-gray-300 p-3 text-left font-semibold">Tijd</th>
-                            <th className="border border-gray-300 p-3 text-left font-semibold">Activiteit</th>
+                            <th className="border border-gray-300 p-2 text-left font-semibold text-sm">Dag</th>
+                            <th className="border border-gray-300 p-2 text-left font-semibold text-sm">Tijd</th>
+                            <th className="border border-gray-300 p-2 text-left font-semibold text-sm">Activiteit</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
-                            <td className="border border-gray-300 p-3 font-semibold" rowSpan={11}>26/10</td>
-                            <td className="border border-gray-300 p-3">10:00</td>
-                            <td className="border border-gray-300 p-3">AANMELDEN TOT</td>
+                            <td className="border border-gray-300 p-2 text-sm font-semibold" rowSpan={11}>26/10</td>
+                            <td className="border border-gray-300 p-2 text-sm">10:00</td>
+                            <td className="border border-gray-300 p-2 text-sm">AANMELDEN TOT</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">10:10</td>
-                            <td className="border border-gray-300 p-3">RONDE 1</td>
+                            <td className="border border-gray-300 p-2 text-sm">10:10</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 1</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">11:00</td>
-                            <td className="border border-gray-300 p-3">RONDE 2</td>
+                            <td className="border border-gray-300 p-2 text-sm">11:00</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 2</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">11:50</td>
-                            <td className="border border-gray-300 p-3">RONDE 3</td>
+                            <td className="border border-gray-300 p-2 text-sm">11:50</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 3</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">12:40</td>
-                            <td className="border border-gray-300 p-3">RONDE 4</td>
+                            <td className="border border-gray-300 p-2 text-sm">12:40</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 4</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">14:00</td>
-                            <td className="border border-gray-300 p-3">RONDE 5</td>
+                            <td className="border border-gray-300 p-2 text-sm">14:00</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 5</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">14:50</td>
-                            <td className="border border-gray-300 p-3">RONDE 6</td>
+                            <td className="border border-gray-300 p-2 text-sm">14:50</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 6</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">15:40</td>
-                            <td className="border border-gray-300 p-3">RONDE 7</td>
+                            <td className="border border-gray-300 p-2 text-sm">15:40</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 7</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">16:30</td>
-                            <td className="border border-gray-300 p-3">RONDE 8</td>
+                            <td className="border border-gray-300 p-2 text-sm">16:30</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 8</td>
                           </tr>
                           <tr>
-                            <td className="border border-gray-300 p-3">17:20</td>
-                            <td className="border border-gray-300 p-3">RONDE 9</td>
+                            <td className="border border-gray-300 p-2 text-sm">17:20</td>
+                            <td className="border border-gray-300 p-2 text-sm">RONDE 9</td>
                           </tr>
                           <tr className="bg-yellow-50">
-                            <td className="border border-gray-300 p-3 font-semibold">18:30</td>
-                            <td className="border border-gray-300 p-3 font-semibold">PRIJSUITREIKING</td>
+                            <td className="border border-gray-300 p-2 text-sm font-semibold">18:30</td>
+                            <td className="border border-gray-300 p-2 text-sm font-semibold">PRIJSUITREIKING</td>
                           </tr>
                         </tbody>
                       </table>
@@ -344,23 +372,23 @@ export default function InfoOVJK2025Page() {
           </div>
 
           {/* Sidebar - 1/3 width */}
-          <div className="space-y-6">
+          <div className="space-y-2">
             
             {/* Registration Fee */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <Euro className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Euro className="mr-2" size={20} />
                   Inschrijvingsgeld
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-2">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
+                  <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
                     <span className="font-semibold">A, B, C & D reeksen:</span>
                     <span className="text-lg font-bold text-blue-800">€ 12</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded">
+                  <div className="flex justify-between items-center p-2 bg-green-50 rounded">
                     <span className="font-semibold">E & F reeksen:</span>
                     <span className="text-lg font-bold text-green-800">€ 10</span>
                   </div>
@@ -372,15 +400,15 @@ export default function InfoOVJK2025Page() {
             </Card>
 
             {/* Registration Info */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <Users className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Users className="mr-2" size={20} />
                   Inschrijving
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pt-2">
+                <div className="space-y-2">
                   <div className="space-y-2 text-sm">
                     <p className="font-semibold">Inschrijven via:</p>
                     <a 
@@ -401,7 +429,7 @@ export default function InfoOVJK2025Page() {
                     </a>
                   </div>
                   
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 rounded">
                     <p className="text-sm font-semibold text-yellow-800">
                       Inschrijving ten laatste de dag voor de start van de 1e ronde om 20:00
                     </p>
@@ -411,15 +439,15 @@ export default function InfoOVJK2025Page() {
             </Card>
 
             {/* Contact */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <Mail className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Mail className="mr-2" size={20} />
                   Vragen?
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pt-2">
+                <div className="space-y-2">
                   <div className="flex items-start">
                     <Mail className="mr-2 mt-1 text-mainAccent" size={16} />
                     <div>
@@ -446,7 +474,7 @@ export default function InfoOVJK2025Page() {
                     </div>
                   </div>
 
-                  <div className="bg-green-50 border-l-4 border-green-400 p-3 rounded">
+                  <div className="bg-green-50 border-l-4 border-green-400 p-2 rounded">
                     <p className="text-sm font-semibold text-green-800">
                       Warme snacks en dranken verkrijgbaar aan democratische prijzen!
                     </p>
@@ -456,14 +484,14 @@ export default function InfoOVJK2025Page() {
             </Card>
 
             {/* Mobility */}
-            <Card className="border-mainAccent/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center text-mainAccent">
-                  <MapPin className="mr-2" size={24} />
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <MapPin className="mr-2" size={20} />
                   Mobiliteit
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-2">
                 <p className="text-sm text-gray-700">
                   De locatie is vlot bereikbaar met de fiets, auto en het openbaar vervoer 
                   en ligt op wandelafstand van het station van Sint-Niklaas.
@@ -475,17 +503,17 @@ export default function InfoOVJK2025Page() {
         </div>
 
         {/* Prizes Section */}
-        <div className="mt-12">
-          <Card className="border-mainAccent/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center text-mainAccent">
-                <Trophy className="mr-2" size={24} />
+        <div className="mt-6">
+          <Card className="border-mainAccent/20 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-mainAccent text-base">
+                <Trophy className="mr-2" size={20} />
                 Prijzen
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <CardContent className="pt-2">
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   <div className="space-y-2">
                     <h4 className="font-semibold text-gray-900">A-reeks:</h4>
                     <div className="space-y-1 text-sm">
@@ -553,12 +581,12 @@ export default function InfoOVJK2025Page() {
                   </div>
                 </div>
 
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
                   <p className="font-semibold text-yellow-800 mb-2">Geldprijzen gegarandeerd bij 100 deelnemers over alle reeksen heen.</p>
                   <p className="text-yellow-700 text-sm">Naturaprijs voor elke deelnemer. Bekers voor de 14 kampioenen.</p>
                 </div>
 
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded">
                   <p className="font-semibold text-blue-800">
                     De kampioen, kampioene en de zes volgende winnen een selectie voor het Vlaams Jeugdkampioenschap van 2026
                   </p>
@@ -575,15 +603,15 @@ export default function InfoOVJK2025Page() {
 
         {/* Google Form */}
         <div className="mt-12">
-          <Card className="border-mainAccent/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center text-mainAccent">
-                <Users className="mr-2" size={24} />
+          <Card className="border-mainAccent/20 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-mainAccent text-base">
+                <Users className="mr-2" size={20} />
                 Inschrijvingsformulier
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="bg-gray-50 p-4 rounded-lg">
+            <CardContent className="pt-2">
+              <div className="bg-gray-50 p-3 rounded-lg">
                 <iframe
                   src="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform?embedded=true"
                   width="100%"
@@ -631,15 +659,15 @@ export default function InfoOVJK2025Page() {
 
         {/* Sponsors */}
         <div className="mt-12">
-          <Card className="border-mainAccent/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center text-mainAccent">
-                <Trophy className="mr-2" size={24} />
+          <Card className="border-mainAccent/20 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-mainAccent text-base">
+                <Trophy className="mr-2" size={20} />
                 Onze Sponsors
               </CardTitle>
             </CardHeader>
             <CardContent className="py-8">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 items-center justify-items-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 items-center justify-items-center">
                 {sponsors.map((sponsor, index) => (
                   <div 
                     key={index}
@@ -662,23 +690,25 @@ export default function InfoOVJK2025Page() {
 
         {/* Image Modal */}
         {selectedImage && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          <div
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-3 overflow-y-auto"
             onClick={() => setSelectedImage(null)}
           >
-            <div className="relative max-w-4xl max-h-full">
+            <div className="relative my-auto">
               <button
                 onClick={() => setSelectedImage(null)}
-                className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+                className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors z-10"
               >
                 <X size={32} />
               </button>
               <Image
                 src={selectedImage}
-                alt="Sponsor in full size"
-                width={800}
-                height={600}
-                className="max-w-full max-h-full object-contain rounded-lg"
+                alt="Vergrote weergave"
+                width={467}
+                height={690}
+                className="max-w-full max-h-screen object-contain rounded-lg"
+                quality={95}
+                priority
                 onClick={(e) => e.stopPropagation()}
               />
             </div>

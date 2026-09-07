@@ -321,10 +321,10 @@ export default function Navbar() {
                   Zomerkampen
                 </Link>
                 <Link href="/youth/info-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
-                  Info OVJK 2025
+                  Info OVJK 2026
                 </Link>
                 <Link href="/youth/sponsoring-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
-                  Sponsoring OVJK 2025
+                  Sponsoring OVJK 2026
                 </Link>
                 <a href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
                   Vlaams Jeugdschaakcriterium
@@ -646,14 +646,14 @@ export default function Navbar() {
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Info OVJK 2025
+                    Info OVJK 2026
                   </Link>
                   <Link
                     href="/youth/sponsoring-ovjk-2025"
                     className="block font-medium hover:text-mainAccent transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Sponsoring OVJK 2025
+                    Sponsoring OVJK 2026
                   </Link>
                   <a
                     href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage"
