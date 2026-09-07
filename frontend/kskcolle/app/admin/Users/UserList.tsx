@@ -17,12 +17,19 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
 }
 
-/** Filter Leden: enkel lidgeld_betaald uit de database */
-const hasLidgeldBetaald = (user: User) => user.lidgeld_betaald === true
+/** Filter Leden: controleer lidgeld_betaald (volwassenen) of jeugdlidgeld_betaald (jeugdleden) */
+const hasLidgeldBetaald = (user: User) => {
+  if (user.is_youth) {
+    return user.jeugdlidgeld_betaald === true
+  }
+  return user.lidgeld_betaald === true
+}
 
-// Lidmaatschap-label: uitsluitend het veld lidgeld_betaald (zoals in de database).
+// Lidmaatschap-label: check jeugdlidgeld voor jeugdleden, lidgeld voor volwassenen
 const getStatusInfo = (user: User) => {
-  if (user.lidgeld_betaald === true) {
+  const isMember = user.is_youth ? user.jeugdlidgeld_betaald === true : user.lidgeld_betaald === true
+
+  if (isMember) {
     return {
       color: 'bg-green-100 text-green-800',
       text: 'Lid',
