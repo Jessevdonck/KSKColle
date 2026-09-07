@@ -269,6 +269,10 @@ export default function Navbar() {
                         Zomertoernooi
                       </Link>
                     )}
+                    <div className="border-t border-gray-200 my-1"></div>
+                    <Link href="/rapidtoernooi" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                      Rapidtoernooi Volwassenen
+                    </Link>
                   </>
                 )}
               </div>
@@ -573,6 +577,14 @@ export default function Navbar() {
                           Zomertoernooi
                         </Link>
                       )}
+                      <div className="border-t border-gray-200 my-2"></div>
+                      <Link
+                        href="/rapidtoernooi"
+                        className="block font-medium hover:text-mainAccent transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Rapidtoernooi Volwassenen
+                      </Link>
                     </>
                   )}
                 </div>
