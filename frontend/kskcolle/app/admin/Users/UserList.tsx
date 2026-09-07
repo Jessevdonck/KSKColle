@@ -17,17 +17,29 @@ const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
   return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
 }
 
-/** Filter Leden: controleer lidgeld_betaald (volwassenen) of jeugdlidgeld_betaald (jeugdleden) */
-const hasLidgeldBetaald = (user: User) => {
-  if (user.is_youth) {
-    return user.jeugdlidgeld_betaald === true
-  }
-  return user.lidgeld_betaald === true
+/** Check if membership period is still valid (end date not in the past) */
+const isMembershipValid = (endDate: Date | null | undefined): boolean => {
+  if (!endDate) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const end = new Date(endDate)
+  end.setHours(0, 0, 0, 0)
+  return end >= today
 }
 
-// Lidmaatschap-label: check jeugdlidgeld voor jeugdleden, lidgeld voor volwassenen
+/** Filter Leden: controleer lidgeld_betaald (volwassenen) of jeugdlidgeld_betaald (jeugdleden), inclusief einddatum */
+const hasLidgeldBetaald = (user: User) => {
+  if (user.is_youth) {
+    return user.jeugdlidgeld_betaald === true && isMembershipValid(user.jeugdlidgeld_periode_eind)
+  }
+  return user.lidgeld_betaald === true && isMembershipValid(user.lidgeld_periode_eind)
+}
+
+// Lidmaatschap-label: check jeugdlidgeld voor jeugdleden, lidgeld voor volwassenen (inclusief einddatum)
 const getStatusInfo = (user: User) => {
-  const isMember = user.is_youth ? user.jeugdlidgeld_betaald === true : user.lidgeld_betaald === true
+  const isMember = user.is_youth
+    ? user.jeugdlidgeld_betaald === true && isMembershipValid(user.jeugdlidgeld_periode_eind)
+    : user.lidgeld_betaald === true && isMembershipValid(user.lidgeld_periode_eind)
 
   if (isMember) {
     return {

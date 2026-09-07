@@ -108,10 +108,19 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
     }
   })
 
+  const isMembershipPeriodValid = (endDate: string | null | undefined): boolean => {
+    if (!endDate) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const end = new Date(endDate)
+    end.setHours(0, 0, 0, 0)
+    return end >= today
+  }
+
   const getMembershipStatus = (user: LidgeldUser) => {
-    const lidgeldValid = user.lidgeld_betaald === true
-    const bondslidgeldValid = user.bondslidgeld_betaald === true
-    const jeugdlidgeldValid = user.jeugdlidgeld_betaald === true
+    const lidgeldValid = user.lidgeld_betaald === true && isMembershipPeriodValid(user.lidgeld_periode_eind)
+    const bondslidgeldValid = user.bondslidgeld_betaald === true && isMembershipPeriodValid(user.bondslidgeld_periode_eind)
+    const jeugdlidgeldValid = user.jeugdlidgeld_betaald === true && isMembershipPeriodValid(user.jeugdlidgeld_periode_eind)
     const isMember = user.is_youth ? jeugdlidgeldValid : lidgeldValid
 
     const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind, user.jeugdlidgeld_periode_eind]
@@ -139,13 +148,17 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
   }
 
   const getStatusColor = (user: LidgeldUser) => {
-    const isMember = user.is_youth ? user.jeugdlidgeld_betaald === true : user.lidgeld_betaald === true
+    const isMember = user.is_youth
+      ? user.jeugdlidgeld_betaald === true && isMembershipPeriodValid(user.jeugdlidgeld_periode_eind)
+      : user.lidgeld_betaald === true && isMembershipPeriodValid(user.lidgeld_periode_eind)
     if (isMember) return 'bg-green-100 text-green-800'
     return 'bg-gray-100 text-gray-800'
   }
 
   const getStatusText = (user: LidgeldUser) => {
-    const isMember = user.is_youth ? user.jeugdlidgeld_betaald === true : user.lidgeld_betaald === true
+    const isMember = user.is_youth
+      ? user.jeugdlidgeld_betaald === true && isMembershipPeriodValid(user.jeugdlidgeld_periode_eind)
+      : user.lidgeld_betaald === true && isMembershipPeriodValid(user.lidgeld_periode_eind)
     if (isMember) return 'Lid'
     return 'Geen lid'
   }
