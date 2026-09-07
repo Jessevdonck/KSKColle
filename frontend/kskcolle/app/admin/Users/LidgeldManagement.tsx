@@ -406,12 +406,24 @@ function LidgeldEditModal({ user, onClose, onSave }: {
   const handleBondslidgeldChange = (checked: boolean) => {
     const today = new Date()
     const august31 = getAugust31st()
-    
+
     setFormData(prev => ({
       ...prev,
       bondslidgeld_betaald: checked,
       bondslidgeld_periode_start: checked && !prev.bondslidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.bondslidgeld_periode_start,
       bondslidgeld_periode_eind: checked && !prev.bondslidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.bondslidgeld_periode_eind,
+    }))
+  }
+
+  const handleJeugdlidgeldChange = (checked: boolean) => {
+    const today = new Date()
+    const august31 = getAugust31st()
+
+    setFormData(prev => ({
+      ...prev,
+      jeugdlidgeld_betaald: checked,
+      jeugdlidgeld_periode_start: checked && !prev.jeugdlidgeld_periode_start ? format(today, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_start,
+      jeugdlidgeld_periode_eind: checked && !prev.jeugdlidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_eind,
     }))
   }
 
@@ -457,7 +469,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                     id="lidgeld_start"
                     type="date"
                     value={formData.lidgeld_periode_start}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lidgeld_periode_start: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      lidgeld_periode_start: e.target.value,
+                      lidgeld_betaald: e.target.value ? true : prev.lidgeld_betaald
+                    }))}
                   />
                 </div>
                 <div>
@@ -466,7 +482,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                     id="lidgeld_eind"
                     type="date"
                     value={formData.lidgeld_periode_eind}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lidgeld_periode_eind: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      lidgeld_periode_eind: e.target.value,
+                      lidgeld_betaald: e.target.value ? true : prev.lidgeld_betaald
+                    }))}
                   />
                 </div>
               </div>
@@ -487,7 +507,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                     id="bondslidgeld_start"
                     type="date"
                     value={formData.bondslidgeld_periode_start}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bondslidgeld_periode_start: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bondslidgeld_periode_start: e.target.value,
+                      bondslidgeld_betaald: e.target.value ? true : prev.bondslidgeld_betaald
+                    }))}
                   />
                 </div>
                 <div>
@@ -496,7 +520,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                     id="bondslidgeld_eind"
                     type="date"
                     value={formData.bondslidgeld_periode_eind}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bondslidgeld_periode_eind: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      bondslidgeld_periode_eind: e.target.value,
+                      bondslidgeld_betaald: e.target.value ? true : prev.bondslidgeld_betaald
+                    }))}
                   />
                 </div>
               </div>
@@ -508,24 +536,7 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                     <Checkbox
                       id="jeugdlidgeld_betaald"
                       checked={formData.jeugdlidgeld_betaald}
-                      onCheckedChange={(checked) => {
-                        const t = new Date()
-                        const currentYear = t.getFullYear()
-                        const currentMonth = t.getMonth()
-                        const currentDay = t.getDate()
-                        
-                        const yearForAugust31 = (currentMonth > 7 || (currentMonth === 7 && currentDay > 31)) 
-                          ? currentYear + 1 
-                          : currentYear
-                        
-                        const august31 = new Date(yearForAugust31, 7, 31)
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          jeugdlidgeld_betaald: !!checked,
-                          jeugdlidgeld_periode_start: checked && !prev.jeugdlidgeld_periode_start ? format(t, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_start,
-                          jeugdlidgeld_periode_eind: checked && !prev.jeugdlidgeld_periode_eind ? format(august31, 'yyyy-MM-dd') : prev.jeugdlidgeld_periode_eind
-                        }))
-                      }}
+                      onCheckedChange={(checked) => handleJeugdlidgeldChange(!!checked)}
                     />
                     <Label htmlFor="jeugdlidgeld_betaald">Betaald</Label>
                   </div>
@@ -535,7 +546,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                       id="jeugdlidgeld_start"
                       type="date"
                       value={formData.jeugdlidgeld_periode_start}
-                      onChange={(e) => setFormData(prev => ({ ...prev, jeugdlidgeld_periode_start: e.target.value }))}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        jeugdlidgeld_periode_start: e.target.value,
+                        jeugdlidgeld_betaald: e.target.value ? true : prev.jeugdlidgeld_betaald
+                      }))}
                     />
                   </div>
                   <div>
@@ -544,7 +559,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
                       id="jeugdlidgeld_eind"
                       type="date"
                       value={formData.jeugdlidgeld_periode_eind}
-                      onChange={(e) => setFormData(prev => ({ ...prev, jeugdlidgeld_periode_eind: e.target.value }))}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        jeugdlidgeld_periode_eind: e.target.value,
+                        jeugdlidgeld_betaald: e.target.value ? true : prev.jeugdlidgeld_betaald
+                      }))}
                     />
                   </div>
                 </div>
