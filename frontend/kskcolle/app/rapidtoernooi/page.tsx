@@ -14,11 +14,7 @@ export default function RapidtoernooiPage() {
         {/* Header */}
         <div className="mb-5">
           <h1 className="text-2xl font-bold text-gray-900">Rapidtoernooi Volwassenen</h1>
-          <div className="bg-mainAccent/10 border border-mainAccent/20 rounded-lg p-2">
-            <p className="text-xs font-semibold text-mainAccent">
-              ZATERDAG 24 OKTOBER 2026 - DE KLOK TIKT. HET BORD WACHT.
-            </p>
-          </div>
+
         </div>
 
         {/* Flyer */}
