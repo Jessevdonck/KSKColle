@@ -112,7 +112,7 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
     const lidgeldValid = user.lidgeld_betaald === true
     const bondslidgeldValid = user.bondslidgeld_betaald === true
     const jeugdlidgeldValid = user.jeugdlidgeld_betaald === true
-    const isMember = lidgeldValid
+    const isMember = user.is_youth ? jeugdlidgeldValid : lidgeldValid
 
     const expiresAt = [user.lidgeld_periode_eind, user.bondslidgeld_periode_eind, user.jeugdlidgeld_periode_eind]
       .filter(Boolean)
@@ -139,12 +139,14 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
   }
 
   const getStatusColor = (user: LidgeldUser) => {
-    if (user.lidgeld_betaald === true) return 'bg-green-100 text-green-800'
+    const isMember = user.is_youth ? user.jeugdlidgeld_betaald === true : user.lidgeld_betaald === true
+    if (isMember) return 'bg-green-100 text-green-800'
     return 'bg-gray-100 text-gray-800'
   }
 
   const getStatusText = (user: LidgeldUser) => {
-    if (user.lidgeld_betaald === true) return 'Lid'
+    const isMember = user.is_youth ? user.jeugdlidgeld_betaald === true : user.lidgeld_betaald === true
+    if (isMember) return 'Lid'
     return 'Geen lid'
   }
 
