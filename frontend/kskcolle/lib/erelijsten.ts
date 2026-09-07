@@ -62,15 +62,15 @@ export interface RecordResult {
 }
 
 export const EXCEL_FILES = [
-  { name: 'Herfstkampioenschap', file: 'herfst.xlsx', format: 'simple' },
-  { name: 'Lentekampioenschap', file: 'lente.xlsx', format: 'klasses' },
+  { name: 'Herfsttoernooi', file: 'herfst.xlsx', format: 'simple' },
+  { name: 'Clubkampioenschap', file: 'lente.xlsx', format: 'klasses' },
   { name: 'Zomertoernooi', file: 'zomer.xlsx', format: 'zomer' },
-  { name: 'Snelschaak', file: 'snelschaak.xlsx', format: 'klasses' },
-  { name: 'Quiz', file: 'quiz.xlsx', format: 'quiz' },
+  { name: 'Snelschaakkampioenschap', file: 'snelschaak.xlsx', format: 'klasses' },
+  { name: 'Nieuwjaarsquiz', file: 'quiz.xlsx', format: 'quiz' },
   { name: 'Konijnenschaak', file: 'konijn.xlsx', format: 'konijn' },
-  { name: 'Megalijst', file: 'Megalijst.xlsx', format: 'megalijst' },
-  { name: 'Ranking', file: 'Ranking.xlsx', format: 'ranking' },
-  { name: 'Records', file: 'Records.xlsx', format: 'records' }
+  { name: 'Megaschaak', file: 'Megalijst.xlsx', format: 'megalijst' },
+  { name: 'Ranking Clubkampioenschap', file: 'Ranking.xlsx', format: 'ranking' },
+  { name: 'Unieke Prestaties', file: 'Records.xlsx', format: 'records' }
 ]
 
 /** Haal een erelijst-Excel op en geef de ruwe rijen terug (header: 1). */

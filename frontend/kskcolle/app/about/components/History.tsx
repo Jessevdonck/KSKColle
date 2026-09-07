@@ -8,7 +8,7 @@ const History = () => {
         <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Onze Geschiedenis
+            De naamgever van onze schaakclub
           </h2>
         </div>
         <div className="p-6">
@@ -22,7 +22,7 @@ const History = () => {
                 </h3>
                 <p className="text-sm text-gray-700">
                   Edgard Colle werd op 18 mei 1897 geboren in Gent. Zijn naam is blijven voortleven in diverse clubnamen
-                  en in openingsboeken, maar wat weet u verder nog van deze man?
+                  en in openingsboeken dankzij de "Colle" opening.
                 </p>
               </div>
 
