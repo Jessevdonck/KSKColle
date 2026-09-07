@@ -5,6 +5,7 @@ import type { Participation } from "../types/participation";
 import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import { withInitialRating } from "./initialRatings";
+import { saveTournamentPodium } from "./honorService";
 
 export const getAllTournaments = async (
   active?: boolean,   // undefined | true | false
@@ -728,7 +729,10 @@ export const endTournament = async (tournament_id: number): Promise<void> => {
     await finalizeTournamentRatings(tournament_id);
   }
 
-  // 2) markeer als afgewerkt
+  // 2) sla podium op in erelijsten (top 3 winnaars)
+  await saveTournamentPodium(tournament_id);
+
+  // 3) markeer als afgewerkt
   await prisma.tournament.update({
     where: { tournament_id },
     data: { finished: true },
