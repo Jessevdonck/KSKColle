@@ -851,9 +851,13 @@ async function sendPostponeNotification(recipient: any, game: any, newRound: any
             <p>Beste ${recipient.voornaam} ${recipient.achternaam},</p>
             
             <p>${mainMessage}</p>
-            
+
             <p><strong>Nieuwe datum:</strong> ${newRound.ronde_datum.toLocaleDateString('nl-BE')} om ${newRound.startuur}</p>
-            
+
+            <div style="background-color: #e7f3ff; border: 1px solid #b3d9ff; padding: 12px; border-radius: 5px; margin: 15px 0;">
+              <p style="margin: 0;"><strong>Belangrijk:</strong> Om misverstanden te vermijden moet uitstellen via de website steeds gepaard gaan met contact en feedback van jouw tegenstander over de uitgestelde partij.</p>
+            </div>
+
             <p>Je kunt de toernooi details bekijken op de website.</p>
           </div>
           
@@ -872,9 +876,11 @@ async function sendPostponeNotification(recipient: any, game: any, newRound: any
       Beste ${recipient.voornaam} ${recipient.achternaam},
       
       ${textMainMessage}
-      
+
       Nieuwe datum: ${newRound.ronde_datum.toLocaleDateString('nl-BE')} om ${newRound.startuur}
-      
+
+      BELANGRIJK: Om misverstanden te vermijden moet uitstellen via de website steeds gepaard gaan met contact en feedback van jouw tegenstander over de uitgestelde partij.
+
       Je kunt de toernooi details bekijken op de website.
       
       Met vriendelijke groet,
