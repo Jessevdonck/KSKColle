@@ -167,8 +167,8 @@ const CalendarManagement = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="space-y-4">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="space-y-3">
           <CalendarEventList 
             events={filteredEvents} 
             mutate={mutate} 

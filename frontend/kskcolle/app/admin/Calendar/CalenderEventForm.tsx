@@ -149,7 +149,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
               <FileText className="h-3.5 w-3.5" />
               Evenement Details
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="title" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -187,7 +187,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
               <CalendarIconLucide className="h-3.5 w-3.5" />
               Datum & Tijd
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="date" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4" />
@@ -309,7 +309,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
               <Users className="h-3.5 w-3.5" />
               Jeugd & Categorieën
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -358,7 +358,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-3">
             <Button type="submit" variant="accent" className="px-6">
               <div className="flex items-center gap-2">
                 {event ? <FileText className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
