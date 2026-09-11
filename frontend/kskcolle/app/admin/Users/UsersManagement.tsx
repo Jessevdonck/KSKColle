@@ -145,7 +145,7 @@ export default function UsersManagement() {
                 </div>
               </div>
             </div>
-            <div>
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 onClick={handleCopyActiveMemberEmails}
                 variant="outline"
@@ -155,6 +155,7 @@ export default function UsersManagement() {
                 <Copy className="h-4 w-4" />
                 Kopieer Emailadressen Actieve Leden
               </Button>
+              <AddOrEditUser onRefresh={refreshUsers} />
             </div>
           </div>
         </div>
@@ -162,7 +163,6 @@ export default function UsersManagement() {
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="space-y-4">
-          <AddOrEditUser onRefresh={refreshUsers} />
           <UserList
             users={usersData.items || []}
             onEdit={setSelectedUser}
