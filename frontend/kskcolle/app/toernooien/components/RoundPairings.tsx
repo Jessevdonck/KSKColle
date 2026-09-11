@@ -102,7 +102,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
           </h3>
         </div>
 
-        <div className="text-center py-12">
+        <div className="text-center py-6">
           <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
             <User className="h-8 w-8 text-mainAccent" />
           </div>
@@ -203,7 +203,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   </td>
                   {tournament?.is_youth !== true && (
                     <td className="px-1 py-0.5 text-center w-[60px]">
-                      <span className="text-sm font-normal text-yellow-600">
+                      <span className="text-sm font-normal text-orange-600">
                         {game.speler1.schaakrating_elo}
                       </span>
                     </td>
@@ -246,7 +246,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   {tournament?.is_youth !== true && (
                     <td className="px-1 py-0.5 text-center w-[60px]">
                       {game.speler2 ? (
-                        <span className="text-sm font-normal text-yellow-600">
+                        <span className="text-sm font-normal text-orange-600">
                           {game.speler2.schaakrating_elo}
                         </span>
                       ) : (
@@ -326,7 +326,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     </Link>
                     <div className="flex items-center gap-4 mt-0.5 text-xs">
                       {tournament?.is_youth !== true && (
-                        <span className="font-normal text-yellow-600">ELIO: {game.speler1.schaakrating_elo}</span>
+                        <span className="font-normal text-orange-600">ELIO: {game.speler1.schaakrating_elo}</span>
                       )}
                       {playerScores.length > 0 && (
                         <span className="font-bold text-black">
@@ -363,7 +363,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     {game.speler2 && (
                       <div className="flex items-center gap-4 mt-0.5 text-xs">
                         {tournament?.is_youth !== true && (
-                          <span className="font-normal text-yellow-600">ELIO: {game.speler2.schaakrating_elo}</span>
+                          <span className="font-normal text-orange-600">ELIO: {game.speler2.schaakrating_elo}</span>
                         )}
                         {playerScores.length > 0 && (
                           <span className="font-bold text-black">
@@ -380,7 +380,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
         </div>
       </>
       ) : (
-        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-8 text-center">
+        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-6 text-center">
           <div className="text-gray-500 text-lg mb-2">Ronde {round.ronde_nummer}</div>
           <div className="text-gray-400 text-sm">
             {!round.round_id ? "Nog niet gegenereerd" : "Geen partijen beschikbaar"}

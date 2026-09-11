@@ -158,7 +158,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
     if (isForfeitLoss) return "bg-gray-300 text-gray-700";
     if (result === 1) return "bg-green-100 text-green-800";
     if (result === 0) return "bg-red-100 text-red-800";
-    if (result === 0.5) return "bg-yellow-100 text-yellow-800";
+    if (result === 0.5) return "bg-blue-100 text-blue-800";
     return "bg-gray-50 text-gray-400";
   };
 
@@ -241,7 +241,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       >
                         <Link
                           href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
-                          className="hover:text-yellow-200 transition-colors inline-block"
+                          className="hover:text-orange-200 transition-colors inline-block"
                           title={`${player.voornaam} ${player.achternaam}`}
                         >
                           <span className="whitespace-nowrap">
@@ -420,7 +420,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       >
                         <Link
                           href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
-                          className="hover:text-yellow-200 transition-colors inline-block"
+                          className="hover:text-orange-200 transition-colors inline-block"
                           title={`${player.voornaam} ${player.achternaam}`}
                         >
                           <span className="whitespace-nowrap">

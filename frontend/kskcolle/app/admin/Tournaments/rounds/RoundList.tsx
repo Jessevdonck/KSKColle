@@ -77,10 +77,9 @@ export default function RoundList({
         const games: Game[] = roundData?.games ?? []
 
         return (
-          <div key={roundNumber} className="mb-4 w-full max-w-2xl mx-auto">
+          <div key={roundNumber} className="mb-3 w-full max-w-2xl mx-auto">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold">Ronde {roundNumber}</h3>
-
+              <h3 className="text-base font-semibold text-textColor">Ronde {roundNumber}</h3>
 
               <Button
                 size="sm"
@@ -92,10 +91,10 @@ export default function RoundList({
             </div>
 
             {addingForRound === roundNumber && (
-              <div className="mt-2 p-4 bg-gray-50 border rounded">
-                <div className="grid grid-cols-2 gap-4 items-end">
+              <div className="mt-2 p-3 bg-neutral-50 border border-neutral-200 rounded-lg">
+                <div className="grid grid-cols-2 gap-3 items-end">
                   <div>
-                    <Label>Datum</Label>
+                    <Label className="text-sm">Datum</Label>
                     <Input
                       type="date"
                       value={date}
@@ -103,7 +102,7 @@ export default function RoundList({
                     />
                   </div>
                   <div className="flex space-x-2">
-                    <Button onClick={handleSubmitMakeup} className="bg-green-500">
+                    <Button onClick={handleSubmitMakeup} variant="accent">
                       Opslaan
                     </Button>
                     <Button onClick={() => setAddingForRound(null)} variant="outline">
@@ -118,7 +117,7 @@ export default function RoundList({
             {makeupRounds
               .filter(round => (round.round_id - 1000) === roundNumber)
               .map(round => (
-                <div key={round.round_id} className="mt-2 text-sm text-gray-600">
+                <div key={round.round_id} className="mt-1.5 text-sm text-gray-600">
                   Inhaaldag: {round.label ?? ''} — {format(new Date(round.ronde_datum), 'yyyy-MM-dd')}
                 </div>
               ))}

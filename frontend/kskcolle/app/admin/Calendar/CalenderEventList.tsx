@@ -101,21 +101,21 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
 
   if (!events || events.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4 min-h-[200px]">
-          <div className="flex flex-col gap-4">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
+          <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <Calendar className="h-6 w-6" />
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
                   Evenementen Overzicht
                 </h2>
                 <p className="text-white/80 mt-1">Geen evenementen gevonden</p>
               </div>
             </div>
             
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <Button
                   onClick={onAddEvent}
                   className="bg-white text-mainAccent hover:bg-white/90 transition-colors"
@@ -224,26 +224,26 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
             </div>
           </div>
         </div>
-        <div className="p-12 text-center">
-          <div className="bg-mainAccent/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-            <Calendar className="h-10 w-10 text-mainAccent" />
+        <div className="p-6 text-center">
+          <div className="bg-mainAccent/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+            <Calendar className="h-6 w-6 text-mainAccent" />
           </div>
-          <h3 className="text-xl font-bold text-gray-700 mb-2">Geen evenementen gevonden</h3>
-          <p className="text-gray-600">Voeg een nieuw evenement toe om te beginnen.</p>
+          <h3 className="text-base font-bold text-gray-700 mb-1.5">Geen evenementen gevonden</h3>
+          <p className="text-gray-600 text-sm">Voeg een nieuw evenement toe om te beginnen.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4 min-h-[200px]">
-            <div className="flex flex-col gap-4">
+    <div className="space-y-4">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
+            <div className="flex flex-col gap-2.5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-6 w-6" />
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
                     Evenementen Overzicht
                   </h2>
                   <p className="text-white/80 mt-1">
@@ -253,8 +253,8 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                 </div>
               </div>
               
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2.5 flex-wrap">
                   <Button
                     onClick={onAddEvent}
                     className="bg-white text-mainAccent hover:bg-white/90 transition-colors"
@@ -364,7 +364,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-3">
           {/* Desktop Table */}
           <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
@@ -435,7 +435,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                       index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
                     } ${isPast ? "opacity-60" : ""}`}
                   >
-                    <td className="p-4">
+                    <td className="p-3">
                       <div className="font-medium text-textColor flex items-center gap-2">
                         {event.title}
                         {isPast && (
@@ -445,7 +445,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                         )}
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-mainAccent" />
                         <div>
@@ -461,14 +461,14 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="p-3">
                       <div className="text-gray-600 text-sm max-w-xs">
                         {event.description}
                       </div>
                     </td>
                     {showYouth ? (
                       <>
-                        <td className="p-4">
+                        <td className="p-3">
                           <div className="flex flex-wrap gap-1">
                             {(() => {
                               try {
@@ -489,7 +489,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                             })()}
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="p-3">
                           <div className="flex flex-wrap gap-1">
                             {(() => {
                               try {
@@ -510,7 +510,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                         </td>
                       </>
                     ) : (
-                      <td className="p-4">
+                      <td className="p-3">
                         <div className="flex flex-wrap gap-1">
                           {(() => {
                             try {
@@ -530,7 +530,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                         </div>
                       </td>
                     )}
-                    <td className="p-4">
+                    <td className="p-3">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium border ${getEventTypeColor(
                           event.type
@@ -538,7 +538,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
                         {getTypeDisplayLabel(event.type)}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-3">
                       <div className="flex justify-center gap-2">
                         <Button
                           variant="ghost"
@@ -566,7 +566,7 @@ const CalendarEventList: React.FC<CalendarEventListProps> = ({
           </div>
 
           {/* Mobile Cards */}
-          <div className="lg:hidden space-y-4">
+          <div className="lg:hidden space-y-3">
             {events.map((event) => {
               const eventDate = new Date(event.date)
               const now = new Date()

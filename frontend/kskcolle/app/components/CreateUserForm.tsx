@@ -126,10 +126,6 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
         adres_gemeente: data.adres_gemeente?.trim() || undefined,
       };
 
-      // Debug: log the clean data being sent
-      console.log('Clean data being sent to API:', cleanData);
-      console.log('is_youth in clean data:', cleanData.is_youth);
-
       const response = await createUserWithPassword('user-management', { arg: cleanData });
       setSuccess(true);
       onSuccess?.(response.userId);
@@ -149,19 +145,19 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
   if (success) {
     return (
       <div className="flex justify-center">
-        <div className="space-y-6 w-full max-w-2xl text-center">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-8">
-            <div className="bg-green-500 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-white" />
+        <div className="space-y-4 w-full max-w-2xl text-center">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-5">
+            <div className="bg-green-500 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-green-800 mb-2">Gebruiker Succesvol Aangemaakt!</h3>
-            <p className="text-green-700 mb-6">
+            <h3 className="text-lg font-bold text-green-800 mb-1.5">Gebruiker Succesvol Aangemaakt!</h3>
+            <p className="text-green-700 text-sm mb-4">
               Het wachtwoord is automatisch gegenereerd en naar het opgegeven emailadres gestuurd.
             </p>
-            <Button 
-              onClick={onClose} 
+            <Button
+              onClick={onClose}
               variant="outline"
-              className="px-6 py-2"
+              size="sm"
             >
               Sluiten
             </Button>
@@ -173,13 +169,13 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
 
   return (
     <div className="flex justify-center">
-      <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-6 w-full max-w-4xl">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <UserPlus className="h-8 w-8 text-mainAccent" />
-            <h2 className="text-3xl font-bold text-textColor">Nieuwe Gebruiker Aanmaken</h2>
+      <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-3 w-full max-w-4xl">
+        <div className="text-center mb-4">
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <UserPlus className="h-5 w-5 text-mainAccent" />
+            <h2 className="text-xl font-bold text-textColor">Nieuwe Gebruiker Aanmaken</h2>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 text-sm max-w-2xl mx-auto">
             Vul de gegevens in om een nieuwe gebruiker aan te maken. Het wachtwoord wordt automatisch gegenereerd en via email verzonden.
           </p>
         </div>
@@ -192,9 +188,9 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       )}
 
       {/* Persoonlijke Gegevens - Eerste rij */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
-          <User className="h-5 w-5" />
+      <div className="bg-white rounded-lg p-4 border border-neutral-200">
+        <h3 className="text-sm font-semibold text-mainAccent mb-3 flex items-center gap-2">
+          <User className="h-3.5 w-3.5" />
           Persoonlijke Gegevens
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -235,9 +231,9 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       </div>
 
       {/* Contactgegevens - Tweede rij */}
-      <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
-        <h3 className="text-lg font-semibold text-green-800 mb-4 flex items-center gap-2">
-          <Mail className="h-5 w-5" />
+      <div className="bg-white rounded-lg p-4 border border-neutral-200">
+        <h3 className="text-sm font-semibold text-mainAccent mb-3 flex items-center gap-2">
+          <Mail className="h-3.5 w-3.5" />
           Contactgegevens
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -327,9 +323,9 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       </div>
 
       {/* Schaakgegevens - Derde rij */}
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-6 border border-amber-200">
-        <h3 className="text-lg font-semibold text-amber-800 mb-4 flex items-center gap-2">
-          <Trophy className="h-5 w-5" />
+      <div className="bg-white rounded-lg p-4 border border-neutral-200">
+        <h3 className="text-sm font-semibold text-mainAccent mb-3 flex items-center gap-2">
+          <Trophy className="h-3.5 w-3.5" />
           Schaakgegevens
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -369,9 +365,9 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       </div>
 
       {/* Account Rechten - Vierde rij */}
-      <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
-        <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
-          <Shield className="h-5 w-5" />
+      <div className="bg-white rounded-lg p-4 border border-neutral-200">
+        <h3 className="text-sm font-semibold text-mainAccent mb-3 flex items-center gap-2">
+          <Shield className="h-3.5 w-3.5" />
           Account Rechten
         </h3>
         <div className="space-y-3">
@@ -511,9 +507,9 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       </div>
 
       {/* Adres Gegevens - Vijfde rij */}
-      <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-lg p-6 border border-indigo-200">
-        <h3 className="text-lg font-semibold text-indigo-800 mb-4 flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
+      <div className="bg-white rounded-lg p-4 border border-neutral-200">
+        <h3 className="text-sm font-semibold text-mainAccent mb-3 flex items-center gap-2">
+          <MapPin className="h-3.5 w-3.5" />
           Adres Gegevens
         </h3>
         
@@ -583,15 +579,15 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       </div>
 
       {/* Info Sectie */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-        <div className="flex items-start space-x-3">
-          <div className="bg-blue-500 rounded-full p-2 flex-shrink-0">
-            <UserPlus className="h-4 w-4 text-white" />
+      <div className="bg-mainAccent/10 rounded-lg p-3 border border-mainAccent/20">
+        <div className="flex items-start gap-3">
+          <div className="bg-mainAccent rounded-full p-1.5 flex-shrink-0">
+            <UserPlus className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
-            <h4 className="font-medium text-blue-800 mb-2">Automatische Wachtwoord Generatie</h4>
-            <p className="text-sm text-blue-700">
-              Er wordt automatisch een veilig wachtwoord gegenereerd en naar het opgegeven emailadres gestuurd. 
+            <h4 className="font-medium text-textColor text-sm mb-1">Automatische Wachtwoord Generatie</h4>
+            <p className="text-sm text-gray-700">
+              Er wordt automatisch een veilig wachtwoord gegenereerd en naar het opgegeven emailadres gestuurd.
               De gebruiker kan dit wachtwoord gebruiken om in te loggen en kan het later wijzigen.
             </p>
           </div>
@@ -599,29 +595,28 @@ export default function CreateUserForm({ onSuccess, onClose }: CreateUserFormPro
       </div>
 
       {/* Submit Buttons */}
-      <div className="flex justify-center space-x-4 pt-4">
-        <Button 
-          type="button" 
-          variant="outline" 
+      <div className="flex justify-center gap-3 pt-2">
+        <Button
+          type="button"
+          variant="outline"
           onClick={onClose}
           data-cy="cancel_create_user_button"
-          className="px-8 py-3 text-base"
         >
           Annuleer
         </Button>
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={loading}
-          className="bg-mainAccent hover:bg-mainAccentDark text-neutral-50 px-8 py-3 text-base"
+          variant="accent"
           data-cy="submit_create_user_button"
         >
           {loading ? (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               <span>Aanmaken...</span>
             </div>
           ) : (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <UserPlus className="h-4 w-4" />
               <span>Gebruiker Aanmaken</span>
             </div>

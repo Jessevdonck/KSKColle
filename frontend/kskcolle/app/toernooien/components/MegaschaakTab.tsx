@@ -201,10 +201,10 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
   // Show deadline message if deadline hasn't passed
   if (!isDeadlinePassed) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl text-center">
-          <Clock className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-blue-800 mb-2">Megaschaak deadline is nog niet verstreken</h3>
+      <div className="flex items-center justify-center py-8">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 max-w-2xl text-center">
+          <Clock className="h-9 w-9 text-blue-600 mx-auto mb-2" />
+          <h3 className="text-lg font-semibold text-blue-800 mb-2">Megaschaak deadline is nog niet verstreken</h3>
           {megaschaakDeadline && (
             <p className="text-sm text-blue-700">
               De deadline is op <strong>{format(new Date(megaschaakDeadline), "dd/MM/yyyy 'om' HH:mm")}</strong>.
@@ -220,7 +220,7 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
   if (isDeadlinePassed) {
     if (standingsLoading) {
       return (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
             <p className="text-gray-600">Stand laden...</p>
@@ -232,7 +232,7 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
     if (standings.length === 0) {
       return (
         <div className="bg-white rounded-lg shadow-md p-12 text-center">
-          <Trophy className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <Trophy className="h-10 w-10 text-gray-300 mx-auto mb-3" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">Nog geen teams</h3>
           <p className="text-gray-500">Er zijn nog geen teams aangemaakt voor dit toernooi.</p>
         </div>
@@ -257,22 +257,22 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
                   key={team.team_id}
                   className={`flex items-center justify-between p-4 rounded-lg border-2 ${
                     index === 0
-                      ? 'bg-yellow-50 border-yellow-300'
+                      ? 'bg-orange-50 border-orange-300'
                       : index === 1
                       ? 'bg-gray-50 border-gray-300'
                       : index === 2
-                      ? 'bg-orange-50 border-orange-300'
+                      ? 'bg-orange-50/60 border-orange-200'
                       : 'bg-white border-gray-200'
                   }`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
                       index === 0
-                        ? 'bg-yellow-500'
+                        ? 'bg-orange-500'
                         : index === 1
                         ? 'bg-gray-400'
                         : index === 2
-                        ? 'bg-orange-500'
+                        ? 'bg-orange-800'
                         : 'bg-gray-300'
                     }`}>
                       {index + 1}
@@ -297,7 +297,7 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
 
   if (playersLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
           <p className="text-gray-600">Spelers laden...</p>
@@ -366,7 +366,7 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
 
           <div className="space-y-4 max-h-[500px] overflow-y-auto">
             {playersByClass.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-6 text-gray-500">
                 Geen spelers gevonden
               </div>
             ) : (
@@ -455,7 +455,7 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
           </div>
 
           {selectedPlayers.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-6 text-gray-500">
               <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p>Selecteer spelers om je team samen te stellen</p>
               <p className="text-sm mt-2">Maximum {MAX_PLAYERS} spelers</p>

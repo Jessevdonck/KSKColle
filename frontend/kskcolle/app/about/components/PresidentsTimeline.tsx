@@ -76,75 +76,75 @@ export default function PresidentsTimeline() {
   return (
     <section>
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Crown className="h-6 w-6" />
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <Crown className="h-4 w-4" />
               Onze Voorzitters
             </h2>
 
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               <button
                 onClick={scrollToStart}
                 disabled={!canScrollLeft}
-                className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Naar begin"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => scroll("left")}
-                disabled={!canScrollLeft}
-                className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Scroll links"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
+                onClick={() => scroll("left")}
+                disabled={!canScrollLeft}
+                className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Scroll links"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
                 onClick={() => scroll("right")}
                 disabled={!canScrollRight}
-                className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Scroll rechts"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3.5 w-3.5" />
               </button>
               <button
                 onClick={scrollToEnd}
                 disabled={!canScrollRight}
-                className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Naar einde (huidige voorzitter)"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
-          <p className="text-white/80 mt-2 text-sm">Scroll horizontaal om alle voorzitters te zien</p>
+          <p className="text-white/80 mt-1 text-xs">Scroll horizontaal om alle voorzitters te zien</p>
         </div>
 
-        <div className="p-8">
+        <div className="p-4">
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-mainAccent to-mainAccentDark top-12 rounded-full" />
+            <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-mainAccent to-mainAccentDark top-8 rounded-full" />
 
             {/* Scrollable container */}
             <div
               ref={scrollRef}
-              className="flex gap-6 overflow-x-auto pb-4 scroll-smooth"
+              className="flex gap-4 overflow-x-auto pb-3 scroll-smooth"
               style={{
                 scrollbarWidth: "thin",
-                scrollbarColor: "#B17457 #f1f1f1",
+                scrollbarColor: "#f97316 #f1f1f1",
               }}
             >
               {presidents.map((president, index) => (
-                <div key={index} className="flex flex-col items-center flex-shrink-0 w-48 group">
+                <div key={index} className="flex flex-col items-center flex-shrink-0 w-44 group">
                   {/* Timeline dot */}
-                  <div className="relative z-10 mb-6">
-                    <div className="w-6 h-6 bg-gradient-to-br from-mainAccent to-mainAccentDark rounded-full border-4 border-white shadow-lg group-hover:scale-125 transition-transform duration-300" />
+                  <div className="relative z-10 mb-4">
+                    <div className="w-5 h-5 bg-gradient-to-br from-mainAccent to-mainAccentDark rounded-full border-4 border-white shadow-lg group-hover:scale-125 transition-transform duration-300" />
                   </div>
 
                   {/* Content card */}
-                  <div className="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 text-center border border-neutral-200 group-hover:border-mainAccent/30 group-hover:shadow-md transition-all duration-300 w-full">
-                    <time className="text-sm font-semibold text-mainAccent mb-2 block">{president.period}</time>
+                  <div className="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-3 text-center border border-neutral-200 group-hover:border-mainAccent/30 group-hover:shadow-md transition-all duration-300 w-full">
+                    <time className="text-sm font-semibold text-mainAccent mb-1 block">{president.period}</time>
                     <h3 className="text-base font-bold text-textColor group-hover:text-mainAccent transition-colors leading-tight">
                       {president.name}
                     </h3>
@@ -154,13 +154,13 @@ export default function PresidentsTimeline() {
             </div>
 
             {/* Scroll indicators */}
-            <div className="flex justify-center mt-4 gap-2">
+            <div className="flex justify-center mt-3 gap-2">
               {presidents.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => {
                     if (scrollRef.current) {
-                      const itemWidth = 192 + 24 
+                      const itemWidth = 176 + 16
                       scrollRef.current.scrollTo({
                         left: index * itemWidth,
                         behavior: "smooth",

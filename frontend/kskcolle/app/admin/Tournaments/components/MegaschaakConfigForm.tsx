@@ -237,7 +237,7 @@ export default function MegaschaakConfigForm({ tournamentId, tournamentName }: M
           Pas de formule parameters aan voor {tournamentName}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         {/* Class Bonus Points */}
         <div>
           <Label className="text-base font-semibold mb-3 block">Bonus Punten per Klasse</Label>
@@ -396,7 +396,7 @@ export default function MegaschaakConfigForm({ tournamentId, tournamentName }: M
           <Button
             onClick={handleSave}
             disabled={!hasChanges || isSaving}
-            className="bg-mainAccent text-white hover:bg-mainAccentDark"
+            variant="accent"
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? "Opslaan..." : "Opslaan"}

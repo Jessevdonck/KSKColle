@@ -19,6 +19,14 @@ import { CLASS_ORDER } from "./constants";
 import { revalidateMegaschaakAfterTeamChange, sortClassEntries } from "./utils";
 import { useToast } from "@/hooks/use-toast";
 
+// Stable empty-array fallbacks: SWR returns `data === undefined` whenever its key is
+// `null` (e.g. registration closed, not authenticated, ...). Defaulting with `= []`
+// inline creates a brand new array reference on every render, which then re-triggers
+// any effect that depends on it (e.g. below) - causing an infinite render loop.
+const EMPTY_PLAYERS: MegaschaakPlayer[] = [];
+const EMPTY_TEAMS: MegaschaakTeam[] = [];
+const EMPTY_ARCHIVE: MegaschaakArchiveEntry[] = [];
+
 export function useMegaschaakPage() {
   const { toast } = useToast();
   const { isAuthed } = useAuth();
@@ -51,7 +59,7 @@ export function useMegaschaakPage() {
       DEFAULT_SWR_OPTIONS,
     );
 
-  const { data: archiveList = [] } = useSWR<MegaschaakArchiveEntry[]>(
+  const { data: archiveList = EMPTY_ARCHIVE } = useSWR<MegaschaakArchiveEntry[]>(
     "megaschaak/archive",
     async () => {
       const response = await axios.get("/megaschaak/archive");
@@ -98,7 +106,7 @@ export function useMegaschaakPage() {
 
   // Fetch available players (all participants from all classes of the active tournament)
   const {
-    data: availablePlayers = [],
+    data: availablePlayers = EMPTY_PLAYERS,
     isLoading: playersLoading,
     mutate: mutatePlayers,
   } = useSWR<MegaschaakPlayer[]>(
@@ -128,12 +136,12 @@ export function useMegaschaakPage() {
   }, [mutatePlayers]);
 
   // Fetch user's teams for this tournament (only if authenticated)
-  const { data: myTeams = [], mutate: mutateTeams } = useSWR<MegaschaakTeam[]>(
+  const { data: myTeams = EMPTY_TEAMS, mutate: mutateTeams } = useSWR<MegaschaakTeam[]>(
     displayTournament && isAuthed
       ? `megaschaak/tournament/${displayTournament.tournament_id}/my-teams`
       : null,
     async () => {
-      if (!displayTournament) return [];
+      if (!displayTournament) return EMPTY_TEAMS;
       try {
         const response = await axios.get(
           `/megaschaak/tournament/${displayTournament.tournament_id}/my-teams`,
@@ -141,7 +149,7 @@ export function useMegaschaakPage() {
         return response.data.items;
       } catch (error) {
         // If not authenticated, return empty array
-        return [];
+        return EMPTY_TEAMS;
       }
     },
     DEFAULT_SWR_OPTIONS,
@@ -252,11 +260,18 @@ export function useMegaschaakPage() {
   );
 
   // Auto-select first team or create mode
+  // NB: depend on `myTeams.length`, not `myTeams` itself - the SWR fetcher's
+  // internal catch-block returns a fresh `[]` literal on every (re)fetch, so the
+  // array reference is not stable even when its content doesn't change. Depending
+  // on the reference here re-fires this effect on every render, which - since
+  // `currentEditingTeam` never satisfies `!currentEditingTeam` after being set once -
+  // shouldn't loop on its own, but keeps re-triggering downstream effects that do.
   React.useEffect(() => {
     if (myTeams.length > 0 && !currentEditingTeam && !isCreatingNew) {
       setCurrentEditingTeam(myTeams[0]);
     }
-  }, [myTeams, currentEditingTeam, isCreatingNew]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myTeams.length, currentEditingTeam, isCreatingNew]);
 
   // Load team into editor when selecting a team
   React.useEffect(() => {

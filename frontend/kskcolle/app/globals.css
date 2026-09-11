@@ -33,9 +33,9 @@ html{
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --main-accent: #deb71d;
-    --main-accent-dark: #d4ae17;
-    --selection-color: #deb71d;
+    --main-accent: #f97316;
+    --main-accent-dark: #ea580c;
+    --selection-color: #f97316;
     --selection-text-color: #FAF7F0;
   }
   .dark {

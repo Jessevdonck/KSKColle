@@ -69,11 +69,11 @@ export default function RapidToernooiPage() {
                     <Badge variant="outline" className="mr-3">7 rondes</Badge>
                     <span>Speeltempo: 10+5" per zet</span>
                   </div>
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                    <p className="font-semibold text-yellow-800">
+                  <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
+                    <p className="font-semibold text-orange-800">
                       Enkel voor spelers geboren voor 31 december 2005
                     </p>
-                    <p className="text-yellow-700 mt-1">
+                    <p className="text-orange-700 mt-1">
                       Of die niet behoren tot de Liga Oost-Vlaanderen
                     </p>
                   </div>
@@ -162,13 +162,13 @@ export default function RapidToernooiPage() {
                     </p>
                   </div>
 
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                    <p className="font-semibold text-yellow-800 mb-2">Alternatieve inschrijving:</p>
+                  <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
+                    <p className="font-semibold text-orange-800 mb-2">Alternatieve inschrijving:</p>
                     <a 
                       href="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-yellow-600 hover:text-yellow-800 underline font-medium"
+                      className="text-orange-600 hover:text-orange-800 underline font-medium"
                     >
                       Open formulier in nieuw venster
                     </a>
@@ -210,9 +210,9 @@ export default function RapidToernooiPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Prizes Card */}
-            <Card className="border-yellow-400/30 shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100">
+            <Card className="border-orange-400/30 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100">
               <CardHeader>
-                <CardTitle className="flex items-center text-yellow-800">
+                <CardTitle className="flex items-center text-orange-800">
                   <Trophy className="mr-2" size={24} />
                   Prijzen
                 </CardTitle>
@@ -220,7 +220,7 @@ export default function RapidToernooiPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-center">
-                    <p className="text-lg font-bold text-yellow-800">Beker voor de winnaar</p>
+                    <p className="text-lg font-bold text-orange-800">Beker voor de winnaar</p>
                   </div>
                   
                   <div className="space-y-2">
@@ -238,8 +238,8 @@ export default function RapidToernooiPage() {
                     </div>
                   </div>
 
-                  <div className="border-t border-yellow-300 pt-3">
-                    <p className="text-sm font-semibold text-yellow-800 mb-2">Ratingprijzen:</p>
+                  <div className="border-t border-orange-300 pt-3">
+                    <p className="text-sm font-semibold text-orange-800 mb-2">Ratingprijzen:</p>
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
                         <span>Beste -2000</span>
@@ -256,8 +256,8 @@ export default function RapidToernooiPage() {
                     </div>
                   </div>
 
-                  <div className="bg-yellow-200 p-3 rounded text-center">
-                    <p className="text-sm font-bold text-yellow-800">
+                  <div className="bg-orange-200 p-3 rounded text-center">
+                    <p className="text-sm font-bold text-orange-800">
                       Geldprijzen gegarandeerd vanaf 25 deelnemers
                     </p>
                   </div>

@@ -6,15 +6,15 @@ export default function OVJKParticipants() {
   return (
     <section>
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
             OVJK Deelnemerslijst
           </h2>
         </div>
 
-        <div className="p-6">
-          <div className="mb-4">
+        <div className="p-4">
+          <div className="mb-3">
             <p className="text-sm text-gray-700">
               Actuele deelnemerslijst van het Oost-Vlaams Jeugdkampioenschap
             </p>
@@ -43,7 +43,7 @@ export default function OVJKParticipants() {
                   href="https://docs.google.com/spreadsheets/d/e/2PACX-1vSLCTV-yg58WBsoy_Xk6sRWsHhLNICzAu46d8Bu8tmO7R_xoJKYMVHUksFNJaY_EvzB-E8mmAJpzRZ8/pubhtml?gid=1452248494&single=true" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="bg-mainAccent hover:bg-mainAccentDark text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                  className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white px-5 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg hover:brightness-105 transition-all"
                 >
                   Open deelnemerslijst in nieuw venster
                 </a>

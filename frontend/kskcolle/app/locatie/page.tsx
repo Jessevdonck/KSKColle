@@ -39,23 +39,23 @@ export default function LocatiePage() {
     <main className="bg-neutral-50">
       {/* Hero */}
       <section className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
-        <div className="container mx-auto px-4 py-10">
-          <h1 className="text-3xl md:text-4xl font-bold">Onze Locatie</h1>
-          <p className="text-white/90 mt-2 max-w-3xl">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Onze Locatie</h1>
+          <p className="text-white/90 mt-1.5 max-w-3xl text-sm">
             Taverne De Graanmaat op de Grote Markt van Sint-Niklaas is onze thuisbasis voor clubavonden, jeugdwerking en interclub.
           </p>
         </div>
       </section>
 
       {/* Content */}
-      <section className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-4">
         {/* Alternating sections (eerste blok: image + 2 info-kaarten) */}
-        <div className="mt-8 space-y-10">
+        <div className="space-y-6">
           {texts.map((text, idx) => {
             const img = images[idx] || images[idx - 1] || images[0]
             if (idx === 0) {
               return (
-                <div key={idx} className="grid gap-6 md:grid-cols-2 items-stretch">
+                <div key={idx} className="grid gap-4 md:grid-cols-2 items-stretch">
                   {/* First photo (rechts op desktop) */}
                   <div className="md:order-2 relative w-full aspect-[16/10] overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
                     {img && (
@@ -70,8 +70,8 @@ export default function LocatiePage() {
                     )}
                   </div>
                   {/* Two stacked cards (links op desktop) */}
-                  <div className="md:order-1 flex flex-col gap-6">
-                    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
+                  <div className="md:order-1 flex flex-col gap-4">
+                    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-4">
                       <h2 className="text-xl font-semibold text-textColor mb-3">Taverne De Graanmaat</h2>
                       <p className="text-gray-700 leading-7">
                         Al onze wederkerende activiteiten vinden plaats in Taverne De Graanmaat op de Grote Markt van Sint-Niklaas.
@@ -80,7 +80,7 @@ export default function LocatiePage() {
                         Adres: Grote Markt 24, 9100 Sint-Niklaas
                       </div>
                     </div>
-                    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-6">
+                    <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-4">
                       <h3 className="text-sm font-semibold text-textColor mb-2">Toegankelijkheid</h3>
                       <p className="text-sm text-gray-700">
                         Zowel het café vooraan als alle zalen achteraan en de toiletten zijn volledig rolstoeltoegankelijk.
@@ -93,7 +93,7 @@ export default function LocatiePage() {
 
             const imageFirst = idx % 2 === 1
             return (
-              <div key={idx} className="grid gap-6 md:grid-cols-2 items-center">
+              <div key={idx} className="grid gap-4 md:grid-cols-2 items-center">
                 {/* Image */}
                 <div className={`${imageFirst ? '' : 'md:order-2'} relative w-full aspect-[16/10] overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm`}>
                   {img && (
@@ -107,7 +107,7 @@ export default function LocatiePage() {
                   )}
                 </div>
                 {/* Text */}
-                <div className={`${imageFirst ? 'md:order-2' : ''} bg-white border border-neutral-200 rounded-xl shadow-sm p-6`}>
+                <div className={`${imageFirst ? 'md:order-2' : ''} bg-white border border-neutral-200 rounded-xl shadow-sm p-4`}>
                   <p className="text-gray-800 leading-7">{text}</p>
                 </div>
               </div>

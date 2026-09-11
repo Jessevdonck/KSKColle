@@ -252,7 +252,7 @@ export default function AdminCreateTeamDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* User Selection */}
           <div className="space-y-2">
             <Label>Selecteer Gebruiker</Label>
@@ -542,7 +542,7 @@ export default function AdminCreateTeamDialog({
             <Button
               onClick={handleCreateTeam}
               disabled={!selectedUserId || selectedPlayers.length < MIN_PLAYERS || selectedPlayers.length > MAX_PLAYERS || !reservePlayer || !teamName.trim()}
-              className="bg-mainAccent hover:bg-mainAccentDark"
+              variant="accent"
             >
               <Save className="h-4 w-4 mr-2" />
               Team Aanmaken

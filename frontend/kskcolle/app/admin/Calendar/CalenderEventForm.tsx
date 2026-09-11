@@ -125,28 +125,28 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Plus className="h-6 w-6" />
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Plus className="h-4 w-4" />
               {event ? "Evenement Bewerken" : "Nieuw Evenement Toevoegen"}
             </h2>
             <button
               onClick={onCancel}
               className="text-white hover:text-gray-200 transition-colors"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        <div className="p-8">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="p-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
           {/* Event Details */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+          <div className="bg-white rounded-lg p-3 border border-neutral-200">
+            <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+              <FileText className="h-3.5 w-3.5" />
               Evenement Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -182,9 +182,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           </div>
 
           {/* Date & Time */}
-          <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
-            <h3 className="text-lg font-semibold text-green-800 mb-4 flex items-center gap-2">
-              <CalendarIconLucide className="h-5 w-5" />
+          <div className="bg-white rounded-lg p-3 border border-neutral-200">
+            <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+              <CalendarIconLucide className="h-3.5 w-3.5" />
               Datum & Tijd
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -252,9 +252,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           </div>
 
           {/* Event Type */}
-          <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-6 border border-amber-200">
-            <h3 className="text-lg font-semibold text-amber-800 mb-4 flex items-center gap-2">
-              <Type className="h-5 w-5" />
+          <div className="bg-white rounded-lg p-3 border border-neutral-200">
+            <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+              <Type className="h-3.5 w-3.5" />
               Evenement Type
             </h3>
             <div>
@@ -269,7 +269,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                 placeholder="Voer evenement type in..."
               />
               <div className="flex flex-wrap gap-2 mt-3">
-                <p className="text-sm text-amber-700 w-full mb-2">Veelgebruikte types:</p>
+                <p className="text-sm text-gray-600 w-full mb-1">Veelgebruikte types:</p>
                 {commonEventTypes.map((type) => (
                   <Button
                     key={type}
@@ -277,7 +277,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
                     variant="outline"
                     size="sm"
                     onClick={() => form.setValue("type", type)}
-                    className="border-amber-300 text-amber-700 hover:bg-amber-100 hover:border-amber-400"
+                    className="border-mainAccent/30 text-mainAccent hover:bg-mainAccent/10 hover:border-mainAccent/50"
                   >
                     {type}
                   </Button>
@@ -288,9 +288,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
 
           {/* Begeleider voor niet-jeugd activiteiten */}
           {!form.watch("is_youth") && (
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
-              <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
-                <User className="h-5 w-5" />
+            <div className="bg-white rounded-lg p-3 border border-neutral-200">
+              <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+                <User className="h-3.5 w-3.5" />
                 Begeleider
               </h3>
               <div>
@@ -304,9 +304,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
           )}
 
           {/* Jeugd & Categorieën */}
-          <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
-            <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
-              <Users className="h-5 w-5" />
+          <div className="bg-white rounded-lg p-3 border border-neutral-200">
+            <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+              <Users className="h-3.5 w-3.5" />
               Jeugd & Categorieën
             </h3>
             <div className="space-y-4">
@@ -359,7 +359,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({ event, mutate, on
 
           {/* Action Buttons */}
           <div className="flex justify-between pt-4">
-            <Button type="submit" className="bg-mainAccent hover:bg-mainAccentDark text-white px-6">
+            <Button type="submit" variant="accent" className="px-6">
               <div className="flex items-center gap-2">
                 {event ? <FileText className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                 {event ? "Bijwerken" : "Toevoegen"}

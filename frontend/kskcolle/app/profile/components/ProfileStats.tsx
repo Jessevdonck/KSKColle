@@ -93,7 +93,7 @@ interface ProfileStatsProps {
   compact?: boolean
 }
 
-const COLORS = { win: "#22c55e", loss: "#ef4444", draw: "#eab308" }
+const COLORS = { win: "#22c55e", loss: "#ef4444", draw: "#f97316" }
 
 export default function ProfileStats({ games, playerId, compact }: ProfileStatsProps) {
   const [rangePreset, setRangePreset] = useState<RangePreset>("12m")
@@ -236,7 +236,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-amber-500" />
+            <Trophy className="h-5 w-5 text-orange-500" />
             Statistieken
           </CardTitle>
         </CardHeader>
@@ -360,7 +360,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
                   <p className="text-2xl font-bold text-red-600 mt-1">{stats.losses}</p>
                 </CardContent></Card>
                 <Card><CardContent className="pt-4">
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm"><TrendingUp className="h-4 w-4 text-amber-500" /> Winst %</div>
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm"><TrendingUp className="h-4 w-4 text-orange-500" /> Winst %</div>
                   <p className="text-2xl font-bold text-mainAccent mt-1">{stats.winPct}%</p>
                 </CardContent></Card>
               </>

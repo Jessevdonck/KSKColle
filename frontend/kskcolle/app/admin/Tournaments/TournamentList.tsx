@@ -9,7 +9,7 @@ import useSWRMutation from "swr/mutation"
 import { getAll, getById, deleteById } from "../../api/index"
 import { calculateStandings } from "../../toernooien/components/Standings"
 import type { Toernooi, MegaschaakTeam } from "@/data/types"
-import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X, Calculator, Plus } from "lucide-react"
+import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X, Calculator, Plus, AlertTriangle } from "lucide-react"
 import MegaschaakConfigForm from "./components/MegaschaakConfigForm"
 import CloseTournamentDialog from "./components/CloseTournamentDialog"
 import AdminCreateTeamDialog from "./components/AdminCreateTeamDialog"
@@ -194,10 +194,10 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <div className="text-red-500 text-4xl mb-4">⚠️</div>
-        <h3 className="text-lg font-semibold text-red-700 mb-1">Fout bij laden van toernooien</h3>
-        <p className="text-red-600">Probeer de pagina opnieuw te laden.</p>
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <AlertTriangle className="h-9 w-9 text-red-500 mx-auto mb-2" />
+        <h3 className="text-base font-semibold text-red-700 mb-1">Fout bij laden van toernooien</h3>
+        <p className="text-red-600 text-sm">Probeer de pagina opnieuw te laden.</p>
       </div>
     )
   }

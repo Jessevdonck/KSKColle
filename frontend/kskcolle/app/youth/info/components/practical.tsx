@@ -1,52 +1,49 @@
-import { Clock, MapPin } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Clock, MapPin, Info } from "lucide-react"
 
 export default function Practical() {
   return (
-    <section className="py-2">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">Praktische info</h2>
-        <p className="text-base text-gray-600 max-w-2xl mx-auto">
-          Kom kennismaken tijdens onze jeugduren. Iedereen welkom!
-        </p>
-        <div className="mt-4 inline-flex items-center justify-center rounded-lg bg-amber-100 px-4 py-2 border border-amber-300">
-          <p className="text-amber-900 text-sm font-semibold">
-            Momenteel geldt er een inschrijvingsstop voor de jeugdwerking tot september.
-          </p>
+    <section>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Info className="h-4 w-4" />
+            Praktische info
+          </h2>
         </div>
-      </div>
+        <div className="p-4">
+          <div className="rounded-lg bg-orange-50 border border-orange-200 px-3 py-2 mb-3">
+            <p className="text-orange-900 text-sm font-semibold">
+              Momenteel geldt er een inschrijvingsstop voor de jeugdwerking tot september.
+            </p>
+          </div>
 
-      <div className="max-w-xl mx-auto">
-        <Card className="shadow-md">
-          <CardContent className="p-6">
-            <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Wanneer</h3>
-                  <p className="text-gray-600">Donderdag: Stap 1 om 19:00u, andere stappen om 18:30u — 19:45u (niet in schoolvakanties)</p>
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-mainAccent/10 p-2 rounded-full">
+                <Clock className="h-5 w-5 text-mainAccent" />
               </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-green-100 p-2 rounded-full">
-                  <MapPin className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Waar</h3>
-                  <p className="text-gray-600">Taverne De Graanmaat — zaal 4 achteraan</p>
-                  <p className="text-sm text-gray-500">Sint-Niklaas</p>
-                </div>
-              </div>
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-blue-800 text-center text-sm">
-                  <strong>Let op:</strong> Door de huidige inschrijvingsstop kunnen nieuwe jeugdleden pas opnieuw instappen vanaf september.
-                </p>
+              <div>
+                <h3 className="text-sm font-semibold text-textColor">Wanneer</h3>
+                <p className="text-sm text-gray-600">Donderdag: Stap 1 om 19:00u, andere stappen om 18:30u — 19:45u (niet in schoolvakanties)</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex items-center gap-3">
+              <div className="bg-mainAccent/10 p-2 rounded-full">
+                <MapPin className="h-5 w-5 text-mainAccent" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-textColor">Waar</h3>
+                <p className="text-sm text-gray-600">Taverne De Graanmaat — zaal 4 achteraan, Sint-Niklaas</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-mainAccent/10 p-2.5 rounded-lg">
+            <p className="text-textColor text-center text-sm">
+              <strong>Let op:</strong> Door de huidige inschrijvingsstop kunnen nieuwe jeugdleden pas opnieuw instappen vanaf september.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )

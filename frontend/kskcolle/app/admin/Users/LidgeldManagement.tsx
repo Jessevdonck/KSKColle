@@ -165,13 +165,13 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
 
   if (error) {
     return (
-      <div className={embedded ? "py-8" : "min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center"}>
-        <div className="text-center">
-          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <Users className="h-8 w-8 text-red-500" />
+      <div className={embedded ? "py-6" : "min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center"}>
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <div className="bg-red-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+            <Users className="h-6 w-6 text-red-500" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Fout bij laden</h2>
-          <p className="text-gray-600">De lidgeld gegevens konden niet worden geladen.</p>
+          <h2 className="text-lg font-semibold text-gray-800 mb-1.5">Fout bij laden</h2>
+          <p className="text-gray-600 text-sm">De lidgeld gegevens konden niet worden geladen.</p>
         </div>
       </div>
     )
@@ -185,25 +185,23 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
     <div className={shellClass}>
       <div className={embedded ? "" : "max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4"}>
         {!embedded && (
-          <div className="bg-white shadow-sm border-b border-neutral-200 rounded-lg mb-6">
-            <div className="px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-mainAccent/10 p-2 rounded-lg">
-                    <Euro className="h-6 w-6 text-mainAccent" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-textColor">Lidgeld Beheer</h1>
-                    <p className="text-gray-600">Beheer lidgeld en bondslidgeld betalingen</p>
-                  </div>
+          <div className="bg-white shadow-sm border-b border-neutral-200 rounded-lg mb-4">
+            <div className="px-4 py-3">
+              <div className="flex items-center gap-2.5">
+                <div className="bg-mainAccent/10 p-2 rounded-lg">
+                  <Euro className="h-5 w-5 text-mainAccent" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-textColor">Lidgeld Beheer</h1>
+                  <p className="text-gray-600 text-sm">Beheer lidgeld en bondslidgeld betalingen</p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <Label htmlFor="search" className="text-sm font-medium text-gray-700 mb-2 block">
                 Zoeken
@@ -357,10 +355,10 @@ export default function LidgeldManagement({ embedded = false, onLidgeldUpdated }
         </div>
 
         {filteredUsers.length === 0 && (
-          <div className="text-center py-12">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Geen leden gevonden</h3>
-            <p className="text-gray-600">Probeer een andere zoekterm of filter.</p>
+          <div className="text-center py-6">
+            <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <h3 className="text-base font-medium text-gray-900 mb-1.5">Geen leden gevonden</h3>
+            <p className="text-gray-600 text-sm">Probeer een andere zoekterm of filter.</p>
           </div>
         )}
       </div>
@@ -463,11 +461,11 @@ function LidgeldEditModal({ user, onClose, onSave }: {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h2 className="text-xl font-bold mb-4">Lidgeld bewerken - {user.voornaam} {user.achternaam}</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className={`grid gap-6 ${user.is_youth ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
+        <div className="p-4">
+          <h2 className="text-lg font-bold mb-3">Lidgeld bewerken - {user.voornaam} {user.achternaam}</h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className={`grid gap-4 ${user.is_youth ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
               <div className="space-y-4">
                 <h3 className="font-medium text-gray-900">Lidgeld</h3>
                 <div className="flex items-center space-x-2">
@@ -589,7 +587,7 @@ function LidgeldEditModal({ user, onClose, onSave }: {
               <Button type="button" variant="outline" onClick={onClose}>
                 Annuleren
               </Button>
-              <Button type="submit">
+              <Button type="submit" variant="accent">
                 Opslaan
               </Button>
             </div>

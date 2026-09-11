@@ -9,7 +9,7 @@ import type { User } from "@/data/types"
 import AddOrEditUser from "./components/AddOrEditUser"
 import UserList from "./UserList"
 import EditForm from "./components/forms/EditForm"
-import { Users, Settings, Mail, Copy } from "lucide-react"
+import { Users, Settings, Mail, Copy, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function UsersManagement() {
@@ -109,8 +109,8 @@ export default function UsersManagement() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
-          <h2 className="text-xl font-bold text-red-600 mb-2">Fout bij laden van spelers</h2>
+          <AlertTriangle className="h-9 w-9 text-red-500 mx-auto mb-2" />
+          <h2 className="text-lg font-bold text-red-600 mb-1.5">Fout bij laden van spelers</h2>
           <p className="text-gray-600 text-sm">Er is een probleem opgetreden bij het ophalen van de spelersgegevens.</p>
         </div>
       </div>
@@ -131,13 +131,13 @@ export default function UsersManagement() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center gap-2.5">
             <div className="bg-mainAccent/10 p-2 rounded-lg">
-              <Settings className="h-6 w-6 text-mainAccent" />
+              <Settings className="h-5 w-5 text-mainAccent" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-textColor">Ledenbeheer</h1>
+              <h1 className="text-lg font-bold text-textColor">Ledenbeheer</h1>
               <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
@@ -160,30 +160,23 @@ export default function UsersManagement() {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="space-y-4">
           <AddOrEditUser onRefresh={refreshUsers} />
-          {!usersData ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading users...</p>
-            </div>
-          ) : (
-            <UserList 
-              users={usersData.items || []} 
-              onEdit={setSelectedUser} 
-              onDelete={handleDeleteUser} 
-              isDeleting={isDeleting} 
-              onRefresh={refreshUsers}
-              onUserDeleted={handleUserDeleted}
-              pagination={{
-                currentPage,
-                totalPages: usersData.totalPages || 0,
-                total: usersData.total || 0,
-                onPageChange: setCurrentPage
-              }}
-            />
-          )}
+          <UserList
+            users={usersData.items || []}
+            onEdit={setSelectedUser}
+            onDelete={handleDeleteUser}
+            isDeleting={isDeleting}
+            onRefresh={refreshUsers}
+            onUserDeleted={handleUserDeleted}
+            pagination={{
+              currentPage,
+              totalPages: usersData.totalPages || 0,
+              total: usersData.total || 0,
+              onPageChange: setCurrentPage
+            }}
+          />
         </div>
       </div>
 

@@ -74,12 +74,25 @@ export default function Navbar() {
   const { isAuthed } = useAuth()
   const pathname = usePathname()
   const [isClient, setIsClient] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false)
   const [isMobileYouthOpen, setIsMobileYouthOpen] = useState(false)
   const [isMobileTournamentOpen, setIsMobileTournamentOpen] = useState(false)
   const [isMobileLinksOpen, setIsMobileLinksOpen] = useState(false)
   const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false)
+
+  // Home is only "active" on an exact match; every other top-level item is
+  // active on its own route and any nested route below it.
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
+  const isGroupActive = (prefixes: string[]) =>
+    prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  const navTriggerClass = (active: boolean) =>
+    `flex items-center gap-1.5 font-medium transition-colors text-sm px-2.5 py-1.5 rounded-md cursor-pointer ${
+      active ? "bg-mainAccent/10 text-mainAccent" : "hover:bg-mainAccent/10 hover:text-mainAccent"
+    }`
+  const navLinkClass = (href: string) => navTriggerClass(isActive(href)).replace(" cursor-pointer", "")
 
   // Fetch tournaments for navbar shortcuts (herfst, lente, blitz, zomer)
   const { data: tournaments = [] } = useSWR<Tournament[]>(
@@ -166,12 +179,24 @@ export default function Navbar() {
     setIsMobileMenuOpen(false)
   }, [pathname])
 
+  // Subtle shadow once the page scrolls, so the bar reads as "floating" over content
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 4)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
   if (!isClient) {
     return null
   }
 
   return (
-    <nav className="bg-neutral-50 text-textColor p-4 shadow-md sticky top-0 z-50">
+    <nav
+      className={`bg-white/95 backdrop-blur-sm text-textColor px-4 py-3 sticky top-0 z-50 transition-shadow duration-200 ${
+        isScrolled ? "shadow-md" : "shadow-sm"
+      }`}
+    >
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <img 
@@ -184,38 +209,38 @@ export default function Navbar() {
           <span className="text-xl font-bold text-textColor">KSK Colle</span>
         </Link>
 
-        <div className="hidden xl:flex space-x-4">
+        <div className="hidden xl:flex items-center gap-1">
           {/* Home */}
-          <Link href="/" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
-            <Home size={12} />
+          <Link href="/" className={navLinkClass("/")}>
+            <Home size={14} />
             <span>Home</span>
           </Link>
 
           {/* About Us Dropdown */}
           <div className="relative group">
-            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
-              <Users size={12} />
+            <div className={navTriggerClass(isGroupActive(["/about", "/locatie", "/interviews", "/photos", "/articles", "/nationale-elo"]))}>
+              <Users size={14} />
               <span>Over Ons</span>
-              <ChevronDown size={12} />
+              <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
             </div>
-            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <div className="py-1">
-                <Link href="/about" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black/5 opacity-0 invisible -translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50">
+              <div className="py-2">
+                <Link href="/about" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Club Info
                 </Link>
-                <Link href="/locatie" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/locatie" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Locatie
                 </Link>
-                <Link href="/interviews" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/interviews" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Interviews
                 </Link>
-                <Link href="/photos" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/photos" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Foto&apos;s
                 </Link>
-                <Link href="/articles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/articles" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Artikels
                 </Link>
-                <Link href="/nationale-elo" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/nationale-elo" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Nationaal ELO Archief
                 </Link>
               </div>
@@ -224,53 +249,53 @@ export default function Navbar() {
 
           {/* Tournaments Dropdown */}
           <div className="relative group">
-            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
-              <Trophy size={12} />
+            <div className={navTriggerClass(isGroupActive(["/toernooien", "/rapidtoernooi"]))}>
+              <Trophy size={14} />
               <span>Toernooien</span>
-              <ChevronDown size={12} />
+              <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
             </div>
-            <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <div className="py-1">
-                <Link href="/toernooien" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+            <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black/5 opacity-0 invisible -translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50">
+              <div className="py-2">
+                <Link href="/toernooien" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Interne toernooien
                 </Link>
-                <Link href="/toernooien/megaschaak" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/toernooien/megaschaak" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Megaschaak
                 </Link>
-                <Link href="/toernooien/reglement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/toernooien/reglement" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Reglementen
                 </Link>
-                <a href="https://www.schaakligaoostvlaanderen.be/ovic" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <a href="https://www.schaakligaoostvlaanderen.be/ovic" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Oost-Vlaamse Interclub
                 </a>
-                <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <a href="https://interclub.web.app/club/410/players" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Interclub
                 </a>
                 {(latestHerfst || latestLente || latestBlitz || latestZomer) && (
                   <>
-                    <div className="border-t border-gray-200 my-1"></div>
+                    <div className="border-t border-gray-100 my-2"></div>
                     {latestHerfst && (
-                      <Link href={`/toernooien/${latestHerfst.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                      <Link href={`/toernooien/${latestHerfst.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                         Herfstcompetitie
                       </Link>
                     )}
                     {latestLente && (
-                      <Link href={`/toernooien/${latestLente.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                      <Link href={`/toernooien/${latestLente.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                         Lentecompetitie
                       </Link>
                     )}
                     {latestBlitz && (
-                      <Link href={`/toernooien/${latestBlitz.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                      <Link href={`/toernooien/${latestBlitz.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                         Blitzkampioenschap
                       </Link>
                     )}
                     {latestZomer && (
-                      <Link href={`/toernooien/${latestZomer.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                      <Link href={`/toernooien/${latestZomer.tournament_id}`} className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                         Zomertoernooi
                       </Link>
                     )}
-                    <div className="border-t border-gray-200 my-1"></div>
-                    <Link href="/rapidtoernooi" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                    <div className="border-t border-gray-100 my-2"></div>
+                    <Link href="/rapidtoernooi" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                       Rapidtoernooi Volwassenen
                     </Link>
                   </>
@@ -280,57 +305,57 @@ export default function Navbar() {
           </div>
 
           {/* Schaaklessen */}
-          <Link href="/schaaklessen" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
-            <BookOpen size={12} />
+          <Link href="/schaaklessen" className={navLinkClass("/schaaklessen")}>
+            <BookOpen size={14} />
             <span>Schaaklessen</span>
           </Link>
 
           {/* Puzzels */}
           {isAuthed && (
-            <Link href="/puzzels" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
-              <Puzzle size={12} />
+            <Link href="/puzzels" className={navLinkClass("/puzzels")}>
+              <Puzzle size={14} />
               <span>Puzzels</span>
             </Link>
           )}
 
           {/* Kalender */}
-          <Link href="/calendar" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
-            <CalendarDays size={12} />
+          <Link href="/calendar" className={navLinkClass("/calendar")}>
+            <CalendarDays size={14} />
             <span>Kalender</span>
           </Link>
 
 
           {/* Jeugd werking */}
           <div className="relative group">
-            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
-              <PersonStanding size={12} />
+            <div className={navTriggerClass(isGroupActive(["/youth"]))}>
+              <PersonStanding size={14} />
               <span>Jeugd</span>
-              <ChevronDown size={12} />
+              <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
             </div>
-            <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <div className="py-1">
-                <Link href="/youth/info" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+            <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black/5 opacity-0 invisible -translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50">
+              <div className="py-2">
+                <Link href="/youth/info" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Info
                 </Link>
-                <Link href="/youth/leden" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/youth/leden" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Jeugdleden
                 </Link>
-                <Link href="/youth/calendar" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/youth/calendar" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Kalender
                 </Link>
-                <Link href="/youth/tournaments" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/youth/tournaments" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Jeugd Kampioenschap
                 </Link>
-                <Link href="/youth/zomerkampen" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/youth/zomerkampen" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Zomerkampen
                 </Link>
-                <Link href="/youth/info-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/youth/info-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Info OVJK 2026
                 </Link>
-                <Link href="/youth/sponsoring-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/youth/sponsoring-ovjk-2025" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Sponsoring OVJK 2026
                 </Link>
-                <a href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <a href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Vlaams Jeugdschaakcriterium
                 </a>
               </div>
@@ -338,24 +363,24 @@ export default function Navbar() {
           </div>
 
           {/* Spelers */}
-          <Link href="/spelers" className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm">
-            <ChartColumnBig size={12} />
+          <Link href="/spelers" className={navLinkClass("/spelers")}>
+            <ChartColumnBig size={14} />
             <span>Spelers</span>
           </Link>
 
           {/* Historiek Dropdown */}
           <div className="relative group">
-            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
-              <History size={12} />
+            <div className={navTriggerClass(isGroupActive(["/erelijsten", "/historiek"]))}>
+              <History size={14} />
               <span>Historiek</span>
-              <ChevronDown size={12} />
+              <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
             </div>
-            <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <div className="py-1">
-                <Link href="/erelijsten" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+            <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black/5 opacity-0 invisible -translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50">
+              <div className="py-2">
+                <Link href="/erelijsten" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Erelijsten
                 </Link>
-                <Link href="/historiek/documenten" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <Link href="/historiek/documenten" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Historische Documenten
                 </Link>
               </div>
@@ -364,26 +389,26 @@ export default function Navbar() {
 
           {/* External Links Dropdown */}
           <div className="relative group">
-            <div className="flex items-center space-x-1 font-medium hover:text-mainAccent transition-colors text-sm cursor-pointer">
-              <Globe size={12} />
+            <div className={navTriggerClass(false)}>
+              <Globe size={14} />
               <span>Links</span>
-              <ChevronDown size={12} />
+              <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
             </div>
-            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <div className="py-1">
-                <a href="https://blog.frbe-kbsb-ksb.be/nl/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black/5 opacity-0 invisible -translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 z-50">
+              <div className="py-2">
+                <a href="https://blog.frbe-kbsb-ksb.be/nl/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   KBSB
                 </a>
-                <a href="https://blog.frbe-kbsb-ksb.be/nl/kalender/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <a href="https://blog.frbe-kbsb-ksb.be/nl/kalender/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   KBSB Toernooien
                 </a>
-                <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <a href="https://www.fide.com/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   FIDE
                 </a>
-                <a href="https://www.vlaamseschaakfederatie.be/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <a href="https://www.vlaamseschaakfederatie.be/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   VSF
                 </a>
-                <a href="https://www.schaakligaoostvlaanderen.be/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-mainAccent transition-colors">
+                <a href="https://www.schaakligaoostvlaanderen.be/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Liga Oost-Vlaanderen
                 </a>
               </div>
@@ -391,18 +416,23 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="xl:hidden">
+        <div className="xl:hidden flex items-center gap-1">
+          {isAuthed && <NotificationBell />}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-textColor hover:text-mainAccent transition-colors"
+            className="text-textColor hover:text-mainAccent hover:bg-mainAccent/10 transition-colors p-2 rounded-md"
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
-        <div className="hidden xl:flex items-center space-x-4">
-          <Link href="/contact" className="text-textColor hover:text-mainAccent transition-colors">
+        <div className="hidden xl:flex items-center gap-2">
+          <Link
+            href="/contact"
+            className="text-textColor hover:text-mainAccent hover:bg-mainAccent/10 transition-colors p-2 rounded-md"
+            aria-label="Contact"
+          >
             <Mail size={18} />
           </Link>
           {isAuthed && <NotificationBell />}
@@ -412,7 +442,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="xl:hidden absolute top-full left-0 right-0 bg-neutral-50 shadow-md max-h-[calc(100vh-80px)] flex flex-col">
+        <div className="xl:hidden absolute top-full left-0 right-0 bg-white shadow-xl rounded-b-2xl border-t border-gray-100 max-h-[calc(100vh-80px)] flex flex-col">
           {/* Scrollable Menu Content */}
           <div className="overflow-y-auto flex-1">
             <div className="container mx-auto py-4 space-y-4">
@@ -426,7 +456,7 @@ export default function Navbar() {
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
-                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium text-gray-800 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2.5 rounded-lg"
               >
                 <div className="flex items-center space-x-2">
                   <Users size={18} />
@@ -436,45 +466,45 @@ export default function Navbar() {
               </button>
 
               {isMobileAboutOpen && (
-                <div className="ml-6 space-y-2">
+                <div className="ml-4 space-y-0.5 border-l border-gray-100 pl-2">
                   <Link
                     href="/about"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Club Info
                   </Link>
                   <Link
                     href="/locatie"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Locatie
                   </Link>
                   <Link
                     href="/interviews"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Interviews
                   </Link>
                   <Link
                     href="/photos"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Foto&apos;s
                   </Link>
                   <Link
                     href="/articles"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Artikels
                   </Link>
                   <Link
                     href="/nationale-elo"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Nationaal ELO Archief
@@ -487,7 +517,7 @@ export default function Navbar() {
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileTournamentOpen(!isMobileTournamentOpen)}
-                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium text-gray-800 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2.5 rounded-lg"
               >
                 <div className="flex items-center space-x-2">
                   <Trophy size={18} />
@@ -497,24 +527,24 @@ export default function Navbar() {
               </button>
 
               {isMobileTournamentOpen && (
-                <div className="ml-6 space-y-2">
+                <div className="ml-4 space-y-0.5 border-l border-gray-100 pl-2">
                   <Link
                     href="/toernooien"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Interne toernooien
                   </Link>
                   <Link
                     href="/toernooien/megaschaak"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Megaschaak
                   </Link>
                   <Link
                     href="/toernooien/reglement"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Reglementen
@@ -524,7 +554,7 @@ export default function Navbar() {
                     href="https://www.schaakligaoostvlaanderen.be/ovic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Oost-Vlaamse Interclub
@@ -533,7 +563,7 @@ export default function Navbar() {
                     href="https://interclub.web.app/club/410/players"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Interclub
@@ -544,7 +574,7 @@ export default function Navbar() {
                       {latestHerfst && (
                         <Link
                           href={`/toernooien/${latestHerfst.tournament_id}`}
-                          className="block font-medium hover:text-mainAccent transition-colors"
+                          className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Herfstcompetitie
@@ -553,7 +583,7 @@ export default function Navbar() {
                       {latestLente && (
                         <Link
                           href={`/toernooien/${latestLente.tournament_id}`}
-                          className="block font-medium hover:text-mainAccent transition-colors"
+                          className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Lentecompetitie
@@ -562,7 +592,7 @@ export default function Navbar() {
                       {latestBlitz && (
                         <Link
                           href={`/toernooien/${latestBlitz.tournament_id}`}
-                          className="block font-medium hover:text-mainAccent transition-colors"
+                          className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Blitzkampioenschap
@@ -571,7 +601,7 @@ export default function Navbar() {
                       {latestZomer && (
                         <Link
                           href={`/toernooien/${latestZomer.tournament_id}`}
-                          className="block font-medium hover:text-mainAccent transition-colors"
+                          className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           Zomertoernooi
@@ -580,7 +610,7 @@ export default function Navbar() {
                       <div className="border-t border-gray-200 my-2"></div>
                       <Link
                         href="/rapidtoernooi"
-                        className="block font-medium hover:text-mainAccent transition-colors"
+                        className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         Rapidtoernooi Volwassenen
@@ -607,7 +637,7 @@ export default function Navbar() {
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileYouthOpen(!isMobileYouthOpen)}
-                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium text-gray-800 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2.5 rounded-lg"
               >
                 <div className="flex items-center space-x-2">
                   <PersonStanding size={18} />
@@ -617,52 +647,52 @@ export default function Navbar() {
               </button>
 
               {isMobileYouthOpen && (
-                <div className="ml-6 space-y-2">
+                <div className="ml-4 space-y-0.5 border-l border-gray-100 pl-2">
                   <Link
                     href="/youth/info"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Info
                   </Link>
                   <Link
                     href="/youth/leden"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Jeugdleden
                   </Link>
                   <Link
                     href="/youth/calendar"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Kalender
                   </Link>
                   <Link
                     href="/youth/tournaments"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Jeugkampioenschap
                   </Link>
                   <Link
                     href="/youth/zomerkampen"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Zomerkampen
                   </Link>
                   <Link
                     href="/youth/info-ovjk-2026"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Info OVJK 2026
                   </Link>
                   <Link
                     href="/youth/sponsoring-ovjk-2026"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Sponsoring OVJK 2026
@@ -671,7 +701,7 @@ export default function Navbar() {
                     href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Vlaams Jeugdschaakcriterium
@@ -687,7 +717,7 @@ export default function Navbar() {
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileHistoryOpen(!isMobileHistoryOpen)}
-                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium text-gray-800 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2.5 rounded-lg"
               >
                 <div className="flex items-center space-x-2">
                   <History size={18} />
@@ -697,17 +727,17 @@ export default function Navbar() {
               </button>
 
               {isMobileHistoryOpen && (
-                <div className="ml-6 space-y-2">
+                <div className="ml-4 space-y-0.5 border-l border-gray-100 pl-2">
                   <Link
                     href="/erelijsten"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Erelijsten
                   </Link>
                   <Link
                     href="/historiek/documenten"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Historische Documenten
@@ -720,7 +750,7 @@ export default function Navbar() {
             <div className="space-y-2">
               <button
                 onClick={() => setIsMobileLinksOpen(!isMobileLinksOpen)}
-                className="flex items-center justify-between w-full font-medium hover:text-mainAccent transition-colors"
+                className="flex items-center justify-between w-full font-medium text-gray-800 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2.5 rounded-lg"
               >
                 <div className="flex items-center space-x-2">
                   <Globe size={18} />
@@ -730,12 +760,12 @@ export default function Navbar() {
               </button>
 
               {isMobileLinksOpen && (
-                <div className="ml-6 space-y-2">
+                <div className="ml-4 space-y-0.5 border-l border-gray-100 pl-2">
                   <a
                     href="https://blog.frbe-kbsb-ksb.be/nl/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     KBSB
@@ -744,7 +774,7 @@ export default function Navbar() {
                     href="https://blog.frbe-kbsb-ksb.be/nl/kalender/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     KBSB Toernooien
@@ -753,7 +783,7 @@ export default function Navbar() {
                     href="https://www.fide.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     FIDE
@@ -762,7 +792,7 @@ export default function Navbar() {
                     href="https://www.vlaamseschaakfederatie.be/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     VSF
@@ -771,7 +801,7 @@ export default function Navbar() {
                     href="https://www.schaakligaoostvlaanderen.be/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block font-medium hover:text-mainAccent transition-colors"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Liga Oost-Vlaanderen
@@ -782,17 +812,16 @@ export default function Navbar() {
           </div>
           </div>
 
-          {/* Profile and Notifications - Fixed at bottom */}
-          <div className="border-t border-gray-200 bg-white px-4 py-3 flex items-center gap-3 sticky bottom-0 z-10">
+          {/* Profile - Fixed at bottom */}
+          <div className="border-t border-gray-100 bg-white px-4 py-3 flex items-center gap-3 sticky bottom-0 z-10">
             {isAuthed ? (
               <>
                 <ProfileDropdown />
                 <span className="text-sm font-medium text-gray-700 flex-1">
-                  {isAuthed && typeof window !== 'undefined' && localStorage.getItem('user') 
+                  {isAuthed && typeof window !== 'undefined' && localStorage.getItem('user')
                     ? JSON.parse(localStorage.getItem('user') || '{}')?.voornaam || 'Profiel'
                     : 'Profiel'}
                 </span>
-                {isAuthed && <NotificationBell />}
               </>
             ) : (
               <LoginSheet />
@@ -811,10 +840,14 @@ interface NavItemProps {
 }
 
 function NavItem({ href, icon, text, onClick }: NavItemProps) {
+  const pathname = usePathname()
+  const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)
   return (
     <Link
       href={href}
-      className="flex items-center space-x-1.5 font-medium hover:text-mainAccent transition-colors"
+      className={`flex items-center gap-2.5 font-medium transition-colors px-3 py-2.5 rounded-lg ${
+        active ? "bg-mainAccent/10 text-mainAccent" : "hover:bg-mainAccent/10 hover:text-mainAccent"
+      }`}
       onClick={onClick}
     >
       {icon}

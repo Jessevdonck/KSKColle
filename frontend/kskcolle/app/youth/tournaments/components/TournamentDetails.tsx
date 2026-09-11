@@ -206,9 +206,9 @@ export default function TournamentDetails() {
   if (tournamentLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
-          <p className="text-gray-600">Toernooi laden...</p>
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mainAccent mx-auto mb-3"></div>
+          <p className="text-gray-600 text-sm">Toernooi laden...</p>
         </div>
       </div>
     )
@@ -218,12 +218,10 @@ export default function TournamentDetails() {
   if (tournamentError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <Trophy className="h-8 w-8 text-red-500" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Fout bij laden</h2>
-          <p className="text-gray-600">Het toernooi kon niet worden geladen.</p>
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <Trophy className="h-9 w-9 text-red-500 mx-auto mb-2" />
+          <h2 className="text-lg font-semibold text-gray-800 mb-1.5">Fout bij laden</h2>
+          <p className="text-gray-600 text-sm">Het toernooi kon niet worden geladen.</p>
         </div>
       </div>
     )
@@ -233,12 +231,10 @@ export default function TournamentDetails() {
   if (!tournament) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <Trophy className="h-8 w-8 text-gray-400" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Toernooi niet gevonden</h2>
-          <p className="text-gray-600">Het opgevraagde toernooi bestaat niet.</p>
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <Trophy className="h-9 w-9 text-gray-400 mx-auto mb-2" />
+          <h2 className="text-lg font-semibold text-gray-800 mb-1.5">Toernooi niet gevonden</h2>
+          <p className="text-gray-600 text-sm">Het opgevraagde toernooi bestaat niet.</p>
         </div>
       </div>
     )
@@ -248,21 +244,21 @@ export default function TournamentDetails() {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-mainAccent/10 p-2 rounded-lg">
-              <Trophy className="h-6 w-6 text-mainAccent" />
+        <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-3">
+          <div className="flex items-center gap-2">
+            <div className="bg-mainAccent/10 p-1.5 rounded-lg">
+              <Trophy className="h-5 w-5 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-textColor">
+              <h1 className="text-xl font-bold text-textColor">
                 {tournament.naam}
                 {tournament.class_name && (
-                  <span className="ml-2 text-lg font-medium text-mainAccent">
+                  <span className="ml-2 text-base font-medium text-mainAccent">
                     ({tournament.class_name})
                   </span>
                 )}
               </h1>
-              <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+              <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-gray-600">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
                   <span>{tournament.participations?.length || 0} spelers</span>
@@ -271,7 +267,7 @@ export default function TournamentDetails() {
                   <Calendar className="h-3 w-3" />
                   <span>{tournament.rondes} rondes</span>
                 </div>
-                <div className="px-2 py-1 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
+                <div className="px-1.5 py-0.5 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
                   {tournament.type}
                 </div>
               </div>
@@ -315,15 +311,15 @@ export default function TournamentDetails() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-6">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-4">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
           {/* Rounds & Makeup Days with Navigation */}
           <div className={`xl:col-span-2 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
+              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
+                  <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
                     Rondes & Inhaaldagen
                   </h2>
 
@@ -332,20 +328,20 @@ export default function TournamentDetails() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={goToPrevious}
-                        className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                        className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-3.5 w-3.5" />
                       </button>
-                      <div className="px-3 py-1.5 bg-white/20 rounded-lg text-white font-medium min-w-[100px] text-center text-sm">
+                      <div className="px-2 py-1 bg-white/20 rounded-lg text-white font-medium min-w-[90px] text-center text-xs">
                         {currentEntry?.kind === "round"
                           ? `Ronde ${currentEntry.round.ronde_nummer}`
                           : `Inhaaldag ${currentEntry?.day.label}`}
                       </div>
                       <button
                         onClick={goToNext}
-                        className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+                        className="p-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   )}
@@ -353,12 +349,12 @@ export default function TournamentDetails() {
 
                 {/* Round Indicators */}
                 {timeline.length > 1 && (
-                  <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
+                  <div className="flex items-center gap-1 mt-2 overflow-x-auto pb-0.5">
                     {timeline.map((entry, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentIndex(index)}
-                        className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                        className={`flex-shrink-0 px-1.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
                           index === currentIndex
                             ? "bg-white text-mainAccent"
                             : "bg-white/20 text-white hover:bg-white/30"
@@ -372,11 +368,11 @@ export default function TournamentDetails() {
               </div>
 
               {/* Current Round/Makeup Day Content */}
-              <div className="p-6 min-h-[400px]">
+              <div className="p-2">
                 {currentEntry ? (
                   currentEntry.kind === "round" ? (
-                    <RoundPairings 
-                      round={currentEntry.round} 
+                    <RoundPairings
+                      round={currentEntry.round}
                       tournament={tournament}
                       allRounds={tournament?.rounds || []}
                     />
@@ -384,9 +380,9 @@ export default function TournamentDetails() {
                     <MakeupPairings day={currentEntry.day} games={currentEntry.games} />
                   )
                 ) : (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">Geen rondes beschikbaar</p>
+                  <div className="text-center py-6">
+                    <Calendar className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">Geen rondes beschikbaar</p>
                   </div>
                 )}
               </div>
@@ -395,14 +391,14 @@ export default function TournamentDetails() {
 
           {/* Standings */}
           <div className={`xl:col-span-1 ${activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-6">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
+            <div className="bg-white rounded-lg shadow-md overflow-hidden sticky top-4">
+              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
                   Stand
                 </h2>
               </div>
-              <div className="p-4">
+              <div className="p-3">
                 <StandingsWithModal tournament={tournament} rounds={allRounds} />
               </div>
             </div>
@@ -446,14 +442,14 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
 
   return (
     <div>
-      <div className="mb-4">
-        <h3 className="text-xl font-bold text-textColor mb-2 flex items-center gap-2">
-          <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+      <div className="mb-3">
+        <h3 className="text-lg font-bold text-textColor mb-1.5 flex items-center gap-1.5">
+          <div className="bg-mainAccent text-white rounded-full w-5 h-5 flex items-center justify-center text-[0.7em] font-bold">
             I
           </div>
           Inhaaldag {day.label}
         </h3>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-600">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 text-xs text-gray-600">
           <p>
             {games.length} partijen
           </p>
@@ -469,11 +465,11 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
       </div>
 
       {games.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-            <Calendar className="h-8 w-8 text-mainAccent" />
+        <div className="text-center py-6">
+          <div className="bg-mainAccent/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+            <Calendar className="h-6 w-6 text-mainAccent" />
           </div>
-          <h4 className="text-base font-semibold text-gray-700 mb-2">Geen uitgestelde partijen</h4>
+          <h4 className="text-sm font-semibold text-gray-700 mb-1.5">Geen uitgestelde partijen</h4>
           <p className="text-gray-500 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
         </div>
       ) : (

@@ -6,7 +6,7 @@ import type { CalendarEvent } from "../../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { CalendarIcon, Clock, Info, Users, Tag, Archive } from "lucide-react"
+import { CalendarIcon, Clock, Info, Users, Tag, Archive, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import CalendarFilters from "../../../components/CalendarFilters"
 
@@ -30,8 +30,8 @@ const YouthPlannedActivities = () => {
 
   // Available steps for youth
   const stepsCategories = [
-    { value: "Stap 1", label: "Stap 1", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-    { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-200" },
+    { value: "Stap 1", label: "Stap 1", color: "bg-orange-50 text-orange-600 border-orange-200" },
+    { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-300" },
     { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" }
   ]
 
@@ -74,7 +74,7 @@ const YouthPlannedActivities = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
+          <AlertTriangle className="h-9 w-9 text-red-500 mx-auto mb-2" />
           <h2 className="text-xl font-bold text-red-600 mb-2">Fout bij laden van jeugd activiteiten</h2>
           <p className="text-gray-600 text-sm">Er is een probleem opgetreden bij het ophalen van de jeugd activiteiten.</p>
         </div>
@@ -104,8 +104,8 @@ const YouthPlannedActivities = () => {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      "Stap 1": "bg-yellow-100 text-yellow-800 border-yellow-200",
-      "Stap 2": "bg-orange-100 text-orange-800 border-orange-200",
+      "Stap 1": "bg-orange-50 text-orange-600 border-orange-200",
+      "Stap 2": "bg-orange-100 text-orange-800 border-orange-300",
       "Stap 3+4": "bg-red-100 text-red-800 border-red-200",
     }
     return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800 border-gray-200"
@@ -159,14 +159,14 @@ const YouthPlannedActivities = () => {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
-          <div className="flex flex-col items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3">
+          <div className="flex flex-col items-center gap-3">
             <div className="text-center">
-              <div className="bg-mainAccent/10 p-3 rounded-xl inline-flex mb-3">
-                <Users className="h-8 w-8 text-mainAccent" />
+              <div className="bg-mainAccent/10 p-2 rounded-lg inline-flex mb-2">
+                <Users className="h-6 w-6 text-mainAccent" />
               </div>
-              <h1 className="text-2xl font-bold text-textColor mb-1">Jeugd Kalender</h1>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <h1 className="text-xl font-bold text-textColor mb-1">Jeugd Kalender</h1>
+              <p className="text-sm text-gray-600 max-w-2xl mx-auto">
                 Overzicht van alle {showArchive ? 'gearchiveerde' : 'geplande'} jeugd activiteiten en evenementen
               </p>
             </div>
@@ -201,7 +201,7 @@ const YouthPlannedActivities = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
         {/* Filters */}
-        <div className="mb-4">
+        <div className="mb-3">
           <CalendarFilters
             eventTypes={eventTypes}
             categories={stepsCategories}
@@ -235,11 +235,11 @@ const YouthPlannedActivities = () => {
 
           {/* Events List */}
           {sortedEvents.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="bg-mainAccent/10 p-6 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                <CalendarIcon className="h-12 w-12 text-mainAccent" />
+            <div className="p-6 text-center">
+              <div className="bg-mainAccent/10 p-3 rounded-full w-12 h-12 mx-auto mb-2 flex items-center justify-center">
+                <CalendarIcon className="h-6 w-6 text-mainAccent" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
                 {events?.length === 0 ? "Geen jeugd activiteiten" : "Geen resultaten gevonden"}
               </h3>
               <p className="text-gray-500">
@@ -267,22 +267,22 @@ const YouthPlannedActivities = () => {
                   <table className="w-full border-collapse">
                     <thead className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b-2 border-mainAccent/20">
                       <tr>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '20%'}}>
+                        <th className="px-2.5 py-2 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '20%'}}>
                           <div className="flex items-center gap-1">
                             <CalendarIcon className="h-3 w-3" />
                             Datum & Tijd
                           </div>
                         </th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '20%'}}>
+                        <th className="px-2.5 py-2 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '20%'}}>
                           <div className="flex items-center gap-1">
                             <Info className="h-3 w-3" />
                             Activiteit
                           </div>
                         </th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '16.66%'}}>Categorie</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '16.67%'}}>Lesgevers</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '21.67%'}}>Beschrijving</th>
-                        <th className="px-3 py-3 text-left text-xs font-semibold text-textColor" style={{width: '25%'}}>Type</th>
+                        <th className="px-2.5 py-2 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '16.66%'}}>Categorie</th>
+                        <th className="px-2.5 py-2 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '16.67%'}}>Lesgevers</th>
+                        <th className="px-2.5 py-2 text-left text-xs font-semibold text-textColor border-r border-mainAccent/10" style={{width: '21.67%'}}>Beschrijving</th>
+                        <th className="px-2.5 py-2 text-left text-xs font-semibold text-textColor" style={{width: '25%'}}>Type</th>
                       </tr>
                     </thead>
                       <tbody>
@@ -294,7 +294,7 @@ const YouthPlannedActivities = () => {
                           }`}
                         >
                           {/* Datum & Tijd */}
-                          <td className="px-3 py-3 border-r border-neutral-200">
+                          <td className="px-2.5 py-2 border-r border-neutral-200">
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3 text-mainAccent" />
                               <span className="text-gray-700 text-xs">
@@ -309,14 +309,14 @@ const YouthPlannedActivities = () => {
                           </td>
                           
                           {/* Activiteit */}
-                          <td className="px-3 py-3 border-r border-neutral-200">
+                          <td className="px-2.5 py-2 border-r border-neutral-200">
                             <div className="flex items-center gap-1">
                               <span className="font-medium text-textColor text-xs">{event.title}</span>
                             </div>
                           </td>
                           
                           {/* Categorie */}
-                          <td className="px-3 py-3 border-r border-neutral-200">
+                          <td className="px-2.5 py-2 border-r border-neutral-200">
                             <div className="flex flex-wrap gap-1">
                               {parseCategories(event.category).map((category, idx) => (
                                 <span
@@ -332,7 +332,7 @@ const YouthPlannedActivities = () => {
                           </td>
                           
                           {/* Lesgevers */}
-                          <td className="px-3 py-3 border-r border-neutral-200">
+                          <td className="px-2.5 py-2 border-r border-neutral-200">
                             <div className="flex flex-wrap gap-1">
                               {parseInstructors(event.instructors).map((instructor, idx) => {
                                 const [voornaam, achternaam] = instructor.split(' ')
@@ -350,7 +350,7 @@ const YouthPlannedActivities = () => {
                           </td>
                           
                           {/* Beschrijving */}
-                          <td className="px-3 py-3 border-r border-neutral-200">
+                          <td className="px-2.5 py-2 border-r border-neutral-200">
                             {event.description && (
                               <span className="text-gray-600 text-xs">
                                 {event.description}
@@ -359,7 +359,7 @@ const YouthPlannedActivities = () => {
                           </td>
                           
                           {/* Type */}
-                          <td className="px-3 py-3">
+                          <td className="px-2.5 py-2">
                             <span
                               className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(
                                 event.type,

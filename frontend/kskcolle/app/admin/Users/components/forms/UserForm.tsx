@@ -446,8 +446,8 @@ export default function UserForm({ user = EMPTY_USER, saveUser, isEditing = fals
         </div>
 
         {/* Chess Information */}
-        <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
-          <h3 className="text-base font-semibold text-amber-800 mb-3 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+          <h3 className="text-base font-semibold text-orange-800 mb-3 flex items-center gap-2">
             <Trophy className="h-4 w-4" />
             Schaakgegevens
           </h3>

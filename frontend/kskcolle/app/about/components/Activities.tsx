@@ -28,14 +28,14 @@ const Activities = () => {
   return (
     <section>
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
             Onze Activiteiten
           </h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {activities.map((activity, index) => {
               const IconComponent = activity.icon
               return (
@@ -46,13 +46,13 @@ const Activities = () => {
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${activity.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
                   />
-                  <div className="relative p-4 text-center">
+                  <div className="relative p-3 text-center">
                     <div
-                      className={`inline-flex p-3 rounded-full bg-gradient-to-br ${activity.color} mb-3 group-hover:scale-110 transition-transform duration-300`}
+                      className={`inline-flex p-2.5 rounded-full bg-gradient-to-br ${activity.color} mb-2 group-hover:scale-110 transition-transform duration-300`}
                     >
-                      <IconComponent className="w-6 h-6 text-white" />
+                      <IconComponent className="w-5 h-5 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-textColor mb-2 group-hover:text-mainAccent transition-colors">
+                    <h3 className="text-base font-semibold text-textColor mb-1 group-hover:text-mainAccent transition-colors">
                       {activity.title}
                     </h3>
                     <p className="text-sm text-gray-600 leading-relaxed">{activity.description}</p>

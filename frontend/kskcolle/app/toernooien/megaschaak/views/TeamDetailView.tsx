@@ -106,7 +106,7 @@ export function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                           playerData.player.voornaam,
                           playerData.player.achternaam,
                         ) && (
-                          <span className="text-[10px] text-amber-700 ml-1">
+                          <span className="text-[10px] text-orange-700 ml-1">
                             (vervangen)
                           </span>
                         )}{" "}
@@ -138,7 +138,7 @@ export function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                                 : score === 1
                                   ? "bg-green-100 text-green-800 font-semibold"
                                   : score === 0.5
-                                    ? "bg-yellow-100 text-yellow-800"
+                                    ? "bg-purple-100 text-purple-800"
                                     : score === 0
                                       ? "bg-red-100 text-red-800"
                                       : "bg-gray-50 text-gray-400"

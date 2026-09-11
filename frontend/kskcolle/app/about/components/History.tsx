@@ -5,16 +5,16 @@ const History = () => {
   return (
     <section>
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
             De naamgever van onze schaakclub
           </h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
             {/* Text Content */}
-            <div className="lg:col-span-2 space-y-4 text-textColor">
+            <div className="lg:col-span-2 space-y-3 text-textColor">
               <div className="bg-mainAccent/5 rounded-lg p-4 border-l-4 border-mainAccent">
                 <h3 className="text-base font-semibold text-mainAccent mb-2 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
@@ -36,12 +36,12 @@ const History = () => {
                   normaal lijken, maar in die dagen lag dat enigszins anders. Schaakkringen werden enkel door deftige
                   oudere heren bezocht.
                 </p>
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200 my-4">
+                <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 my-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="h-4 w-4 text-amber-600" />
-                    <span className="font-semibold text-amber-800 text-sm">Belangrijke prestaties</span>
+                    <Trophy className="h-4 w-4 text-orange-600" />
+                    <span className="font-semibold text-orange-800 text-sm">Belangrijke prestaties</span>
                   </div>
-                  <ul className="text-amber-700 space-y-1 text-xs">
+                  <ul className="text-orange-700 space-y-1 text-xs">
                     <li>• Op zijn twintigste: kampioen van Gent</li>
                     <li>• 1922: kampioen van België (op 25-jarige leeftijd)</li>
                     <li>• 1923: derde in Scheveningen (6/9, na Euwe en Maroczy)</li>
@@ -67,7 +67,7 @@ const History = () => {
 
             {/* Image */}
             <div className="lg:col-span-1">
-              <div className="sticky top-8">
+              <div className="sticky top-4">
                 <div className="bg-gradient-to-br from-mainAccent/10 to-mainAccentDark/10 rounded-lg p-4">
                   <Image
                     src="/images/colle.jpg"

@@ -344,16 +344,16 @@ export default function RoundManagement({ tournament }: Props) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Tournament Status */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Trophy className="h-6 w-6" />
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
             Toernooi Status
           </h2>
         </div>
-        <div className="p-6">
+        <div className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">{T.rounds.length}</div>
@@ -377,14 +377,14 @@ export default function RoundManagement({ tournament }: Props) {
 
       {/* Add Makeup Day (Oude systeem voor niet-Sevilla toernooien) */}
       {!isSevillaTournament && (
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Inhaaldag Toevoegen (Oude Systeem)
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Inhaaldag Toevoegen
             </h3>
           </div>
-          <div className="p-6">
+          <div className="p-4">
             {addingNew ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -450,7 +450,7 @@ export default function RoundManagement({ tournament }: Props) {
               <Button
                 onClick={() => setAddingNew(true)}
                 data-cy="add-makeup-day-button"
-                className="bg-mainAccent hover:bg-mainAccentDark"
+                variant="accent"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Nieuwe Inhaaldag
@@ -462,14 +462,14 @@ export default function RoundManagement({ tournament }: Props) {
 
       {/* Add Makeup Round (Nieuwe systeem voor Sevilla toernooien) */}
       {isSevillaTournament && (
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Inhaaldag Ronde Toevoegen (Nieuwe Systeem)
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Inhaaldag Toevoegen
             </h3>
           </div>
-          <div className="p-6">
+          <div className="p-4">
             {addingNewRound ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -530,10 +530,10 @@ export default function RoundManagement({ tournament }: Props) {
             ) : (
               <Button
                 onClick={() => setAddingNewRound(true)}
-                className="bg-mainAccent hover:bg-mainAccentDark"
+                variant="accent"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Nieuwe Inhaaldag Ronde
+                Nieuwe Inhaaldag
               </Button>
             )}
           </div>
@@ -542,7 +542,7 @@ export default function RoundManagement({ tournament }: Props) {
 
       {/* Timeline (Oude systeem voor niet-Sevilla toernooien) */}
       {!isSevillaTournament && (
-        <div className="space-y-6">
+        <div className="space-y-3">
           {timeline.map((e) => {
             if (e.kind === "round") {
               return (
@@ -566,22 +566,22 @@ export default function RoundManagement({ tournament }: Props) {
             } else if (e.kind === "makeupRound") {
               // Render nieuwe makeup round als een speciale sectie
               return (
-                <div key={`mr${e.round.round_id}`} className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-amber-200 to-orange-200 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div key={`mr${e.round.round_id}`} className="bg-orange-50 rounded-lg border border-orange-200 overflow-hidden">
+                  <div className="bg-orange-200 px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-bold text-amber-800 flex items-center gap-2">
-                        <div className="bg-amber-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                      <h3 className="text-xl font-bold text-orange-800 flex items-center gap-2">
+                        <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                           I
                         </div>
                         {e.round.label || `Inhaaldag na ronde ${e.round.ronde_nummer - 1}`}
                       </h3>
-                      <div className="text-amber-700 text-sm">
+                      <div className="text-orange-700 text-sm">
                         {format(new Date(e.round.ronde_datum), 'dd/MM/yyyy')} om {e.round.startuur}
                       </div>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <div className="text-center py-4 text-amber-600 text-sm">
+                  <div className="p-4">
+                    <div className="text-center py-4 text-orange-600 text-sm">
                       {e.round.games?.length || 0} games in deze inhaaldag
                     </div>
                   </div>
@@ -594,33 +594,33 @@ export default function RoundManagement({ tournament }: Props) {
 
       {/* Rondes Timeline (Nieuwe systeem voor Sevilla toernooien) */}
       {isSevillaTournament && (
-        <div className="space-y-6">
-          <h3 className="text-xl font-bold text-textColor flex items-center gap-2">
-            <Gamepad2 className="h-5 w-5" />
+        <div className="space-y-3">
+          <h3 className="text-base font-bold text-textColor flex items-center gap-2">
+            <Gamepad2 className="h-4 w-4" />
             Alle Rondes ({sortedRounds.length})
           </h3>
-          
+
           {sortedRounds.map((round) => (
-            <div key={round.round_id} className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className={`px-6 py-4 ${
-                round.type === 'MAKEUP' 
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500' 
-                  : round.is_sevilla_imported 
+            <div key={round.round_id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className={`px-4 py-2 ${
+                round.type === 'MAKEUP'
+                  ? 'bg-gradient-to-r from-orange-700 to-orange-800'
+                  : round.is_sevilla_imported
                     ? 'bg-gradient-to-r from-mainAccent to-mainAccentDark'
                     : 'bg-gradient-to-r from-gray-500 to-gray-600'
               }`}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white/20 p-2 rounded-lg">
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-white/20 p-1.5 rounded-lg">
                       {round.type === 'MAKEUP' ? (
-                        <Users className="h-5 w-5 text-white" />
+                        <Users className="h-4 w-4 text-white" />
                       ) : (
-                        <Trophy className="h-5 w-5 text-white" />
+                        <Trophy className="h-4 w-4 text-white" />
                       )}
                     </div>
                     <div>
-                      <h4 className="text-xl font-bold text-white">
-                        {round.type === 'MAKEUP' 
+                      <h4 className="text-base font-bold text-white">
+                        {round.type === 'MAKEUP'
                           ? (round.label || `Inhaaldag na ronde ${round.ronde_nummer - 1}`)
                           : `Ronde ${round.ronde_nummer}`
                         }
@@ -703,7 +703,7 @@ export default function RoundManagement({ tournament }: Props) {
                 </div>
               </div>
               
-              <div className="p-6">
+              <div className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="text-lg font-bold text-gray-700">{round.games.length}</div>

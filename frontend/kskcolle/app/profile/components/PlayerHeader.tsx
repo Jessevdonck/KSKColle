@@ -20,33 +20,33 @@ export default function PlayerHeader({ player }: { player: User }) {
   const jubileum = player.jubileum_dit_jaar ? player.jubileum_jaren ?? null : null
 
   return (
-    <div className={jubileum ? "bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 p-8 border-b-2 border-amber-300" : "bg-gray-50 p-8"}>
+    <div className={jubileum ? "bg-gradient-to-r from-orange-50 to-orange-100 p-5 border-b-2 border-orange-300" : "bg-gray-50 p-5"}>
       <div className="max-w-7xl mx-auto">
         <div className="md:flex items-center justify-between">
-          <div className="flex items-center mb-6 md:mb-0">
-            <div className="flex-shrink-0 mr-6">
+          <div className="flex items-center mb-3 md:mb-0">
+            <div className="flex-shrink-0 mr-4">
               {isOwnProfile ? (
                 <AvatarUpload
                   currentAvatarUrl={avatarUrl}
                   userId={player.user_id}
                   onAvatarChange={setAvatarUrl}
-                  size="lg"
+                  size="md"
                 />
               ) : (
-                <div className={`h-40 w-40 rounded-full overflow-hidden border-4 bg-gray-200 ${jubileum ? "border-amber-400" : "border-mainAccent"}`}>
+                <div className={`h-24 w-24 rounded-full overflow-hidden border-4 bg-gray-200 ${jubileum ? "border-orange-400" : "border-mainAccent"}`}>
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
                       alt={`${player.voornaam} ${player.achternaam}`}
-                      width={160}
-                      height={160}
+                      width={96}
+                      height={96}
                       quality={70}
                       priority
                       className="h-full w-full object-cover"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">
-                      <span className="text-4xl font-bold text-gray-500">
+                      <span className="text-2xl font-bold text-gray-500">
                         {player.voornaam.charAt(0)}{player.achternaam.charAt(0)}
                       </span>
                     </div>
@@ -55,17 +55,17 @@ export default function PlayerHeader({ player }: { player: User }) {
               )}
             </div>
             <div>
-              <div className="uppercase tracking-wide text-sm text-mainAccent font-semibold">Speler Profiel</div>
-              <h1 className="mt-1 text-4xl font-bold text-textColor">{`${player.voornaam} ${player.achternaam}`}</h1>
+              <div className="uppercase tracking-wide text-xs text-mainAccent font-semibold">Speler Profiel</div>
+              <h1 className="mt-0.5 text-2xl font-bold text-textColor">{`${player.voornaam} ${player.achternaam}`}</h1>
               {jubileum && (
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-3 py-1 text-sm font-semibold text-white shadow">
-                  <Award className="h-4 w-4" />
+                <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 px-2.5 py-1 text-xs font-semibold text-white shadow">
+                  <Award className="h-3.5 w-3.5" />
                   Viert dit jaar {jubileum} jaar lidmaatschap
                 </div>
               )}
-              
+
               {/* Contact Information */}
-              <div className="mt-4 space-y-2">
+              <div className="mt-2.5 space-y-1.5">
                 {canViewUserSensitiveInfo(currentUser, player) ? (
                   <>
                     <div className="flex items-center text-gray-600">
@@ -101,11 +101,11 @@ export default function PlayerHeader({ player }: { player: User }) {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 mt-6 md:mt-0">
+          <div className="grid grid-cols-1 gap-3 mt-3 md:mt-0">
             {ratings.map((rating) => (
-              <div key={rating.name} className="bg-white p-4 rounded-lg shadow text-center">
+              <div key={rating.name} className="bg-white p-3 rounded-lg shadow text-center">
                 <p className="text-sm text-gray-600">{rating.name}</p>
-                <p className="text-2xl font-bold text-mainAccent mt-1">{rating.value}</p>
+                <p className="text-xl font-bold text-mainAccent mt-0.5">{rating.value}</p>
               </div>
             ))}
           </div>

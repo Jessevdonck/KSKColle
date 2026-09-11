@@ -6,7 +6,7 @@ import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Calendar, Clock, Info, Search, ChevronDown, Archive, ChevronUp } from "lucide-react"
+import { Calendar, Clock, Info, Search, ChevronDown, Archive, ChevronUp, AlertTriangle, X } from "lucide-react"
 
 const PlannedActivities = () => {
   const [showArchive, setShowArchive] = useState(false)
@@ -57,7 +57,7 @@ const PlannedActivities = () => {
     { value: "Oost-Vlaamse Interclub", label: "OVIC", color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
     { value: "Toernooi", label: "Toernooi", color: "bg-green-100 text-green-800 border-green-200" },
     { value: "Ronde", label: "Ronde", color: "bg-purple-100 text-purple-800 border-purple-200" },
-    { value: "Inhaaldag", label: "Inhaaldag", color: "bg-amber-100 text-amber-800 border-amber-200" },
+    { value: "Inhaaldag", label: "Inhaaldag", color: "bg-pink-100 text-pink-800 border-pink-200" },
     { value: "Vergadering", label: "Vergadering", color: "bg-orange-100 text-orange-800 border-orange-200" },
     { value: "Activiteit", label: "Activiteit", color: "bg-gray-100 text-gray-800 border-gray-200" }
   ]
@@ -124,7 +124,7 @@ const PlannedActivities = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
+          <AlertTriangle className="h-9 w-9 text-red-500 mx-auto mb-2" />
           <h2 className="text-xl font-bold text-red-600 mb-2">Fout bij laden van activiteiten</h2>
           <p className="text-gray-600 text-sm">Er is een probleem opgetreden bij het ophalen van de activiteiten.</p>
         </div>
@@ -152,7 +152,7 @@ const PlannedActivities = () => {
       case "ronde":
         return "bg-purple-100 text-purple-800 border-purple-200"
       case "inhaaldag":
-        return "bg-amber-100 text-amber-800 border-amber-200"
+        return "bg-pink-100 text-pink-800 border-pink-200"
       case "oost-vlaamse interclub":
         return "bg-indigo-100 text-indigo-800 border-indigo-200"
       case "vergadering":
@@ -169,24 +169,6 @@ const PlannedActivities = () => {
     }
     return type
   }
-
-  /* const getEventIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case "interclub":
-      case "oost-vlaamse interclub":
-        return "🏆"
-      case "toernooi":
-        return "♟️"
-      case "ronde":
-        return "🎯"
-      case "inhaaldag":
-        return "📅"
-      case "vergadering":
-        return "👥"
-      default:
-        return "📋"
-    }
-  } */
 
   // Sorteer events op datum (dichtstbijzijnde eerst)
   const sortedEvents = [...filteredEvents].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -266,9 +248,9 @@ const PlannedActivities = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
         {/* Filters */}
-        <div className="mb-4">
-          <div className="bg-white rounded-lg shadow-md p-4">
-            <div className="flex flex-col lg:flex-row gap-4">
+        <div className="mb-3">
+          <div className="bg-white rounded-lg shadow-md p-3">
+            <div className="flex flex-col lg:flex-row gap-3">
               {/* Search Field */}
               <div className="flex-1">
                 <div className="relative">
@@ -278,7 +260,7 @@ const PlannedActivities = () => {
                     placeholder="Zoek in activiteiten, beschrijving, begeleiders..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mainAccent focus:border-mainAccent outline-none"
+                    className="w-full pl-9 pr-4 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-mainAccent focus:border-mainAccent outline-none"
                   />
                 </div>
               </div>
@@ -287,7 +269,7 @@ const PlannedActivities = () => {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-w-[200px]"
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-w-[180px]"
                 >
                   <span className="text-sm text-gray-700">
                     {selectedTypes.length === 0 
@@ -330,7 +312,7 @@ const PlannedActivities = () => {
               {hasActiveFilters && (
                 <button
                   onClick={handleClearAll}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Wis alles
                 </button>
@@ -354,9 +336,9 @@ const PlannedActivities = () => {
                 Geen Activiteiten
               </h2>
             </div>
-            <div className="p-8 text-center">
-              <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                <Calendar className="h-8 w-8 text-mainAccent" />
+            <div className="p-6 text-center">
+              <div className="bg-mainAccent/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                <Calendar className="h-6 w-6 text-mainAccent" />
               </div>
               <h3 className="text-lg font-bold text-gray-700 mb-2">
                 {events?.length === 0 ? "Geen activiteiten gepland" : "Geen resultaten gevonden"}
@@ -405,21 +387,21 @@ const PlannedActivities = () => {
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b-2 border-mainAccent/20">
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">
+                        <th className="p-2.5 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             Datum & Tijd
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/5 border-r border-mainAccent/10">
+                        <th className="p-2.5 text-left font-semibold text-textColor text-xs w-1/5 border-r border-mainAccent/10">
                           <div className="flex items-center gap-1">
                             <Info className="h-3 w-3" />
                             Activiteit
                           </div>
                         </th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">Beschrijving</th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/6 border-r border-mainAccent/10">Begeleider</th>
-                        <th className="p-3 text-left font-semibold text-textColor text-xs w-1/3">Type</th>
+                        <th className="p-2.5 text-left font-semibold text-textColor text-xs w-1/4 border-r border-mainAccent/10">Beschrijving</th>
+                        <th className="p-2.5 text-left font-semibold text-textColor text-xs w-1/6 border-r border-mainAccent/10">Begeleider</th>
+                        <th className="p-2.5 text-left font-semibold text-textColor text-xs w-1/3">Type</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -431,7 +413,7 @@ const PlannedActivities = () => {
                           }`}
                         >
                           {/* Datum & Tijd */}
-                          <td className="p-3 border-r border-neutral-200">
+                          <td className="p-2.5 border-r border-neutral-200">
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3 text-mainAccent" />
                               <span className="text-gray-700 text-xs">
@@ -446,14 +428,14 @@ const PlannedActivities = () => {
                           </td>
                           
                           {/* Activiteit */}
-                          <td className="p-3 border-r border-neutral-200">
+                          <td className="p-2.5 border-r border-neutral-200">
                             <div className="flex items-center gap-1">
                               <span className="font-medium text-textColor text-xs">{event.title}</span>
                             </div>
                           </td>
                           
                           {/* Beschrijving */}
-                          <td className="p-3 border-r border-neutral-200">
+                          <td className="p-2.5 border-r border-neutral-200">
                             {event.description && (
                               <span className="text-gray-600 text-xs">
                                 {event.description}
@@ -462,7 +444,7 @@ const PlannedActivities = () => {
                           </td>
                           
                           {/* Begeleider */}
-                          <td className="p-3 border-r border-neutral-200">
+                          <td className="p-2.5 border-r border-neutral-200">
                             <div className="flex flex-wrap gap-1">
                               {(() => {
                                 try {
@@ -484,7 +466,7 @@ const PlannedActivities = () => {
                           </td>
                           
                           {/* Type */}
-                          <td className="p-3">
+                          <td className="p-2.5">
                             <span
                               className={`px-1.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(
                                 event.type,

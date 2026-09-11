@@ -310,11 +310,11 @@ export default function TournamentList() {
     })
 
     return (
-      <div ref={sectionRef} id={`${isArchive ? 'archive-' : ''}${sectionId}`} className="mb-12 scroll-mt-24">
-        <h2 className="text-2xl font-bold text-[#2e2c2c] mb-6 border-b-2 border-mainAccent pb-2">
+      <div ref={sectionRef} id={`${isArchive ? 'archive-' : ''}${sectionId}`} className="mb-6 scroll-mt-20">
+        <h2 className="text-xl font-bold text-[#2e2c2c] mb-3 border-b-2 border-mainAccent pb-1.5">
           {title}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {simplifiedTournaments.map(tournament => (
             <TournamentCard key={tournament.tournament_id} tournament={tournament} />
           ))}
@@ -336,18 +336,18 @@ export default function TournamentList() {
     if (sections.length <= 1) return null
 
     return (
-      <div className="sticky top-4 z-10 mb-8">
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-          <h3 className="text-lg font-semibold text-[#2e2c2c] mb-3 flex items-center">
-            <ChevronUp className="mr-2 h-5 w-5 text-mainAccent" />
+      <div className="sticky top-2 z-10 mb-4">
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-3">
+          <h3 className="text-sm font-semibold text-[#2e2c2c] mb-2 flex items-center">
+            <ChevronUp className="mr-1.5 h-4 w-4 text-mainAccent" />
             Navigeer naar:
           </h3>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => scrollToSection(isArchive ? `archive-${section.id}` : section.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                   activeSection === (isArchive ? `archive-${section.id}` : section.id)
                     ? 'bg-mainAccent text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-mainAccent hover:text-white hover:shadow-md'
@@ -364,17 +364,17 @@ export default function TournamentList() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-[#2e2c2c] mb-4 flex items-center justify-center">
-            <Trophy className="mr-2 h-10 w-10 text-mainAccent" />
+      <div className="container mx-auto px-4 py-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-[#2e2c2c] mb-3 flex items-center justify-center">
+            <Trophy className="mr-2 h-6 w-6 text-mainAccent" />
             KSK Colle Toernooien
           </h1>
-          
+
           {/* Filter Controls */}
-          <div className="mt-8 space-y-4">
+          <div className="mt-4 space-y-3">
             {/* Tournament Type Filter */}
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-1.5">
               <span className="text-sm font-medium text-gray-700 self-center">Filter op type:</span>
               {[
                 { id: 'all', label: 'Alle Types' },
@@ -387,7 +387,7 @@ export default function TournamentList() {
                 <button
                   key={type.id}
                   onClick={() => setSelectedType(type.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                     selectedType === type.id
                       ? 'bg-mainAccent text-white shadow-md'
                       : 'bg-gray-100 text-gray-700 hover:bg-mainAccent hover:text-white hover:shadow-md'
@@ -397,7 +397,7 @@ export default function TournamentList() {
                 </button>
               ))}
             </div>
-            
+
             {/* Archive Toggle */}
             <div className="flex justify-center items-center space-x-3">
               <button
@@ -416,15 +416,15 @@ export default function TournamentList() {
             </div>
           </div>
         </div>
-        
+
         {isLoading ? (
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#B17457]" data-cy="is_loading"></div>
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-mainAccent" data-cy="is_loading"></div>
           </div>
         ) : error || archiveError ? (
           <div className="flex items-center justify-center">
-            <div className="text-center text-red-500 bg-red-100 p-6 rounded-lg shadow-md" data-cy="axios_error_message">
-              <h2 className="text-2xl font-bold mb-2">Error</h2>
+            <div className="text-center text-red-500 bg-red-100 p-4 rounded-lg shadow-md" data-cy="axios_error_message">
+              <h2 className="text-lg font-bold mb-1.5">Error</h2>
               <p>Er is een fout opgetreden bij het laden van de toernooien</p>
             </div>
           </div>
@@ -433,9 +433,9 @@ export default function TournamentList() {
           (() => {
             if (!archiveTournaments || archiveTournaments.length === 0) {
               return (
-                <div className="text-center text-[#2e2c2c] mt-12" data-cy="no_archive_tournaments_message">
-                  <Archive className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <p className="text-2xl font-semibold">Geen archief toernooien gevonden</p>
+                <div className="text-center text-[#2e2c2c] mt-6" data-cy="no_archive_tournaments_message">
+                  <Archive className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-lg font-semibold">Geen archief toernooien gevonden</p>
                   <p className="mt-2">Er zijn momenteel geen afgelopen toernooien in het archief.</p>
                 </div>
               )
@@ -446,9 +446,9 @@ export default function TournamentList() {
             
             if (filteredArchiveTournaments.length === 0) {
               return (
-                <div className="text-center text-[#2e2c2c] mt-12" data-cy="no_filtered_archive_tournaments_message">
-                  <Archive className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <p className="text-2xl font-semibold">Geen {selectedType === 'all' ? 'archief' : selectedType} toernooien gevonden</p>
+                <div className="text-center text-[#2e2c2c] mt-6" data-cy="no_filtered_archive_tournaments_message">
+                  <Archive className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-lg font-semibold">Geen {selectedType === 'all' ? 'archief' : selectedType} toernooien gevonden</p>
                   <p className="mt-2">Er zijn momenteel geen afgelopen toernooien van dit type in het archief.</p>
                 </div>
               )
@@ -457,10 +457,10 @@ export default function TournamentList() {
             // If filtering by specific type, show all tournaments of that type
             if (selectedType !== 'all') {
               return (
-                <div className="space-y-8">
-                  <div ref={sectionRefs.archive} id="archive" className="mb-12 scroll-mt-24">
-                    <h2 className="text-3xl font-bold text-[#2e2c2c] mb-6 border-b-2 border-mainAccent pb-2 flex items-center">
-                      <Archive className="mr-3 h-8 w-8 text-mainAccent" />
+                <div className="space-y-4">
+                  <div ref={sectionRefs.archive} id="archive" className="mb-6 scroll-mt-20">
+                    <h2 className="text-xl font-bold text-[#2e2c2c] mb-3 border-b-2 border-mainAccent pb-1.5 flex items-center">
+                      <Archive className="mr-2 h-5 w-5 text-mainAccent" />
                       Archief - {[
                         { id: 'herfst', label: 'Herfstcompetitie' },
                         { id: 'lente', label: 'Lentecompetitie' },
@@ -470,7 +470,7 @@ export default function TournamentList() {
                       ].find(t => t.id === selectedType)?.label}
                     </h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {toGroupedTournamentCards(filteredArchiveTournaments).map(tournament => (
                       <TournamentCard key={tournament.tournament_id} tournament={tournament} />
                     ))}
@@ -485,19 +485,19 @@ export default function TournamentList() {
             
             if (!hasAnyTournaments) {
               return (
-                <div className="text-center text-[#2e2c2c] mt-12" data-cy="no_archive_tournaments_message">
-                  <Archive className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <p className="text-2xl font-semibold">Geen archief toernooien gevonden</p>
+                <div className="text-center text-[#2e2c2c] mt-6" data-cy="no_archive_tournaments_message">
+                  <Archive className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-lg font-semibold">Geen archief toernooien gevonden</p>
                   <p className="mt-2">Er zijn momenteel geen afgelopen toernooien in het archief.</p>
                 </div>
               )
             }
 
             return (
-              <div className="space-y-8">
-                <div ref={sectionRefs.archive} id="archive" className="mb-12 scroll-mt-24">
-                  <h2 className="text-3xl font-bold text-[#2e2c2c] mb-6 border-b-2 border-mainAccent pb-2 flex items-center">
-                    <Archive className="mr-3 h-8 w-8 text-mainAccent" />
+              <div className="space-y-4">
+                <div ref={sectionRefs.archive} id="archive" className="mb-6 scroll-mt-20">
+                  <h2 className="text-xl font-bold text-[#2e2c2c] mb-3 border-b-2 border-mainAccent pb-1.5 flex items-center">
+                    <Archive className="mr-2 h-5 w-5 text-mainAccent" />
                     Archief Toernooien
                   </h2>
                 </div>
@@ -515,9 +515,9 @@ export default function TournamentList() {
           (() => {
             if (!tournaments || tournaments.length === 0) {
               return (
-                <div className="text-center text-[#2e2c2c] mt-12" data-cy="no_tournaments_message">
-                  <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <p className="text-2xl font-semibold">Geen actieve toernooien gevonden</p>
+                <div className="text-center text-[#2e2c2c] mt-6" data-cy="no_tournaments_message">
+                  <Calendar className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-lg font-semibold">Geen actieve toernooien gevonden</p>
                   <p className="mt-2">Er zijn momenteel geen actieve toernooien. Kom later terug voor updates!</p>
                 </div>
               )
@@ -528,9 +528,9 @@ export default function TournamentList() {
             
             if (filteredTournaments.length === 0) {
               return (
-                <div className="text-center text-[#2e2c2c] mt-12" data-cy="no_filtered_tournaments_message">
-                  <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <p className="text-2xl font-semibold">Geen {selectedType === 'all' ? 'actieve' : selectedType} toernooien gevonden</p>
+                <div className="text-center text-[#2e2c2c] mt-6" data-cy="no_filtered_tournaments_message">
+                  <Calendar className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-lg font-semibold">Geen {selectedType === 'all' ? 'actieve' : selectedType} toernooien gevonden</p>
                   <p className="mt-2">Er zijn momenteel geen actieve toernooien van dit type.</p>
                 </div>
               )
@@ -539,10 +539,10 @@ export default function TournamentList() {
             // If filtering by specific type, show all tournaments of that type
             if (selectedType !== 'all') {
               return (
-                <div className="space-y-8">
-                  <div className="mb-12 scroll-mt-24">
-                    <h2 className="text-3xl font-bold text-[#2e2c2c] mb-6 border-b-2 border-mainAccent pb-2 flex items-center">
-                      <Calendar className="mr-3 h-8 w-8 text-mainAccent" />
+                <div className="space-y-4">
+                  <div className="mb-6 scroll-mt-20">
+                    <h2 className="text-xl font-bold text-[#2e2c2c] mb-3 border-b-2 border-mainAccent pb-1.5 flex items-center">
+                      <Calendar className="mr-2 h-5 w-5 text-mainAccent" />
                       Interne toernooien{selectedType !== 'all' ? ` - ${[
                         { id: 'herfst', label: 'Herfstcompetitie' },
                         { id: 'lente', label: 'Lentecompetitie' },
@@ -552,7 +552,7 @@ export default function TournamentList() {
                       ].find(t => t.id === selectedType)?.label}` : ''}
                     </h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {toGroupedTournamentCards(filteredTournaments).map(tournament => (
                       <TournamentCard key={tournament.tournament_id} tournament={tournament} />
                     ))}
@@ -567,16 +567,16 @@ export default function TournamentList() {
             
             if (!hasAnyTournaments) {
               return (
-                <div className="text-center text-[#2e2c2c] mt-12" data-cy="no_tournaments_message">
-                  <Calendar className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                  <p className="text-2xl font-semibold">Geen actieve toernooien gevonden</p>
+                <div className="text-center text-[#2e2c2c] mt-6" data-cy="no_tournaments_message">
+                  <Calendar className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                  <p className="text-lg font-semibold">Geen actieve toernooien gevonden</p>
                   <p className="mt-2">Er zijn momenteel geen actieve toernooien. Kom later terug voor updates!</p>
                 </div>
               )
             }
 
             return (
-              <div className="space-y-8">
+              <div className="space-y-4">
                 {renderNavigation(categorized)}
                 {renderTournamentSection('Herfstcompetitie', categorized.herfstcompetitie, 'herfstcompetitie')}
                 {renderTournamentSection('Lentecompetitie', categorized.lentecompetitie, 'lentecompetitie')}

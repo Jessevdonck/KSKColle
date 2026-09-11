@@ -18,8 +18,8 @@ const StepMultiSelect: React.FC<StepMultiSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false)
 
   const availableSteps = [
-    { id: "Stap 1", label: "Stap 1", color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-    { id: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-200" },
+    { id: "Stap 1", label: "Stap 1", color: "bg-orange-50 text-orange-600 border-orange-200" },
+    { id: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-300" },
     { id: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" },
   ]
 

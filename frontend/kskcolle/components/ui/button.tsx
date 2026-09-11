@@ -19,6 +19,11 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Warm oranje gradient (huiskleur) — de ene accentkleur voor de belangrijkste
+        // actie op een pagina/sectie (bv. "Toevoegen", "Inschrijven", hero-CTA).
+        // Spaarzaam gebruiken, niet voor routine-knoppen.
+        accent:
+          "bg-gradient-to-r from-mainAccent to-mainAccentDark text-white shadow-md hover:shadow-lg hover:brightness-105 active:brightness-95 border-0",
       },
       size: {
         default: "h-9 px-4 py-2",

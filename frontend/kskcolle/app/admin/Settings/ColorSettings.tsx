@@ -16,9 +16,9 @@ interface ColorSettings {
 }
 
 const DEFAULT_COLORS: ColorSettings = {
-  mainAccent: '#deb71d',
-  mainAccentDark: '#d4ae17',
-  selectionColor: '#deb71d',
+  mainAccent: '#f97316',
+  mainAccentDark: '#ea580c',
+  selectionColor: '#f97316',
   selectionTextColor: '#FAF7F0'
 }
 
@@ -88,168 +88,168 @@ export default function ColorSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2.5">
             <div className="bg-mainAccent/10 p-2 rounded-lg">
-              <Palette className="h-6 w-6 text-mainAccent" />
+              <Palette className="h-5 w-5 text-mainAccent" />
             </div>
             <div>
-              <CardTitle>Kleuren Instellingen</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-base">Kleuren Instellingen</CardTitle>
+              <CardDescription className="text-xs">
                 Pas de hoofdkleuren van de website aan. Wijzigingen worden direct toegepast.
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {/* Main Accent Color */}
-          <div className="space-y-3">
-            <Label htmlFor="mainAccent" className="text-base font-medium">
+          <div className="space-y-2">
+            <Label htmlFor="mainAccent" className="text-sm font-medium">
               Hoofdkleur (Main Accent)
             </Label>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Input
                   id="mainAccent"
                   type="color"
                   value={colors.mainAccent}
                   onChange={(e) => handleColorChange('mainAccent', e.target.value)}
-                  className="w-16 h-10 p-1 border-2 border-gray-300 rounded cursor-pointer"
+                  className="w-14 h-9 p-1 border-2 border-neutral-300 rounded cursor-pointer"
                 />
                 <Input
                   type="text"
                   value={colors.mainAccent}
                   onChange={(e) => handleColorChange('mainAccent', e.target.value)}
-                  className="font-mono text-sm"
-                  placeholder="#deb71d"
+                  className="font-mono text-sm h-9"
+                  placeholder="#f97316"
                 />
               </div>
-              <div 
-                className="w-12 h-12 rounded-lg border-2 border-gray-300 shadow-sm"
+              <div
+                className="w-9 h-9 rounded-lg border-2 border-neutral-300 shadow-sm"
                 style={{ backgroundColor: colors.mainAccent }}
                 title="Voorvertoning hoofdkleur"
               />
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs text-gray-600">
               Deze kleur wordt gebruikt voor knoppen, links en accenten door de hele website.
             </p>
           </div>
 
           {/* Main Accent Dark Color */}
-          <div className="space-y-3">
-            <Label htmlFor="mainAccentDark" className="text-base font-medium">
+          <div className="space-y-2">
+            <Label htmlFor="mainAccentDark" className="text-sm font-medium">
               Donkere Hoofdkleur (Main Accent Dark)
             </Label>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Input
                   id="mainAccentDark"
                   type="color"
                   value={colors.mainAccentDark}
                   onChange={(e) => handleColorChange('mainAccentDark', e.target.value)}
-                  className="w-16 h-10 p-1 border-2 border-gray-300 rounded cursor-pointer"
+                  className="w-14 h-9 p-1 border-2 border-neutral-300 rounded cursor-pointer"
                 />
                 <Input
                   type="text"
                   value={colors.mainAccentDark}
                   onChange={(e) => handleColorChange('mainAccentDark', e.target.value)}
-                  className="font-mono text-sm"
-                  placeholder="#d4ae17"
+                  className="font-mono text-sm h-9"
+                  placeholder="#ea580c"
                 />
               </div>
-              <div 
-                className="w-12 h-12 rounded-lg border-2 border-gray-300 shadow-sm"
+              <div
+                className="w-9 h-9 rounded-lg border-2 border-neutral-300 shadow-sm"
                 style={{ backgroundColor: colors.mainAccentDark }}
                 title="Voorvertoning donkere hoofdkleur"
               />
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs text-gray-600">
               Deze kleur wordt gebruikt voor hover effecten en donkere varianten van de hoofdkleur.
             </p>
           </div>
 
           {/* Selection Colors */}
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <Label htmlFor="selectionColor" className="text-base font-medium">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="selectionColor" className="text-sm font-medium">
                 Selectie Achtergrondkleur
               </Label>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Input
                     id="selectionColor"
                     type="color"
                     value={colors.selectionColor}
                     onChange={(e) => handleColorChange('selectionColor', e.target.value)}
-                    className="w-16 h-10 p-1 border-2 border-gray-300 rounded cursor-pointer"
+                    className="w-14 h-9 p-1 border-2 border-neutral-300 rounded cursor-pointer"
                   />
                   <Input
                     type="text"
                     value={colors.selectionColor}
                     onChange={(e) => handleColorChange('selectionColor', e.target.value)}
-                    className="font-mono text-sm"
-                    placeholder="#deb71d"
+                    className="font-mono text-sm h-9"
+                    placeholder="#f97316"
                   />
                 </div>
-                <div 
-                  className="w-12 h-12 rounded-lg border-2 border-gray-300 shadow-sm"
+                <div
+                  className="w-9 h-9 rounded-lg border-2 border-neutral-300 shadow-sm"
                   style={{ backgroundColor: colors.selectionColor }}
                   title="Voorvertoning selectie achtergrond"
                 />
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs text-gray-600">
                 De achtergrondkleur wanneer tekst wordt geselecteerd.
               </p>
             </div>
 
-            <div className="space-y-3">
-              <Label htmlFor="selectionTextColor" className="text-base font-medium">
+            <div className="space-y-2">
+              <Label htmlFor="selectionTextColor" className="text-sm font-medium">
                 Selectie Tekstkleur
               </Label>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Input
                     id="selectionTextColor"
                     type="color"
                     value={colors.selectionTextColor}
                     onChange={(e) => handleColorChange('selectionTextColor', e.target.value)}
-                    className="w-16 h-10 p-1 border-2 border-gray-300 rounded cursor-pointer"
+                    className="w-14 h-9 p-1 border-2 border-neutral-300 rounded cursor-pointer"
                   />
                   <Input
                     type="text"
                     value={colors.selectionTextColor}
                     onChange={(e) => handleColorChange('selectionTextColor', e.target.value)}
-                    className="font-mono text-sm"
+                    className="font-mono text-sm h-9"
                     placeholder="#FAF7F0"
                   />
                 </div>
-                <div 
-                  className="w-12 h-12 rounded-lg border-2 border-gray-300 shadow-sm"
+                <div
+                  className="w-9 h-9 rounded-lg border-2 border-neutral-300 shadow-sm"
                   style={{ backgroundColor: colors.selectionTextColor }}
                   title="Voorvertoning selectie tekst"
                 />
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs text-gray-600">
                 De tekstkleur wanneer tekst wordt geselecteerd.
               </p>
             </div>
           </div>
 
           {/* Preview Section */}
-          <div className="space-y-3">
-            <Label className="text-base font-medium">Voorvertoning</Label>
-            <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-              <div className="space-y-3">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Voorvertoning</Label>
+            <div className="p-3 border border-neutral-200 rounded-lg bg-neutral-50">
+              <div className="space-y-2.5">
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     className="bg-mainAccent hover:bg-mainAccentDark text-white"
                     size="sm"
                   >
                     Voorbeeld Knop
                   </Button>
-                  <Button 
+                  <Button
                     variant="outline"
                     className="border-mainAccent text-mainAccent hover:bg-mainAccent hover:text-white"
                     size="sm"
@@ -261,14 +261,14 @@ export default function ColorSettings() {
                   <div className="w-3 h-3 bg-mainAccent rounded-full"></div>
                   <span className="text-sm">Accent punt</span>
                 </div>
-                <div className="text-mainAccent font-medium">
+                <div className="text-mainAccent font-medium text-sm">
                   Tekst in hoofdkleur
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Selectie voorvertoning:</p>
-                  <div 
+                <div className="space-y-1.5">
+                  <p className="text-xs text-gray-600">Selectie voorvertoning:</p>
+                  <div
                     className="p-2 rounded text-sm font-medium"
-                    style={{ 
+                    style={{
                       backgroundColor: colors.selectionColor,
                       color: colors.selectionTextColor
                     }}
@@ -281,16 +281,16 @@ export default function ColorSettings() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t">
-            <Button 
+          <div className="flex gap-2.5 pt-3 border-t">
+            <Button
               onClick={saveColors}
               disabled={!hasChanges}
-              className="bg-mainAccent hover:bg-mainAccentDark text-white"
+              variant="accent"
             >
               <Save className="h-4 w-4 mr-2" />
               Opslaan
             </Button>
-            <Button 
+            <Button
               onClick={resetColors}
               variant="outline"
               className="border-mainAccent text-mainAccent hover:bg-mainAccent hover:text-white"
@@ -301,8 +301,8 @@ export default function ColorSettings() {
           </div>
 
           {hasChanges && (
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
+            <div className="p-2.5 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-sm text-orange-800">
                 <strong>Onopgeslagen wijzigingen:</strong> Vergeet niet om je wijzigingen op te slaan.
               </p>
             </div>

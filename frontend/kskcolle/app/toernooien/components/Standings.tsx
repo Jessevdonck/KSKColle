@@ -99,11 +99,11 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   const getPositionIcon = (position: number) => {
     switch (position) {
       case 1:
-        return <Medal className="h-4 w-4 text-yellow-500" />
+        return <Medal className="h-4 w-4 text-orange-500" />
       case 2:
         return <Medal className="h-4 w-4 text-gray-400" />
       case 3:
-        return <Medal className="h-4 w-4 text-amber-600" />
+        return <Medal className="h-4 w-4 text-orange-600" />
       default:
         return <span className="text-xs font-bold text-gray-600 w-4 text-center">{position}</span>
     }
@@ -113,11 +113,11 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
     const base = "flex items-center justify-center w-6 h-6 rounded-full font-bold transition-all"
     switch (position) {
       case 1:
-        return `${base} bg-gradient-to-br from-yellow-400 to-yellow-500 text-white shadow-md`
+        return `${base} bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-md`
       case 2:
         return `${base} bg-gradient-to-br from-gray-300 to-gray-400 text-white shadow-sm`
       case 3:
-        return `${base} bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm`
+        return `${base} bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-sm`
       default:
         return `${base} bg-gradient-to-br from-neutral-100 to-neutral-200 text-gray-700`
     }
@@ -259,7 +259,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   const getResultColor = (score: number, result?: string | null) => {
     if (result === 'uitgesteld') return "text-orange-600 bg-orange-50"
     if (score === 1) return "text-green-600 bg-green-50"
-    if (score === 0.5) return "text-yellow-600 bg-yellow-50"
+    if (score === 0.5) return "text-blue-600 bg-blue-50"
     if (score === 0) return "text-red-600 bg-red-50"
     return "text-gray-600 bg-gray-50"
   }

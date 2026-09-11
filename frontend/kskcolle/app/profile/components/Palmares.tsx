@@ -1,7 +1,8 @@
 "use client"
 
 import useSWR from "swr"
-import { Trophy } from "lucide-react"
+import { Trophy, Medal, Award } from "lucide-react"
+import type { ReactNode } from "react"
 import { getUserHonors } from "../../api/index"
 import { getHistorischPalmares } from "../../../lib/erelijsten"
 
@@ -25,18 +26,18 @@ interface PalmaresItem {
   positie: number
 }
 
-const positionDisplay = (positie: number) => {
+const positionDisplay = (positie: number): { icon: ReactNode; label: string } => {
   switch (positie) {
     case 1:
-      return { icon: "🥇", label: "Winnaar" }
+      return { icon: <Medal className="h-4 w-4 text-orange-500" />, label: "Winnaar" }
     case 2:
-      return { icon: "🥈", label: "Tweede plaats" }
+      return { icon: <Medal className="h-4 w-4 text-gray-400" />, label: "Tweede plaats" }
     case 3:
-      return { icon: "🥉", label: "Derde plaats" }
+      return { icon: <Medal className="h-4 w-4 text-orange-800" />, label: "Derde plaats" }
     case 4:
-      return { icon: "🏅", label: "Ratingprijs" }
+      return { icon: <Award className="h-4 w-4 text-mainAccent" />, label: "Ratingprijs" }
     default:
-      return { icon: "🏅", label: `${positie}e plaats` }
+      return { icon: <Award className="h-4 w-4 text-mainAccent" />, label: `${positie}e plaats` }
   }
 }
 
@@ -122,14 +123,30 @@ export default function Palmares({
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-yellow-500" />
+          <Trophy className="h-4 w-4 text-mainAccent" />
           Palmares
         </h2>
-        <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
-          {telling.goud > 0 && <span>🥇 {telling.goud}</span>}
-          {telling.zilver > 0 && <span>🥈 {telling.zilver}</span>}
-          {telling.brons > 0 && <span>🥉 {telling.brons}</span>}
-          {telling.rating > 0 && <span>🏅 {telling.rating}</span>}
+        <div className="flex items-center gap-2.5 text-xs font-medium text-gray-700">
+          {telling.goud > 0 && (
+            <span className="flex items-center gap-1">
+              <Medal className="h-3.5 w-3.5 text-orange-500" /> {telling.goud}
+            </span>
+          )}
+          {telling.zilver > 0 && (
+            <span className="flex items-center gap-1">
+              <Medal className="h-3.5 w-3.5 text-gray-400" /> {telling.zilver}
+            </span>
+          )}
+          {telling.brons > 0 && (
+            <span className="flex items-center gap-1">
+              <Medal className="h-3.5 w-3.5 text-orange-800" /> {telling.brons}
+            </span>
+          )}
+          {telling.rating > 0 && (
+            <span className="flex items-center gap-1">
+              <Award className="h-3.5 w-3.5 text-mainAccent" /> {telling.rating}
+            </span>
+          )}
         </div>
       </div>
       <ul className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
@@ -137,7 +154,7 @@ export default function Palmares({
           const { icon, label } = positionDisplay(item.positie)
           return (
             <li key={item.key} className="px-4 py-2 flex items-center gap-3">
-              <span className="text-lg" aria-hidden>{icon}</span>
+              <span aria-hidden>{icon}</span>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-gray-900 truncate">
                   {item.titel}

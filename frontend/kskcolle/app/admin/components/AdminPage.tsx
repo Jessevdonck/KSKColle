@@ -9,11 +9,12 @@ import TournamentsManagement from "../Tournaments/TournamentsManagement"
 import CalendarManagement from "../Calendar/CalendarManagement"
 import SevillaImportPage from "../SevillaImport/page"
 import ColorSettings from "../Settings/ColorSettings"
-import { Users, Trophy, CalendarDays, Settings, BarChart3, Shield, Upload, Palette, Euro, Puzzle } from "lucide-react"
+import { Users, Trophy, CalendarDays, BarChart3, Shield, Upload, Palette, Euro, Puzzle } from "lucide-react"
 import { getAll } from "../../api/index"
 import { useAuth } from "../../contexts/auth"
 import { isAdmin, isBoardMember, isPuzzleMaster } from "@/lib/roleUtils"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -103,6 +104,14 @@ const AdminPage = () => {
     window.location.hash = tab
   }
 
+  // Alleen navigeren als de gebruiker die tab ook echt in zijn menu heeft
+  // (bv. bestuursleden hebben geen toegang tot Leden/Toernooien/Kalender).
+  const goToTabIfAllowed = (tab: string) => {
+    if (tabs.some((t) => t.value === tab)) {
+      handleTabChange(tab)
+    }
+  }
+
   if (!isClient) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
@@ -117,21 +126,12 @@ const AdminPage = () => {
   if (!hasAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <Shield className="h-8 w-8 text-red-500" />
+        <div className="bg-white rounded-lg shadow-md p-6 text-center max-w-sm">
+          <div className="bg-red-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+            <Shield className="h-6 w-6 text-red-500" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Toegang geweigerd</h2>
-          <p className="text-gray-600">Je hebt geen toegang tot het admin dashboard.</p>
-          <div className="mt-4 p-4 bg-gray-100 rounded text-left text-sm">
-            <p><strong>Debug info:</strong></p>
-            <p>Current user: {currentUser ? 'Logged in' : 'Not logged in'}</p>
-            <p>Roles: {currentUser?.roles ? JSON.stringify(currentUser.roles) : 'No roles'}</p>
-            <p>Roles type: {typeof currentUser?.roles}</p>
-            <p>Is Admin: {currentUser ? isAdmin(currentUser) : 'N/A'}</p>
-            <p>Is Board Member: {currentUser ? isBoardMember(currentUser) : 'N/A'}</p>
-            <p>Token exists: {typeof window !== "undefined" ? (localStorage.getItem("jwtToken") ? 'Yes' : 'No') : 'N/A'}</p>
-          </div>
+          <h2 className="text-lg font-semibold text-gray-800 mb-1.5">Toegang geweigerd</h2>
+          <p className="text-gray-600 text-sm">Je hebt geen toegang tot het admin dashboard.</p>
         </div>
       </div>
     )
@@ -143,140 +143,144 @@ const AdminPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="bg-mainAccent/10 p-2 sm:p-3 rounded-xl">
-              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-mainAccent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-mainAccent/10 p-2 rounded-lg">
+              <Shield className="h-5 w-5 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-textColor">KSK Colle Admin Dashboard</h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">Beheer alle aspecten van de schaakclub</p>
+              <h1 className="text-lg sm:text-xl font-bold text-textColor">Admin Dashboard</h1>
+              <p className="text-xs sm:text-sm text-gray-600">Beheer alle aspecten van de schaakclub</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           {/* Tab Navigation */}
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-4 sm:mb-6 lg:mb-8">
-            <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 sm:px-6 py-3 sm:py-4">
-              <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-                <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-                Navigatie
-              </h2>
+          <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-2 mb-4">
+            {/* Desktop Navigation */}
+            <div className="hidden lg:block">
+              <TabsList className="grid w-full gap-1.5 bg-transparent p-0" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+                {tabs.map((tab) => {
+                  const Icon = tab.icon
+                  return (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="flex items-center justify-center gap-1.5 rounded-md data-[state=active]:bg-mainAccent data-[state=active]:text-white text-sm py-2"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="hidden xl:inline">{tab.label}</span>
+                      <span className="xl:hidden">{tab.label.split(' ')[0]}</span>
+                    </TabsTrigger>
+                  )
+                })}
+              </TabsList>
             </div>
-            <div className="p-4 sm:p-6">
-              {/* Desktop Navigation */}
-              <div className="hidden lg:block">
-                <TabsList className="grid w-full gap-2 bg-neutral-100 p-2 rounded-lg" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+
+            {/* Mobile Navigation - Dropdown */}
+            <div className="lg:hidden">
+              <Select value={activeTab} onValueChange={handleTabChange}>
+                <SelectTrigger className="w-full border-neutral-200 h-10">
+                  <div className="flex items-center gap-2">
+                    {currentTab && (
+                      <>
+                        <currentTab.icon className="h-4 w-4 text-mainAccent" />
+                        <span className="font-medium text-sm">{currentTab.label}</span>
+                      </>
+                    )}
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
                   {tabs.map((tab) => {
                     const Icon = tab.icon
                     return (
-                      <TabsTrigger
-                        key={tab.value}
-                        value={tab.value}
-                        className="flex items-center justify-center gap-2 data-[state=active]:bg-mainAccent data-[state=active]:text-white text-sm"
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="hidden xl:inline">{tab.label}</span>
-                        <span className="xl:hidden">{tab.label.split(' ')[0]}</span>
-                      </TabsTrigger>
+                      <SelectItem key={tab.value} value={tab.value}>
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-mainAccent" />
+                          <span>{tab.label}</span>
+                        </div>
+                      </SelectItem>
                     )
                   })}
-                </TabsList>
-              </div>
-
-              {/* Mobile Navigation - Dropdown */}
-              <div className="lg:hidden">
-                <Select value={activeTab} onValueChange={handleTabChange}>
-                  <SelectTrigger className="w-full bg-neutral-100 border-neutral-200 h-12">
-                    <div className="flex items-center gap-3">
-                      {currentTab && (
-                        <>
-                          <currentTab.icon className="h-5 w-5 text-mainAccent" />
-                          <span className="font-medium">{currentTab.label}</span>
-                        </>
-                      )}
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tabs.map((tab) => {
-                      const Icon = tab.icon
-                      return (
-                        <SelectItem key={tab.value} value={tab.value}>
-                          <div className="flex items-center gap-3">
-                            <Icon className="h-4 w-4 text-mainAccent" />
-                            <span>{tab.label}</span>
-                          </div>
-                        </SelectItem>
-                      )
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           {/* Dashboard */}
           <TabsContent value="dashboard" className="mt-0">
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 sm:px-6 py-3 sm:py-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
                   Welkom op het KSK Colle Dashboard
                 </h2>
-                <p className="text-sm sm:text-base text-white/80 mt-1">Selecteer een categorie om te beginnen met beheren</p>
+                <p className="text-xs text-white/80 mt-0.5">Selecteer een categorie om te beginnen met beheren</p>
               </div>
-              <div className="p-4 sm:p-6 lg:p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {/* Users Card */}
-                  <div className="group relative overflow-hidden rounded-xl border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => goToTabIfAllowed("users")}
+                    className="group relative overflow-hidden rounded-lg border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-md text-left"
+                  >
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative p-4 sm:p-6 text-center">
-                      <div className="inline-flex p-3 sm:p-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <Users className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    <div className="relative p-4 text-center">
+                      <div className="inline-flex p-2.5 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+                        <Users className="w-5 h-5 text-white" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-semibold text-textColor mb-2 sm:mb-3 group-hover:text-mainAccent transition-colors">
+                      <h3 className="text-base font-semibold text-textColor mb-1 group-hover:text-mainAccent transition-colors">
                         Actieve Leden
                       </h3>
-                      <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-3 sm:mb-4">Het aantal geregistreerde clubleden</p>
-                      <p className="text-xl sm:text-2xl font-bold text-blue-800 mb-4">{users.length}</p>
+                      <p className="text-sm text-gray-600 mb-2">Het aantal geregistreerde clubleden</p>
+                      <p className="text-xl font-bold text-blue-800">{users.length}</p>
                     </div>
-                  </div>
+                  </button>
 
                   {/* Tournaments Card */}
-                  <div className="group relative overflow-hidden rounded-xl border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => goToTabIfAllowed("tournaments")}
+                    className="group relative overflow-hidden rounded-lg border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-md text-left"
+                  >
                     <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-green-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative p-4 sm:p-6 text-center">
-                      <div className="inline-flex p-3 sm:p-4 rounded-full bg-gradient-to-br from-green-500 to-green-600 mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    <div className="relative p-4 text-center">
+                      <div className="inline-flex p-2.5 rounded-full bg-gradient-to-br from-green-500 to-green-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+                        <Trophy className="w-5 h-5 text-white" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-semibold text-textColor mb-2 sm:mb-3 group-hover:text-mainAccent transition-colors">
+                      <h3 className="text-base font-semibold text-textColor mb-1 group-hover:text-mainAccent transition-colors">
                         Actieve Toernooien
                       </h3>
-                      <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-3 sm:mb-4">Toernooien die nog niet afgerond zijn</p>
-                      <p className="text-xl sm:text-2xl font-bold text-green-800 mb-4">{activeTournaments.length}</p>
+                      <p className="text-sm text-gray-600 mb-2">Toernooien die nog niet afgerond zijn</p>
+                      <p className="text-xl font-bold text-green-800">{activeTournaments.length}</p>
                     </div>
-                  </div>
+                  </button>
 
                   {/* Calendar Card */}
-                  <div className="group relative overflow-hidden rounded-xl border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-lg md:col-span-2 lg:col-span-1">
+                  <button
+                    type="button"
+                    onClick={() => goToTabIfAllowed("calendar")}
+                    className="group relative overflow-hidden rounded-lg border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-md text-left md:col-span-2 lg:col-span-1"
+                  >
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative p-4 sm:p-6 text-center">
-                      <div className="inline-flex p-3 sm:p-4 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <CalendarDays className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    <div className="relative p-4 text-center">
+                      <div className="inline-flex p-2.5 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+                        <CalendarDays className="w-5 h-5 text-white" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-semibold text-textColor mb-2 sm:mb-3 group-hover:text-mainAccent transition-colors">
+                      <h3 className="text-base font-semibold text-textColor mb-1 group-hover:text-mainAccent transition-colors">
                         Komende Evenementen
                       </h3>
-                      <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-3 sm:mb-4">Activiteiten gepland na vandaag</p>
-                      <p className="text-xl sm:text-2xl font-bold text-orange-800 mb-4">
+                      <p className="text-sm text-gray-600 mb-2">Activiteiten gepland na vandaag</p>
+                      <p className="text-xl font-bold text-orange-800">
                         {upcomingEventsCount}
                       </p>
                     </div>
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -288,18 +292,16 @@ const AdminPage = () => {
           </TabsContent>
           {currentUser && !isAdmin(currentUser) && (
             <TabsContent value="lidgeld" className="mt-0">
-              <Link href="/admin/lidgeld">
-                <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                  <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <Euro className="h-8 w-8 text-mainAccent" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Lidgeld Beheer</h3>
-                  <p className="text-gray-600 mb-4">Beheer lidgeld en bondslidgeld betalingen</p>
-                  <button className="bg-mainAccent text-white px-6 py-2 rounded-lg hover:bg-mainAccentDark transition-colors">
-                    Open Lidgeld Beheer
-                  </button>
+              <div className="bg-white rounded-lg shadow-md p-6 text-center max-w-sm mx-auto">
+                <div className="bg-mainAccent/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                  <Euro className="h-6 w-6 text-mainAccent" />
                 </div>
-              </Link>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">Lidgeld Beheer</h3>
+                <p className="text-gray-600 text-sm mb-3">Beheer lidgeld en bondslidgeld betalingen</p>
+                <Button asChild variant="accent" size="sm">
+                  <Link href="/admin/lidgeld">Open Lidgeld Beheer</Link>
+                </Button>
+              </div>
             </TabsContent>
           )}
           <TabsContent value="tournaments" className="mt-0">
@@ -309,18 +311,16 @@ const AdminPage = () => {
             <CalendarManagement />
           </TabsContent>
           <TabsContent value="puzzles" className="mt-0">
-            <Link href="/admin/puzzles">
-              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <Puzzle className="h-8 w-8 text-mainAccent" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">Puzzel Maker</h3>
-                <p className="text-gray-600 mb-4">Maak nieuwe schaakpuzzels aan</p>
-                <button className="bg-mainAccent text-white px-6 py-2 rounded-lg hover:bg-mainAccentDark transition-colors">
-                  Open Puzzel Maker
-                </button>
+            <div className="bg-white rounded-lg shadow-md p-6 text-center max-w-sm mx-auto">
+              <div className="bg-mainAccent/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                <Puzzle className="h-6 w-6 text-mainAccent" />
               </div>
-            </Link>
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">Puzzel Maker</h3>
+              <p className="text-gray-600 text-sm mb-3">Maak nieuwe schaakpuzzels aan</p>
+              <Button asChild variant="accent" size="sm">
+                <Link href="/admin/puzzles">Open Puzzel Maker</Link>
+              </Button>
+            </div>
           </TabsContent>
           <TabsContent value="sevilla" className="mt-0">
             <SevillaImportPage />

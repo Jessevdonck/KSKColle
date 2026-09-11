@@ -5,7 +5,7 @@ import type { CalendarEvent } from "../../../data/types"
 import { getAll } from "@/app/api"
 import CalendarEventForm from "./CalenderEventForm"
 import CalendarEventList from "./CalenderEventList"
-import { Calendar, Settings, Users, User } from "lucide-react"
+import { Calendar, Settings, Users, User, AlertTriangle } from "lucide-react"
 
 const CalendarManagement = () => {
   const [showYouth, setShowYouth] = useState(false)
@@ -127,10 +127,10 @@ const CalendarManagement = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Fout bij laden van evenementen</h2>
-          <p className="text-gray-600">Er is een probleem opgetreden bij het ophalen van de kalendergegevens.</p>
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <AlertTriangle className="h-9 w-9 text-red-500 mx-auto mb-2" />
+          <h2 className="text-lg font-bold text-red-600 mb-1.5">Fout bij laden van evenementen</h2>
+          <p className="text-gray-600 text-sm">Er is een probleem opgetreden bij het ophalen van de kalendergegevens.</p>
         </div>
       </div>
     )
@@ -139,9 +139,9 @@ const CalendarManagement = () => {
   if (!events) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mainAccent mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Evenementen worden geladen...</p>
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mainAccent mx-auto mb-3"></div>
+          <p className="text-gray-600 text-sm">Evenementen worden geladen...</p>
         </div>
       </div>
     )
@@ -151,14 +151,14 @@ const CalendarManagement = () => {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-mainAccent/10 p-3 rounded-xl">
-              <Settings className="h-8 w-8 text-mainAccent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-mainAccent/10 p-2 rounded-lg">
+              <Settings className="h-5 w-5 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-textColor">Kalender Beheren</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-lg font-bold text-textColor">Kalender Beheren</h1>
+              <p className="text-gray-600 text-xs">
                 {showYouth ? "Jeugd activiteiten" : "Normale activiteiten"}
               </p>
             </div>
@@ -167,8 +167,8 @@ const CalendarManagement = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="space-y-4">
           <CalendarEventList 
             events={filteredEvents} 
             mutate={mutate} 

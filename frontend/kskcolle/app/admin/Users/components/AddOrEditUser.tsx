@@ -6,6 +6,7 @@ import CreateUserForm from "../../../components/CreateUserForm"
 import AsyncData from "../../../components/AsyncData"
 import type { User } from "@/data/types"
 import { UserPlus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface AddOrEditUserProps {
   onRefresh?: () => void
@@ -17,31 +18,26 @@ export default function AddOrEditUser({ onRefresh }: AddOrEditUserProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <UserPlus className="h-5 w-5" />
+      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <UserPlus className="h-4 w-4" />
           Nieuwe Speler Toevoegen
         </h2>
       </div>
-      <div className="p-6">
+      <div className="p-4">
         {!showForm ? (
-          <div className="text-center py-12">
-            <div className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
-              <UserPlus className="h-10 w-10 text-mainAccent" />
+          <div className="text-center py-6">
+            <div className="bg-mainAccent/10 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-3">
+              <UserPlus className="h-7 w-7 text-mainAccent" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Voeg een nieuwe speler toe</h3>
-            <p className="text-gray-600 text-base mb-6 max-w-md mx-auto leading-relaxed">
+            <h3 className="text-lg font-bold text-gray-800 mb-1.5">Voeg een nieuwe speler toe</h3>
+            <p className="text-gray-600 text-sm mb-4 max-w-md mx-auto leading-relaxed">
               Maak een nieuw account aan voor een speler. Het wachtwoord wordt automatisch gegenereerd en via email verzonden.
             </p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-gradient-to-r from-mainAccent to-mainAccentDark hover:from-mainAccentDark hover:to-mainAccent text-white px-8 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
-            >
-              <div className="flex items-center space-x-2">
-                <UserPlus className="h-5 w-5" />
-                <span className="font-medium">Nieuwe Speler Aanmaken</span>
-              </div>
-            </button>
+            <Button onClick={() => setShowForm(true)} variant="accent">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Nieuwe Speler Aanmaken
+            </Button>
           </div>
         ) : (
           <CreateUserForm

@@ -114,7 +114,7 @@ export default function CloseTournamentDialog({
           <Button
             onClick={handleConfirm}
             disabled={isLoading}
-            className="bg-mainAccent hover:bg-mainAccentDark"
+            variant="accent"
           >
             {isLoading ? "Bezig met afsluiten..." : "Toernooi Afsluiten"}
           </Button>

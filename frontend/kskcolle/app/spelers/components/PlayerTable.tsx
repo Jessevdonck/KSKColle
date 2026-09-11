@@ -86,7 +86,7 @@ export default function PlayerTable({
     return (
       <span
         title={`Viert dit jaar ${player.jubileum_jaren} jaar lidmaatschap van KSK Colle`}
-        className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm shrink-0"
+        className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm shrink-0"
       >
         <Award className="h-3 w-3" />
         {player.jubileum_jaren} jaar
@@ -104,14 +104,14 @@ export default function PlayerTable({
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Trophy className="h-5 w-5 shrink-0" />
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <Trophy className="h-4 w-4 shrink-0" />
               {tableTitle}
             </h2>
-            <p className="text-white/80 mt-1 text-sm">Klik op een kolomtitel om te sorteren</p>
+            <p className="text-white/80 mt-0.5 text-xs">Klik op een kolomtitel om te sorteren</p>
           </div>
           {membershipToggleSlot ? (
             <div className="flex justify-center sm:justify-end shrink-0 self-center">{membershipToggleSlot}</div>
@@ -124,11 +124,11 @@ export default function PlayerTable({
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-mainAccent/10 to-mainAccentDark/10 border-b border-neutral-200">
-              <th className="p-3 text-left font-semibold text-textColor w-12 text-sm">#</th>
+              <th className="p-2.5 text-left font-semibold text-textColor w-12 text-sm">#</th>
               {columns.map(({ key, label, icon: Icon }) => (
                 <th
                   key={key}
-                  className="p-3 text-left cursor-pointer hover:bg-mainAccent/5 transition-colors font-semibold text-textColor text-sm"
+                  className="p-2.5 text-left cursor-pointer hover:bg-mainAccent/5 transition-colors font-semibold text-textColor text-sm"
                   onClick={() => handleSort(key)}
                 >
                   <span className="flex items-center gap-2">
@@ -150,12 +150,12 @@ export default function PlayerTable({
                     index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
                   }`}
                 >
-                  <td className="p-3">
+                  <td className="p-2.5">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 text-gray-700 font-bold text-sm">
                       {position}
                     </div>
                   </td>
-                  <td className="p-3" data-cy="name">
+                  <td className="p-2.5" data-cy="name">
                     <Link
                       href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
                       className="group flex items-center gap-2 hover:text-mainAccent transition-colors"
@@ -169,13 +169,13 @@ export default function PlayerTable({
                       <JubileumBadge player={player} />
                     </Link>
                   </td>
-                  <td className="p-3" data-cy="rating">
+                  <td className="p-2.5" data-cy="rating">
                     <div className="flex items-center gap-2">
                       <Trophy className="h-3 w-3 text-mainAccent" />
                       <span className="text-base font-bold text-textColor">{player.schaakrating_elo}</span>
                     </div>
                   </td>
-                  <td className="p-3" data-cy="rating_difference">
+                  <td className="p-2.5" data-cy="rating_difference">
                     <div className="flex items-center gap-2">
                       {getRatingDifferenceIcon(player.schaakrating_difference)}
                       <span className={`${getRatingDifferenceColor(player.schaakrating_difference)} text-sm`}>
@@ -183,9 +183,9 @@ export default function PlayerTable({
                       </span>
                     </div>
                   </td>
-                  <td className="p-3" data-cy="rating_max">
+                  <td className="p-2.5" data-cy="rating_max">
                     <div className="flex items-center gap-2">
-                      <Award className="h-3 w-3 text-amber-500" />
+                      <Award className="h-3 w-3 text-orange-500" />
                       <span className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</span>
                     </div>
                   </td>
@@ -197,7 +197,7 @@ export default function PlayerTable({
       </div>
 
       {/* Mobile Cards */}
-      <div className="md:hidden p-3 space-y-3">
+      <div className="md:hidden p-2.5 space-y-2">
         {sortedPlayers.map((player, index) => {
           const position = index + 1
           return (
@@ -205,8 +205,8 @@ export default function PlayerTable({
               key={player.user_id}
               className="rounded-lg border bg-white border-neutral-200 hover:border-mainAccent/30 transition-all"
             >
-              <div className="p-3">
-                <div className="flex items-center gap-3 mb-3">
+              <div className="p-2.5">
+                <div className="flex items-center gap-2.5 mb-2.5">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-neutral-100 to-neutral-200 text-gray-700 font-bold text-sm">
                     {position}
                   </div>
@@ -242,7 +242,7 @@ export default function PlayerTable({
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <Award className="h-3 w-3 text-amber-500" />
+                      <Award className="h-3 w-3 text-orange-500" />
                       <span className="text-gray-500">Max</span>
                     </div>
                     <div className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</div>

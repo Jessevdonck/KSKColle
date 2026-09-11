@@ -149,7 +149,7 @@ export default function RapidtoernooiPage() {
               </CardHeader>
               <CardContent className="pt-2">
                 <div className="space-y-1 text-sm">
-                  <div className="flex justify-between p-2 bg-yellow-50 rounded">
+                  <div className="flex justify-between p-2 bg-orange-50 rounded">
                     <span>1e plaats:</span>
                     <span className="font-bold">€50</span>
                   </div>

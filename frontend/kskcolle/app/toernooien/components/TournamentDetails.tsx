@@ -688,7 +688,7 @@ export default function TournamentDetails() {
                       />
                     )
                   ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6">
                       <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-500">Geen rondes beschikbaar</p>
                     </div>
@@ -789,7 +789,7 @@ export default function TournamentDetails() {
                       />
                     )
                   ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6">
                       <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-500">Geen rondes beschikbaar</p>
                     </div>
@@ -936,7 +936,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
       </div>
 
       {(games?.length ?? 0) === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-6">
           <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
             <Calendar className="h-8 w-8 text-mainAccent" />
           </div>
@@ -1002,7 +1002,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
                     {tournament?.is_youth !== true && (
                       <td className="px-1 py-0.5 text-center w-[60px]">
                         {g.speler1?.schaakrating_elo ? (
-                          <span className="text-sm font-normal text-yellow-600">
+                          <span className="text-sm font-normal text-orange-600">
                             {g.speler1.schaakrating_elo}
                           </span>
                         ) : (
@@ -1046,7 +1046,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
                     {tournament?.is_youth !== true && (
                       <td className="px-1 py-0.5 text-center w-[60px]">
                         {g.speler2?.schaakrating_elo ? (
-                          <span className="text-sm font-normal text-yellow-600">
+                          <span className="text-sm font-normal text-orange-600">
                             {g.speler2.schaakrating_elo}
                           </span>
                         ) : (
@@ -1156,7 +1156,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
                       )}
                       <div className="flex items-center gap-4 mt-0.5 text-xs">
                         {tournament?.is_youth !== true && g.speler1?.schaakrating_elo && (
-                          <span className="font-normal text-yellow-600">ELIO: {g.speler1.schaakrating_elo}</span>
+                          <span className="font-normal text-orange-600">ELIO: {g.speler1.schaakrating_elo}</span>
                         )}
                         {playerScores.length > 0 && (
                           <span className="font-bold text-black">
@@ -1193,7 +1193,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
                       {g.speler2 && (
                         <div className="flex items-center gap-4 mt-0.5 text-xs">
                           {tournament?.is_youth !== true && g.speler2?.schaakrating_elo && (
-                            <span className="font-normal text-yellow-600">ELIO: {g.speler2.schaakrating_elo}</span>
+                            <span className="font-normal text-orange-600">ELIO: {g.speler2.schaakrating_elo}</span>
                           )}
                           {playerScores.length > 0 && (
                             <span className="font-bold text-black">

@@ -185,29 +185,34 @@ export default function SevillaImportPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Sevilla Toernooi Import</h1>
-        <p className="text-muted-foreground">
-          Importeer toernooigegevens van Sevilla (.json) bestanden naar uw systeem.
-        </p>
+    <div className="container mx-auto p-4 max-w-4xl">
+      <div className="mb-4 flex items-center gap-2.5">
+        <div className="bg-mainAccent/10 p-2 rounded-lg">
+          <Upload className="h-5 w-5 text-mainAccent" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold text-textColor">Sevilla Toernooi Import</h1>
+          <p className="text-muted-foreground text-xs">
+            Importeer toernooigegevens van Sevilla (.json) bestanden naar uw systeem.
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4">
         {/* File Upload */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base text-mainAccent">
+              <Upload className="h-4 w-4" />
               Sevilla Bestand Uploaden
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               Upload een .json bestand geëxporteerd uit Sevilla of plak de JSON inhoud direct.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <div>
-              <Label htmlFor="file-upload">Kies Bestand</Label>
+              <Label htmlFor="file-upload" className="text-sm">Kies Bestand</Label>
               <Input
                 id="file-upload"
                 type="file"
@@ -216,15 +221,15 @@ export default function SevillaImportPage() {
                 className="mt-1"
               />
               {file && (
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-muted-foreground mt-1.5">
                   Geselecteerd: {file.name} ({(file.size / 1024).toFixed(1)} KB)
                 </p>
               )}
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="json-content">Of Plak JSON Inhoud</Label>
+              <div className="flex items-center justify-between mb-1.5">
+                <Label htmlFor="json-content" className="text-sm">Of Plak JSON Inhoud</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -246,7 +251,7 @@ export default function SevillaImportPage() {
             </div>
 
             <div>
-              <Label htmlFor="tournament-name">Toernooi Naam (Optioneel)</Label>
+              <Label htmlFor="tournament-name" className="text-sm">Toernooi Naam (Optioneel)</Label>
               <Input
                 id="tournament-name"
                 placeholder="Laat leeg om naam uit Sevilla bestand te gebruiken"
@@ -260,19 +265,20 @@ export default function SevillaImportPage() {
 
         {/* Validation */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base text-mainAccent">
+              <FileText className="h-4 w-4" />
               Valideer Gegevens
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               Valideer de Sevilla gegevens voor het importeren om te zorgen dat het in het juiste formaat is.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
+            <Button
               onClick={validateSevillaData}
               disabled={isValidating || !jsonContent.trim()}
+              variant="accent"
               className="w-full"
             >
               {isValidating ? (
@@ -286,7 +292,7 @@ export default function SevillaImportPage() {
             </Button>
 
             {validationResult && (
-              <Alert className={`mt-4 ${validationResult.valid ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <Alert className={`mt-3 ${validationResult.valid ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
                 {validationResult.valid ? (
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 ) : (
@@ -302,20 +308,20 @@ export default function SevillaImportPage() {
 
         {/* Import */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base text-mainAccent">
+              <CheckCircle className="h-4 w-4" />
               Importeer Toernooi
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               Importeer de gevalideerde toernooigegevens naar uw systeem.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {/* Import Mode Selection */}
             <div>
-              <Label htmlFor="import-mode">Import Modus</Label>
-              <div className="mt-2 space-y-2">
+              <Label htmlFor="import-mode" className="text-sm">Import Modus</Label>
+              <div className="mt-1.5 space-y-1.5">
                 <div className="flex items-center space-x-2">
                   <input
                     id="import-mode-full"
@@ -346,18 +352,19 @@ export default function SevillaImportPage() {
                 </div>
               </div>
               {importMode === 'incremental' && (
-                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm text-blue-800">
-                    <strong>Opmerking:</strong> Dit voegt nieuwe rondes toe en update bestaande rondes met wijzigingen. 
+                <div className="mt-1.5 p-2.5 bg-mainAccent/10 border border-mainAccent/20 rounded-md">
+                  <p className="text-sm text-textColor">
+                    <strong>Opmerking:</strong> Dit voegt nieuwe rondes toe en update bestaande rondes met wijzigingen.
                     Perfect voor wekelijkse updates wanneer resultaten worden gecorrigeerd of nieuwe rondes worden toegevoegd.
                   </p>
                 </div>
               )}
             </div>
 
-            <Button 
+            <Button
               onClick={importTournament}
               disabled={isImporting || !validationResult?.valid}
+              variant="accent"
               className="w-full"
             >
               {isImporting ? (
@@ -371,7 +378,7 @@ export default function SevillaImportPage() {
             </Button>
 
             {importResult && (
-              <Alert className={`mt-4 ${importResult.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <Alert className={`mt-3 ${importResult.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
                 {importResult.success ? (
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 ) : (
