@@ -705,7 +705,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     p.schaakrating_elo = user.schaakrating_elo
   })
 
-  // 5) sorteren: zelfde volgorde als volwassen stand — score, minder partijen = beter, tie-break, lagere rating = beter
+  // 5) sorteren: zelfde volgorde als volwassen stand — score, minder partijen = beter, tie-break, hogere rating = beter
   players.sort((a, b) => {
     if (b.score !== a.score) {
       return b.score - a.score
@@ -718,7 +718,7 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     }
     const ratingA = a.schaakrating_elo || 0
     const ratingB = b.schaakrating_elo || 0
-    return ratingA - ratingB
+    return ratingB - ratingA
   })
 
   return players

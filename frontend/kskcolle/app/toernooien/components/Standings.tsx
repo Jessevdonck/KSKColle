@@ -739,10 +739,10 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
       return b.tieBreak - a.tieBreak
     }
 
-    // Vierde criterium: Rating (LAAG naar HOOG - lagere rating = beter)
+    // Vierde criterium: Rating (HOOG naar LAAG - hogere rating = beter)
     const ratingA = a.schaakrating_elo || 0
     const ratingB = b.schaakrating_elo || 0
-    return ratingA - ratingB
+    return ratingB - ratingA
   })
 
   return players
