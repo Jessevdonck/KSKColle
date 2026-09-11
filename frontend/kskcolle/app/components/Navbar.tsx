@@ -344,7 +344,7 @@ export default function Navbar() {
                   Kalender
                 </Link>
                 <Link href="/youth/tournaments" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
-                  Jeugd Kampioenschap
+                  Jeugdkampioenschap
                 </Link>
                 <Link href="/youth/zomerkampen" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Zomerkampen
@@ -674,7 +674,7 @@ export default function Navbar() {
                     className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Jeugkampioenschap
+                    Jeugdkampioenschap
                   </Link>
                   <Link
                     href="/youth/zomerkampen"
