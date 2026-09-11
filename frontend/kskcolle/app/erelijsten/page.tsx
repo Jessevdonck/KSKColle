@@ -1,7 +1,7 @@
 "use client"
 
 import { Crown, Medal, Trophy } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import Link from 'next/link'
 import useSWR from "swr"
 import { getAllHonors } from "../api/index"
@@ -56,6 +56,116 @@ const createClickableName = (name: string) => {
     </Link>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Gedeelde UI-template: één consistente, compacte tabelstijl voor elke erelijst.
+// ---------------------------------------------------------------------------
+
+interface ErelijstColumn<T> {
+  header: ReactNode
+  align?: 'left' | 'center'
+  render: (row: T) => ReactNode
+  emphasize?: boolean
+  /** Vaste kolombreedte (bv. "70px" of "30%"). Zorgt dat kolommen over alle secties
+   *  van hetzelfde formaat verticaal gelijk uitlijnen, ipv per tabel auto-sized. */
+  width?: string
+}
+
+/**
+ * Eén compacte tabel in de huisstijl. Wordt door alle toernooiformaten gebruikt.
+ * `table-fixed` + een `<colgroup>` zorgt dat identieke kolomdefinities altijd dezelfde
+ * breedte krijgen, ook wanneer dezelfde tabel meerdere keren na elkaar voorkomt
+ * (bv. één per jaar) — zo blijft alles mooi onder elkaar uitgelijnd.
+ */
+function ErelijstTable<T>({
+  columns,
+  rows,
+  keyFn,
+  emptyLabel = "Geen data gevonden",
+}: {
+  columns: ErelijstColumn<T>[]
+  rows: T[]
+  keyFn: (row: T, index: number) => string | number
+  emptyLabel?: string
+}) {
+  if (rows.length === 0) {
+    return <div className="px-2 py-3 text-xs text-gray-500 text-center">{emptyLabel}</div>
+  }
+
+  return (
+    <div className="overflow-auto">
+      <table className="w-full text-xs table-fixed">
+        <colgroup>
+          {columns.map((col, i) => (
+            <col key={i} style={col.width ? { width: col.width } : undefined} />
+          ))}
+        </colgroup>
+        <thead className="bg-gray-50">
+          <tr>
+            {columns.map((col, i) => (
+              <th
+                key={i}
+                className={`px-2 py-1.5 font-semibold text-gray-600 border-b border-gray-200 truncate ${col.align === 'center' ? 'text-center' : 'text-left'}`}
+              >
+                {col.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map((row, index) => (
+            <tr key={keyFn(row, index)} className={index % 2 === 0 ? "bg-white" : "bg-gray-50/70"}>
+              {columns.map((col, i) => (
+                <td
+                  key={i}
+                  className={`px-2 py-1.5 truncate text-gray-700 ${col.align === 'center' ? 'text-center' : ''} ${col.emphasize ? 'font-medium text-gray-900' : ''}`}
+                >
+                  {col.render(row)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/** Gegroepeerde sectie (bv. per jaar, per klasse, per record) rond een ErelijstTable. */
+function ErelijstSection({ title, children }: { title: ReactNode; children: ReactNode }) {
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-200">
+        <h3 className="text-xs font-bold text-gray-700">{title}</h3>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/** Lijst van gegroepeerde secties, met consistente verticale spacing. */
+function ErelijstSectionList({ children }: { children: ReactNode }) {
+  return <div className="space-y-2">{children}</div>
+}
+
+const colYear: ErelijstColumn<{ jaar: number }> = {
+  header: "Jaar",
+  emphasize: true,
+  width: "64px",
+  render: (r) => r.jaar,
+}
+const colGoud = <T,>(get: (r: T) => string | undefined): ErelijstColumn<T> => ({
+  header: "🥇",
+  render: (r) => createClickableName(get(r) || "-"),
+})
+const colZilver = <T,>(get: (r: T) => string | undefined): ErelijstColumn<T> => ({
+  header: "🥈",
+  render: (r) => createClickableName(get(r) || "-"),
+})
+const colBrons = <T,>(get: (r: T) => string | undefined): ErelijstColumn<T> => ({
+  header: "🥉",
+  render: (r) => createClickableName(get(r) || "-"),
+})
 
 interface PrijzenTelling {
   goud: number
@@ -188,7 +298,7 @@ export default function ErelijstenPage() {
       const jsonData = await fetchErelijstRows(tournament.file)
 
       setCurrentFormat(tournament.format as 'simple' | 'klasses' | 'zomer' | 'quiz' | 'konijn' | 'megalijst' | 'ranking' | 'records')
-      
+
       if (tournament.format === 'quiz') {
         // Process quiz format
         const processedQuizResults = processQuizData(jsonData)
@@ -299,11 +409,13 @@ export default function ErelijstenPage() {
     }
   })
 
-  const spelersGesorteerd = Object.entries(prijzenPerSpeler).sort((a, b) => {
-    const totalA = a[1].goud + a[1].zilver + a[1].brons + a[1].ratingprijs
-    const totalB = b[1].goud + b[1].zilver + b[1].brons + b[1].ratingprijs
-    return totalB - totalA
-  })
+  const spelersGesorteerd = Object.entries(prijzenPerSpeler)
+    .filter(([, telling]) => (telling.goud + telling.zilver + telling.brons) >= 2)
+    .sort((a, b) => {
+      const totalA = a[1].goud + a[1].zilver + a[1].brons + a[1].ratingprijs
+      const totalB = b[1].goud + b[1].zilver + b[1].brons + b[1].ratingprijs
+      return totalB - totalA
+    })
 
   // Meervoudige winnaars voor zomertoernooi en snelschaak (alleen titels/1ste plaatsen)
   const titelsPerSpeler: Record<string, number> = {}
@@ -322,45 +434,67 @@ export default function ErelijstenPage() {
     .filter(([, aantal]) => aantal >= 2)
     .sort((a, b) => b[1] - a[1])
 
-  const meervoudigeWinnaarsSection = meervoudigeTitels.length > 0 ? (
-    <div className="mt-8">
-      <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
-        <Medal /> <span>Meervoudige Winnaars</span>
-      </h2>
-      <div className="overflow-auto">
-        <table className="min-w-full text-sm border border-gray-300">
-          <thead className="bg-neutral-100 text-left">
-            <tr>
-              <th className="p-2 border">Speler</th>
-              <th className="p-2 border">🥇 Titels</th>
-            </tr>
-          </thead>
-          <tbody>
-            {meervoudigeTitels.map(([speler, aantal]) => (
-              <tr key={speler} className="even:bg-neutral-50">
-                <td className="p-2 border">{createClickableName(speler)}</td>
-                <td className="p-2 border font-bold">{aantal}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  // Meervoudige winnaars: gedeelde sectie-look, twee mogelijke kolomsets
+  const meervoudigeWinnaarsHeading = (
+    <h2 className="text-sm font-bold mb-1.5 flex items-center space-x-2 text-gray-800">
+      <Medal size={16} className="text-mainAccent" /> <span>Meervoudige Winnaars</span>
+    </h2>
+  )
+
+  const meervoudigeTitelsSection = meervoudigeTitels.length > 0 ? (
+    <div className="mt-3">
+      {meervoudigeWinnaarsHeading}
+      <ErelijstTable
+        columns={[
+          { header: "Speler", emphasize: true, width: "70%", render: ([speler]: [string, number]) => createClickableName(speler) },
+          { header: "🥇 Titels", align: 'center', render: ([, aantal]: [string, number]) => <span className="font-bold">{aantal}</span> },
+        ]}
+        rows={meervoudigeTitels}
+        keyFn={([speler]) => speler}
+      />
     </div>
   ) : null
 
+  const meervoudigeGoudZilverBronsSection = spelersGesorteerd.length > 0 ? (
+    <div className="mt-3">
+      {meervoudigeWinnaarsHeading}
+      <ErelijstTable
+        columns={[
+          { header: "Speler", emphasize: true, width: "35%", render: ([speler]: [string, PrijzenTelling]) => createClickableName(speler) },
+          { header: "🥇", align: 'center', render: ([, t]: [string, PrijzenTelling]) => t.goud },
+          { header: "🥈", align: 'center', render: ([, t]: [string, PrijzenTelling]) => t.zilver },
+          { header: "🥉", align: 'center', render: ([, t]: [string, PrijzenTelling]) => t.brons },
+          { header: "🏅", align: 'center', render: ([, t]: [string, PrijzenTelling]) => t.ratingprijs },
+          { header: "Totaal", align: 'center', render: ([, t]: [string, PrijzenTelling]) => <span className="font-bold">{t.goud + t.zilver + t.brons + t.ratingprijs}</span> },
+        ]}
+        rows={spelersGesorteerd}
+        keyFn={([speler]) => speler}
+      />
+    </div>
+  ) : null
+
+  const isEmpty =
+    currentFormat === 'simple' || currentFormat === 'zomer' ? results.length === 0
+      : currentFormat === 'quiz' ? quizResults.length === 0
+      : currentFormat === 'konijn' ? konijnResults.length === 0
+      : currentFormat === 'megalijst' ? megalijstResults.length === 0
+      : currentFormat === 'ranking' ? rankingResults.length === 0
+      : currentFormat === 'records' ? recordResults.length === 0
+      : klasseResults.length === 0
+
   return (
-    <main className="container mx-auto px-4 py-6">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold mb-2 flex items-center justify-center space-x-2 text-gray-800">
-          <Trophy className="text-yellow-500" size={24} /> 
+    <main className="container mx-auto px-3 py-4">
+      <div className="text-center mb-3">
+        <h1 className="text-xl font-bold mb-1 flex items-center justify-center space-x-2 text-gray-800">
+          <Trophy className="text-yellow-500" size={20} />
           <span>Erelijsten</span>
-      </h1>
-        <p className="text-gray-600 text-sm">Ontdek de geschiedenis van onze toernooien</p>
+        </h1>
+        <p className="text-gray-600 text-xs">Ontdek de geschiedenis van onze toernooien</p>
       </div>
 
-      <div className="mb-6">
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <label htmlFor="tournament-select" className="block text-sm font-semibold text-gray-800 mb-2">
+      <div className="mb-4">
+        <div className="bg-white rounded-lg shadow-md p-3 border border-gray-200">
+          <label htmlFor="tournament-select" className="block text-xs font-semibold text-gray-800 mb-2">
             🏆 Selecteer een toernooi
           </label>
           <div className="flex gap-2 items-center">
@@ -368,7 +502,7 @@ export default function ErelijstenPage() {
               id="tournament-select"
               value={selectedTournament}
               onChange={(e) => setSelectedTournament(e.target.value)}
-              className="flex-1 max-w-sm px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-mainAccent focus:border-mainAccent text-sm bg-white"
+              className="flex-1 max-w-sm px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-mainAccent focus:border-mainAccent text-xs bg-white"
             >
               <option value="">Kies een toernooi om te bekijken...</option>
               {EXCEL_FILES.map((tournament) => (
@@ -383,310 +517,150 @@ export default function ErelijstenPage() {
 
       {selectedTournament && (
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-3">
-            <h2 className="text-lg font-bold text-white flex items-center space-x-2">
-              <Crown className="text-yellow-300" size={20} /> 
+          <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
+            <h2 className="text-base font-bold text-white flex items-center space-x-2">
+              <Crown className="text-yellow-300" size={18} />
               <span>{selectedTournament}</span>
             </h2>
           </div>
-          
-          <div className="p-4">
+
+          <div className="p-3">
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-mainAccent"></div>
-                  <div className="text-sm text-gray-600">Laden...</div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-mainAccent"></div>
+                  <div className="text-xs text-gray-600">Laden...</div>
                 </div>
               </div>
-            ) : (currentFormat === 'simple' || currentFormat === 'zomer' ? results.length === 0 : currentFormat === 'quiz' ? quizResults.length === 0 : currentFormat === 'konijn' ? konijnResults.length === 0 : currentFormat === 'megalijst' ? megalijstResults.length === 0 : currentFormat === 'ranking' ? rankingResults.length === 0 : currentFormat === 'records' ? recordResults.length === 0 : klasseResults.length === 0) ? (
+            ) : isEmpty ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-center">
-                  <Trophy className="mx-auto text-gray-400 mb-2" size={32} />
-                  <div className="text-sm text-gray-500">Geen data gevonden voor dit toernooi</div>
+                  <Trophy className="mx-auto text-gray-400 mb-2" size={28} />
+                  <div className="text-xs text-gray-500">Geen data gevonden voor dit toernooi</div>
                 </div>
               </div>
-          ) : currentFormat === 'quiz' ? (
-            // Render quiz format
-            <div className="overflow-auto">
-              <table className="min-w-full text-xs">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <tr>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Jaar</th>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🏆 Ploeg</th>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">👥 Leden</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {quizResults.map((r, index) => (
-                    <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.ploeg || "-"}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{r.leden || "-"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : currentFormat === 'konijn' ? (
-            // Render konijn format
-            <div className="overflow-auto">
-              <table className="min-w-full text-xs">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <tr>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Jaar</th>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🏆 Winnaar</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {konijnResults.map((r, index) => (
-                    <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.winnaar || "-")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : currentFormat === 'megalijst' ? (
-            // Render megalijst format
-            <div className="overflow-auto">
-              <table className="min-w-full text-xs">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <tr>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Jaar</th>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🥇 Eerste Plaats</th>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🥈 Tweede Plaats</th>
-                    <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🥉 Derde Plaats</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {megalijstResults.map((r, index) => (
-                    <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-")}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : currentFormat === 'ranking' ? (
-            // Render ranking format per klasse
-            <div className="space-y-8">
-              {['Eerste Klasse', 'Tweede Klasse', 'Derde Klasse', 'Vierde Klasse', 'Vijfde Klasse'].map((klasseNaam, klasseIndex) => (
-                <div key={klasseNaam} className="border border-gray-300 rounded-lg overflow-hidden">
-                  <div className="bg-neutral-100 px-4 py-2 border-b border-gray-300">
-                    <h3 className="text-lg font-semibold">{klasseNaam}</h3>
-                  </div>
-                  <div className="overflow-auto">
-                    <table className="min-w-full text-xs">
-                      <thead className="bg-gray-50 text-left">
-                        <tr>
-                          <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Speler</th>
-                          <th className="p-2 border text-center">🥇 1ste Plaats</th>
-                          <th className="p-2 border text-center">🥈 2de Plaats</th>
-                          <th className="p-2 border text-center">🥉 3de Plaats</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {rankingResults
-                          .filter(r => r.klasses[klasseIndex].eerste > 0) // Only show players with at least 1 gold
-                          .sort((a, b) => {
-                            const aData = a.klasses[klasseIndex]
-                            const bData = b.klasses[klasseIndex]
-                            
-                            // Sort by goud (eerste) first, then zilver (tweede), then brons (derde)
-                            if (bData.eerste !== aData.eerste) {
-                              return bData.eerste - aData.eerste // Most gold first
-                            }
-                            if (bData.tweede !== aData.tweede) {
-                              return bData.tweede - aData.tweede // Most silver second
-                            }
-                            return bData.derde - aData.derde // Most bronze third
-                          })
-                          .map((r, index) => {
-                            const klasseData = r.klasses[klasseIndex]
-                            return (
-                              <tr key={index} className="even:bg-neutral-50">
-                                <td className="p-2 border font-medium">{createClickableName(r.speler)}</td>
-                                <td className="p-2 border text-center">
-                                  <span className="text-green-600 font-semibold">{klasseData.eerste}</span>
-                                </td>
-                                <td className="p-2 border text-center">
-                                  <span className="text-gray-600 font-semibold">{klasseData.tweede}</span>
-                                </td>
-                                <td className="p-2 border text-center">
-                                  <span className="text-orange-600 font-semibold">{klasseData.derde}</span>
-                                </td>
-                              </tr>
-                            )
-                          })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : currentFormat === 'records' ? (
-            // Render records format
-            <div className="space-y-4">
-              {recordResults.map((record, index) => (
-                <div key={index} className="border border-gray-300 rounded-lg overflow-hidden">
-                  <div className="bg-neutral-100 px-3 py-2 border-b border-gray-300">
-                    <h3 className="text-xs font-semibold">{record.titel}</h3>
-                  </div>
-                  <div className="overflow-auto">
-                    <table className="min-w-full text-xs">
-                      <thead className="bg-gray-50 text-left">
-                        <tr>
-                          <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Jaar</th>
-                          <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🏆 Winnaar</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {record.entries
-                          .sort((a, b) => a.jaar - b.jaar) // Sort by year (oldest first)
-                          .map((entry, entryIndex) => (
-                            <tr key={entryIndex} className="even:bg-neutral-50">
-                              <td className="p-2 border font-medium">{entry.jaar}</td>
-                                <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(entry.winnaar)}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : currentFormat === 'klasses' ? (
-            // Render klasses format with correct data
-            <>
-            <div className="space-y-8">
-              {klasseResults.map((yearData, yearIndex) => (
-                <div key={yearData.jaar} className="border border-gray-300 rounded-lg overflow-hidden">
-                  <div className="bg-neutral-100 px-4 py-2 border-b border-gray-300">
-                    <h3 className="text-lg font-bold">{yearData.jaar}</h3>
-                  </div>
-                  <div className="overflow-auto">
-                    <table className="min-w-full text-xs">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="p-3 border-r border-gray-300 text-left">Klasse</th>
-                          <th className="p-3 border-r border-gray-300 text-center">🥇 1e plaats</th>
-                          <th className="p-3 border-r border-gray-300 text-center">🥈 2e plaats</th>
-                          <th className="p-3 text-center">🥉 3e plaats</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {yearData.klasses.map((klasse, klasseIndex) => (
-                          <tr key={klasseIndex} className={klasseIndex % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                            <td className="p-3 border-r border-gray-300 font-medium">{klasse.klasse}</td>
-                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.eerste || "-")}</td>
-                            <td className="p-3 border-r border-gray-300 text-center">{createClickableName(klasse.tweede || "-")}</td>
-                            <td className="p-3 text-center">{createClickableName(klasse.derde || "-")}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {meervoudigeWinnaarsSection}
-            </>
-          ) : currentFormat === 'zomer' ? (
-            // Render zomer format (only winners)
-            <>
-              <div className="overflow-auto">
-                <table className="min-w-full text-xs">
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <tr>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">Jaar</th>
-                      <th className="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-200">🏆 Winnaar</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {results.map((r, index) => (
-                      <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                        <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                        <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {meervoudigeWinnaarsSection}
-            </>
-          ) : (
-            // Render simple format
-            <>
-      <div className="overflow-auto mb-12">
-        <table className="min-w-full text-sm border border-gray-300">
-          <thead className="bg-neutral-100 text-left">
-            <tr>
-              <th className="p-2 border">Jaar</th>
-              <th className="p-2 border">🥇 1e plaats</th>
-              <th className="p-2 border">🥈 2e plaats</th>
-              <th className="p-2 border">🥉 3e plaats</th>
-              <th className="p-2 border">🏅 Ratingprijs</th>
-            </tr>
-          </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {results.map((r, index) => (
-                    <tr key={r.jaar} className={index % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-mainAccent/10 transition-colors"}>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">{r.jaar}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.eerste || "-")}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.tweede || "-")}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.derde || "-")}</td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-700">{createClickableName(r.ratingprijs || "-")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-              {spelersGesorteerd.filter(([_, telling]) => (telling.goud + telling.zilver + telling.brons) >= 2).length > 0 && (
-                <>
-      <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
-        <Medal /> <span>Meervoudige Winnaars</span>
-      </h2>
-      <div className="overflow-auto">
-        <table className="min-w-full text-sm border border-gray-300">
-          <thead className="bg-neutral-100 text-left">
-            <tr>
-              <th className="p-2 border">Speler</th>
-              <th className="p-2 border">🥇 Goud</th>
-              <th className="p-2 border">🥈 Zilver</th>
-              <th className="p-2 border">🥉 Brons</th>
-              <th className="p-2 border">🏅 Ratingprijs</th>
-              <th className="p-2 border">Totaal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {spelersGesorteerd
-                .filter(([_, telling]) =>
-                (telling.goud + telling.zilver + telling.brons) >= 2
-                )
-                .map(([speler, telling]) => (
-                <tr key={speler} className="even:bg-neutral-50">
-                    <td className="p-2 border">{createClickableName(speler)}</td>
-                    <td className="p-2 border">{telling.goud}</td>
-                    <td className="p-2 border">{telling.zilver}</td>
-                    <td className="p-2 border">{telling.brons}</td>
-                    <td className="p-2 border">{telling.ratingprijs}</td>
-                    <td className="p-2 border font-bold">
-                    {telling.goud + telling.zilver + telling.brons + telling.ratingprijs}
-                    </td>
-                </tr>
+            ) : currentFormat === 'quiz' ? (
+              <ErelijstTable
+                columns={[
+                  colYear,
+                  { header: "🏆 Ploeg", render: (r: QuizResult) => r.ploeg || "-" },
+                  { header: "👥 Leden", render: (r: QuizResult) => r.leden || "-" },
+                ]}
+                rows={quizResults}
+                keyFn={(r) => r.jaar}
+              />
+            ) : currentFormat === 'konijn' ? (
+              <ErelijstTable
+                columns={[
+                  colYear,
+                  { header: "🏆 Winnaar", render: (r: KonijnResult) => createClickableName(r.winnaar || "-") },
+                ]}
+                rows={konijnResults}
+                keyFn={(r) => r.jaar}
+              />
+            ) : currentFormat === 'megalijst' ? (
+              <ErelijstTable
+                columns={[
+                  colYear,
+                  colGoud<Result>((r) => r.eerste),
+                  colZilver<Result>((r) => r.tweede),
+                  colBrons<Result>((r) => r.derde),
+                ]}
+                rows={megalijstResults}
+                keyFn={(r) => r.jaar}
+              />
+            ) : currentFormat === 'ranking' ? (
+              <ErelijstSectionList>
+                {['Eerste Klasse', 'Tweede Klasse', 'Derde Klasse', 'Vierde Klasse', 'Vijfde Klasse'].map((klasseNaam, klasseIndex) => {
+                  const klasseRows = rankingResults
+                    .filter(r => r.klasses[klasseIndex].eerste > 0)
+                    .sort((a, b) => {
+                      const aData = a.klasses[klasseIndex]
+                      const bData = b.klasses[klasseIndex]
+                      if (bData.eerste !== aData.eerste) return bData.eerste - aData.eerste
+                      if (bData.tweede !== aData.tweede) return bData.tweede - aData.tweede
+                      return bData.derde - aData.derde
+                    })
+                  return (
+                    <ErelijstSection key={klasseNaam} title={klasseNaam}>
+                      <ErelijstTable
+                        columns={[
+                          { header: "Speler", emphasize: true, width: "40%", render: (r: RankingResult) => createClickableName(r.speler) },
+                          { header: "🥇", align: 'center', render: (r: RankingResult) => <span className="text-green-600 font-semibold">{r.klasses[klasseIndex].eerste}</span> },
+                          { header: "🥈", align: 'center', render: (r: RankingResult) => <span className="text-gray-600 font-semibold">{r.klasses[klasseIndex].tweede}</span> },
+                          { header: "🥉", align: 'center', render: (r: RankingResult) => <span className="text-orange-600 font-semibold">{r.klasses[klasseIndex].derde}</span> },
+                        ]}
+                        rows={klasseRows}
+                        keyFn={(r) => r.speler}
+                      />
+                    </ErelijstSection>
+                  )
+                })}
+              </ErelijstSectionList>
+            ) : currentFormat === 'records' ? (
+              <ErelijstSectionList>
+                {recordResults.map((record, index) => (
+                  <ErelijstSection key={index} title={record.titel}>
+                    <ErelijstTable
+                      columns={[
+                        colYear,
+                        { header: "🏆 Winnaar", render: (e: { jaar: number; winnaar: string }) => createClickableName(e.winnaar) },
+                      ]}
+                      rows={[...record.entries].sort((a, b) => a.jaar - b.jaar)}
+                      keyFn={(e, i) => `${e.jaar}-${i}`}
+                    />
+                  </ErelijstSection>
                 ))}
-           </tbody>
-        </table>
-      </div>
-                </>
-              )}
-            </>
-          )}
+              </ErelijstSectionList>
+            ) : currentFormat === 'klasses' ? (
+              <>
+                <ErelijstSectionList>
+                  {klasseResults.map((yearData) => (
+                    <ErelijstSection key={yearData.jaar} title={yearData.jaar}>
+                      <ErelijstTable
+                        columns={[
+                          { header: "Klasse", emphasize: true, width: "32%", render: (k: KlasseResult['klasses'][number]) => k.klasse },
+                          colGoud<KlasseResult['klasses'][number]>((k) => k.eerste),
+                          colZilver<KlasseResult['klasses'][number]>((k) => k.tweede),
+                          colBrons<KlasseResult['klasses'][number]>((k) => k.derde),
+                        ]}
+                        rows={yearData.klasses}
+                        keyFn={(k) => k.klasse}
+                      />
+                    </ErelijstSection>
+                  ))}
+                </ErelijstSectionList>
+                {meervoudigeTitelsSection}
+              </>
+            ) : currentFormat === 'zomer' ? (
+              <>
+                <ErelijstTable
+                  columns={[
+                    colYear,
+                    { header: "🏆 Winnaar", render: (r: Result) => createClickableName(r.eerste || "-") },
+                  ]}
+                  rows={results}
+                  keyFn={(r) => r.jaar}
+                />
+                {meervoudigeTitelsSection}
+              </>
+            ) : (
+              // simple format
+              <>
+                <ErelijstTable
+                  columns={[
+                    colYear,
+                    colGoud<Result>((r) => r.eerste),
+                    colZilver<Result>((r) => r.tweede),
+                    colBrons<Result>((r) => r.derde),
+                    { header: "🏅", render: (r: Result) => createClickableName(r.ratingprijs || "-") },
+                  ]}
+                  rows={results}
+                  keyFn={(r) => r.jaar}
+                />
+                {meervoudigeGoudZilverBronsSection}
+              </>
+            )}
           </div>
         </div>
       )}
