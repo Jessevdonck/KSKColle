@@ -215,7 +215,7 @@ export default function RapidtoernooiPage() {
               <CardContent className="pt-2">
                 <div className="space-y-2 text-sm">
                   <a
-                    href="https://forms.gle/7Endas7tkuxnnmcr07"
+                    href="https://forms.gle/7EDaG679rabcmqmD7"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-mainAccent hover:underline block flex items-center gap-1"
