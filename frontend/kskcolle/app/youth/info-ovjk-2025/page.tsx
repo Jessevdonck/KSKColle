@@ -8,8 +8,15 @@ import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink
 import Image from "next/image"
 import OVJKParticipants from "../info/components/OVJKParticipants"
 
+const GOOGLE_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform"
+
 export default function InfoOVJK2025Page() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  // Browsers don't render <iframe> children as a visible fallback (unlike <img>/<object>),
+  // so we track load-failure in state and render the fallback as a sibling instead - keeping
+  // the iframe childless avoids a React hydration mismatch.
+  const [formFailed, setFormFailed] = useState(false)
 
   const sponsors = [
     { src: "/images/sponsoring/Sponsor6.png", alt: "Sponsor 6" },
@@ -24,7 +31,6 @@ export default function InfoOVJK2025Page() {
 
   const flyers = [
     { src: "/images/Ovjk/flyer-ovjk-2026.png", alt: "Flyer Oost-Vlaams Jeugdkampioenschap 2026" },
-    { src: "/images/Ovjk/flyer-rapid-volwassenen-24-okt-2026.png", alt: "Flyer rapidtoernooi volwassenen 24 oktober 2026" }
   ]
 
   return (
@@ -42,7 +48,7 @@ export default function InfoOVJK2025Page() {
 
         {/* Flyers */}
         <div className="mb-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 gap-2 max-w-sm mx-auto">
             {flyers.map((flyer) => (
               <button
                 key={flyer.src}
@@ -409,13 +415,8 @@ export default function InfoOVJK2025Page() {
               </CardHeader>
               <CardContent className="pt-2">
                 <div className="space-y-2">
-                  <div className="space-y-2 text-sm">
-                    <p className="font-semibold">Inschrijven via het inschrijvingsformulier onderaan deze pagina</p>
-                    <a 
-                    >
-                    </a>
-                  </div>
-                  
+                  <p className="text-sm font-semibold">Inschrijven via het inschrijvingsformulier onderaan deze pagina</p>
+
                   <div className="bg-orange-50 border-l-4 border-orange-400 p-2 rounded">
                     <p className="text-sm font-semibold text-orange-800">
                       Inschrijving ten laatste de dag voor de start van de 1e ronde om 20:00
@@ -599,45 +600,45 @@ export default function InfoOVJK2025Page() {
             </CardHeader>
             <CardContent className="pt-2">
               <div className="bg-gray-50 p-3 rounded-lg">
-                <iframe
-                  src="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform?embedded=true"
-                  width="100%"
-                  height={800}
-                  frameBorder="0"
-                  marginHeight={0}
-                  marginWidth={0}
-                  className="rounded-lg"
-                  title="OVJK 2025 Inschrijvingsformulier"
-                  onError={() => {
-                    console.log('Google Form failed to load');
-                  }}
-                >
-                  <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                {formFailed ? (
+                  <div className="flex flex-col items-center justify-center h-[800px] text-center p-8">
                     <p className="text-gray-600 mb-4">
                       Het inschrijvingsformulier kon niet worden geladen.
                     </p>
-                    <a 
-                      href="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform" 
-                      target="_blank" 
+                    <a
+                      href={GOOGLE_FORM_URL}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="bg-mainAccent hover:bg-mainAccentDark text-white px-6 py-3 rounded-lg font-semibold transition-colors"
                     >
                       Open formulier in nieuw venster
                     </a>
                   </div>
-                </iframe>
+                ) : (
+                  <iframe
+                    src={`${GOOGLE_FORM_URL}?embedded=true`}
+                    width="100%"
+                    height={800}
+                    frameBorder="0"
+                    marginHeight={0}
+                    marginWidth={0}
+                    className="rounded-lg"
+                    title="OVJK 2025 Inschrijvingsformulier"
+                    onError={() => setFormFailed(true)}
+                  />
+                )}
               </div>
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-600 mb-2">
                   Als het formulier hierboven niet werkt, gebruik dan deze link:
                 </p>
-                <a 
-                  href="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform" 
-                  target="_blank" 
+                <a
+                  href={GOOGLE_FORM_URL}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-mainAccent hover:underline font-medium"
                 >
-                  https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform
+                  {GOOGLE_FORM_URL}
                 </a>
               </div>
             </CardContent>
