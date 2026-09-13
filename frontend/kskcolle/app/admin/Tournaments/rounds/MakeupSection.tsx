@@ -116,7 +116,7 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
       case "0-1":
         return <CheckCircle className="h-4 w-4 text-green-500" />
       case "1/2-1/2":
-        return <Minus className="h-4 w-4 text-orange-500" />
+        return <Minus className="h-4 w-4 text-yellow-500" />
       case "1-0FF":
       case "0-1FF":
         return <XCircle className="h-4 w-4 text-red-500" />
@@ -132,7 +132,7 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
 
   const getResultColor = (result: string | null, uitgestelde_datum?: Date | null) => {
     if (uitgestelde_datum) {
-      return "bg-orange-100 text-orange-800 border-orange-200"
+      return "bg-yellow-100 text-yellow-800 border-yellow-200"
     }
     const r = normalizedResultForDisplay(result, uitgestelde_datum)
     switch (r) {
@@ -155,11 +155,11 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
   }
 
   return (
-    <div className="bg-orange-50 rounded-lg border border-orange-200 overflow-hidden">
-      <div className="bg-orange-200 px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2">
+    <div className="bg-yellow-50 rounded-lg border border-yellow-200 overflow-hidden">
+      <div className="bg-yellow-200 px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-bold text-orange-800 flex items-center gap-1.5">
-            <div className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+          <h3 className="text-base font-bold text-yellow-800 flex items-center gap-1.5">
+            <div className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
               I
             </div>
             {makeup.label ?? format(new Date(makeup.date), "dd-MM-yyyy")}
@@ -174,11 +174,11 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
                 value={date}
                 onChange={handleDateChange}
                 disabled={savingMakeup || savingEvent}
-                className="bg-white/10 border-orange-300/50 text-orange-800 placeholder:text-orange-700/70 focus:bg-white/20 focus:border-orange-400 focus:ring-orange-300/20 min-w-[140px] backdrop-blur-sm"
+                className="bg-white/10 border-yellow-300/50 text-yellow-800 placeholder:text-yellow-700/70 focus:bg-white/20 focus:border-yellow-400 focus:ring-yellow-300/20 min-w-[140px] backdrop-blur-sm"
               />
               {(savingMakeup || savingEvent) && (
                 <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-700/70" />
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-700/70" />
                 </div>
               )}
             </div>
@@ -190,13 +190,13 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
                 value={startuur}
                 onChange={handleStartuurChange}
                 disabled={savingMakeup || savingEvent}
-                className="bg-white/10 border-orange-300/50 text-orange-800 placeholder:text-orange-700/70 focus:bg-white/20 focus:border-orange-400 focus:ring-orange-300/20 min-w-[120px] backdrop-blur-sm"
+                className="bg-white/10 border-yellow-300/50 text-yellow-800 placeholder:text-yellow-700/70 focus:bg-white/20 focus:border-yellow-400 focus:ring-yellow-300/20 min-w-[120px] backdrop-blur-sm"
               />
             </div>
           </div>
         </div>
 
-        <p className="text-orange-700 flex items-center gap-2">
+        <p className="text-yellow-700 flex items-center gap-2">
           <Calendar className="h-4 w-4" />
           {format(new Date(makeup.date), "dd-MM-yyyy")}
         </p>
@@ -205,18 +205,18 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
       <div className="p-4">
         {games.length === 0 ? (
           <div className="text-center py-6">
-            <div className="bg-orange-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
-              <Clock className="h-6 w-6 text-orange-500" />
+            <div className="bg-yellow-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+              <Clock className="h-6 w-6 text-yellow-500" />
             </div>
-            <h4 className="text-sm font-semibold text-orange-700 mb-1.5">Geen uitgestelde partijen</h4>
-            <p className="text-orange-600 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
+            <h4 className="text-sm font-semibold text-yellow-700 mb-1.5">Geen uitgestelde partijen</h4>
+            <p className="text-yellow-600 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {games.map((game) => (
               <div
                 key={game.game_id}
-                className="bg-white rounded-lg p-3 border border-orange-200 hover:border-orange-300 transition-colors"
+                className="bg-white rounded-lg p-3 border border-yellow-200 hover:border-yellow-300 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   {/* Players */}
@@ -225,7 +225,7 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
                       href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
                       className="group flex items-center gap-3 hover:text-mainAccent transition-colors"
                     >
-                      <div className="w-8 h-8 bg-white border-2 border-orange-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
+                      <div className="w-8 h-8 bg-white border-2 border-yellow-300 rounded-full flex items-center justify-center text-xs font-bold group-hover:border-mainAccent transition-colors">
                         W
                       </div>
                       <span className="font-medium text-gray-800 group-hover:text-mainAccent transition-colors">
@@ -233,7 +233,7 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
                       </span>
                     </Link>
 
-                    <ChevronRight className="h-4 w-4 text-orange-400" />
+                    <ChevronRight className="h-4 w-4 text-yellow-400" />
 
                     <div className="flex items-center gap-3">
                       {game.speler2 ? (
@@ -250,10 +250,10 @@ export default function MakeupSection({ makeup, rounds, tournamentId, onUpdate }
                         </Link>
                       ) : (
                         <>
-                          <div className="w-8 h-8 bg-orange-200 border-2 border-orange-300 rounded-full flex items-center justify-center text-xs">
+                          <div className="w-8 h-8 bg-yellow-200 border-2 border-yellow-300 rounded-full flex items-center justify-center text-xs">
                             -
                           </div>
-                          <span className="text-orange-600 italic">Bye</span>
+                          <span className="text-yellow-600 italic">Bye</span>
                         </>
                       )}
                     </div>

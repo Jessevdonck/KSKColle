@@ -203,7 +203,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   </td>
                   {tournament?.is_youth !== true && (
                     <td className="px-1 py-0.5 text-center w-[60px]">
-                      <span className="text-sm font-normal text-orange-600">
+                      <span className="text-sm font-normal text-yellow-600">
                         {game.speler1.schaakrating_elo}
                       </span>
                     </td>
@@ -246,7 +246,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   {tournament?.is_youth !== true && (
                     <td className="px-1 py-0.5 text-center w-[60px]">
                       {game.speler2 ? (
-                        <span className="text-sm font-normal text-orange-600">
+                        <span className="text-sm font-normal text-yellow-600">
                           {game.speler2.schaakrating_elo}
                         </span>
                       ) : (
@@ -326,7 +326,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     </Link>
                     <div className="flex items-center gap-4 mt-0.5 text-xs">
                       {tournament?.is_youth !== true && (
-                        <span className="font-normal text-orange-600">ELIO: {game.speler1.schaakrating_elo}</span>
+                        <span className="font-normal text-yellow-600">ELIO: {game.speler1.schaakrating_elo}</span>
                       )}
                       {playerScores.length > 0 && (
                         <span className="font-bold text-black">
@@ -363,7 +363,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     {game.speler2 && (
                       <div className="flex items-center gap-4 mt-0.5 text-xs">
                         {tournament?.is_youth !== true && (
-                          <span className="font-normal text-orange-600">ELIO: {game.speler2.schaakrating_elo}</span>
+                          <span className="font-normal text-yellow-600">ELIO: {game.speler2.schaakrating_elo}</span>
                         )}
                         {playerScores.length > 0 && (
                           <span className="font-bold text-black">

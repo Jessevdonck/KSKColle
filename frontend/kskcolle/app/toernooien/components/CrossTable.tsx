@@ -241,7 +241,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       >
                         <Link
                           href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
-                          className="hover:text-orange-200 transition-colors inline-block"
+                          className="hover:text-yellow-200 transition-colors inline-block"
                           title={`${player.voornaam} ${player.achternaam}`}
                         >
                           <span className="whitespace-nowrap">
@@ -420,7 +420,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       >
                         <Link
                           href={`/profile/${createUrlFriendlyName(player.voornaam, player.achternaam)}`}
-                          className="hover:text-orange-200 transition-colors inline-block"
+                          className="hover:text-yellow-200 transition-colors inline-block"
                           title={`${player.voornaam} ${player.achternaam}`}
                         >
                           <span className="whitespace-nowrap">

@@ -367,9 +367,9 @@ export default function RoundManagement({ tournament }: Props) {
               <div className="text-2xl font-bold text-purple-600">{T.participations.length}</div>
               <div className="text-sm text-purple-600">Deelnemers</div>
             </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">{T.rounds.filter(r => r.is_sevilla_imported).length}</div>
-              <div className="text-sm text-orange-600">Sevilla Rondes</div>
+            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+              <div className="text-2xl font-bold text-yellow-600">{T.rounds.filter(r => r.is_sevilla_imported).length}</div>
+              <div className="text-sm text-yellow-600">Sevilla Rondes</div>
             </div>
           </div>
         </div>
@@ -566,22 +566,22 @@ export default function RoundManagement({ tournament }: Props) {
             } else if (e.kind === "makeupRound") {
               // Render nieuwe makeup round als een speciale sectie
               return (
-                <div key={`mr${e.round.round_id}`} className="bg-orange-50 rounded-lg border border-orange-200 overflow-hidden">
-                  <div className="bg-orange-200 px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div key={`mr${e.round.round_id}`} className="bg-yellow-50 rounded-lg border border-yellow-200 overflow-hidden">
+                  <div className="bg-yellow-200 px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-xl font-bold text-orange-800 flex items-center gap-2">
-                        <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                      <h3 className="text-xl font-bold text-yellow-800 flex items-center gap-2">
+                        <div className="bg-yellow-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                           I
                         </div>
                         {e.round.label || `Inhaaldag na ronde ${e.round.ronde_nummer - 1}`}
                       </h3>
-                      <div className="text-orange-700 text-sm">
+                      <div className="text-yellow-700 text-sm">
                         {format(new Date(e.round.ronde_datum), 'dd/MM/yyyy')} om {e.round.startuur}
                       </div>
                     </div>
                   </div>
                   <div className="p-4">
-                    <div className="text-center py-4 text-orange-600 text-sm">
+                    <div className="text-center py-4 text-yellow-600 text-sm">
                       {e.round.games?.length || 0} games in deze inhaaldag
                     </div>
                   </div>
@@ -604,7 +604,7 @@ export default function RoundManagement({ tournament }: Props) {
             <div key={round.round_id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className={`px-4 py-2 ${
                 round.type === 'MAKEUP'
-                  ? 'bg-gradient-to-r from-orange-700 to-orange-800'
+                  ? 'bg-gradient-to-r from-yellow-700 to-yellow-800'
                   : round.is_sevilla_imported
                     ? 'bg-gradient-to-r from-mainAccent to-mainAccentDark'
                     : 'bg-gradient-to-r from-gray-500 to-gray-600'

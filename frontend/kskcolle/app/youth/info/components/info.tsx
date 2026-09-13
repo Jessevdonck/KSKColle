@@ -64,12 +64,12 @@ export default function YouthInfo() {
                 </div>
               </div>
 
-              <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
+              <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <Award className="h-4 w-4 text-orange-600" />
-                  <span className="font-semibold text-orange-800 text-sm">Wat mag je verwachten?</span>
+                  <Award className="h-4 w-4 text-yellow-600" />
+                  <span className="font-semibold text-yellow-800 text-sm">Wat mag je verwachten?</span>
                 </div>
-                <ul className="text-orange-700 space-y-1 text-sm list-disc pl-5">
+                <ul className="text-yellow-700 space-y-1 text-sm list-disc pl-5">
                   <li>Persoonlijke begeleiding voor alle niveaus: van absolute beginner tot gevorderde.</li>
                   <li>Gastlessen door ervaren schakers uit of buiten de club.</li>
                   <li>Speelkansen: doorlopende competitie, losse toernooien en vrije schaakavonden voor jeugdleden.</li>

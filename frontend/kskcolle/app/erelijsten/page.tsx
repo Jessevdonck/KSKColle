@@ -486,7 +486,7 @@ export default function ErelijstenPage() {
     <main className="container mx-auto px-3 py-4">
       <div className="text-center mb-3">
         <h1 className="text-xl font-bold mb-1 flex items-center justify-center space-x-2 text-gray-800">
-          <Trophy className="text-orange-500" size={20} />
+          <Trophy className="text-yellow-500" size={20} />
           <span>Erelijsten</span>
         </h1>
         <p className="text-gray-600 text-xs">Ontdek de geschiedenis van onze toernooien</p>
@@ -519,7 +519,7 @@ export default function ErelijstenPage() {
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-3 py-2">
             <h2 className="text-base font-bold text-white flex items-center space-x-2">
-              <Crown className="text-orange-300" size={18} />
+              <Crown className="text-yellow-300" size={18} />
               <span>{selectedTournament}</span>
             </h2>
           </div>
@@ -588,7 +588,7 @@ export default function ErelijstenPage() {
                           { header: "Speler", emphasize: true, width: "40%", render: (r: RankingResult) => createClickableName(r.speler) },
                           { header: "🥇", align: 'center', render: (r: RankingResult) => <span className="text-green-600 font-semibold">{r.klasses[klasseIndex].eerste}</span> },
                           { header: "🥈", align: 'center', render: (r: RankingResult) => <span className="text-gray-600 font-semibold">{r.klasses[klasseIndex].tweede}</span> },
-                          { header: "🥉", align: 'center', render: (r: RankingResult) => <span className="text-orange-600 font-semibold">{r.klasses[klasseIndex].derde}</span> },
+                          { header: "🥉", align: 'center', render: (r: RankingResult) => <span className="text-yellow-600 font-semibold">{r.klasses[klasseIndex].derde}</span> },
                         ]}
                         rows={klasseRows}
                         keyFn={(r) => r.speler}

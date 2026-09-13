@@ -132,7 +132,7 @@ export default function PresidentsTimeline() {
               className="flex gap-4 overflow-x-auto pb-3 scroll-smooth"
               style={{
                 scrollbarWidth: "thin",
-                scrollbarColor: "#f97316 #f1f1f1",
+                scrollbarColor: "#B17457 #f1f1f1",
               }}
             >
               {presidents.map((president, index) => (

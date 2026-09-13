@@ -19,8 +19,8 @@ const activities = [
     icon: Sun,
     title: "Zomerkampen",
     description: "In de zomer organiseert Schaakclub KSK Colle een zomerkamp schaken.",
-    color: "from-orange-500 to-orange-600",
-    bgColor: "from-orange-50 to-orange-100",
+    color: "from-yellow-500 to-yellow-600",
+    bgColor: "from-yellow-50 to-yellow-100",
   },
 ]
 

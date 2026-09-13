@@ -433,7 +433,7 @@ export default function LatestPuzzle() {
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 h-full flex flex-col">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-orange-500" />
+                  <Trophy className="h-5 w-5 text-yellow-500" />
                   Leaderboard
                 </h3>
               </div>
@@ -453,16 +453,16 @@ export default function LatestPuzzle() {
                     <div
                       key={entry.user_id}
                       className={`flex items-center gap-3 p-2 rounded-lg ${
-                        index === 0 ? 'bg-orange-50 border border-orange-200' :
+                        index === 0 ? 'bg-yellow-50 border border-yellow-200' :
                         index === 1 ? 'bg-gray-50 border border-gray-200' :
-                        index === 2 ? 'bg-orange-50/60 border border-orange-100' :
+                        index === 2 ? 'bg-yellow-50/60 border border-yellow-100' :
                         'hover:bg-gray-50'
                       }`}
                     >
                       <div className={`flex-shrink-0 w-8 flex items-center justify-center font-bold ${
-                        index === 0 ? 'text-orange-500' :
+                        index === 0 ? 'text-yellow-500' :
                         index === 1 ? 'text-gray-500' :
-                        index === 2 ? 'text-orange-800' :
+                        index === 2 ? 'text-yellow-800' :
                         'text-gray-500'
                       }`}>
                         {index < 3 ? <Medal className="h-4 w-4" /> : `#${entry.rank}`}

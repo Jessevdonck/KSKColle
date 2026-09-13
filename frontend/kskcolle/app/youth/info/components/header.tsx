@@ -16,11 +16,11 @@ export default function YouthHeader() {
             maat en met plezier leren schaken
           </p>
           <div className="mt-3 max-w-2xl mx-auto">
-            <div className="rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 shadow-sm">
-              <p className="text-sm text-orange-900 font-semibold">
+            <div className="rounded-lg border border-yellow-300 bg-yellow-50 px-3 py-2 shadow-sm">
+              <p className="text-sm text-yellow-900 font-semibold">
                 Inschrijven kan nu tot en met eind september 2026.
               </p>
-              <p className="mt-0.5 text-xs text-orange-900">
+              <p className="mt-0.5 text-xs text-yellow-900">
                 Inschrijven kan door een mail te sturen naar patrick.gillis3@telenet.be.
               </p>
             </div>

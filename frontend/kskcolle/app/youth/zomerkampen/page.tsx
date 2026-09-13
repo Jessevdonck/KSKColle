@@ -146,23 +146,23 @@ export default function ZomerkampenPage() {
                   </div>
                 </div>
 
-                <div className="bg-orange-50 border-l-4 border-orange-400 p-3 rounded">
-                  <p className="font-semibold text-orange-800 mb-1.5 text-sm">Meer info vind je hier:</p>
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                  <p className="font-semibold text-yellow-800 mb-1.5 text-sm">Meer info vind je hier:</p>
                   <div className="space-y-1.5">
                     <div className="flex items-center">
-                      <Phone className="mr-2 text-orange-700" size={14} />
+                      <Phone className="mr-2 text-yellow-700" size={14} />
                       <a
                         href="tel:037783750"
-                        className="text-orange-700 hover:underline font-medium text-sm"
+                        className="text-yellow-700 hover:underline font-medium text-sm"
                       >
                         03 778 37 50
                       </a>
                     </div>
                     <div className="flex items-center">
-                      <Mail className="mr-2 text-orange-700" size={14} />
+                      <Mail className="mr-2 text-yellow-700" size={14} />
                       <a
                         href="mailto:sportkampen@sint-niklaas.be"
-                        className="text-orange-700 hover:underline font-medium text-sm"
+                        className="text-yellow-700 hover:underline font-medium text-sm"
                       >
                         sportkampen@sint-niklaas.be
                       </a>

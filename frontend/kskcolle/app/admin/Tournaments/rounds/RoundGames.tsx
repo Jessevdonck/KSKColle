@@ -98,7 +98,7 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
       case "0-1":
         return <CheckCircle className="h-3 w-3 text-green-500" />
       case "1/2-1/2":
-        return <Minus className="h-3 w-3 text-orange-500" />
+        return <Minus className="h-3 w-3 text-yellow-500" />
       case "1-0FF":
       case "0-1FF":
         return <XCircle className="h-3 w-3 text-red-500" />
@@ -115,7 +115,7 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
 
   const getResultColor = (result: string | null, uitgestelde_datum?: Date | null) => {
     if (uitgestelde_datum) {
-      return "bg-orange-100 text-orange-800 border-orange-200"
+      return "bg-yellow-100 text-yellow-800 border-yellow-200"
     }
     const r = normalizedResultForDisplay(result, uitgestelde_datum)
     switch (r) {
@@ -158,7 +158,7 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
           key={game.game_id}
           className={`border rounded-lg p-3 transition-colors ${
             game.uitgestelde_datum 
-              ? 'border-orange-200 bg-orange-50 hover:border-orange-300' 
+              ? 'border-yellow-200 bg-yellow-50 hover:border-yellow-300' 
               : 'border-neutral-200 hover:border-mainAccent/30'
           }`}
         >
@@ -168,7 +168,7 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               {/* Postponed indicator */}
               {game.uitgestelde_datum && (
-                <div className="flex items-center gap-1 text-orange-600 text-xs font-medium">
+                <div className="flex items-center gap-1 text-yellow-600 text-xs font-medium">
                   <Clock className="h-3 w-3" />
                   <span>Uitgesteld</span>
                 </div>
@@ -242,7 +242,7 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
                   size="sm"
                   variant="outline"
                   onClick={() => setPostponing(game.game_id)}
-                  className="border-orange-200 text-orange-600 hover:bg-orange-50 w-full sm:w-auto text-sm bg-transparent"
+                  className="border-yellow-200 text-yellow-600 hover:bg-yellow-50 w-full sm:w-auto text-sm bg-transparent"
                 >
                   <Clock className="h-3 w-3 mr-2 sm:mr-0" />
                   <span className="sm:hidden">Uitstellen</span>
@@ -252,7 +252,7 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
               {/* Postponed game info */}
               {game.uitgestelde_datum && (
                 <div className="flex items-center gap-2">
-                  <div className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                  <div className="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded">
                     Uitgesteld naar {new Date(game.uitgestelde_datum).toLocaleDateString('nl-NL')}
                   </div>
                   <Button
@@ -287,8 +287,8 @@ export default function RoundGames({ games, makeupRounds = [], participations, r
 
           {/* Postpone Selection */}
           {postponing === game.game_id && (
-            <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-              <h4 className="font-medium text-orange-800 mb-2 flex items-center gap-2 text-sm">
+            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <h4 className="font-medium text-yellow-800 mb-2 flex items-center gap-2 text-sm">
                 <Clock className="h-3 w-3" />
                 Partij uitstellen
               </h4>

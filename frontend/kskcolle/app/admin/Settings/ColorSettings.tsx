@@ -16,9 +16,9 @@ interface ColorSettings {
 }
 
 const DEFAULT_COLORS: ColorSettings = {
-  mainAccent: '#f97316',
-  mainAccentDark: '#ea580c',
-  selectionColor: '#f97316',
+  mainAccent: '#deb71d',
+  mainAccentDark: '#d4ae17',
+  selectionColor: '#deb71d',
   selectionTextColor: '#FAF7F0'
 }
 
@@ -123,7 +123,7 @@ export default function ColorSettings() {
                   value={colors.mainAccent}
                   onChange={(e) => handleColorChange('mainAccent', e.target.value)}
                   className="font-mono text-sm h-9"
-                  placeholder="#f97316"
+                  placeholder="#deb71d"
                 />
               </div>
               <div
@@ -156,7 +156,7 @@ export default function ColorSettings() {
                   value={colors.mainAccentDark}
                   onChange={(e) => handleColorChange('mainAccentDark', e.target.value)}
                   className="font-mono text-sm h-9"
-                  placeholder="#ea580c"
+                  placeholder="#d4ae17"
                 />
               </div>
               <div
@@ -190,7 +190,7 @@ export default function ColorSettings() {
                     value={colors.selectionColor}
                     onChange={(e) => handleColorChange('selectionColor', e.target.value)}
                     className="font-mono text-sm h-9"
-                    placeholder="#f97316"
+                    placeholder="#deb71d"
                   />
                 </div>
                 <div
@@ -301,8 +301,8 @@ export default function ColorSettings() {
           </div>
 
           {hasChanges && (
-            <div className="p-2.5 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-sm text-orange-800">
+            <div className="p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
                 <strong>Onopgeslagen wijzigingen:</strong> Vergeet niet om je wijzigingen op te slaan.
               </p>
             </div>

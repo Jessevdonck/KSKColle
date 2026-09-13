@@ -86,7 +86,7 @@ export default function PlayerTable({
     return (
       <span
         title={`Viert dit jaar ${player.jubileum_jaren} jaar lidmaatschap van KSK Colle`}
-        className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm shrink-0"
+        className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm shrink-0"
       >
         <Award className="h-3 w-3" />
         {player.jubileum_jaren} jaar
@@ -185,7 +185,7 @@ export default function PlayerTable({
                   </td>
                   <td className="p-2.5" data-cy="rating_max">
                     <div className="flex items-center gap-2">
-                      <Award className="h-3 w-3 text-orange-500" />
+                      <Award className="h-3 w-3 text-yellow-500" />
                       <span className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</span>
                     </div>
                   </td>
@@ -242,7 +242,7 @@ export default function PlayerTable({
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <Award className="h-3 w-3 text-orange-500" />
+                      <Award className="h-3 w-3 text-yellow-500" />
                       <span className="text-gray-500">Max</span>
                     </div>
                     <div className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</div>

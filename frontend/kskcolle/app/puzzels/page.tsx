@@ -28,8 +28,8 @@ function AnalogClock({ solveTimeMs }: { solveTimeMs: number }) {
   const secondAngle = seconds * 6
 
   // Use CSS variables for mainAccent colors
-  const mainAccentColor = '#f97316'
-  const mainAccentDarkColor = '#ea580c'
+  const mainAccentColor = '#deb71d'
+  const mainAccentDarkColor = '#d4ae17'
 
   return (
     <div className="relative w-40 h-40 mx-auto">

@@ -106,7 +106,7 @@ export function TeamDetailView({ teamDetails }: { teamDetails: any }) {
                           playerData.player.voornaam,
                           playerData.player.achternaam,
                         ) && (
-                          <span className="text-[10px] text-orange-700 ml-1">
+                          <span className="text-[10px] text-yellow-700 ml-1">
                             (vervangen)
                           </span>
                         )}{" "}

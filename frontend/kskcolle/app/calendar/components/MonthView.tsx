@@ -44,7 +44,7 @@ export default function MonthView({ year, month, events, onSelectDate, selectedD
       case "oost-vlaamse interclub":
         return "bg-purple-500"
       case "vergadering":
-        return "bg-orange-500"
+        return "bg-yellow-500"
       default:
         return "bg-mainAccent"
     }

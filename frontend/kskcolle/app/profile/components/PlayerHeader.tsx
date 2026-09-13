@@ -20,7 +20,7 @@ export default function PlayerHeader({ player }: { player: User }) {
   const jubileum = player.jubileum_dit_jaar ? player.jubileum_jaren ?? null : null
 
   return (
-    <div className={jubileum ? "bg-gradient-to-r from-orange-50 to-orange-100 p-5 border-b-2 border-orange-300" : "bg-gray-50 p-5"}>
+    <div className={jubileum ? "bg-gradient-to-r from-yellow-50 to-yellow-100 p-5 border-b-2 border-yellow-300" : "bg-gray-50 p-5"}>
       <div className="max-w-7xl mx-auto">
         <div className="md:flex items-center justify-between">
           <div className="flex items-center mb-3 md:mb-0">
@@ -33,7 +33,7 @@ export default function PlayerHeader({ player }: { player: User }) {
                   size="md"
                 />
               ) : (
-                <div className={`h-24 w-24 rounded-full overflow-hidden border-4 bg-gray-200 ${jubileum ? "border-orange-400" : "border-mainAccent"}`}>
+                <div className={`h-24 w-24 rounded-full overflow-hidden border-4 bg-gray-200 ${jubileum ? "border-yellow-400" : "border-mainAccent"}`}>
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
@@ -58,7 +58,7 @@ export default function PlayerHeader({ player }: { player: User }) {
               <div className="uppercase tracking-wide text-xs text-mainAccent font-semibold">Speler Profiel</div>
               <h1 className="mt-0.5 text-2xl font-bold text-textColor">{`${player.voornaam} ${player.achternaam}`}</h1>
               {jubileum && (
-                <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 px-2.5 py-1 text-xs font-semibold text-white shadow">
+                <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 px-2.5 py-1 text-xs font-semibold text-white shadow">
                   <Award className="h-3.5 w-3.5" />
                   Viert dit jaar {jubileum} jaar lidmaatschap
                 </div>

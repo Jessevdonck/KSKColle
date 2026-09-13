@@ -29,11 +29,11 @@ interface PalmaresItem {
 const positionDisplay = (positie: number): { icon: ReactNode; label: string } => {
   switch (positie) {
     case 1:
-      return { icon: <Medal className="h-4 w-4 text-orange-500" />, label: "Winnaar" }
+      return { icon: <Medal className="h-4 w-4 text-yellow-500" />, label: "Winnaar" }
     case 2:
       return { icon: <Medal className="h-4 w-4 text-gray-400" />, label: "Tweede plaats" }
     case 3:
-      return { icon: <Medal className="h-4 w-4 text-orange-800" />, label: "Derde plaats" }
+      return { icon: <Medal className="h-4 w-4 text-yellow-800" />, label: "Derde plaats" }
     case 4:
       return { icon: <Award className="h-4 w-4 text-mainAccent" />, label: "Ratingprijs" }
     default:
@@ -129,7 +129,7 @@ export default function Palmares({
         <div className="flex items-center gap-2.5 text-xs font-medium text-gray-700">
           {telling.goud > 0 && (
             <span className="flex items-center gap-1">
-              <Medal className="h-3.5 w-3.5 text-orange-500" /> {telling.goud}
+              <Medal className="h-3.5 w-3.5 text-yellow-500" /> {telling.goud}
             </span>
           )}
           {telling.zilver > 0 && (
@@ -139,7 +139,7 @@ export default function Palmares({
           )}
           {telling.brons > 0 && (
             <span className="flex items-center gap-1">
-              <Medal className="h-3.5 w-3.5 text-orange-800" /> {telling.brons}
+              <Medal className="h-3.5 w-3.5 text-yellow-800" /> {telling.brons}
             </span>
           )}
           {telling.rating > 0 && (

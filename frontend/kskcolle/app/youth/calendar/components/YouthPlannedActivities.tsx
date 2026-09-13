@@ -30,8 +30,8 @@ const YouthPlannedActivities = () => {
 
   // Available steps for youth
   const stepsCategories = [
-    { value: "Stap 1", label: "Stap 1", color: "bg-orange-50 text-orange-600 border-orange-200" },
-    { value: "Stap 2", label: "Stap 2", color: "bg-orange-100 text-orange-800 border-orange-300" },
+    { value: "Stap 1", label: "Stap 1", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
+    { value: "Stap 2", label: "Stap 2", color: "bg-yellow-100 text-yellow-800 border-yellow-300" },
     { value: "Stap 3+4", label: "Stap 3+4", color: "bg-red-100 text-red-800 border-red-200" }
   ]
 
@@ -104,8 +104,8 @@ const YouthPlannedActivities = () => {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      "Stap 1": "bg-orange-50 text-orange-600 border-orange-200",
-      "Stap 2": "bg-orange-100 text-orange-800 border-orange-300",
+      "Stap 1": "bg-yellow-50 text-yellow-600 border-yellow-200",
+      "Stap 2": "bg-yellow-100 text-yellow-800 border-yellow-300",
       "Stap 3+4": "bg-red-100 text-red-800 border-red-200",
     }
     return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800 border-gray-200"

@@ -257,22 +257,22 @@ export default function MegaschaakTab({ tournamentId, tournamentName, megaschaak
                   key={team.team_id}
                   className={`flex items-center justify-between p-4 rounded-lg border-2 ${
                     index === 0
-                      ? 'bg-orange-50 border-orange-300'
+                      ? 'bg-yellow-50 border-yellow-300'
                       : index === 1
                       ? 'bg-gray-50 border-gray-300'
                       : index === 2
-                      ? 'bg-orange-50/60 border-orange-200'
+                      ? 'bg-yellow-50/60 border-yellow-200'
                       : 'bg-white border-gray-200'
                   }`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
                       index === 0
-                        ? 'bg-orange-500'
+                        ? 'bg-yellow-500'
                         : index === 1
                         ? 'bg-gray-400'
                         : index === 2
-                        ? 'bg-orange-800'
+                        ? 'bg-yellow-800'
                         : 'bg-gray-300'
                     }`}>
                       {index + 1}

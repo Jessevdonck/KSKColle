@@ -267,16 +267,16 @@ const AdminPage = () => {
                     onClick={() => goToTabIfAllowed("calendar")}
                     className="group relative overflow-hidden rounded-lg border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-md text-left md:col-span-2 lg:col-span-1"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 to-yellow-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative p-4 text-center">
-                      <div className="inline-flex p-2.5 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 mb-2 group-hover:scale-110 transition-transform duration-300">
+                      <div className="inline-flex p-2.5 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 mb-2 group-hover:scale-110 transition-transform duration-300">
                         <CalendarDays className="w-5 h-5 text-white" />
                       </div>
                       <h3 className="text-base font-semibold text-textColor mb-1 group-hover:text-mainAccent transition-colors">
                         Komende Evenementen
                       </h3>
                       <p className="text-sm text-gray-600 mb-2">Activiteiten gepland na vandaag</p>
-                      <p className="text-xl font-bold text-orange-800">
+                      <p className="text-xl font-bold text-yellow-800">
                         {upcomingEventsCount}
                       </p>
                     </div>

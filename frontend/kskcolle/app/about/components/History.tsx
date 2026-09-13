@@ -36,12 +36,12 @@ const History = () => {
                   normaal lijken, maar in die dagen lag dat enigszins anders. Schaakkringen werden enkel door deftige
                   oudere heren bezocht.
                 </p>
-                <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 my-3">
+                <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200 my-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="h-4 w-4 text-orange-600" />
-                    <span className="font-semibold text-orange-800 text-sm">Belangrijke prestaties</span>
+                    <Trophy className="h-4 w-4 text-yellow-600" />
+                    <span className="font-semibold text-yellow-800 text-sm">Belangrijke prestaties</span>
                   </div>
-                  <ul className="text-orange-700 space-y-1 text-xs">
+                  <ul className="text-yellow-700 space-y-1 text-xs">
                     <li>• Op zijn twintigste: kampioen van Gent</li>
                     <li>• 1922: kampioen van België (op 25-jarige leeftijd)</li>
                     <li>• 1923: derde in Scheveningen (6/9, na Euwe en Maroczy)</li>

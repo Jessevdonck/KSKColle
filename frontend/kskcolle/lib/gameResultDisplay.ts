@@ -52,7 +52,7 @@ export function hasConcretePairingResult(
 const BADGE_PLAYED =
   "bg-green-100 text-green-800 border border-green-200"
 const BADGE_POSTPONED =
-  "bg-orange-100 text-orange-800 border border-orange-200"
+  "bg-yellow-100 text-yellow-800 border border-yellow-200"
 const BADGE_OPEN = "bg-gray-100 text-gray-600 border border-gray-200"
 
 export function isDoubleForfeitResult(

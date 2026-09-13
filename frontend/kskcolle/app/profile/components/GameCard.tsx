@@ -128,7 +128,7 @@ function getResultColor(result: string): string {
     case 'Nog te spelen':
       return 'text-blue-600'
     case 'Uitgesteld':
-      return 'text-orange-600'
+      return 'text-yellow-600'
     default:
       return 'text-muted-foreground'
   }
