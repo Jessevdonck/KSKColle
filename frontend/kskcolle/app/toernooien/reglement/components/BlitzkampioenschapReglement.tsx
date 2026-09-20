@@ -49,7 +49,7 @@ export default function BlitzkampioenschapReglement() {
         <ol className="space-y-2 text-gray-700">
           <li>1. Behaalde punten</li>
           <li>2. Sonneborn-Berger punten</li>
-          <li>3. Onderling Resultaat</li>          
+          <li>3. Onderling resultaat</li>          
           <li>4. Indien hierdoor alsnog geen kampioen kan worden bepaald, dan wordt de kampioenstitel gedeeld.</li>
         </ol>
 

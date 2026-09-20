@@ -16,7 +16,7 @@ export default function ZomertoernooiReglement() {
         <h3 className="text-xl font-semibold text-gray-800 mb-3">Reglementen</h3>
         <ul className="space-y-2 text-gray-700">
           <li>• De partijen worden gespeeld volgens de FIDE reglementen.</li>
-          <li>• Partijen tussen bondsleden worden niet doorgegeven voor ELO verwerking.</li>
+          <li>• Partijen tussen bondsleden worden niet doorgegeven voor FIDEO ELO verwerking.</li>
           <li>• KSK Colle staat toe dat spelers elektronische communicatiemiddelen (GSM) op zich dragen tijdens partijen die onder haar bevoegdheid worden georganiseerd. Misbruik zal worden bestraft door de scheidsrechter met de sancties conform de FIDE regels.</li>
           <li>• Het noteren van de zetten is niet verplicht tijdens het zomertoernooi.</li>
         </ul>

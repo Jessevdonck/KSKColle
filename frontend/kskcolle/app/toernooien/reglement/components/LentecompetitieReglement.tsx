@@ -5,7 +5,7 @@ export default function LentecompetitieReglement() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">REGLEMENT LENTECOMPETIE</h2>
         <div className="space-y-4 text-gray-700">
           <p>
-            De Lentecompetitie 2024 is een gesloten competitie per afdeling en start op donderdag 18 januari. Aantal afdelingen en speeldagen is afhankelijk van het aantal deelnemende spelers. Dit wordt vastgelegd in een tabel onderaan dit reglement.
+            De Lentecompetitie is een gesloten competitie per afdeling en start op de tweede donderdag van januari. Het aantal afdelingen en speeldagen is afhankelijk van het aantal deelnemende spelers. Dit wordt vastgelegd in een tabel onderaan dit reglement.
           </p>
         </div>
       </section>
@@ -53,7 +53,7 @@ export default function LentecompetitieReglement() {
 
         <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">Aantal afdelingen</h3>
         <p className="text-gray-700">
-          We streven naar 10 tot 11 partijen per afdeling. Er wordt een enkele of dubbele ronde gespeeld volgens een vaste kalender. De winnaars van elke afdeling worden als kampioen beschouwd.
+          We streven naar 9 tot 11 partijen per afdeling. Er wordt een enkele ronde gespeeld volgens een vaste kalender. De winnaars van elke afdeling worden als kampioen beschouwd.
         </p>
 
         <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">Kalender</h3>
@@ -63,7 +63,7 @@ export default function LentecompetitieReglement() {
 
         <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">Rating</h3>
         <p className="text-gray-700">
-          Partijen tussen bondsleden worden doorgegeven voor ELO-verwerking.
+          Partijen tussen bondsleden worden doorgegeven voor FIDEO-ELO verwerking.
         </p>
 
         <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">Algemeen forfait</h3>
@@ -80,7 +80,7 @@ export default function LentecompetitieReglement() {
         <ol className="space-y-2 text-gray-700">
           <li>1. Behaalde punten</li>
           <li>2. Sonneborn-Berger Kwadraat punten (*)</li>
-          <li>3. Resultaat van de onderlinge partij(en) in de afdeling</li>
+          <li>3. Resultaat van de onderlinge partij in de afdeling</li>
           <li>4. Indien hierdoor alsnog geen kampioen kan worden bepaald, dan wordt de kampioenstitel gedeeld.</li>
         </ol>
 
@@ -94,7 +94,7 @@ export default function LentecompetitieReglement() {
 
         <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">Uitstellen</h3>
         <p className="text-gray-700">
-          Wie wil uitstellen, dient zelf zijn tegenstander te verwittigen, ten laatste om 18.00u van de voorziene speeldag. Beiden moeten zo snel mogelijk een nieuwe datum afspreken.
+          Wie wil uitstellen, dient zelf zijn tegenstander en de toernooileider te verwittigen, ten laatste om 18.00u van de voorziene speeldag. Beiden moeten zo snel mogelijk een nieuwe datum afspreken. Wanneer ingelogd op de website kunnen de contactgegevens van jouw tegenstander teruggevonden worden door op zijn of haar naam te klikken.
         </p>
       </section>
 
