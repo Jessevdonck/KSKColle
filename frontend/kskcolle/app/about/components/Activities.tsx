@@ -4,7 +4,7 @@ const activities = [
   {
     icon: Trophy,
     title: "Competities",
-    description: "We organiseren het hele jaar door competities tussen clubleden!",
+    description: "We organiseren het hele jaar door competities en neveactiviteiten tussen clubleden!",
     color: "from-blue-500 to-blue-600",
     bgColor: "from-blue-50 to-blue-100",
   },

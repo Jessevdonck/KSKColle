@@ -5,7 +5,7 @@ export default function BlitzkampioenschapReglement() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">REGLEMENT Blitzkampioenschap</h2>
         <div className="space-y-4 text-gray-700">
           <p>
-            Het blitzkampioenschap 2024 is een gesloten competitie per afdeling en vindt plaats in mei. Deelnemers worden ingedeeld volgens de klasse waarin ze de voorafgaande lentecompetitie hebben afgewerkt.
+            Het blitzkampioenschap is een gesloten competitie per afdeling en vindt plaats in mei. Deelnemers worden ingedeeld volgens de klasse waarin ze de voorafgaande lentecompetitie hebben afgewerkt of volgens sterkte.
           </p>
         </div>
       </section>
@@ -23,7 +23,7 @@ export default function BlitzkampioenschapReglement() {
         <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">Speelduur der partijen</h3>
         <ul className="space-y-2 text-gray-700">
           <li>• De partijen vangen aan om 20.00u.</li>
-          <li>• Het speeltempo bedraagt 5 minuten per persoon zonder increment.</li>
+          <li>• Het speeltempo bedraagt 3 minuten per persoon met 2 seconden increment.</li>
         </ul>
 
         <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">Roken in de speelzaal</h3>
@@ -49,7 +49,8 @@ export default function BlitzkampioenschapReglement() {
         <ol className="space-y-2 text-gray-700">
           <li>1. Behaalde punten</li>
           <li>2. Sonneborn-Berger punten</li>
-          <li>3. Indien hierdoor alsnog geen kampioen kan worden bepaald, dan wordt de kampioenstitel gedeeld.</li>
+          <li>3. Onderling Resultaat</li>          
+          <li>4. Indien hierdoor alsnog geen kampioen kan worden bepaald, dan wordt de kampioenstitel gedeeld.</li>
         </ol>
 
         <p className="text-gray-700 mt-4">
@@ -60,7 +61,7 @@ export default function BlitzkampioenschapReglement() {
       <section>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">3. De toernooileiding</h2>
         
-        <h3 className="text-xl font-semibold text-gray-800 mb-3">Toernooiorganisator : Patrick Gillis</h3>
+        <h3 className="text-xl font-semibold text-gray-800 mb-3">Toernooiorganisator : Wim Weyers</h3>
         <p className="text-gray-700">
           De toernooiorganisator maakt de paringen en roept deze af tijdens het toernooi.
         </p>
