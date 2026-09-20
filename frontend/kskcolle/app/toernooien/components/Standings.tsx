@@ -103,7 +103,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
       case 2:
         return <Medal className="h-4 w-4 text-gray-400" />
       case 3:
-        return <Medal className="h-4 w-4 text-amber-600" />
+        return <Medal className="h-4 w-4 text-yellow-600" />
       default:
         return <span className="text-xs font-bold text-gray-600 w-4 text-center">{position}</span>
     }
@@ -117,7 +117,7 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
       case 2:
         return `${base} bg-gradient-to-br from-gray-300 to-gray-400 text-white shadow-sm`
       case 3:
-        return `${base} bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm`
+        return `${base} bg-gradient-to-br from-yellow-500 to-yellow-600 text-white shadow-sm`
       default:
         return `${base} bg-gradient-to-br from-neutral-100 to-neutral-200 text-gray-700`
     }
@@ -257,9 +257,9 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
   }
 
   const getResultColor = (score: number, result?: string | null) => {
-    if (result === 'uitgesteld') return "text-orange-600 bg-orange-50"
+    if (result === 'uitgesteld') return "text-yellow-600 bg-yellow-50"
     if (score === 1) return "text-green-600 bg-green-50"
-    if (score === 0.5) return "text-yellow-600 bg-yellow-50"
+    if (score === 0.5) return "text-blue-600 bg-blue-50"
     if (score === 0) return "text-red-600 bg-red-50"
     return "text-gray-600 bg-gray-50"
   }
@@ -739,10 +739,10 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
       return b.tieBreak - a.tieBreak
     }
 
-    // Vierde criterium: Rating (LAAG naar HOOG - lagere rating = beter)
+    // Vierde criterium: Rating (HOOG naar LAAG - hogere rating = beter)
     const ratingA = a.schaakrating_elo || 0
     const ratingB = b.schaakrating_elo || 0
-    return ratingA - ratingB
+    return ratingB - ratingA
   })
 
   return players

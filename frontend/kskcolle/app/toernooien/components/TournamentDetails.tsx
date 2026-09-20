@@ -688,7 +688,7 @@ export default function TournamentDetails() {
                       />
                     )
                   ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6">
                       <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-500">Geen rondes beschikbaar</p>
                     </div>
@@ -789,7 +789,7 @@ export default function TournamentDetails() {
                       />
                     )
                   ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6">
                       <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-500">Geen rondes beschikbaar</p>
                     </div>
@@ -936,7 +936,7 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
       </div>
 
       {(games?.length ?? 0) === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-6">
           <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
             <Calendar className="h-8 w-8 text-mainAccent" />
           </div>

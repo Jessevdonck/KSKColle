@@ -58,7 +58,7 @@ export default function GeneratePasswordButton({ userId, userName, onSuccess }: 
         disabled={loading}
         variant="outline"
         size="sm"
-        className="text-orange-600 border-orange-200 hover:bg-orange-50"
+        className="text-yellow-600 border-yellow-200 hover:bg-yellow-50"
         data-cy={`generate-password-button-${userId}`}
       >
         {loading ? (

@@ -8,8 +8,15 @@ import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink
 import Image from "next/image"
 import OVJKParticipants from "../info/components/OVJKParticipants"
 
+const GOOGLE_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform"
+
 export default function InfoOVJK2025Page() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  // Browsers don't render <iframe> children as a visible fallback (unlike <img>/<object>),
+  // so we track load-failure in state and render the fallback as a sibling instead - keeping
+  // the iframe childless avoids a React hydration mismatch.
+  const [formFailed, setFormFailed] = useState(false)
 
   const sponsors = [
     { src: "/images/sponsoring/Sponsor6.png", alt: "Sponsor 6" },
@@ -24,17 +31,16 @@ export default function InfoOVJK2025Page() {
 
   const flyers = [
     { src: "/images/Ovjk/flyer-ovjk-2026.png", alt: "Flyer Oost-Vlaams Jeugdkampioenschap 2026" },
-    { src: "/images/Ovjk/flyer-rapid-volwassenen-24-okt-2026.png", alt: "Flyer rapidtoernooi volwassenen 24 oktober 2026" }
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+      <div className="container mx-auto px-4 py-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Oost-Vlaams Jeugdkampioenschap</h1>
-          <div className="bg-mainAccent/10 border border-mainAccent/20 rounded-lg p-4">
-            <p className="text-lg font-semibold text-mainAccent">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-textColor mb-2">Oost-Vlaams Jeugdkampioenschap</h1>
+          <div className="bg-mainAccent/10 border border-mainAccent/20 rounded-lg p-3">
+            <p className="text-sm font-semibold text-mainAccent">
               SELECTIETORNOOI VOOR HET VLAAMS KAMPIOENSCHAP 2027
             </p>
           </div>
@@ -42,7 +48,7 @@ export default function InfoOVJK2025Page() {
 
         {/* Flyers */}
         <div className="mb-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 gap-2 max-w-sm mx-auto">
             {flyers.map((flyer) => (
               <button
                 key={flyer.src}
@@ -126,13 +132,13 @@ export default function InfoOVJK2025Page() {
                   href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00035491-%7Bbd543f46-4663-4b77-b9e9-eda3adce9cbb%7D.html" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-2 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded hover:from-orange-100 hover:to-orange-200 transition-all group"
+                  className="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded hover:from-yellow-100 hover:to-yellow-200 transition-all group"
                 >
                   <div className="flex items-center space-x-1">
-                    <Trophy className="text-orange-700" size={16} />
+                    <Trophy className="text-yellow-700" size={16} />
                     <span className="font-semibold text-sm text-gray-800">Groep E & F</span>
                   </div>
-                  <ExternalLink className="text-orange-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
+                  <ExternalLink className="text-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
                 </a>
               </div>
             </CardContent>
@@ -409,13 +415,8 @@ export default function InfoOVJK2025Page() {
               </CardHeader>
               <CardContent className="pt-2">
                 <div className="space-y-2">
-                  <div className="space-y-2 text-sm">
-                    <p className="font-semibold">Inschrijven via het inschrijvingsformulier onderaan deze pagina</p>
-                    <a 
-                    >
-                    </a>
-                  </div>
-                  
+                  <p className="text-sm font-semibold">Inschrijven via het inschrijvingsformulier onderaan deze pagina</p>
+
                   <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 rounded">
                     <p className="text-sm font-semibold text-yellow-800">
                       Inschrijving ten laatste de dag voor de start van de 1e ronde om 20:00
@@ -584,12 +585,12 @@ export default function InfoOVJK2025Page() {
         </div>
 
         {/* Participants List */}
-        <div className="mt-12">
+        <div className="mt-5">
           <OVJKParticipants />
         </div>
 
         {/* Google Form */}
-        <div className="mt-12">
+        <div className="mt-5">
           <Card className="border-mainAccent/20 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-mainAccent text-base">
@@ -599,45 +600,45 @@ export default function InfoOVJK2025Page() {
             </CardHeader>
             <CardContent className="pt-2">
               <div className="bg-gray-50 p-3 rounded-lg">
-                <iframe
-                  src="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform?embedded=true"
-                  width="100%"
-                  height={800}
-                  frameBorder="0"
-                  marginHeight={0}
-                  marginWidth={0}
-                  className="rounded-lg"
-                  title="OVJK 2025 Inschrijvingsformulier"
-                  onError={() => {
-                    console.log('Google Form failed to load');
-                  }}
-                >
-                  <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                {formFailed ? (
+                  <div className="flex flex-col items-center justify-center h-[800px] text-center p-8">
                     <p className="text-gray-600 mb-4">
                       Het inschrijvingsformulier kon niet worden geladen.
                     </p>
-                    <a 
-                      href="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform" 
-                      target="_blank" 
+                    <a
+                      href={GOOGLE_FORM_URL}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="bg-mainAccent hover:bg-mainAccentDark text-white px-6 py-3 rounded-lg font-semibold transition-colors"
                     >
                       Open formulier in nieuw venster
                     </a>
                   </div>
-                </iframe>
+                ) : (
+                  <iframe
+                    src={`${GOOGLE_FORM_URL}?embedded=true`}
+                    width="100%"
+                    height={800}
+                    frameBorder="0"
+                    marginHeight={0}
+                    marginWidth={0}
+                    className="rounded-lg"
+                    title="OVJK 2025 Inschrijvingsformulier"
+                    onError={() => setFormFailed(true)}
+                  />
+                )}
               </div>
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-600 mb-2">
                   Als het formulier hierboven niet werkt, gebruik dan deze link:
                 </p>
-                <a 
-                  href="https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform" 
-                  target="_blank" 
+                <a
+                  href={GOOGLE_FORM_URL}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-mainAccent hover:underline font-medium"
                 >
-                  https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform
+                  {GOOGLE_FORM_URL}
                 </a>
               </div>
             </CardContent>
@@ -645,7 +646,7 @@ export default function InfoOVJK2025Page() {
         </div>
 
         {/* Sponsors */}
-        <div className="mt-12">
+        <div className="mt-5">
           <Card className="border-mainAccent/20 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-mainAccent text-base">
@@ -653,7 +654,7 @@ export default function InfoOVJK2025Page() {
                 Onze Sponsors
               </CardTitle>
             </CardHeader>
-            <CardContent className="py-8">
+            <CardContent className="py-4">
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 items-center justify-items-center">
                 {sponsors.map((sponsor, index) => (
                   <div 

@@ -3,7 +3,7 @@ import useSWR from "swr"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { getAll } from "../api/index"
-import { Camera, Loader2 } from "lucide-react"
+import { Camera, Loader2, AlertTriangle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 const AlbumCard = ({ album, priority = false }: { album: { id: string; name: string }; priority?: boolean }) => {
@@ -114,11 +114,9 @@ const AlbumCard = ({ album, priority = false }: { album: { id: string; name: str
             )}
           </div>
 
-          <div className="p-6">
-            <div className="flex items-center space-x-2 mb-2">
-              <h2 className="text-xl font-semibold text-textColor">{album.name}</h2>
-            </div>
-            <p className="text-gray-600">Klik om foto&apos;s te bekijken</p>
+          <div className="p-4">
+            <h2 className="text-base font-semibold text-textColor mb-1">{album.name}</h2>
+            <p className="text-gray-600 text-sm">Klik om foto&apos;s te bekijken</p>
           </div>
         </CardContent>
       </Card>
@@ -131,11 +129,11 @@ export default function PhotosPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Fout bij laden albums</h2>
-          <p className="text-gray-600">{error.message}</p>
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <AlertTriangle className="h-9 w-9 text-red-500 mx-auto mb-2" />
+          <h2 className="text-xl font-bold text-red-600 mb-2">Fout bij laden albums</h2>
+          <p className="text-gray-600 text-sm">{error.message}</p>
         </div>
       </div>
     )
@@ -143,41 +141,41 @@ export default function PhotosPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="animate-spin text-mainAccent mx-auto mb-4" size={48} />
-          <p className="text-gray-600">Albums laden...</p>
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-mainAccent mx-auto mb-3"></div>
+          <p className="text-gray-600 text-sm">Albums laden...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <Camera className="text-mainAccent" size={40} />
-              <h1 className="text-4xl font-bold text-textColor">Albums</h1>
-            </div>
-            <p className="text-xl text-gray-600">Bekijk onze fotocollectie georganiseerd per album</p>
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+      <div className="bg-white shadow-sm border-b border-neutral-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 text-center">
+          <div className="bg-mainAccent/10 p-2 rounded-lg inline-flex mb-2">
+            <Camera className="text-mainAccent" size={24} />
           </div>
-
-          {albums.length === 0 ? (
-            <div className="text-center py-12">
-              <Camera className="text-gray-400 mx-auto mb-4" size={64} />
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">Geen albums gevonden</h3>
-              <p className="text-gray-500">Er zijn momenteel geen foto albums beschikbaar.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {albums.map((album: { id: string; name: string }, index: number) => (
-                <AlbumCard key={album.id} album={album} priority={index < 2} />
-              ))}
-            </div>
-          )}
+          <h1 className="text-2xl font-bold text-textColor mb-1.5">Albums</h1>
+          <p className="text-sm text-gray-600">Bekijk onze fotocollectie georganiseerd per album</p>
         </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        {albums.length === 0 ? (
+          <div className="text-center py-6">
+            <Camera className="text-gray-400 mx-auto mb-2" size={40} />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">Geen albums gevonden</h3>
+            <p className="text-gray-500 text-sm">Er zijn momenteel geen foto albums beschikbaar.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {albums.map((album: { id: string; name: string }, index: number) => (
+              <AlbumCard key={album.id} album={album} priority={index < 2} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

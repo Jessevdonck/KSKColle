@@ -309,9 +309,9 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Personal Information */}
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200 flex flex-col gap-y-3">
-          <h3 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-            <UserIcon className="h-3 w-3" />
+        <div className="bg-white rounded-lg p-3 border border-neutral-200">
+          <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+            <UserIcon className="h-3.5 w-3.5" />
             Persoonlijke Gegevens
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -353,107 +353,101 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
               <Input {...register("lid_sinds")} id="lid_sinds" type="date" className="mt-1 text-sm" />
               {errors.lid_sinds && <p className="text-red-500 text-xs mt-1">{errors.lid_sinds.message}</p>}
             </div>
-
-            
-          </div>
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-        <h3 className="text-base font-semibold text-blue-800 mb-3 flex items-center gap-2">
-          <MapPin className="h-4 w-4" />
-          Adresgegevens
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div>
-            <Label htmlFor="adres_straat" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <MapPin className="h-3 w-3" />
-              Straat
-            </Label>
-            <Input
-              {...register("adres_straat", validationRules.adres_straat)}
-              id="adres_straat"
-              placeholder="Straatnaam"
-              data-cy="adres_straat"
-              className="mt-1 text-sm"
-            />
-            {errors.adres_straat && <p className="text-red-500 text-xs mt-1">{errors.adres_straat.message}</p>}
-          </div>
-          <div>
-            <Label htmlFor="adres_nummer" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Hash className="h-3 w-3" />
-              Nummer
-            </Label>
-            <Input
-              {...register("adres_nummer", validationRules.adres_nummer)}
-              id="adres_nummer"
-              placeholder="Huisnummer"
-              data-cy="adres_nummer"
-              className="mt-1 text-sm"
-            />
-            {errors.adres_nummer && <p className="text-red-500 text-xs mt-1">{errors.adres_nummer.message}</p>}
-          </div>
-          <div>
-            <Label htmlFor="adres_bus" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Mailbox className="h-3 w-3" />
-              Bus
-            </Label>
-            <Input
-              {...register("adres_bus")}
-              id="adres_bus"
-              placeholder="Bus"
-              data-cy="adres_bus"
-              className="mt-1 text-sm"
-            />
-            {errors.adres_bus && <p className="text-red-500 text-xs mt-1">{errors.adres_bus.message}</p>}
-          </div>
-          <div>
-            <Label htmlFor="adres_postcode" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Hash className="h-3 w-3" />
-              Postcode
-            </Label>
-            <Input
-              {...register("adres_postcode", validationRules.adres_postcode)}
-              id="adres_postcode"
-              placeholder="Postcode"
-              data-cy="adres_postcode"
-              className="mt-1 text-sm"
-            />
-            {errors.adres_postcode && <p className="text-red-500 text-xs mt-1">{errors.adres_postcode.message}</p>}
-          </div>
-          <div>
-            <Label htmlFor="adres_gemeente" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <LandPlot className="h-3 w-3" />
-              Gemeente
-            </Label>
-            <Input
-              {...register("adres_gemeente", validationRules.adres_gemeente)}
-              id="adres_gemeente"
-              placeholder="Gemeente"
-              data-cy="adres_gemeente"
-              className="mt-1 text-sm"
-            />
-            {errors.adres_gemeente && <p className="text-red-500 text-xs mt-1">{errors.adres_gemeente.message}</p>}
-          </div>
-          <div>
-            <Label htmlFor="adres_land" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <Globe className="h-3 w-3" />
-              Land
-            </Label>
-            <Input
-              {...register("adres_land", validationRules.adres_land)}
-              id="adres_land"
-              placeholder="Land"
-              data-cy="adres_land"
-              className="mt-1 text-sm"
-            />
-            {errors.adres_land && <p className="text-red-500 text-xs mt-1">{errors.adres_land.message}</p>}
           </div>
         </div>
-      </div>
+
+        {/* Address Information */}
+        <div className="bg-white rounded-lg p-3 border border-neutral-200">
+          <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+            <MapPin className="h-3.5 w-3.5" />
+            Adresgegevens
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="adres_straat" className="text-xs font-medium text-gray-700">
+                Straat
+              </Label>
+              <Input
+                {...register("adres_straat", validationRules.adres_straat)}
+                id="adres_straat"
+                placeholder="Straatnaam"
+                data-cy="adres_straat"
+                className="mt-1 text-sm"
+              />
+              {errors.adres_straat && <p className="text-red-500 text-xs mt-1">{errors.adres_straat.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="adres_nummer" className="text-xs font-medium text-gray-700">
+                Nummer
+              </Label>
+              <Input
+                {...register("adres_nummer", validationRules.adres_nummer)}
+                id="adres_nummer"
+                placeholder="Huisnummer"
+                data-cy="adres_nummer"
+                className="mt-1 text-sm"
+              />
+              {errors.adres_nummer && <p className="text-red-500 text-xs mt-1">{errors.adres_nummer.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="adres_bus" className="text-xs font-medium text-gray-700">
+                Bus
+              </Label>
+              <Input
+                {...register("adres_bus")}
+                id="adres_bus"
+                placeholder="Bus"
+                data-cy="adres_bus"
+                className="mt-1 text-sm"
+              />
+              {errors.adres_bus && <p className="text-red-500 text-xs mt-1">{errors.adres_bus.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="adres_postcode" className="text-xs font-medium text-gray-700">
+                Postcode
+              </Label>
+              <Input
+                {...register("adres_postcode", validationRules.adres_postcode)}
+                id="adres_postcode"
+                placeholder="Postcode"
+                data-cy="adres_postcode"
+                className="mt-1 text-sm"
+              />
+              {errors.adres_postcode && <p className="text-red-500 text-xs mt-1">{errors.adres_postcode.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="adres_gemeente" className="text-xs font-medium text-gray-700">
+                Gemeente
+              </Label>
+              <Input
+                {...register("adres_gemeente", validationRules.adres_gemeente)}
+                id="adres_gemeente"
+                placeholder="Gemeente"
+                data-cy="adres_gemeente"
+                className="mt-1 text-sm"
+              />
+              {errors.adres_gemeente && <p className="text-red-500 text-xs mt-1">{errors.adres_gemeente.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="adres_land" className="text-xs font-medium text-gray-700">
+                Land
+              </Label>
+              <Input
+                {...register("adres_land", validationRules.adres_land)}
+                id="adres_land"
+                placeholder="Land"
+                data-cy="adres_land"
+                className="mt-1 text-sm"
+              />
+              {errors.adres_land && <p className="text-red-500 text-xs mt-1">{errors.adres_land.message}</p>}
+            </div>
+          </div>
         </div>
 
         {/* Contact Information */}
-        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
-          <h3 className="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2">
-            <Mail className="h-3 w-3" />
+        <div className="bg-white rounded-lg p-3 border border-neutral-200">
+          <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+            <Mail className="h-3.5 w-3.5" />
             Contactgegevens
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -524,9 +518,9 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
         </div>
 
         {/* Chess Information */}
-        <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-3 border border-amber-200">
-          <h3 className="text-sm font-semibold text-amber-800 mb-3 flex items-center gap-2">
-            <Trophy className="h-3 w-3" />
+        <div className="bg-white rounded-lg p-3 border border-neutral-200">
+          <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+            <Trophy className="h-3.5 w-3.5" />
             Schaakgegevens
           </h3>
           <div className="grid grid-cols-3 gap-3">
@@ -580,16 +574,16 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
         </div>
 
         {/* Lidgeld */}
-        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg p-3 border border-emerald-200">
-          <h3 className="text-sm font-semibold text-emerald-900 mb-3 flex items-center gap-2">
-            <Euro className="h-3 w-3" />
+        <div className="bg-white rounded-lg p-3 border border-neutral-200">
+          <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+            <Euro className="h-3.5 w-3.5" />
             Lidgeld en bondslidgeld
           </h3>
           <div
             className={`grid gap-4 ${watch("is_youth") ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"}`}
           >
-            <div className="space-y-3 rounded-md bg-white/60 p-3 border border-emerald-100">
-              <h4 className="text-xs font-medium text-emerald-900">Club lidgeld</h4>
+            <div className="space-y-3 rounded-md bg-neutral-50 p-3 border border-neutral-200">
+              <h4 className="text-xs font-medium text-textColor">Club lidgeld</h4>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="lf_lidgeld"
@@ -631,8 +625,8 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-md bg-white/60 p-3 border border-emerald-100">
-              <h4 className="text-xs font-medium text-emerald-900">Bondslidgeld</h4>
+            <div className="space-y-3 rounded-md bg-neutral-50 p-3 border border-neutral-200">
+              <h4 className="text-xs font-medium text-textColor">Bondslidgeld</h4>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="lf_bonds"
@@ -681,8 +675,8 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
             </div>
 
             {watch("is_youth") && (
-              <div className="space-y-3 rounded-md bg-white/60 p-3 border border-emerald-100">
-                <h4 className="text-xs font-medium text-emerald-900">Jeugdlidgeld</h4>
+              <div className="space-y-3 rounded-md bg-neutral-50 p-3 border border-neutral-200">
+                <h4 className="text-xs font-medium text-textColor">Jeugdlidgeld</h4>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="lf_jeugd"
@@ -736,7 +730,11 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
         </div>
 
         {/* Admin Rights */}
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
+        <div className="bg-white rounded-lg p-3 border border-neutral-200">
+          <h3 className="text-sm font-semibold text-mainAccent mb-2.5 flex items-center gap-2">
+            <Shield className="h-3.5 w-3.5" />
+            Rechten &amp; rollen
+          </h3>
           <div className="grid grid-cols-1 gap-4">
             <div className="grid grid-cols-1 gap-4">
               <div className="flex items-center space-x-3">
@@ -881,8 +879,8 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
             </div>
             
             {/* Password Management */}
-            <div className="border-t border-purple-200 pt-4">
-              <h4 className="text-sm font-medium text-purple-800 mb-3 flex items-center gap-2">
+            <div className="border-t border-neutral-200 pt-4">
+              <h4 className="text-sm font-medium text-textColor mb-3 flex items-center gap-2">
                 <Shield className="h-3 w-3" />
                 Wachtwoord Beheer
               </h4>
@@ -899,7 +897,7 @@ export default function EditForm({ user, onClose, onRefresh }: EditFormProps) {
 
         {/* Submit Button */}
         <div className="flex gap-2">
-          <Button type="submit" disabled={isSaving} className="flex-1 bg-mainAccent hover:bg-mainAccentDark text-sm">
+          <Button type="submit" disabled={isSaving} variant="accent" className="flex-1 text-sm">
             {isSaving ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>

@@ -1,20 +1,21 @@
-import { Clock, MapPin } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Clock, MapPin, Info } from "lucide-react"
 
 export default function Practical() {
   return (
-    <section className="py-2">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">Praktische info</h2>
-        <p className="text-base text-gray-600 max-w-2xl mx-auto">
-          Kom kennismaken tijdens onze jeugduren. Iedereen welkom!
-        </p>
-        <div className="mt-4 inline-flex items-center justify-center rounded-lg bg-amber-100 px-4 py-2 border border-amber-300">
-          <p className="text-amber-900 text-sm font-semibold">
-            Momenteel geldt er een inschrijvingsstop voor de jeugdwerking tot september.
-          </p>
+    <section>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Info className="h-4 w-4" />
+            Praktische info
+          </h2>
         </div>
-      </div>
+        <div className="p-4">
+          <div className="rounded-lg bg-yellow-50 border border-yellow-200 px-3 py-2 mb-3">
+            <p className="text-yellow-900 text-sm font-semibold">
+              Momenteel geldt er een inschrijvingsstop voor de jeugdwerking tot september.
+            </p>
+          </div>
 
       <div className="max-w-xl mx-auto">
         <Card className="shadow-md">
@@ -43,8 +44,14 @@ export default function Practical() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="bg-mainAccent/10 p-2.5 rounded-lg">
+            <p className="text-textColor text-center text-sm">
+              <strong>Let op:</strong> Door de huidige inschrijvingsstop kunnen nieuwe jeugdleden pas opnieuw instappen vanaf september.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )

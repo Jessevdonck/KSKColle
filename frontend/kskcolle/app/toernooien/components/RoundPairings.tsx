@@ -102,7 +102,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
           </h3>
         </div>
 
-        <div className="text-center py-12">
+        <div className="text-center py-6">
           <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
             <User className="h-8 w-8 text-mainAccent" />
           </div>
@@ -380,7 +380,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
         </div>
       </>
       ) : (
-        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-8 text-center">
+        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-6 text-center">
           <div className="text-gray-500 text-lg mb-2">Ronde {round.ronde_nummer}</div>
           <div className="text-gray-400 text-sm">
             {!round.round_id ? "Nog niet gegenereerd" : "Geen partijen beschikbaar"}

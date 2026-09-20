@@ -501,7 +501,7 @@ export function MegaschaakTeamEditor({
                               player.voornaam,
                               player.achternaam,
                             ) && (
-                              <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                              <span className="text-[10px] text-yellow-700 bg-yellow-100 px-1.5 py-0.5 rounded">
                                 (vervangen)
                               </span>
                             )}

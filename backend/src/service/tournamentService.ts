@@ -44,13 +44,16 @@ export const getAllTournaments = async (
       type TournamentWithRelations = typeof allTournaments[0];
       let latestHerfst: TournamentWithRelations | null = null;
       let latestLente: TournamentWithRelations | null = null;
+      let latestZomer: TournamentWithRelations | null = null;
       let latestHerfstDate: Date | null = null;
       let latestLenteDate: Date | null = null;
+      let latestZomerDate: Date | null = null;
 
       for (const tournament of allTournaments) {
         const name = tournament.naam.toLowerCase();
         const isHerfst = name.includes('herfst') || name.includes('herfstcompetitie');
         const isLente = name.includes('lente') || name.includes('lentecompetitie');
+        const isZomer = name.includes('zomer');
 
         // Get the last round date for this tournament
         const lastRoundDate = tournament.rounds && tournament.rounds.length > 0 && tournament.rounds[0]
@@ -82,6 +85,20 @@ export const getAllTournaments = async (
           } else if (!latestLenteDate && !lastRoundDate && tournament.tournament_id > (latestLente?.tournament_id || 0)) {
             // Fallback to tournament_id if no dates available
             latestLente = tournament;
+          }
+        }
+
+        if (isZomer) {
+          if (!latestZomer || (lastRoundDate && latestZomerDate && lastRoundDate > latestZomerDate)) {
+            latestZomer = tournament;
+            latestZomerDate = lastRoundDate;
+          } else if (!latestZomerDate && lastRoundDate) {
+            // If we don't have a date yet, use this one
+            latestZomer = tournament;
+            latestZomerDate = lastRoundDate;
+          } else if (!latestZomerDate && !lastRoundDate && tournament.tournament_id > (latestZomer?.tournament_id || 0)) {
+            // Fallback to tournament_id if no dates available
+            latestZomer = tournament;
           }
         }
       }
@@ -160,13 +177,26 @@ export const getAllTournaments = async (
         const name = t.naam.toLowerCase();
         if (!(name.includes('lente') || name.includes('lentecompetitie'))) return false;
         if (!latestLente) return false;
-        
+
         const tLastRoundDate = t.rounds && t.rounds.length > 0 && t.rounds[0] ? t.rounds[0].ronde_datum : null;
         if (tLastRoundDate && latestLenteDate) {
           return tLastRoundDate > latestLenteDate;
         }
         // Fallback to tournament_id comparison
         return t.tournament_id > latestLente.tournament_id;
+      });
+
+      const hasNewerZomer = activeTournaments.some(t => {
+        const name = t.naam.toLowerCase();
+        if (!name.includes('zomer')) return false;
+        if (!latestZomer) return false;
+
+        const tLastRoundDate = t.rounds && t.rounds.length > 0 && t.rounds[0] ? t.rounds[0].ronde_datum : null;
+        if (tLastRoundDate && latestZomerDate) {
+          return tLastRoundDate > latestZomerDate;
+        }
+        // Fallback to tournament_id comparison
+        return t.tournament_id > latestZomer.tournament_id;
       });
 
       // Add latest herfstcompetitie if no newer one exists and it's not already in the list
@@ -279,6 +309,62 @@ export const getAllTournaments = async (
           });
           if (lenteWithRounds) {
             resultTournaments.push(lenteWithRounds);
+          }
+        }
+      }
+
+      if (latestZomer && !hasNewerZomer && !resultTournaments.find(t => t.tournament_id === latestZomer!.tournament_id)) {
+        // Check is_youth filter
+        if (typeof is_youth === 'boolean' ? latestZomer.is_youth === is_youth : true) {
+          // Ensure latestZomer has the same structure as activeTournaments (minimal data)
+          const zomerWithRounds = await prisma.tournament.findUnique({
+            where: { tournament_id: latestZomer.tournament_id },
+            select: {
+              tournament_id: true,
+              naam: true,
+              rondes: true,
+              type: true,
+              rating_enabled: true,
+              finished: true,
+              is_youth: true,
+              class_name: true,
+              megaschaak_enabled: true,
+              megaschaak_deadline: true,
+              megaschaak_config: true,
+              participations: {
+                select: {
+                  user_id: true,
+                  score: true,
+                  user: {
+                    select: {
+                      user_id: true,
+                      voornaam: true,
+                      achternaam: true,
+                    }
+                  }
+                }
+              },
+              rounds: {
+                select: {
+                  round_id: true,
+                  ronde_nummer: true,
+                  ronde_datum: true,
+                  type: true,
+                  label: true,
+                  _count: {
+                    select: {
+                      games: true
+                    }
+                  }
+                },
+                orderBy: {
+                  ronde_datum: 'desc'
+                }
+              },
+            },
+          });
+          if (zomerWithRounds) {
+            resultTournaments.push(zomerWithRounds);
           }
         }
       }

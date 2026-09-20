@@ -7,7 +7,7 @@ import useSWR from "swr";
 import { PLAYER_LIST_SWR_OPTIONS } from "@/lib/swrConfig";
 import AsyncData from "../../components/AsyncData";
 import type { User } from "@/data/types";
-import { Users, Trophy } from "lucide-react";
+import { Users, Trophy, AlertTriangle } from "lucide-react";
 
 /** Actief lid: API `membership_valid`, anders lidgeld of (jeugd) jeugdlidgeld. */
 function isActiveMember(u: User): boolean {
@@ -85,7 +85,7 @@ export default function PlayerRanking({
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-md p-6 text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
+          <AlertTriangle className="h-9 w-9 text-red-500 mx-auto mb-2" />
           <h2 className="text-xl font-bold text-red-600 mb-2">
             Fout bij laden van spelers
           </h2>
@@ -102,14 +102,14 @@ export default function PlayerRanking({
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-3">
             <div className="bg-mainAccent/10 p-2 rounded-lg">
-              <Users className="h-6 w-6 text-mainAccent" />
+              <Users className="h-5 w-5 text-mainAccent" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-textColor">{pageTitle}</h1>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600 mt-2">
+              <h1 className="text-xl font-bold text-textColor">{pageTitle}</h1>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600 mt-1">
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
                   <span>
@@ -127,7 +127,7 @@ export default function PlayerRanking({
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <AsyncData loading={isLoading} error={error}>
           {noPlayersError ? (
             <div className="bg-white rounded-lg shadow-md overflow-hidden">

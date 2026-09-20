@@ -9,7 +9,7 @@ import { Chess } from "chess.js"
 import ChessBoard from "../../admin/puzzles/components/ChessBoard"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import { ArrowLeft, CheckCircle, AlertCircle, Trophy, Clock } from "lucide-react"
+import { ArrowLeft, CheckCircle, AlertCircle, Trophy, Clock, Medal } from "lucide-react"
 import Link from "next/link"
 
 interface PuzzleData {
@@ -531,17 +531,17 @@ export default function PuzzleSolvePage() {
                         className={`flex items-center gap-3 p-2 rounded-lg ${
                           index === 0 ? 'bg-yellow-50 border border-yellow-200' :
                           index === 1 ? 'bg-gray-50 border border-gray-200' :
-                          index === 2 ? 'bg-orange-50 border border-orange-200' :
+                          index === 2 ? 'bg-yellow-50/60 border border-yellow-100' :
                           'hover:bg-gray-50'
                         }`}
                       >
-                        <div className={`flex-shrink-0 w-8 text-center font-bold ${
-                          index === 0 ? 'text-yellow-600' :
-                          index === 1 ? 'text-gray-600' :
-                          index === 2 ? 'text-orange-600' :
+                        <div className={`flex-shrink-0 w-8 flex items-center justify-center font-bold ${
+                          index === 0 ? 'text-yellow-500' :
+                          index === 1 ? 'text-gray-500' :
+                          index === 2 ? 'text-yellow-800' :
                           'text-gray-500'
                         }`}>
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${entry.rank}`}
+                          {index < 3 ? <Medal className="h-4 w-4" /> : `#${entry.rank}`}
                         </div>
                         <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
                           <div className="font-medium text-gray-900 truncate">

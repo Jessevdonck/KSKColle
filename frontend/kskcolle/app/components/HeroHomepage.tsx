@@ -128,8 +128,9 @@ const HeroHomepage = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <Link href={"#contact"}>
               <Button
+                variant="accent"
                 size="lg"
-                className="bg-mainAccent text-white hover:bg-mainAccentDark font-semibold px-6 py-3 text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform-gpu"
+                className="font-semibold px-6 py-3 text-base rounded-xl hover:shadow-xl transition-all duration-200 transform-gpu"
                 data-cy="contact"
               >
                 Contact

@@ -80,20 +80,20 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
   if (!round.games || round.games.length === 0) {
     return (
       <div>
-        <div className="mb-4">
-          <h3 className="text-xl font-bold text-textColor mb-2 flex items-center gap-2">
-            <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+        <div className="mb-3">
+          <h3 className="text-lg font-bold text-textColor mb-1.5 flex items-center gap-1.5">
+            <div className="bg-mainAccent text-white rounded-full w-5 h-5 flex items-center justify-center text-[0.7em] font-bold">
               {round.ronde_nummer}
             </div>
             Ronde {round.ronde_nummer}
           </h3>
         </div>
 
-        <div className="text-center py-12">
-          <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-            <User className="h-8 w-8 text-mainAccent" />
+        <div className="text-center py-6">
+          <div className="bg-mainAccent/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-2">
+            <User className="h-6 w-6 text-mainAccent" />
           </div>
-          <h4 className="text-base font-semibold text-gray-700 mb-2">Nog geen partijen</h4>
+          <h4 className="text-sm font-semibold text-gray-700 mb-1.5">Nog geen partijen</h4>
           <p className="text-gray-500 text-sm">De partijen voor deze ronde zijn nog niet gegenereerd.</p>
         </div>
       </div>

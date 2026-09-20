@@ -142,10 +142,10 @@ export default function RoundSection({
   const games = roundData?.games ?? []
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h3 className="text-xl font-bold text-white">Ronde {roundNumber}</h3>
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <h3 className="text-base font-bold text-white">Ronde {roundNumber}</h3>
 
           {/* Datum en Startuur velden */}
           <div className="flex items-center gap-3">
@@ -198,14 +198,14 @@ export default function RoundSection({
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4">
         {games.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <Trophy className="h-8 w-8 text-mainAccent" />
+          <div className="text-center py-6">
+            <div className="bg-mainAccent/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+              <Trophy className="h-6 w-6 text-mainAccent" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-700 mb-2">Nog geen paringen</h4>
-            <p className="text-gray-500">
+            <h4 className="text-base font-semibold text-gray-700 mb-1.5">Nog geen paringen</h4>
+            <p className="text-gray-500 text-sm">
               Paringen worden automatisch geïmporteerd via Sevilla import.
             </p>
           </div>

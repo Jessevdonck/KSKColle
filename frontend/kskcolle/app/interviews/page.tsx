@@ -9,11 +9,14 @@ export default function InterviewsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="bg-white shadow-sm border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Interviews</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <div className="bg-mainAccent/10 p-2 rounded-lg inline-flex mb-2">
+              <BookOpen className="h-6 w-6 text-mainAccent" />
+            </div>
+            <h1 className="text-2xl font-bold text-textColor mb-1.5">Interviews</h1>
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
               Ontdek de verhalen achter onze clubleden. Van ervaren schakers tot bestuurders, iedereen heeft een uniek
               verhaal te vertellen over hun schaakpassie.
             </p>
@@ -22,11 +25,11 @@ export default function InterviewsPage() {
       </div>
 
       {/* Interviews Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {interviews.map((interview) => (
-            <Card key={interview.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-              <div className="relative h-48">
+            <Card key={interview.id} className="overflow-hidden shadow-md hover:shadow-lg transition-shadow border-neutral-200">
+              <div className="relative h-40">
                 <Image
                   src={interview.imageUrl || "/placeholder.svg"}
                   alt={interview.name}
@@ -34,18 +37,18 @@ export default function InterviewsPage() {
                   className="object-cover"
                 />
               </div>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{interview.title}</h3>
+              <CardContent className="p-4">
+                <h3 className="text-base font-bold text-textColor mb-2">{interview.title}</h3>
 
-                <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
-                  <User className="h-4 w-4" />
+                <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
+                  <User className="h-3.5 w-3.5" />
                   <span>{interview.author}</span>
                 </div>
 
-                <p className="text-gray-600 mb-6 line-clamp-3">{interview.excerpt}</p>
+                <p className="text-gray-600 mb-3 text-sm line-clamp-3">{interview.excerpt}</p>
 
                 <Link href={`/interviews/${interview.id}`}>
-                  <Button className="w-full bg-mainAccent hover:bg-mainAccentDark">Lees volledig interview</Button>
+                  <Button variant="accent" className="w-full">Lees volledig interview</Button>
                 </Link>
               </CardContent>
             </Card>

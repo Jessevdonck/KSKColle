@@ -124,11 +124,11 @@ function getResultColor(result: string): string {
     case 'Verloren':
       return 'text-red-600'
     case '½-½':
-      return 'text-yellow-600'
+      return 'text-purple-600'
     case 'Nog te spelen':
       return 'text-blue-600'
     case 'Uitgesteld':
-      return 'text-orange-600'
+      return 'text-yellow-600'
     default:
       return 'text-muted-foreground'
   }

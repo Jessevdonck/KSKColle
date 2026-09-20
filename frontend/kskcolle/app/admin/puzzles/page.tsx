@@ -257,14 +257,14 @@ export default function PuzzleCreationPage() {
   return (
     <PrivateRoute>
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h1 className="text-2xl font-bold text-textColor mb-2">Nieuwe Puzzel Aanmaken</h1>
-            <p className="text-gray-600">Stap {currentStep} van 3</p>
-            
+          <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+            <h1 className="text-lg font-bold text-textColor mb-1">Nieuwe Puzzel Aanmaken</h1>
+            <p className="text-gray-600 text-sm">Stap {currentStep} van 3</p>
+
             {/* Progress indicator */}
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2">
               {[1, 2, 3].map((step) => (
                 <div
                   key={step}
@@ -278,7 +278,7 @@ export default function PuzzleCreationPage() {
 
           {/* Step 1: Start Position */}
           {currentStep === 1 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-4">
               <h2 className="text-xl font-semibold mb-4">Stap 1: Start Positie</h2>
               <p className="text-gray-600 mb-4">
                 Stel de startpositie in en duid aan wie aan zet is.
@@ -381,7 +381,7 @@ export default function PuzzleCreationPage() {
               </div>
 
               <div className="flex justify-end mt-6">
-                <Button onClick={handleNext} className="bg-mainAccent hover:bg-mainAccentDark">
+                <Button onClick={handleNext} variant="accent">
                   Volgende
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -391,7 +391,7 @@ export default function PuzzleCreationPage() {
 
           {/* Step 2: Solution */}
           {currentStep === 2 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-4">
               <h2 className="text-xl font-semibold mb-4">Stap 2: Oplossing</h2>
               <p className="text-gray-600 mb-4">
                 Sleep stukken om de oplossing te creëren. Zetten worden in volgorde toegevoegd.
@@ -491,7 +491,7 @@ export default function PuzzleCreationPage() {
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Terug
                 </Button>
-                <Button onClick={handleNext} className="bg-mainAccent hover:bg-mainAccentDark">
+                <Button onClick={handleNext} variant="accent">
                   Volgende
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -501,7 +501,7 @@ export default function PuzzleCreationPage() {
 
           {/* Step 3: Name */}
           {currentStep === 3 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-4">
               <h2 className="text-xl font-semibold mb-4">Stap 3: Puzzel Naam</h2>
               <p className="text-gray-600 mb-4">
                 Geef de puzzel een naam.
@@ -546,7 +546,7 @@ export default function PuzzleCreationPage() {
                 <Button
                   onClick={handleComplete}
                   disabled={loading || !puzzleName.trim()}
-                  className="bg-mainAccent hover:bg-mainAccentDark"
+                  variant="accent"
                 >
                   {loading ? (
                     <>

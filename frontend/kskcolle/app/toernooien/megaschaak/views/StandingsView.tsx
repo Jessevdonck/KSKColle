@@ -94,7 +94,7 @@ export function StandingsView({
                         <Medal className="h-4 w-4 text-white" />
                       </div>
                     ) : index === 2 ? (
-                      <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-yellow-700 to-yellow-900 rounded-full flex items-center justify-center">
                         <Medal className="h-4 w-4 text-white" />
                       </div>
                     ) : (
