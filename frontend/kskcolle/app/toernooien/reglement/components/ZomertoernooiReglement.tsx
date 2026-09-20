@@ -5,7 +5,7 @@ export default function ZomertoernooiReglement() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">REGLEMENT ZOMERTOERNOOI</h2>
         <div className="space-y-4 text-gray-700">
           <p>
-            Het zomertoernooi 2024 is een open competitie volgens het Zwitserse paringssysteem en start op donderdag 1 augustus 2024. Het aantal speeldagen is afhankelijk van het aantal donderdagen in augustus. Leden en niet-leden zijn welkom!
+            Het zomertoernooi is een open competitie volgens het Zwitserse paringssysteem en start op de eerste donderdag van augustus. Het aantal speeldagen is afhankelijk van het aantal donderdagen in augustus. Leden en niet-leden zijn welkom!
           </p>
         </div>
       </section>
