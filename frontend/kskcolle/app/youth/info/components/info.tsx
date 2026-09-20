@@ -85,7 +85,19 @@ export default function YouthInfo() {
                   <h4 className="text-sm font-semibold text-textColor mb-1">Instapmomenten</h4>
                   <p className="text-sm text-gray-700">
                     Nieuwe jeugdleden starten op een van de drie vaste instapmomenten:
-                    bij het begin van het schooljaar, na de kerstvakantie en na de paasvakantie.
+                                      </p>
+                  <p className="text-sm text-gray-700 mt-2">
+                    Bij het begin van het schooljaar
+                  </p>
+                                                        </p>
+                  <p className="text-sm text-gray-700 mt-2">
+                    Na de kerstvakantie
+                  </p>
+                                                                          </p>
+                  <p className="text-sm text-gray-700 mt-2">
+                    Na de Paasvakantie
+                  </p>
+                  <p className="text-sm text-gray-700 mt-2">
                     Zo starten nieuwkomers steeds samen en blijft de groep op hetzelfde tempo werken.
                   </p>
                   <p className="text-sm text-gray-700 mt-2">

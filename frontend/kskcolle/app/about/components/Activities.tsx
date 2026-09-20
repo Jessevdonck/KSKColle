@@ -11,7 +11,7 @@ const activities = [
   {
     icon: Users,
     title: "Jeugdwerking",
-    description: "Elke donderdag van 18:30 tot 19:45 worden er schaaklessen gegeven!",
+    description: "Elke dinsdag van 17:30 tot 18:30 en elke donderdag van 18:30 tot 19:45",
     color: "from-green-500 to-green-600",
     bgColor: "from-green-50 to-green-100",
   },

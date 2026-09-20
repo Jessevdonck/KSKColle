@@ -26,7 +26,9 @@ export default function Practical() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Wanneer</h3>
-                  <p className="text-gray-600">Donderdag: Stap 1 om 19:00u, andere stappen om 18:30u — 19:45u (niet in schoolvakanties)</p>
+                  <p className="text-gray-600">Dinsdag om 17:30u tot 18:30u: Stap 1 & 2</p>
+                  <p className="text-gray-600">Donderdag om 18:30u tot 19:45u </p>
+                  <p className="text-gray-600">niet in schoolvakanties</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -35,14 +37,10 @@ export default function Practical() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Waar</h3>
+                  <p className="text-gray-600">Bibliotheek Sint-Niklaas — Wonderbar op de Eerste verdieping</p>
                   <p className="text-gray-600">Taverne De Graanmaat — zaal 4 achteraan</p>
                   <p className="text-sm text-gray-500">Sint-Niklaas</p>
                 </div>
-              </div>
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-blue-800 text-center text-sm">
-                  <strong>Let op:</strong> Door de huidige inschrijvingsstop kunnen nieuwe jeugdleden pas opnieuw instappen vanaf september.
-                </p>
               </div>
             </div>
           </CardContent>
