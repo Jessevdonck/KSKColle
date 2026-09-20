@@ -17,8 +17,8 @@ export default function LocatiePage() {
   const images = fileNames.map((f) => `/images/locatie/${f}`)
 
   const texts = [
-    "Al onze wederkerende activiteiten vinden plaats in Taverne De Graanmaat op de Grote Markt van Sint-Niklaas. Adres: Grote Markt 24, 9100 Sint-Niklaas",
-    "De wintertuin is onze vaste stek voor zowel onze jeugdwerking en clubavond op donderdag, de Oost-Vlaamse Interclub op vrijdag als de Nationale Interclubcompetitie op zondag.",
+    "Onze wekelijkse activiteiten vinden plaats in Taverne De Graanmaat op de Grote Markt van Sint-Niklaas. Adres: Grote Markt 24, 9100 Sint-Niklaas",
+    "De wintertuin is onze vaste stek voor zowel onze jeugdwerking en clubavond op donderdag en de Nationale Interclubcompetitie op zondag.",
     "Daarnaast maken we voor nevenactiviteiten regelmatig gebruik van de andere zalen die De Graanmaat te bieden heeft.",
     "Zowel het café vooraan als alle zalen achteraan en de toiletten zijn volledig rolstoeltoegankelijk.",
   ]
