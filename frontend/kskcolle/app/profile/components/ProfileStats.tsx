@@ -48,7 +48,7 @@ function getScore(game: GameWithRoundAndTournament, playerId: number): number {
   if (!result || result === "..." || result.toLowerCase() === "uitgesteld") return NaN
   const isWhite = game.speler1_id === playerId
   const isBlack = game.speler2_id === playerId
-  if (["½-½", "1/2-1/2"].includes(result) || result.includes("½")) return 0.5
+  if (["½-½", "1/2-1/2", "1/2-1/2R"].includes(result) || result.includes("½")) return 0.5
   if ((result.startsWith("1-0") && isWhite) || (result.startsWith("0-1") && isBlack)) return 1
   if ((result.startsWith("0-1") && isWhite) || (result.startsWith("1-0") && isBlack)) return 0
   return NaN

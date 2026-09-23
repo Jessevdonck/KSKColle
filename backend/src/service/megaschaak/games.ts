@@ -45,12 +45,14 @@ export const calculateGameScore = (game: any, playerId: number): number => {
     return 1;
   }
 
-  // Check for draw (½-½, 1/2-1/2 of Sevilla "-")
+  // Check for draw (½-½, 1/2-1/2 of Sevilla "-"), incl. reglementaire/afgesproken
+  // remise "1/2-1/2R" - telt als gewone remise, telt niet mee voor Elo (zie tournamentService)
   if (
     rawResult === "½-½" ||
     rawResult === "1/2-1/2" ||
     rawResult === "-" ||
-    resFlat === "1/2-1/2"
+    resFlat === "1/2-1/2" ||
+    resFlat === "1/2-1/2R"
   ) {
     return 0.5;
   }

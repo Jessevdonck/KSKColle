@@ -106,7 +106,8 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
           } else if (
             compactResult === "1/2-1/2" ||
             compactResult === "½-½" ||
-            compactResult === "-"
+            compactResult === "-" ||
+            compactResult === "1/2-1/2R"
           ) {
             result = 0.5; // Draw (Sevilla gebruikt vaak "-")
           } else if (compactResult === "0-0R") {

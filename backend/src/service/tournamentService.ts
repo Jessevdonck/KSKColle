@@ -753,7 +753,11 @@ export const finalizeTournamentRatings = async (
       }
       const b = stats[g.speler2_id]!;
 
-      // 4a) score toekennen
+      // 4a) score toekennen - enkel echt gespeelde uitslagen tellen voor Elo.
+      // Reglementaire/afgesproken varianten (bv. "1-0R", "0-1FF", "1/2-1/2R") en andere
+      // niet-exacte uitslagen slaan we volledig over: geen score EN geen expected-score,
+      // anders vertekent het de rating (expected zou dan wel meetellen, score niet).
+      let countsForElo = true;
       switch (g.result) {
         case "1-0":
           a.score += 1;
@@ -766,8 +770,10 @@ export const finalizeTournamentRatings = async (
           b.score += 0.5;
           break;
         default:
+          countsForElo = false;
           break;
       }
+      if (!countsForElo) continue;
 
       // 4b) expected-score volgens Elo-formule
       const ea = 1 / (1 + 10 ** ((b.oldRating - a.oldRating) / 400));
