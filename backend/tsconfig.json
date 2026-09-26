@@ -23,6 +23,6 @@
   ],
   "exclude": [
     "jest.config.ts",
-    "__test__", 
+    "**/__tests__/**"
   ]
 }
