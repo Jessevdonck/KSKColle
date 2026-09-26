@@ -110,7 +110,10 @@ export async function getHistorischPalmares(
 ): Promise<PalmaresEntry[]> {
   const fullName = `${voornaam} ${achternaam}`
   const entries: PalmaresEntry[] = []
-  const match = (naam?: string) => Boolean(naam && namesEqual(naam, fullName))
+  // Gedeelde titels staan als "Naam A & Naam B" in de Excel - elke deelnaam apart
+  // vergelijken zodat beide spelers de titel op hun palmares krijgen.
+  const match = (naam?: string) =>
+    Boolean(naam && naam.split('&').some((deel) => namesEqual(deel, fullName)))
 
   const bronnen: Array<{ file: string; extract: (rows: any[]) => void }> = [
     {
