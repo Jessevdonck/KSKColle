@@ -80,7 +80,7 @@ function getGameResult(game: GameWithRoundAndTournament, playerId: number): stri
   if (result.toLowerCase() === "uitgesteld") return "Uitgesteld"
 
   // Remise (verschillende formaten)
-  if (['½-½', '1/2-1/2', '�-�', '1/2-1/2R'].includes(result)) {
+  if (['½-½', '1/2-1/2', '�-�', '1/2-1/2R', '½-½R'].includes(result)) {
     return '½-½';
   }
 

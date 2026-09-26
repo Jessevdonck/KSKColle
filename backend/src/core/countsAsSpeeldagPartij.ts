@@ -38,7 +38,13 @@ export function isDecidedGameWithOpponentResult(
 
 export function isDrawResult(result: string | null | undefined): boolean {
   const flat = normalizeResultFlat(result);
-  return flat === "½-½" || flat === "1/2-1/2" || flat === "-" || flat === "1/2-1/2R";
+  return (
+    flat === "½-½" ||
+    flat === "1/2-1/2" ||
+    flat === "-" ||
+    flat === "1/2-1/2R" ||
+    flat === "½-½R"
+  );
 }
 
 /**

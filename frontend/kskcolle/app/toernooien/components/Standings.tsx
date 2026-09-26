@@ -152,7 +152,8 @@ export default function Standings({ tournament, rounds }: StandingsProps) {
           eff === "1/2-1/2" ||
           eff === "-" ||
           eff === "�-�" ||
-          eff === "1/2-1/2R"
+          eff === "1/2-1/2R" ||
+          eff === "½-½R"
         ) {
           score = 0.5
         } else if (eff === "0.5-0") {
@@ -602,7 +603,7 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
             calculatedScoreMap[p1] += 1
           } else if (eff.startsWith("0-1") && p2) {
             calculatedScoreMap[p2] += 1
-          } else if (eff === "½-½" || eff === "1/2-1/2" || eff === "-" || eff === "�-�" || eff === "1/2-1/2R") {
+          } else if (eff === "½-½" || eff === "1/2-1/2" || eff === "-" || eff === "�-�" || eff === "1/2-1/2R" || eff === "½-½R") {
             calculatedScoreMap[p1] += 0.5
             if (p2) calculatedScoreMap[p2] += 0.5
           } else if (eff === "0.5-0") {

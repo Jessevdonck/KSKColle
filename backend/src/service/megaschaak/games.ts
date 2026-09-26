@@ -52,7 +52,8 @@ export const calculateGameScore = (game: any, playerId: number): number => {
     rawResult === "1/2-1/2" ||
     rawResult === "-" ||
     resFlat === "1/2-1/2" ||
-    resFlat === "1/2-1/2R"
+    resFlat === "1/2-1/2R" ||
+    resFlat === "½-½R"
   ) {
     return 0.5;
   }

@@ -1081,10 +1081,15 @@ export class SevillaImporterService {
       ) {
         winnaarId = null; // Draw
         result = "1/2-1/2"; // Normalize to standard format
-      } else if (playerGame.Res === "1/2-1/2R") {
+      } else if (
+        playerGame.Res === "1/2-1/2R" ||
+        playerGame.Res === "½-½R" ||
+        playerGame.Res === "�-�R"
+      ) {
         // Reglementaire/afgesproken remise: telt als gewone remise (elk 0.5 punt) voor de
         // stand en tie-breaks, maar wordt bewust NIET meegeteld voor Elo - zie de "R"-check
-        // in finalizeTournamentRatings(). Behoud de "R" dus, normaliseer niet weg.
+        // in finalizeTournamentRatings(). Normaliseer naar "1/2-1/2R" zodat downstream code
+        // maar één vorm moet herkennen, met behoud van de "R"-marker.
         winnaarId = null; // Draw
         result = "1/2-1/2R";
       } else {
