@@ -303,7 +303,30 @@ export default function ArticleDetailPage() {
               )}
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900">{article.title}</h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-3xl font-bold text-gray-900">{article.title}</h1>
+
+              {user ? (
+                <button
+                  type="button"
+                  onClick={likes?.user_has_liked ? handleUnlike : handleLike}
+                  disabled={liking}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors shrink-0 ${likes?.user_has_liked ? "text-mainAccent bg-mainAccent/10 hover:bg-mainAccent/20" : "text-gray-600 bg-gray-100 hover:bg-gray-200"}`}
+                  aria-pressed={likes?.user_has_liked}
+                >
+                  <Heart className="h-4 w-4 shrink-0" fill={likes?.user_has_liked ? "currentColor" : "none"} strokeWidth={2} />
+                  <span>Vind ik leuk</span>
+                  {likes && likes.count > 0 && (
+                    <span className="ml-0.5 font-medium tabular-nums">({likes.count})</span>
+                  )}
+                </button>
+              ) : likes && likes.count > 0 ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-gray-500 bg-gray-100 shrink-0">
+                  <Heart className="h-4 w-4 shrink-0" fill="currentColor" strokeWidth={2} />
+                  <span>{likes.count}</span>
+                </span>
+              ) : null}
+            </div>
 
             <div className="flex items-center gap-4 text-sm text-gray-500">
               <div className="flex items-center gap-1">
@@ -349,30 +372,6 @@ export default function ArticleDetailPage() {
               ))}
             </div>
           )}
-
-          {/* Vind ik leuk – rechtsonder, één geheel */}
-          <div className="flex justify-end pt-3">
-            {user ? (
-              <button
-                type="button"
-                onClick={likes?.user_has_liked ? handleUnlike : handleLike}
-                disabled={liking}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${likes?.user_has_liked ? "text-mainAccent bg-mainAccent/10 hover:bg-mainAccent/20" : "text-gray-600 bg-gray-100 hover:bg-gray-200"}`}
-                aria-pressed={likes?.user_has_liked}
-              >
-                <Heart className="h-4 w-4 shrink-0" fill={likes?.user_has_liked ? "currentColor" : "none"} strokeWidth={2} />
-                <span>Vind ik leuk</span>
-                {likes && likes.count > 0 && (
-                  <span className="ml-0.5 font-medium tabular-nums">({likes.count})</span>
-                )}
-              </button>
-            ) : likes && likes.count > 0 ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-gray-500 bg-gray-100">
-                <Heart className="h-4 w-4 shrink-0" fill="currentColor" strokeWidth={2} />
-                <span>{likes.count}</span>
-              </span>
-            ) : null}
-          </div>
 
           {/* Comments Section */}
           <div className="mt-8">
