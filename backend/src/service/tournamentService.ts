@@ -6,6 +6,7 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import { withInitialRating } from "./initialRatings";
 import { saveTournamentPodium } from "./honorService";
+import { currentPeriod } from "../core/period";
 
 export const getAllTournaments = async (
   active?: boolean,   // undefined | true | false
@@ -783,8 +784,9 @@ export const finalizeTournamentRatings = async (
     }
 
     // 5) Pas nieuwe ratings toe in één transaction
+    const period = currentPeriod();
     await prisma.$transaction(
-      parts.map((p) => {
+      parts.flatMap((p) => {
         const userId = p.user_id;
         const s = stats[userId]!;              // non-null assert
         const { oldRating, score, expected } = s;
@@ -793,14 +795,23 @@ export const finalizeTournamentRatings = async (
         const newRating = oldRating + delta;
         const newMax    = Math.max(p.user.schaakrating_max ?? oldRating, newRating);
 
-        return prisma.user.update({
-          where: { user_id: userId },
-          data: {
-            schaakrating_elo:        newRating,
-            schaakrating_difference: delta,
-            schaakrating_max:        newMax,
-          },
-        });
+        return [
+          prisma.user.update({
+            where: { user_id: userId },
+            data: {
+              schaakrating_elo:        newRating,
+              schaakrating_difference: delta,
+              schaakrating_max:        newMax,
+            },
+          }),
+          // Voegt een punt toe aan de ELIO-historiekgrafiek op het profiel (zelfde
+          // maand => overschrijft, zie ratingService.updateRatingsForTournament).
+          prisma.eloHistory.upsert({
+            where: { user_id_period: { user_id: userId, period } },
+            create: { user_id: userId, period, rating: newRating },
+            update: { rating: newRating },
+          }),
+        ];
       })
     );
   } catch (error) {

@@ -27,9 +27,10 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { GameWithRoundAndTournament } from "@/data/types"
+import EloHistoryChart from "./EloHistoryChart"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
-import { Trophy, Target, TrendingUp, Calendar, Activity, ChevronLeft, ChevronRight } from "lucide-react"
+import { Trophy, Target, TrendingUp, Calendar, ChevronLeft, ChevronRight } from "lucide-react"
 import {
   format,
   subMonths,
@@ -41,7 +42,10 @@ import {
 } from "date-fns"
 import { nl } from "date-fns/locale"
 
-type RangePreset = "1m" | "6m" | "12m" | "custom"
+type RangePreset = "1m" | "6m" | "12m" | "all" | "custom"
+
+/** Ver genoeg terug om als "sinds altijd" te gelden, ook voor de historische ELIO-data. */
+const ALL_TIME_START = new Date(2000, 0, 1)
 
 function getScore(game: GameWithRoundAndTournament, playerId: number): number {
   const result = (normalizedResultForDisplay(game.result ?? null, game.uitgestelde_datum) ?? "").trim()
@@ -71,6 +75,7 @@ function getRangeBounds(
   if (preset === "1m") return { start: subMonths(end, 1), end }
   if (preset === "6m") return { start: subMonths(end, 6), end }
   if (preset === "12m") return { start: subMonths(end, 12), end }
+  if (preset === "all") return { start: ALL_TIME_START, end }
   const start = customStart ? parseISO(customStart) : subMonths(end, 12)
   const endDate = customEnd ? parseISO(customEnd) : end
   return { start: start > endDate ? endDate : start, end: endDate > start ? endDate : start }
@@ -87,64 +92,25 @@ function getMonthKeys(start: Date, end: Date): string[] {
   return keys
 }
 
+interface EloHistoryPoint {
+  period: string // "YYYY-MM"
+  rating: number
+}
+
 interface ProfileStatsProps {
   games: GameWithRoundAndTournament[]
   playerId: number
   compact?: boolean
+  eloHistory?: EloHistoryPoint[]
 }
 
 const COLORS = { win: "#22c55e", loss: "#ef4444", draw: "#eab308" }
 
-export default function ProfileStats({ games, playerId, compact }: ProfileStatsProps) {
-  const [rangePreset, setRangePreset] = useState<RangePreset>("12m")
+export default function ProfileStats({ games, playerId, compact, eloHistory = [] }: ProfileStatsProps) {
+  const [rangePreset, setRangePreset] = useState<RangePreset>("all")
   const [customStart, setCustomStart] = useState("")
   const [customEnd, setCustomEnd] = useState("")
   const [chartIndex, setChartIndex] = useState(0)
-
-  /**
-   * Ratingwinst/verlies all-time: één punt per toernooi, chronologisch op datum eerste ronde.
-   * Alleen toernooien met "lente" of "herfst" in de naam (toernooien met rating).
-   * Waarde = sevilla_rating_change (punten gewonnen/verloren in dat toernooi).
-   */
-  const ratingWinstVerliesChart = useMemo(() => {
-    const hasRatingInName = (naam: string) => /lente|herfst/i.test(naam ?? "")
-    type TournRow = { datum: string; ratingwinst: number; partijen: number; toernooiNaam: string }
-    const byTournament = new Map<
-      number,
-      { firstDate: Date; naam: string; ratingChange: number; partijen: number }
-    >()
-    for (const g of games) {
-      if (!countsAsSpeeldagPartij(g.result, g.speler2_id)) continue
-      if (getOutcome(g, playerId) === null) continue
-      const change = g.rating_change_in_tournament
-      const round = g.round
-      if (change == null || !round?.tournament) continue
-      const naam = round.tournament.naam ?? ""
-      if (!hasRatingInName(naam)) continue
-      const tid = round.tournament.tournament_id ?? 0
-      const d = round.ronde_datum ? new Date(round.ronde_datum) : new Date(0)
-      const cur = byTournament.get(tid)
-      if (!cur) {
-        byTournament.set(tid, { firstDate: d, naam, ratingChange: change, partijen: 1 })
-      } else {
-        cur.partijen += 1
-        if (d < cur.firstDate) cur.firstDate = d
-      }
-    }
-    const rows: TournRow[] = Array.from(byTournament.entries())
-      .sort(([, a], [, b]) => a.firstDate.getTime() - b.firstDate.getTime())
-      .map(([, v]) => {
-        const dateLabel = format(v.firstDate, "MMM yy", { locale: nl })
-        const shortNaam = v.naam.length > 16 ? v.naam.slice(0, 14) + "…" : v.naam
-        return {
-          datum: `${dateLabel} · ${shortNaam}`,
-          toernooiNaam: v.naam,
-          ratingwinst: v.ratingChange,
-          partijen: v.partijen,
-        }
-      })
-    return { data: rows }
-  }, [games, playerId])
 
   const { filteredGames, rangeLabel, bounds } = useMemo(() => {
     const b = getRangeBounds(rangePreset, customStart, customEnd)
@@ -155,9 +121,11 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
           ? "laatste 6 mnd"
           : rangePreset === "12m"
             ? "laatste 12 mnd"
-            : customStart && customEnd
-              ? `${format(parseISO(customStart), "d MMM yyyy", { locale: nl })} – ${format(parseISO(customEnd), "d MMM yyyy", { locale: nl })}`
-              : "gekozen periode"
+            : rangePreset === "all"
+              ? "sinds altijd"
+              : customStart && customEnd
+                ? `${format(parseISO(customStart), "d MMM yyyy", { locale: nl })} – ${format(parseISO(customEnd), "d MMM yyyy", { locale: nl })}`
+                : "gekozen periode"
     const filtered = games.filter((g) => {
       const d = g.round?.ronde_datum
       if (!d) return false
@@ -166,6 +134,16 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
     })
     return { filteredGames: filtered, rangeLabel: label, bounds: b }
   }, [games, rangePreset, customStart, customEnd])
+
+  /** ELIO-historiek gefilterd op exact dezelfde (kalender-)periode als de partijen. */
+  const filteredEloHistory = useMemo(() => {
+    return eloHistory.filter(({ period }) => {
+      const [year, month] = period.split("-").map(Number)
+      if (!year || !month) return false
+      const date = new Date(year, month - 1, 1)
+      return isWithinInterval(date, { start: bounds.start, end: bounds.end })
+    })
+  }, [eloHistory, bounds])
 
   const stats = useMemo(() => {
     let wins = 0,
@@ -269,6 +247,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
               <SelectItem value="1m">1 mnd</SelectItem>
               <SelectItem value="6m">6 mnd</SelectItem>
               <SelectItem value="12m">12 mnd</SelectItem>
+              <SelectItem value="all">Sinds altijd</SelectItem>
               <SelectItem value="custom">Aangepast</SelectItem>
             </SelectContent>
           </Select>
@@ -297,6 +276,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
                     <SelectItem value="1m">1 maand</SelectItem>
                     <SelectItem value="6m">6 maanden</SelectItem>
                     <SelectItem value="12m">12 maanden</SelectItem>
+                    <SelectItem value="all">Sinds altijd</SelectItem>
                     <SelectItem value="custom">Aangepast</SelectItem>
                   </SelectContent>
                 </Select>
@@ -371,7 +351,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
             <Card className="border border-border/50">
               <CardHeader className="py-2 px-4 flex flex-row items-center justify-between gap-2">
                 <CardTitle className="text-sm font-semibold">
-                  {currChart === "pie" && `Resultaten (${rangeLabel})`}
+                  {currChart === "pie" && "Resultaten"}
                   {currChart === "month" && "Partijen per maand"}
                   {currChart === "tournament" && "Partijen per toernooi"}
                 </CardTitle>
@@ -443,40 +423,6 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
             </Card>
           ) : null}
 
-          {compact && ratingWinstVerliesChart.data.length > 0 && (
-            <Card className="border border-border/50">
-              <CardHeader className="py-2 px-4">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  Ratingwinst/verlies
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 px-4 pb-4">
-                <div className="h-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={ratingWinstVerliesChart.data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="datum" tick={{ fontSize: 9 }} />
-                      <YAxis tick={{ fontSize: 10 }} />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null
-                          const row = payload[0].payload as { toernooiNaam: string; ratingwinst: number; partijen: number }
-                          return (
-                            <div className="rounded border bg-background px-2 py-1.5 text-xs shadow">
-                              <div className="font-medium">{row.toernooiNaam}</div>
-                              <div>{row.ratingwinst > 0 ? "+" : ""}{row.ratingwinst} pt.</div>
-                            </div>
-                          )
-                        }}
-                      />
-                      <Line type="monotone" dataKey="ratingwinst" stroke="var(--main-accent)" strokeWidth={2} dot={{ r: 3 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {!compact && (
           <>
@@ -484,7 +430,7 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
             {stats.pieData.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Resultaten ({rangeLabel})</CardTitle>
+                  <CardTitle className="text-base">Resultaten</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[240px]">
@@ -572,45 +518,22 @@ export default function ProfileStats({ games, playerId, compact }: ProfileStatsP
               </CardContent>
             </Card>
           )}
-          {ratingWinstVerliesChart.data.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  Ratingwinst/verlies
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[260px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={ratingWinstVerliesChart.data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="datum" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null
-                          const row = payload[0].payload as { datum: string; toernooiNaam: string; ratingwinst: number; partijen: number }
-                          return (
-                            <div className="rounded-md border bg-background px-3 py-2 text-sm shadow-md">
-                              <div className="font-medium">{row.toernooiNaam || row.datum}</div>
-                              <div><span className="text-muted-foreground">Ratingwinst/verlies: </span>{row.ratingwinst > 0 ? "+" : ""}{row.ratingwinst}{row.ratingwinst > 0 ? " punten gewonnen" : row.ratingwinst < 0 ? " punten verloren" : ""}</div>
-                              <div className="text-muted-foreground text-xs mt-0.5">{row.partijen} partij{row.partijen === 1 ? "" : "en"} in dit toernooi</div>
-                            </div>
-                          )
-                        }}
-                      />
-                      <Line type="monotone" dataKey="ratingwinst" stroke="var(--main-accent)" strokeWidth={2} dot={{ r: 4 }} name="Ratingwinst/verlies" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          )}
           </>
           )}
         </>
       )}
+
+      {filteredEloHistory.length > 0 ? (
+        <EloHistoryChart history={filteredEloHistory} compact={compact} />
+      ) : eloHistory.length > 0 ? (
+        <Card className={compact ? "border border-border/50" : undefined}>
+          <CardContent className={compact ? "py-3 px-4" : "pt-6"}>
+            <p className="text-muted-foreground text-sm">
+              Geen ratingdata in {rangeLabel}.
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   )
 }

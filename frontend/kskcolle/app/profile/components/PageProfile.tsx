@@ -8,7 +8,7 @@ import RecentGames from "./RecentGames"
 import UpcomingGames from "./UpcomingGames"
 import ProfileStats from "./ProfileStats"
 import AsyncData from "../../components/AsyncData"
-import { getById } from "../../api/index"
+import { getById, getUserEloHistory } from "../../api/index"
 import type { User, GameWithRoundAndTournament } from "../../../data/types"
 import { useAuth } from "../../contexts/auth"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
@@ -43,6 +43,12 @@ export default function PlayerProfile() {
   const { data: player, error: playerError } = useSWR<User>(
     nameParts ? ["player", voornaam, achternaam, currentUser?.user_id] : null,
     () => getById(userEndpoint!),
+  )
+
+  const { data: eloHistory } = useSWR<Array<{ period: string; rating: number }>>(
+    player ? ["eloHistory", player.user_id] : null,
+    () => getUserEloHistory(player!.user_id),
+    { revalidateOnFocus: false }
   )
 
   // Endpoint for recent games
@@ -138,7 +144,12 @@ export default function PlayerProfile() {
                     voornaam={player.voornaam}
                     achternaam={player.achternaam}
                   />
-                  <ProfileStats games={playedGamesWithResults} playerId={player.user_id} compact />
+                  <ProfileStats
+                    games={playedGamesWithResults}
+                    playerId={player.user_id}
+                    eloHistory={eloHistory}
+                    compact
+                  />
                 </div>
               </div>
             </div>

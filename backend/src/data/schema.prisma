@@ -70,6 +70,7 @@ model User {
   puzzleAttempts     PuzzleAttempt[]
   createdPuzzles     Puzzle[]         @relation("PuzzleCreator")
   tournamentHonors   TournamentHonor[]
+  eloHistory         EloHistory[]
 
   @@index([is_youth])
 }
@@ -359,6 +360,21 @@ model TournamentHonor {
   @@unique([tournament_id, position])
   @@index([user_id])
   @@index([jaar])
+}
+
+// Historische ELIO-rating per periode (bv. "2025-01"), geïmporteerd uit een oudere
+// Excel-bijhouding die verder teruggaat dan de eigen toernooigegevens. Voedt de
+// rating-historiekgrafiek op het spelersprofiel.
+model EloHistory {
+  elo_history_id Int    @id @default(autoincrement())
+  user_id        Int
+  period         String // "YYYY-MM"
+  rating         Int
+
+  user           User   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([user_id, period])
+  @@index([user_id])
 }
 
 model PuzzleAttempt {

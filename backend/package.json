@@ -23,7 +23,9 @@
     "simulate-launch-email": "tsx src/scripts/simulate-launch-email.ts",
     "export-active-members": "tsx src/scripts/export-active-members.ts",
     "send-david-email": "tsx src/scripts/send-david-email.ts",
-    "replace-megaschaak-forfait": "tsx src/scripts/replace-megaschaak-forfait.ts"
+    "replace-megaschaak-forfait": "tsx src/scripts/replace-megaschaak-forfait.ts",
+    "import-elo-history": "tsx src/scripts/import-elo-history.ts",
+    "backfill-elo-history": "tsx src/scripts/backfill-elo-history-from-tournaments.ts"
   },
   "author": "",
   "license": "ISC",

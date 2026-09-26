@@ -289,6 +289,12 @@ export const getUserHonors = async (userId) => {
   return data.items;
 };
 
+// Historische ELIO-rating (uit oude Excel-bijhouding, per periode "YYYY-MM")
+export const getUserEloHistory = async (userId) => {
+  const { data } = await axios.get(`${baseUrl}/elo-history/user/${userId}`);
+  return data.items;
+};
+
 // Game postpone functions
 export const postponeGame = async (url, { arg: { game_id, makeup_round_id } }) => {
   const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { 

@@ -23,6 +23,7 @@ import installNotificationsRouter from './notifications';
 import installMegaschaakRouter from './megaschaak';
 import installPuzzlesRouter from './puzzles';
 import installHonorsRouter from './honors';
+import installEloHistoryRouter from './eloHistory';
 import type { ChessAppContext, ChessAppState, KoaApplication } from '../types/koa';
 import installSessionRouter from './session';
 
@@ -133,6 +134,7 @@ export default (app: KoaApplication) => {
   installMegaschaakRouter(router);
   installPuzzlesRouter(router);
   installHonorsRouter(router);
+  installEloHistoryRouter(router);
 
   app.use(router.routes()).use(router.allowedMethods());
 };

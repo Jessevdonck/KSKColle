@@ -1,5 +1,6 @@
 import { prisma } from '../data';
 import { invalidatePublicUsersCache } from '../core/shortLivedCache';
+import { currentPeriod } from '../core/period';
 
 export class RatingService {
   private readonly K_FACTOR = 32; // Standard K-factor for tournaments
@@ -55,13 +56,14 @@ export class RatingService {
     });
 
     // Update ratings using Sevilla rating data
+    const period = currentPeriod();
     for (const participation of participations) {
       // Check if we have Sevilla rating data
       if (participation.sevilla_final_rating !== null && participation.sevilla_rating_change !== null) {
         const newRating = participation.sevilla_final_rating;
         const ratingChange = participation.sevilla_rating_change;
         const currentRating = participation.user.schaakrating_elo;
-        
+
         await prisma.user.update({
           where: { user_id: participation.user_id },
           data: {
@@ -71,7 +73,16 @@ export class RatingService {
           },
         });
 
-      } 
+        // Voegt een punt toe aan de ELIO-historiekgrafiek op het profiel, zodat die
+        // meegroeit met elk toernooi dat de rating bijwerkt (niet enkel de eenmalige
+        // Excel-import). Zelfde maand => overschrijft (bv. bij meerdere afsluitingen
+        // in dezelfde maand blijft enkel de laatste rating staan).
+        await prisma.eloHistory.upsert({
+          where: { user_id_period: { user_id: participation.user_id, period } },
+          create: { user_id: participation.user_id, period, rating: newRating },
+          update: { rating: newRating },
+        });
+      }
     }
 
     invalidatePublicUsersCache();
