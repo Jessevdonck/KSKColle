@@ -19,7 +19,7 @@ export default function Practical() {
               <div>
                 <h3 className="text-sm font-semibold text-textColor">Wanneer</h3>
                 <p className="text-sm text-gray-600">Dinsdag om 17:30u tot 18:30u: Stap 1 &amp; 2</p>
-                <p className="text-sm text-gray-600">Donderdag om 18:30u tot 19:45u</p>
+                <p className="text-sm text-gray-600">Donderdag om 18:30u tot 19:45u: Stap 3 &amp; 4</p>
                 <p className="text-sm text-gray-500">Niet in schoolvakanties</p>
               </div>
             </div>

@@ -23,22 +23,40 @@ const teachers: Teacher[] = [
     image: "/images/image_placeholder.png",
   },
   {
-    name: "Diego Poeck",
+    name: "Patrick Gillis",
     role: "Trainer",
-    steps: "Stap 1+2",
+    steps: "Stap 1",
+    image: "/images/Bestuur/PatrickGillis.jpg",
+  },
+  {
+    name: "Thomas Buys-Devillé",
+    role: "Trainer",
+    steps: "Stap 1",
+    image: "/images/Bestuur/Thomas Buys-Devillé.jpg",
+  },  
+  {
+    name: "Jo Tondeleir",
+    role: "Trainer",
+    steps: "Stap 2",
     image: "/images/image_placeholder.png",
   },
+  {
+    name: "Dirk Hermans",
+    role: "Trainer",
+    steps: "Stap 2",
+    image: "/images/image_placeholder.png",
+  },  
+  {
+    name: "Bart Schittekat",
+    role: "Trainer",
+    steps: "Stap 3+4",
+    image: "/images/image_placeholder.png",
+  },    
   {
     name: "Sven Schatteman",
     role: "Trainer",
     steps: "Stap 3+4",
     image: "/images/image_placeholder.png",
-  },
-  {
-    name: "Patrick Gillis",
-    role: "Trainer",
-    steps: "Stap 1",
-    image: "/images/Bestuur/PatrickGillis.jpg",
   },
 ]
 
