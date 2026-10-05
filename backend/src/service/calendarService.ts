@@ -3,15 +3,33 @@ import ServiceError from "../core/serviceError";
 import handleDBError from "./handleDBError";
 import { CalendarEvent, CalendarEventCreateInput, EventUpdateInput } from "../types/calendar";
 
+/** Begin van vandaag in Belgische tijd, als UTC-tijdstip. */
+const startOfTodayInBrussels = (): Date => {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Brussels',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const msSinceMidnight =
+    (get('hour') * 3600 + get('minute') * 60 + get('second')) * 1000 + now.getMilliseconds();
+  return new Date(now.getTime() - msSinceMidnight);
+};
+
 export const getAllEvents = async (isYouth?: boolean, showArchive?: boolean): Promise<CalendarEvent[]> => {
   try {
     const whereClause: any = isYouth !== undefined ? { is_youth: isYouth } : {};
     
     // Filter by date based on archive setting
     if (showArchive !== undefined) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset to start of day
-      
+      // Een activiteit gaat pas de dag ná de activiteit naar het archief. De server
+      // draait in UTC en events worden op Belgische middernacht bewaard (= 22u/23u UTC
+      // de dag ervoor), dus de grens moet Belgische middernacht zijn en niet UTC-middernacht.
+      const today = startOfTodayInBrussels();
+
       if (showArchive) {
         // Show only past events (date < today)
         whereClause.date = { lt: today };

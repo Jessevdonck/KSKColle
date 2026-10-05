@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, MapPin, Clock, Trophy, Euro, Mail, Phone, ExternalLink, X } from "lucide-react"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import OvjkSponsors from "../components/OvjkSponsors"
 
 export default function RapidtoernooiPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -17,12 +19,12 @@ export default function RapidtoernooiPage() {
 
         </div>
 
-        {/* Flyer */}
-        <div className="mb-5">
+        {/* Flyer met inschrijving en sponsors ernaast */}
+        <div className="mb-5 grid grid-cols-1 md:grid-cols-[minmax(0,24rem)_1fr] gap-4 items-start">
           <button
             type="button"
             onClick={() => setSelectedImage("/images/Ovjk/flyer-rapid-volwassenen-24-okt-2026.png")}
-            className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md max-w-sm mx-auto"
+            className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md w-full max-w-sm mx-auto"
           >
             <Image
               src="/images/Ovjk/flyer-rapid-volwassenen-24-okt-2026.png"
@@ -33,6 +35,48 @@ export default function RapidtoernooiPage() {
               priority
             />
           </button>
+
+          <div className="space-y-4">
+            {/* Registration */}
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <ExternalLink className="mr-2" size={20} />
+                  Inschrijven
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                  <Button asChild variant="accent" size="sm">
+                    <a href="https://forms.gle/7EDaG679rabcmqmD7" target="_blank" rel="noopener noreferrer">
+                      Inschrijvingsformulier <ExternalLink size={14} />
+                    </a>
+                  </Button>
+                  <span className="text-xs text-gray-600">Inschrijving tot 24 oktober om 12:00</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  <a
+                    href="https://www.kskcolle.be"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-mainAccent hover:underline flex items-center gap-1"
+                  >
+                    www.kskcolle.be <ExternalLink size={14} />
+                  </a>
+                  <a
+                    href="https://ksr.chesspaint.be"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-mainAccent hover:underline flex items-center gap-1"
+                  >
+                    ksr.chesspaint.be <ExternalLink size={14} />
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+
+            <OvjkSponsors onSelect={setSelectedImage} />
+          </div>
         </div>
 
         {/* Main Content */}
@@ -200,44 +244,6 @@ export default function RapidtoernooiPage() {
                       Warme snacks en dranken verkrijgbaar!
                     </p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Registration Links */}
-            <Card className="border-mainAccent/20 shadow-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center text-mainAccent text-base">
-                  <ExternalLink className="mr-2" size={20} />
-                  Inschrijven
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <div className="space-y-2 text-sm">
-                  <a
-                    href="https://forms.gle/7EDaG679rabcmqmD7"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-mainAccent hover:underline block flex items-center gap-1"
-                  >
-                    Google Formulier <ExternalLink size={14} />
-                  </a>
-                  <a
-                    href="https://www.kskcolle.be"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-mainAccent hover:underline block flex items-center gap-1"
-                  >
-                    www.kskcolle.be <ExternalLink size={14} />
-                  </a>
-                  <a
-                    href="https://ksr.chesspaint.be"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-mainAccent hover:underline block flex items-center gap-1"
-                  >
-                    ksr.chesspaint.be <ExternalLink size={14} />
-                  </a>
                 </div>
               </CardContent>
             </Card>

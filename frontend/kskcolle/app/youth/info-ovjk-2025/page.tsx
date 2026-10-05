@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink, X } from "lucide-react"
 import Image from "next/image"
 import OVJKParticipants from "../info/components/OVJKParticipants"
+import OvjkSponsors from "../../components/OvjkSponsors"
 
 const GOOGLE_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform"
@@ -17,17 +18,6 @@ export default function InfoOVJK2025Page() {
   // so we track load-failure in state and render the fallback as a sibling instead - keeping
   // the iframe childless avoids a React hydration mismatch.
   const [formFailed, setFormFailed] = useState(false)
-
-  const sponsors = [
-    { src: "/images/sponsoring/Sponsor6.png", alt: "Sponsor 6" },
-    { src: "/images/sponsoring/Sponsor1.png", alt: "Sponsor 1" },
-    { src: "/images/sponsoring/Sponsor2.png", alt: "Sponsor 2" },
-    { src: "/images/sponsoring/Sponsor3.png", alt: "Sponsor 3" },
-    { src: "/images/sponsoring/Sponsor4.png", alt: "Sponsor 4" },
-    { src: "/images/sponsoring/Sponsor5.jpg", alt: "Sponsor 5" },
-    { src: "/images/sponsoring/Sponsor7.jpg", alt: "Sponsor 7" },
-    { src: "/images/sponsoring/Sponsor8.png", alt: "Sponsor 8" }
-  ]
 
   const flyers = [
     { src: "/images/Ovjk/flyer-ovjk-2026.png", alt: "Flyer Oost-Vlaams Jeugdkampioenschap 2026" },
@@ -46,9 +36,9 @@ export default function InfoOVJK2025Page() {
           </div>
         </div>
 
-        {/* Flyers */}
-        <div className="mb-5">
-          <div className="grid grid-cols-1 gap-2 max-w-sm mx-auto">
+        {/* Flyer met sponsors ernaast */}
+        <div className="mb-5 grid grid-cols-1 md:grid-cols-[minmax(0,24rem)_1fr] gap-4 items-start">
+          <div className="grid grid-cols-1 gap-2 w-full max-w-sm mx-auto">
             {flyers.map((flyer) => (
               <button
                 key={flyer.src}
@@ -67,6 +57,8 @@ export default function InfoOVJK2025Page() {
               </button>
             ))}
           </div>
+
+          <OvjkSponsors onSelect={setSelectedImage} />
         </div>
 
         {/* Results Links */}
@@ -640,37 +632,6 @@ export default function InfoOVJK2025Page() {
                 >
                   {GOOGLE_FORM_URL}
                 </a>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sponsors */}
-        <div className="mt-5">
-          <Card className="border-mainAccent/20 shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-mainAccent text-base">
-                <Trophy className="mr-2" size={20} />
-                Onze Sponsors
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="py-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 items-center justify-items-center">
-                {sponsors.map((sponsor, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => setSelectedImage(sponsor.src)}
-                  >
-                    <Image
-                      src={sponsor.src}
-                      alt={sponsor.alt}
-                      width={120}
-                      height={80}
-                      className="object-contain max-h-20"
-                    />
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>

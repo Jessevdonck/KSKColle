@@ -9,7 +9,8 @@ import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKey
 import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig"
 import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { sortYouthClasses } from "./youthClasses"
 import {
   pairingResultBadgeClass,
   pairingResultBadgeText,
@@ -63,7 +64,10 @@ type Tournament = {
 
 export default function TournamentDetails() {
   const { id } = useParams()
-  const tournamentId = Number(id)
+  const urlTournamentId = Number(id)
+  // Gekozen reeks (bv. "Stap 3+" of "Stap 1+2"); standaard het toernooi uit de URL
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null)
+  const tournamentId = selectedClassId ?? urlTournamentId
   const [currentIndex, setCurrentIndex] = useState(0)
   const [timeline, setTimeline] = useState<
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] })[]
@@ -87,6 +91,26 @@ export default function TournamentDetails() {
     () => getAllTournamentRounds(tournamentId),
     DEFAULT_SWR_OPTIONS,
   )
+
+  // Reeksen van hetzelfde jeugdtoernooi (zelfde naam), actief én gearchiveerd
+  const { data: activeYouthTournaments } = useSWR<Tournament[]>(
+    "tournament?active=true&is_youth=true",
+    getAll,
+    DEFAULT_SWR_OPTIONS,
+  )
+  const { data: archivedYouthTournaments } = useSWR<Tournament[]>(
+    "tournament?active=false&is_youth=true",
+    getAll,
+    DEFAULT_SWR_OPTIONS,
+  )
+  const tournamentClasses = useMemo(() => {
+    if (!tournament) return []
+    const sameName = [...(activeYouthTournaments ?? []), ...(archivedYouthTournaments ?? [])].filter(
+      (t) => t.naam === tournament.naam,
+    )
+    const unique = Array.from(new Map(sameName.map((t) => [t.tournament_id, t])).values())
+    return unique.length > 1 ? sortYouthClasses(unique) : []
+  }, [tournament, activeYouthTournaments, archivedYouthTournaments])
 
   // Build timeline when data is available
   useEffect(() => {
@@ -275,6 +299,31 @@ export default function TournamentDetails() {
           </div>
         </div>
       </div>
+
+      {/* Reeks-tabs */}
+      {tournamentClasses.length > 1 && (
+        <div className="bg-white border-b border-neutral-200">
+          <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-2 flex flex-wrap gap-2">
+            {tournamentClasses.map((tournamentClass) => (
+              <button
+                key={tournamentClass.tournament_id}
+                onClick={() => {
+                  setSelectedClassId(tournamentClass.tournament_id)
+                  setTimeline([])
+                  setCurrentIndex(0)
+                }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  tournamentClass.tournament_id === tournamentId
+                    ? "bg-mainAccent text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {tournamentClass.class_name || "Hoofdtoernooi"}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Mobile Tabs - Only visible on mobile */}
       <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">

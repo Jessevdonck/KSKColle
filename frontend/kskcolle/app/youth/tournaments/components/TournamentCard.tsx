@@ -18,6 +18,8 @@ interface TournamentCardProps {
       voornaam: string
       achternaam: string
     }>
+    /** Reeksnamen wanneer het toernooi uit meerdere reeksen bestaat */
+    _classNames?: string[]
   }
 }
 
@@ -26,6 +28,15 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
     <Link href={`/youth/tournaments/${tournament.tournament_id}`} className="block group">
       <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-mainAccent/30">
         <h2 className="text-lg font-semibold text-textColor mb-2 leading-snug">{tournament.naam}</h2>
+        {tournament._classNames && tournament._classNames.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {tournament._classNames.map((className) => (
+              <span key={className} className="px-1.5 py-0.5 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
+                {className}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="flex items-center text-textColor mb-1.5 text-sm">
           <Calendar className="h-4 w-4 mr-1.5 text-mainAccent" />
           <span className="font-semibold">Rondes:</span>

@@ -1,9 +1,11 @@
+import Link from "next/link"
 import { Trophy, Users, Sun } from "lucide-react"
 
 const activities = [
   {
     icon: Trophy,
     title: "Competities",
+    href: "/toernooien",
     description: "We organiseren het hele jaar door competities en neveactiviteiten tussen clubleden!",
     color: "from-blue-500 to-blue-600",
     bgColor: "from-blue-50 to-blue-100",
@@ -11,6 +13,7 @@ const activities = [
   {
     icon: Users,
     title: "Jeugdwerking",
+    href: "/youth/info",
     description: "Elke dinsdag van 17:30 tot 18:30 en elke donderdag van 18:30 tot 19:45",
     color: "from-green-500 to-green-600",
     bgColor: "from-green-50 to-green-100",
@@ -18,6 +21,7 @@ const activities = [
   {
     icon: Sun,
     title: "Zomerkampen",
+    href: "/youth/zomerkampen",
     description: "In de zomer organiseert Schaakclub KSK Colle een zomerkamp schaken.",
     color: "from-yellow-500 to-yellow-600",
     bgColor: "from-yellow-50 to-yellow-100",
@@ -39,9 +43,10 @@ const Activities = () => {
             {activities.map((activity, index) => {
               const IconComponent = activity.icon
               return (
-                <div
+                <Link
                   key={index}
-                  className="group relative overflow-hidden rounded-lg border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-md"
+                  href={activity.href}
+                  className="group relative block overflow-hidden rounded-lg border border-neutral-200 hover:border-mainAccent/30 transition-all duration-300 hover:shadow-md"
                 >
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${activity.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
@@ -57,7 +62,7 @@ const Activities = () => {
                     </h3>
                     <p className="text-sm text-gray-600 leading-relaxed">{activity.description}</p>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>

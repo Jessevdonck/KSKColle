@@ -61,17 +61,42 @@ export interface RecordResult {
   }[]
 }
 
-export const EXCEL_FILES = [
-  { name: 'Herfsttoernooi', file: 'herfst.xlsx', format: 'simple' },
-  { name: 'Clubkampioenschap', file: 'lente.xlsx', format: 'klasses' },
-  { name: 'Zomertoernooi', file: 'zomer.xlsx', format: 'zomer' },
-  { name: 'Snelschaakkampioenschap', file: 'snelschaak.xlsx', format: 'klasses' },
-  { name: 'Nieuwjaarsquiz', file: 'quiz.xlsx', format: 'quiz' },
-  { name: 'Konijnenschaak', file: 'konijn.xlsx', format: 'konijn' },
-  { name: 'Megaschaak', file: 'Megalijst.xlsx', format: 'megalijst' },
-  { name: 'Ranking Clubkampioenschap', file: 'Ranking.xlsx', format: 'ranking' },
-  { name: 'Unieke Prestaties', file: 'Records.xlsx', format: 'records' }
+export type ErelijstFormat =
+  | 'simple' | 'klasses' | 'zomer' | 'snelschaak' | 'quiz' | 'konijn' | 'megalijst' | 'ranking' | 'records'
+
+export interface ErelijstFile {
+  /** URL-segment: /erelijsten/<slug> */
+  slug: string
+  name: string
+  file: string
+  format: ErelijstFormat
+  description: string
+}
+
+export const EXCEL_FILES: ErelijstFile[] = [
+  { slug: 'herfsttoernooi', name: 'Herfsttoernooi', file: 'herfst.xlsx', format: 'simple', description: 'Podium en ratingprijs per jaar' },
+  { slug: 'clubkampioenschap', name: 'Clubkampioenschap', file: 'lente.xlsx', format: 'klasses', description: 'Podium per klasse van de lentecompetitie' },
+  { slug: 'zomertoernooi', name: 'Zomertoernooi', file: 'zomer.xlsx', format: 'zomer', description: 'Winnaars van het zomertoernooi' },
+  { slug: 'snelschaakkampioenschap', name: 'Snelschaakkampioenschap', file: 'snelschaak.xlsx', format: 'snelschaak', description: 'Kampioenen per klasse' },
+  { slug: 'nieuwjaarsquiz', name: 'Nieuwjaarsquiz', file: 'quiz.xlsx', format: 'quiz', description: 'Winnende ploegen van de quiz' },
+  { slug: 'konijnenschaak', name: 'Konijnenschaak', file: 'konijn.xlsx', format: 'konijn', description: 'Winnaars van het konijnenschaak' },
+  { slug: 'megaschaak', name: 'Megaschaak', file: 'Megalijst.xlsx', format: 'megalijst', description: 'Podium van het megaschaak' },
+  { slug: 'ranking-clubkampioenschap', name: 'Ranking Clubkampioenschap', file: 'Ranking.xlsx', format: 'ranking', description: 'Aantal podiumplaatsen per speler en klasse' },
+  { slug: 'unieke-prestaties', name: 'Unieke Prestaties', file: 'Records.xlsx', format: 'records', description: 'Bijzondere records en prestaties' },
 ]
+
+/**
+ * Splits een winnaarscel in afzonderlijke spelers. Gedeelde titels staan als
+ * "Naam A & Naam B"; cellen als "Geen Winnaar" leveren niemand op.
+ */
+export const splitWinners = (cell?: string): string[] => {
+  if (!cell) return []
+  if (/^geen winnaar/i.test(cell.trim())) return []
+  return cell
+    .split('&')
+    .map((deel) => deel.trim().replace(/\s+/g, ' '))
+    .filter(Boolean)
+}
 
 /** Haal een erelijst-Excel op en geef de ruwe rijen terug (header: 1). */
 export async function fetchErelijstRows(file: string): Promise<any[]> {
@@ -366,7 +391,8 @@ export const processSnelschaakData = (jsonData: any[]): KlasseResult[] => {
       // Kolom F (index 5): Tweede Klasse
       // Kolom I (index 8): Derde Klasse
       // Kolom L (index 11): Vierde Klasse
-      const klasseColumns = [2, 5, 8, 11] // C, F, I, L
+      // Kolom O (index 14): Vijfde Klasse
+      const klasseColumns = [2, 5, 8, 11, 14] // C, F, I, L, O
 
       for (let k = 0; k < klasseColumns.length; k++) {
         const klasseColIndex = klasseColumns[k]

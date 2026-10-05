@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { format, isFuture } from "date-fns"
+import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Calendar, Clock, Pen } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -25,8 +25,11 @@ export default function EventCarousel({ events }: CarouselProps) {
   const eventsPerPage = 3
 
   useEffect(() => {
+    // Activiteiten van vandaag blijven zichtbaar tot de dag erna
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
     const futureEvents = events
-      .filter((event) => isFuture(new Date(event.date)))
+      .filter((event) => new Date(event.date) >= startOfToday)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     setVisibleEvents(futureEvents)
   }, [events])

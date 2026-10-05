@@ -218,7 +218,7 @@ export default function Navbar() {
 
           {/* About Us Dropdown */}
           <div className="relative group">
-            <div className={navTriggerClass(isGroupActive(["/about", "/locatie", "/interviews", "/photos", "/articles", "/nationale-elo"]))}>
+            <div className={navTriggerClass(isGroupActive(["/about", "/locatie", "/interviews", "/photos", "/articles"]))}>
               <Users size={14} />
               <span>Over Ons</span>
               <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
@@ -240,9 +240,9 @@ export default function Navbar() {
                 <Link href="/articles" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Artikels
                 </Link>
-                <Link href="/nationale-elo" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
-                  Nationaal ELO Archief
-                </Link>
+                <a href="https://frbe-kbsb.odoo.com/nl/players?club_name=KSK+Edg.+Colle+Sint-Niklaas+(410)" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
+                  FIDE Elo KSK Colle
+                </a>
               </div>
             </div>
           </div>
@@ -370,7 +370,7 @@ export default function Navbar() {
 
           {/* Historiek Dropdown */}
           <div className="relative group">
-            <div className={navTriggerClass(isGroupActive(["/erelijsten", "/historiek"]))}>
+            <div className={navTriggerClass(isGroupActive(["/erelijsten", "/historiek", "/nationale-elo"]))}>
               <History size={14} />
               <span>Historiek</span>
               <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
@@ -382,6 +382,9 @@ export default function Navbar() {
                 </Link>
                 <Link href="/historiek/documenten" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Historische Documenten
+                </Link>
+                <Link href="/nationale-elo" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
+                  Nationaal ELO Archief
                 </Link>
               </div>
             </div>
@@ -502,13 +505,15 @@ export default function Navbar() {
                   >
                     Artikels
                   </Link>
-                  <Link
-                    href="/nationale-elo"
+                  <a
+                    href="https://frbe-kbsb.odoo.com/nl/players?club_name=KSK+Edg.+Colle+Sint-Niklaas+(410)"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Nationaal ELO Archief
-                  </Link>
+                    FIDE Elo KSK Colle
+                  </a>
                 </div>
               )}
             </div>
@@ -741,6 +746,13 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Historische Documenten
+                  </Link>
+                  <Link
+                    href="/nationale-elo"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Nationaal ELO Archief
                   </Link>
                 </div>
               )}
