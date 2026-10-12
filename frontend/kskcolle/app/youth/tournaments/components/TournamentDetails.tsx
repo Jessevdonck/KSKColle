@@ -11,6 +11,7 @@ import { format, isSameDay, parseISO } from "date-fns"
 import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import { sortYouthClasses } from "./youthClasses"
+import MobilePairingList from "@/app/components/MobilePairingList"
 import {
   pairingResultBadgeClass,
   pairingResultBadgeText,
@@ -268,7 +269,7 @@ export default function TournamentDetails() {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-3">
+        <div className="max-w-[90rem] mx-auto px-3 sm:px-8 lg:px-12 py-3">
           <div className="flex items-center gap-2">
             <div className="bg-mainAccent/10 p-1.5 rounded-lg">
               <Trophy className="h-5 w-5 text-mainAccent" />
@@ -303,11 +304,14 @@ export default function TournamentDetails() {
       {/* Reeks-tabs */}
       {tournamentClasses.length > 1 && (
         <div className="bg-white border-b border-neutral-200">
-          <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-2 flex flex-wrap gap-2">
+          <div className="max-w-[90rem] mx-auto px-3 sm:px-8 lg:px-12 py-2 flex flex-wrap gap-2">
             {tournamentClasses.map((tournamentClass) => (
               <button
                 key={tournamentClass.tournament_id}
                 onClick={() => {
+                  // De tijdlijn wordt opnieuw opgebouwd zodra de data van de reeks binnen is;
+                  // de actieve reeks opnieuw aanklikken mag hem niet leegmaken.
+                  if (tournamentClass.tournament_id === tournamentId) return
                   setSelectedClassId(tournamentClass.tournament_id)
                   setTimeline([])
                   setCurrentIndex(0)
@@ -327,7 +331,7 @@ export default function TournamentDetails() {
 
       {/* Mobile Tabs - Only visible on mobile */}
       <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-[90rem] mx-auto px-6">
+        <div className="max-w-[90rem] mx-auto px-3 sm:px-6">
           <div className="flex gap-1">
             <button
               onClick={() => setActiveTab('rounds')}
@@ -360,7 +364,7 @@ export default function TournamentDetails() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-4">
+      <div className="max-w-[90rem] mx-auto px-3 sm:px-8 lg:px-12 py-4">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
           {/* Rounds & Makeup Days with Navigation */}
           <div className={`xl:col-span-2 ${activeTab === 'rounds' ? 'block' : 'hidden xl:block'}`}>
@@ -522,7 +526,25 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
           <p className="text-gray-500 text-sm">Er zijn geen partijen uitgesteld naar deze inhaaldag.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
+        <>
+        <MobilePairingList
+          className="sm:hidden"
+          games={games}
+          getScore={null}
+          emptyLabel="Nog te spelen"
+          renderAction={(g) =>
+            isUserInvolvedInGame(g) && (
+              <button
+                onClick={() => handleUndoPostpone(g.game_id)}
+                className="-mr-1 shrink-0 p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+                title="Uitstel ongedaan maken"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )
+          }
+        />
+        <div className="hidden sm:block bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
@@ -602,6 +624,7 @@ function MakeupPairings({ day, games, currentUser }: { day: MakeupDay; games: Ga
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   )

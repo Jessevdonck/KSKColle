@@ -6,6 +6,7 @@ import {
   pairingResultBadgeText,
 } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
+import MobilePairingList from "@/app/components/MobilePairingList"
 
 interface PlayerScore {
   user_id: number
@@ -280,104 +281,14 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
           </table>
         </div>
 
-        {/* Mobile Card View */}
-        <div className="md:hidden space-y-3">
-          {(() => {
-            const tournamentWithSevilla = tournament as any;
-            return tournamentWithSevilla?.is_sevilla_imported 
-              ? sortSevillaGamesWithPostponed(round.games as any)
-              : round.games;
-          })().map((game, index) => (
-            <div
-              key={game.game_id}
-              className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4"
-            >
-              {/* Header with Board Number and Result */}
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="bg-mainAccent/10 text-mainAccent rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                    {index + 1}
-                  </div>
-                  <div className="text-sm font-medium text-gray-600">Bord {index + 1}</div>
-                </div>
-                <span
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${pairingResultBadgeClass(
-                    game.result,
-                    game.uitgestelde_datum,
-                  )}`}
-                >
-                  {pairingResultBadgeText(game.result, game.uitgestelde_datum)}
-                </span>
-              </div>
-
-              {/* Players */}
-              <div className="space-y-4">
-                {/* White Player */}
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                    W
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
-                      className="font-medium text-textColor hover:text-mainAccent transition-colors block whitespace-nowrap"
-                    >
-                      {game.speler1.voornaam} {game.speler1.achternaam}
-                    </Link>
-                    <div className="flex items-center gap-4 mt-0.5 text-xs">
-                      {tournament?.is_youth !== true && (
-                        <span className="font-normal text-yellow-600">ELIO: {game.speler1.schaakrating_elo}</span>
-                      )}
-                      {playerScores.length > 0 && (
-                        <span className="font-bold text-black">
-                          {getPlayerScore(game.speler1.user_id)} pt
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* VS Divider */}
-                <div className="flex items-center justify-center">
-                  <div className="text-gray-400 text-sm font-medium">VS</div>
-                </div>
-
-                {/* Black Player */}
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                    Z
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    {game.speler2 ? (
-                      <Link
-                        href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
-                        className="font-medium text-textColor hover:text-mainAccent transition-colors block whitespace-nowrap"
-                      >
-                        {game.speler2.voornaam} {game.speler2.achternaam}
-                      </Link>
-                    ) : (
-                      <div className="font-medium text-gray-500 italic whitespace-nowrap">
-                        {getByeText(game.result)}
-                      </div>
-                    )}
-                    {game.speler2 && (
-                      <div className="flex items-center gap-4 mt-0.5 text-xs">
-                        {tournament?.is_youth !== true && (
-                          <span className="font-normal text-yellow-600">ELIO: {game.speler2.schaakrating_elo}</span>
-                        )}
-                        {playerScores.length > 0 && (
-                          <span className="font-bold text-black">
-                            {getPlayerScore(game.speler2.user_id)} pt
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Mobile: compacte lijst */}
+        <MobilePairingList
+          className="md:hidden"
+          games={(tournament as any)?.is_sevilla_imported ? sortSevillaGamesWithPostponed(round.games as any) : round.games}
+          getScore={playerScores.length > 0 ? getPlayerScore : null}
+          showRating={tournament?.is_youth !== true}
+          byeLabel={getByeText}
+        />
       </>
       ) : (
         <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-6 text-center">

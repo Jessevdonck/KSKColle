@@ -20,6 +20,7 @@ import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKey
 import { isDoubleForfeitResult } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig"
+import MobilePairingList, { ResultBadge } from "@/app/components/MobilePairingList"
 
 type Game = {
   game_id: number
@@ -389,7 +390,7 @@ export default function TournamentDetails() {
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-3">
+        <div className="max-w-[90rem] mx-auto px-3 sm:px-8 lg:px-12 py-3">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="bg-mainAccent/10 p-1.5 rounded-lg">
@@ -448,7 +449,7 @@ export default function TournamentDetails() {
       {/* Class Tabs - Only show if tournament has multiple classes */}
       {hasMultipleClasses && (
         <div className="bg-white border-b border-neutral-200">
-          <div className={isLentecompetitie ? "max-w-4xl mx-auto px-2" : "max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12"}>
+          <div className={isLentecompetitie ? "max-w-4xl mx-auto px-2" : "max-w-[90rem] mx-auto px-3 sm:px-8 lg:px-12"}>
             <div className="flex gap-2 overflow-x-auto py-2">
               {tournamentClasses.map((tournamentClass, index) => (
                 <React.Fragment key={tournamentClass.tournament_id}>
@@ -487,7 +488,7 @@ export default function TournamentDetails() {
       {/* For other tournaments with megaschaak: show tabs if there's more than just "rounds" */}
       {(!isLentecompetitie && tournament.megaschaak_enabled) && (
         <div className="hidden xl:block bg-white border-b border-neutral-200">
-          <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="max-w-[90rem] mx-auto px-3 sm:px-8 lg:px-12">
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTab('rounds')}
@@ -538,7 +539,7 @@ export default function TournamentDetails() {
       {/* For other tournaments with megaschaak: show tabs if there's more than just "rounds" */}
       {(!isLentecompetitie && tournament.megaschaak_enabled) && (
         <div className="xl:hidden bg-white border-b border-neutral-200 sticky top-0 z-10">
-          <div className="max-w-[90rem] mx-auto px-6">
+          <div className="max-w-[90rem] mx-auto px-3 sm:px-6">
             <div className="flex gap-1">
               <button
                 onClick={() => setActiveTab('rounds')}
@@ -585,7 +586,7 @@ export default function TournamentDetails() {
       )}
 
       {/* Main Content */}
-      <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 py-4">
+      <div className="max-w-[90rem] mx-auto px-3 sm:px-8 lg:px-12 py-4">
         {/* Megaschaak Tab - Full Width */}
         {tournament.megaschaak_enabled && activeTab === 'megaschaak' && (
           <div className="xl:hidden">
@@ -714,7 +715,7 @@ export default function TournamentDetails() {
           </div>
         ) : (
           /* For other tournaments: Rounds and Standings side by side (op mobile: stand onder de rondes) */
-          <div className={`grid grid-cols-1 xl:grid-cols-3 gap-3 max-w-7xl mx-auto px-2 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
+          <div className={`grid grid-cols-1 xl:grid-cols-3 gap-3 max-w-7xl mx-auto px-0 sm:px-2 ${activeTab === 'megaschaak' ? 'hidden' : ''}`}>
             {/* Rounds & Makeup Days - op mobile eerst (order-1), op desktop links */}
             <div className={`xl:col-span-2 order-1 xl:order-1 ${activeTab === 'rounds' || activeTab === 'standings' ? 'block' : 'hidden xl:block'}`}>
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -770,7 +771,7 @@ export default function TournamentDetails() {
                 </div>
 
                 {/* Current Round/Makeup Day Content */}
-                <div className="p-2">
+                <div className="p-1.5 sm:p-2">
                   {currentEntry ? (
                     currentEntry.kind === "round" ? (
                       <RoundPairings 
@@ -1094,120 +1095,40 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
             </table>
           </div>
 
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-3">
-            {games.map((g, idx) => (
-              <div
-                key={g.game_id}
-                className="bg-white rounded-lg border border-neutral-200 shadow-sm p-4"
-              >
-                {/* Header with Board Number and Result */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-200">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-mainAccent/10 text-mainAccent rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                      {idx + 1}
-                    </div>
-                    <div className="text-sm font-medium text-gray-700">Bord {idx + 1}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                        g.result &&
-                        g.result !== "not_played" &&
-                        g.result !== "..." &&
-                        !isDoubleForfeitResult(g.result)
-                          ? "bg-green-100 text-green-800 border border-green-200"
-                          : "bg-gray-100 text-gray-600 border border-gray-200"
-                      }`}
-                    >
-                      {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "Nog te spelen"}
-                    </span>
-                    {isUserInvolvedInGame(g) && (
-                      <button
-                        onClick={() => handleUndoPostpone(g.game_id)}
-                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
-                        title="Uitstel ongedaan maken"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Players */}
-                <div className="space-y-4">
-                  {/* White Player */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      W
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {g.speler1 && g.speler1.voornaam && g.speler1.achternaam ? (
-                        <Link
-                          href={`/profile/${createUrlFriendlyName(g.speler1.voornaam, g.speler1.achternaam)}`}
-                          className="font-medium text-textColor hover:text-mainAccent transition-colors block whitespace-nowrap"
-                        >
-                          {g.speler1.voornaam} {g.speler1.achternaam}
-                        </Link>
-                      ) : (
-                        <div className="text-gray-600 italic text-sm">
-                          Speler niet gevonden
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4 mt-0.5 text-xs">
-                        {tournament?.is_youth !== true && g.speler1?.schaakrating_elo && (
-                          <span className="font-normal text-yellow-600">ELIO: {g.speler1.schaakrating_elo}</span>
-                        )}
-                        {playerScores.length > 0 && (
-                          <span className="font-bold text-black">
-                            {getPlayerScore(g.speler1?.user_id || 0)} pt
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* VS Divider */}
-                  <div className="flex items-center justify-center">
-                    <div className="text-gray-400 text-sm font-medium">VS</div>
-                  </div>
-
-                  {/* Black Player */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                      Z
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {g.speler2 && g.speler2.voornaam && g.speler2.achternaam ? (
-                        <Link
-                          href={`/profile/${createUrlFriendlyName(g.speler2.voornaam, g.speler2.achternaam)}`}
-                          className="font-medium text-textColor hover:text-mainAccent transition-colors block whitespace-nowrap"
-                        >
-                          {g.speler2.voornaam} {g.speler2.achternaam}
-                        </Link>
-                      ) : (
-                        <div className="font-medium text-gray-500 italic whitespace-nowrap">
-                          {getByeText(g.result)}
-                        </div>
-                      )}
-                      {g.speler2 && (
-                        <div className="flex items-center gap-4 mt-0.5 text-xs">
-                          {tournament?.is_youth !== true && g.speler2?.schaakrating_elo && (
-                            <span className="font-normal text-yellow-600">ELIO: {g.speler2.schaakrating_elo}</span>
-                          )}
-                          {playerScores.length > 0 && (
-                            <span className="font-bold text-black">
-                              {getPlayerScore(g.speler2.user_id)} pt
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Mobile: compacte lijst (zelfde layout als de rondes) */}
+          <MobilePairingList
+            className="md:hidden"
+            games={games}
+            getScore={playerScores.length > 0 ? getPlayerScore : null}
+            showRating={tournament?.is_youth !== true}
+            byeLabel={getByeText}
+            renderResult={(g) => {
+              const hasResult =
+                !!g.result && g.result !== "not_played" && g.result !== "..." && !isDoubleForfeitResult(g.result)
+              return (
+                <ResultBadge
+                  className={
+                    hasResult
+                      ? "bg-green-100 text-green-800 border border-green-200"
+                      : "bg-gray-100 text-gray-600 border border-gray-200"
+                  }
+                >
+                  {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "..."}
+                </ResultBadge>
+              )
+            }}
+            renderAction={(g) =>
+              isUserInvolvedInGame(g) && (
+                <button
+                  onClick={() => handleUndoPostpone(g.game_id)}
+                  className="-mr-1 shrink-0 p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+                  title="Uitstel ongedaan maken"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )
+            }
+          />
         </>
       )}
     </div>

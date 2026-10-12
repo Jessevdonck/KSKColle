@@ -7,6 +7,7 @@ import {
   pairingResultBadgeText,
 } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
+import MobilePairingList from "@/app/components/MobilePairingList"
 
 interface PlayerScore {
   user_id: number
@@ -100,16 +101,21 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
     )
   }
 
+  const sortedGames = tournament?.is_sevilla_imported
+    ? sortSevillaGamesWithPostponed(round.games)
+    : round.games
+  const hasScores = playerScores.length > 0
+
   return (
     <div>
-      <div className="mb-4">
-        <h3 className="text-xl font-bold text-textColor mb-2 flex items-center gap-2">
+      <div className="mb-2 sm:mb-4">
+        <h3 className="text-lg sm:text-xl font-bold text-textColor mb-1 sm:mb-2 flex items-center gap-2">
           <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
             {round.ronde_nummer}
           </div>
           Ronde {round.ronde_nummer}
         </h3>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-600">
+        <div className="flex flex-wrap sm:flex-row sm:items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-600">
           <p>{round.games.length} partijen</p>
           {round.ronde_datum && (
             <div className="flex items-center gap-4">
@@ -133,7 +139,14 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
+      {/* Mobiel: compacte lijst */}
+      <MobilePairingList
+        className="sm:hidden"
+        games={sortedGames}
+        getScore={hasScores ? getPlayerScore : null}
+      />
+
+      <div className="hidden sm:block bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
@@ -152,13 +165,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
             </tr>
           </thead>
           <tbody>
-        {(() => {
-          const tournamentWithSevilla = tournament as any;
-         
-          return tournamentWithSevilla?.is_sevilla_imported 
-            ? sortSevillaGamesWithPostponed(round.games)
-            : round.games;
-        })().map((game, index) => (
+            {sortedGames.map((game, index) => (
               <tr
                 key={game.game_id}
                 className={`border-b border-neutral-100 ${
