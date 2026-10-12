@@ -5,7 +5,7 @@ const teamMembers = [
   { name: "Niels Ongena", role: "Voorzitter", image: "/images/image_placeholder.png" },
   { name: "Patrick Gillis", role: "Secretaris", image: "/images/Bestuur/PatrickGillis.jpg" },
   { name: "Maarten Covents", role: "Penningmeester", image: "/images/Bestuur/MaartenCovents.jpg" },
-  { name: "Ronny Eelen", role: "Verantwoordelijke jeugdwerking", image: "/images/image_placeholder.png" },
+  { name: "Ronny Eelen", role: "Verantwoordelijke jeugdwerking", image: "/images/Bestuur/RonnyEelen.jpg" },
   { name: "Thomas Buys-Devillé", role: "Materiaalmeester", image: "/images/Bestuur/ThomasBuys.jpg" },
 ]
 

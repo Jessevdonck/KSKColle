@@ -14,7 +14,7 @@ const teachers: Teacher[] = [
     name: "Ronny Eelen",
     role: "Verantwoordelijke Jeugdwerking",
     steps: "Stap 2",
-    image: "/images/image_placeholder.png",
+    image: "/images/Bestuur/RonnyEelen.jpg",
   },
   {
     name: "Ruud Vermeulen",
