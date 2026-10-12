@@ -195,10 +195,17 @@ export class SevillaImporterService {
     incremental: boolean = false,
   ): Promise<number> {
     try {
-      // Get the latest ranking (final standings) for tournament info
-      const latestRanking = group.Ranking[group.Ranking.length - 1];
+      // Get the latest ranking (final standings) for tournament info.
+      // Een reeks die nog niet gestart is (bv. "Stap 1+2" bij het begin van het
+      // jeugdkampioenschap) heeft nog geen ranking: die maken we aan als leeg
+      // toernooi, zodat de reeks al als tabblad zichtbaar is.
+      const latestRanking = group.Ranking?.[group.Ranking.length - 1];
       if (!latestRanking) {
-        throw new Error("No ranking data found");
+        return await this.ensureEmptyGroupTournament(
+          tournamentName,
+          className,
+          incremental,
+        );
       }
 
       let tournament;
@@ -222,6 +229,23 @@ export class SevillaImporterService {
           where: whereClause,
           include: { rounds: true },
         });
+
+        // Toernooi dat eerder zonder reeksen werd geïmporteerd en nu reeksen
+        // heeft: de eerste reeks neemt het bestaande toernooi over, zodat er
+        // geen dubbel toernooi zonder reeksnaam achterblijft.
+        if (!tournament && className !== null && group.ID === 1) {
+          const legacy = await prisma.tournament.findFirst({
+            where: { naam: tournamentName, finished: false, class_name: null },
+            include: { rounds: true },
+          });
+          if (legacy) {
+            await prisma.tournament.update({
+              where: { tournament_id: legacy.tournament_id },
+              data: { class_name: className },
+            });
+            tournament = { ...legacy, class_name: className };
+          }
+        }
 
         if (tournament) {
           // Update tournament info if needed
@@ -331,6 +355,37 @@ export class SevillaImporterService {
       console.error("Error importing Sevilla tournament:", error);
       throw error;
     }
+  }
+
+  /**
+   * Zoekt (of maakt) het actieve toernooi voor een reeks zonder gespeelde rondes.
+   */
+  private async ensureEmptyGroupTournament(
+    tournamentName: string,
+    className: string | null,
+    incremental: boolean,
+  ): Promise<number> {
+    if (incremental) {
+      const existing = await prisma.tournament.findFirst({
+        where: { naam: tournamentName, finished: false, class_name: className },
+      });
+      if (existing) {
+        return existing.tournament_id;
+      }
+    }
+
+    const created = await prisma.tournament.create({
+      data: {
+        naam: tournamentName,
+        rondes: 0,
+        type: "SWISS",
+        rating_enabled: true,
+        finished: false,
+        is_youth: tournamentName.toLowerCase().includes("jeugd"),
+        class_name: className,
+      },
+    });
+    return created.tournament_id;
   }
 
   private async importPlayers(
@@ -1269,25 +1324,13 @@ export class SevillaImporterService {
         return false;
       }
 
-      const mainGroup = data.GroupReport.find((g: any) => g.ID === 1);
-      if (
-        !mainGroup ||
-        !mainGroup.Ranking ||
-        !Array.isArray(mainGroup.Ranking)
-      ) {
-        return false;
-      }
-
-      const latestRanking = mainGroup.Ranking[mainGroup.Ranking.length - 1];
-      if (
-        !latestRanking ||
-        !latestRanking.Player ||
-        !Array.isArray(latestRanking.Player)
-      ) {
-        return false;
-      }
-
-      return true;
+      // Minstens één reeks moet al een ranking met spelers hebben; andere
+      // reeksen mogen nog leeg zijn (nog niet gestart).
+      return data.GroupReport.some((group: any) => {
+        if (!Array.isArray(group?.Ranking)) return false;
+        const latestRanking = group.Ranking[group.Ranking.length - 1];
+        return Array.isArray(latestRanking?.Player);
+      });
     } catch (error) {
       console.error("Error validating Sevilla data:", error);
       return false;

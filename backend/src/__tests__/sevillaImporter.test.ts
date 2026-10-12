@@ -113,6 +113,19 @@ describe('SevillaImporterService', () => {
       const result = await sevillaImporter.validateSevillaData(invalidData);
       expect(result).toBe(false);
     });
+
+    it('should accept a class that has not started yet next to a started one', async () => {
+      const data = {
+        Name: 'Jeugdkampioenschap',
+        GroupReport: [
+          { ID: 1, Name: 'Stap 3+', Ranking: [{ Round: 1, Player: [{ ID: 1, Name: 'Test Player' }] }] },
+          { ID: 2, Name: 'Stap 1+2', Ranking: [] },
+        ],
+      };
+
+      const result = await sevillaImporter.validateSevillaData(data);
+      expect(result).toBe(true);
+    });
   });
 
   describe('parseDate', () => {
