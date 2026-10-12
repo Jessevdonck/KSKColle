@@ -25,6 +25,11 @@ export interface ArticleWithAuthor extends Article {
   }
 }
 
+/** Artikel in een overzichtslijst: zonder foto's, met een thumbnail-URL (relatief t.o.v. de API). */
+export interface ArticleListItem extends Omit<ArticleWithAuthor, 'image_urls'> {
+  thumbnail_url: string | null
+}
+
 export interface CreateArticleRequest {
   title: string
   content: string
@@ -53,10 +58,11 @@ export interface GetArticlesRequest {
   featured?: boolean
   author_id?: number
   showAllForAuthor?: number // For authors: show published articles + own drafts
+  search?: string // Zoekt in titel, samenvatting en inhoud
 }
 
 export interface GetArticlesResponse {
-  items: ArticleWithAuthor[]
+  items: ArticleListItem[]
   total: number
   page: number
   pageSize: number

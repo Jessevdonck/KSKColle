@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "../contexts/auth"
 import { getAllArticles } from "../api/index"
-import { Article, ArticleListResponse } from "../../data/article"
+import { Article, ArticleListResponse, articleThumbnailUrl } from "../../data/article"
 import { Plus, Search, Calendar, User, EyeOff, ArrowRight, ChevronLeft, ChevronRight, Newspaper } from "lucide-react"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
@@ -30,24 +30,44 @@ export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState({
     search: "",
     published: "all",
   })
+  // Zoekterm die effectief naar de API gaat: pas na een korte pauze in het typen
+  const [search, setSearch] = useState("")
+  // Enkel het antwoord van de laatste aanvraag tonen (oudere kunnen later binnenkomen)
+  const requestId = useRef(0)
 
   const canManage = canManageArticles(user)
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      const term = filters.search.trim()
+      if (term !== search) {
+        setSearch(term)
+        setCurrentPage(1)
+      }
+    }, 300)
+    return () => clearTimeout(timeout)
+  }, [filters.search, search])
+
+  useEffect(() => {
     fetchArticles()
-  }, [currentPage, filters, user])
+  }, [currentPage, filters.published, search, user])
 
   const fetchArticles = async () => {
+    const id = ++requestId.current
     setLoading(true)
     try {
       const params: any = {
         page: currentPage,
         pageSize: PAGE_SIZE,
+      }
+      if (search) {
+        params.search = search
       }
 
       if (canManage) {
@@ -60,29 +80,22 @@ export default function ArticlesPage() {
       }
 
       const response: ArticleListResponse = await getAllArticles(params)
+      if (id !== requestId.current) return
 
-      let filteredArticles = response.items
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase()
-        filteredArticles = filteredArticles.filter(article =>
-          article.title.toLowerCase().includes(searchLower) ||
-          article.content.toLowerCase().includes(searchLower) ||
-          article.excerpt?.toLowerCase().includes(searchLower)
-        )
-      }
-
-      setArticles(filteredArticles)
+      setArticles(response.items)
+      setTotal(response.total)
       setTotalPages(response.totalPages)
     } catch (error) {
       console.error("Error fetching articles:", error)
     } finally {
-      setLoading(false)
+      if (id === requestId.current) setLoading(false)
     }
   }
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }))
-    setCurrentPage(1)
+    // De zoekterm springt pas naar pagina 1 als ze effectief verstuurd wordt
+    if (field !== "search") setCurrentPage(1)
   }
 
   const goToPage = (page: number) => {
@@ -91,7 +104,7 @@ export default function ArticlesPage() {
   }
 
   // Het nieuwste artikel krijgt een grote kaart bovenaan (enkel op de eerste pagina, zonder zoekterm)
-  const showFeatured = currentPage === 1 && !filters.search && articles.length > 0
+  const showFeatured = currentPage === 1 && !search && articles.length > 0
   const featured = showFeatured ? articles[0] : null
   const gridArticles = showFeatured ? articles.slice(1) : articles
 
@@ -147,13 +160,26 @@ export default function ArticlesPage() {
             </div>
           </div>
 
+          {search && !loading && articles.length > 0 && (
+            <p className="mb-3 text-sm text-gray-600">
+              {total} {total === 1 ? "resultaat" : "resultaten"} voor{" "}
+              <span className="font-semibold text-textColor">&ldquo;{search}&rdquo;</span>
+            </p>
+          )}
+
           {loading ? (
             <ArticlesSkeleton />
           ) : articles.length === 0 ? (
             <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-8 text-center">
               <Newspaper className="h-10 w-10 text-gray-300 mx-auto mb-2" />
               <h3 className="text-lg font-semibold mb-1">Geen artikels gevonden</h3>
-              <p className="text-sm text-gray-600 mb-4">Er zijn geen artikels die voldoen aan je zoekcriteria.</p>
+              <p className="text-sm text-gray-600 mb-4">
+                {search ? (
+                  <>Er zijn geen artikels met &ldquo;{search}&rdquo;.</>
+                ) : (
+                  "Er zijn geen artikels die voldoen aan je zoekcriteria."
+                )}
+              </p>
               {canManage && (
                 <Link href="/articles/create">
                   <Button variant="accent">
@@ -223,7 +249,7 @@ export default function ArticlesPage() {
 }
 
 function ArticleThumbnail({ article, sizes, priority = false }: { article: Article; sizes: string; priority?: boolean }) {
-  const imageUrl = article.image_urls?.[0]
+  const imageUrl = articleThumbnailUrl(article)
 
   if (!imageUrl) {
     // Geen afbeelding: clublogo op een warme achtergrond
@@ -241,6 +267,7 @@ function ArticleThumbnail({ article, sizes, priority = false }: { article: Artic
       fill
       sizes={sizes}
       priority={priority}
+      unoptimized
       className="object-cover transition-transform duration-500 group-hover:scale-105"
     />
   )

@@ -7,7 +7,7 @@ import { ChevronRight, Calendar, User, ArrowRight, ChevronLeft, Puzzle } from "l
 import Link from "next/link"
 import Image from "next/image"
 import { getRecentArticles } from "../api/index"
-import { Article } from "../../data/article"
+import { Article, articleThumbnailUrl } from "../../data/article"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 
@@ -229,22 +229,22 @@ const HeroHomepage = () => {
                       className="bg-white/20 backdrop-blur-md hover:bg-white/30 transition-all duration-300 hover:shadow-2xl border-white/30 hover:border-mainAccent/50 h-full min-h-[260px] md:min-h-[280px] flex flex-col overflow-hidden w-full"
                     >
                       {/* Image Section - fixed height for consistent card height */}
-                      {article.image_urls && article.image_urls.length > 0 && (
+                      {articleThumbnailUrl(article) && (
                         <div className="relative w-full h-36 shrink-0 overflow-hidden transition-opacity duration-300 group-hover:opacity-0">
                           <Image
-                            src={article.image_urls[0]}
+                            src={articleThumbnailUrl(article)!}
                             alt={article.title}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            quality={80}
+                            unoptimized
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         </div>
                       )}
                       
                       {/* Content: slide-up only when there is an image; line-clamp keeps height consistent */}
-                      {article.image_urls && article.image_urls.length > 0 ? (
+                      {articleThumbnailUrl(article) ? (
                         <div className="flex-grow min-h-0 transition-transform duration-300 group-hover:-translate-y-36">
                           <CardHeader className="pb-2">
                             <CardTitle className="text-lg leading-tight text-white mb-2 line-clamp-2 group-hover:text-mainAccent transition-colors">

@@ -7,6 +7,7 @@ import {
   updateArticle as updateArticleService, 
   deleteArticle as deleteArticleService 
 } from '../service/articleService'
+import { getArticleThumbnail } from '../service/articleThumbnailService'
 import { likeArticle as likeArticleService, unlikeArticle as unlikeArticleService, getArticleLikes as getArticleLikesService } from '../service/articleLikeService'
 import { requireAuthentication, makeRequireRole } from '../core/auth'
 import validate from '../core/validation'
@@ -19,6 +20,7 @@ import type {
   UpdateArticleRequest, 
   GetArticlesResponse,
   ArticleWithAuthor,
+  ArticleListItem,
   ArticleType 
 } from '../types/article'
 
@@ -34,6 +36,7 @@ import type {
  * @apiQuery {Boolean} [published] Filter by published status
  * @apiQuery {Boolean} [featured] Filter by featured status
  * @apiQuery {Number} [author_id] Filter by author ID
+ * @apiQuery {String} [search] Search in title, excerpt and content
  * 
  * @apiSuccess {Object} response Response object with articles and pagination info
  * @apiSuccess {Array} response.items Array of articles
@@ -50,6 +53,7 @@ const getArticles = async (ctx: KoaContext<GetArticlesResponse>) => {
     published: ctx.query.published !== undefined ? ctx.query.published === 'true' : undefined,
     featured: ctx.query.featured ? ctx.query.featured === 'true' : undefined,
     author_id: ctx.query.author_id ? parseInt(ctx.query.author_id as string) : undefined,
+    search: ctx.query.search ? String(ctx.query.search) : undefined,
   }
 
   // Try to authenticate from Authorization header (optional)
@@ -146,6 +150,7 @@ getArticles.validationScheme = {
     published: Joi.boolean().optional(),
     featured: Joi.boolean().optional(),
     author_id: Joi.number().integer().positive().optional(),
+    search: Joi.string().trim().max(100).allow('').optional(),
   }
 }
 
@@ -158,7 +163,7 @@ getArticles.validationScheme = {
  * 
  * @apiSuccess {Array} articles Array of recent articles
  */
-const getRecentArticles = async (ctx: KoaContext<ArticleWithAuthor[]>) => {
+const getRecentArticles = async (ctx: KoaContext<ArticleListItem[]>) => {
   const limit = ctx.query.limit ? parseInt(ctx.query.limit as string) : 5
   const articles = await getRecentArticlesService(limit)
   ctx.body = articles
@@ -167,6 +172,48 @@ getRecentArticles.validationScheme = {
   query: {
     limit: Joi.number().integer().min(1).max(20).optional(),
   }
+}
+
+/**
+ * @api {get} /articles/:id/thumbnail Get a small thumbnail of the article's first image
+ * @apiName GetArticleThumbnail
+ * @apiGroup Articles
+ *
+ * @apiParam {Number} id Article ID
+ * @apiQuery {Number} [v] Cache buster (updated_at timestamp), set by the list endpoints
+ *
+ * @apiSuccess {Binary} image WebP thumbnail (or a redirect for external images)
+ * @apiError (404) NotFound Article or image not found
+ */
+const getThumbnail = async (ctx: KoaContext) => {
+  const articleId = parseInt((ctx.params as { id: string }).id)
+  const thumbnail = await getArticleThumbnail(articleId)
+
+  if (!thumbnail) {
+    ctx.status = 404
+    return
+  }
+
+  // De frontend draait op een ander domein dan de API: afbeelding cross-origin toelaten
+  ctx.set('Cross-Origin-Resource-Policy', 'cross-origin')
+
+  if ('redirect' in thumbnail) {
+    ctx.redirect(thumbnail.redirect)
+    return
+  }
+
+  // De URL bevat ?v=<updated_at>, dus de browser mag de thumbnail lang bewaren
+  ctx.set('Cache-Control', ctx.query.v ? 'public, max-age=31536000, immutable' : 'public, max-age=300')
+  ctx.type = thumbnail.contentType
+  ctx.body = thumbnail.body
+}
+getThumbnail.validationScheme = {
+  params: {
+    id: Joi.number().integer().positive().required(),
+  },
+  query: {
+    v: Joi.number().integer().optional(),
+  },
 }
 
 /**
@@ -341,6 +388,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   router.get('/', validate(getArticles.validationScheme), getArticles)
   router.get('/recent', validate(getRecentArticles.validationScheme), getRecentArticles)
   router.get('/:id/likes', validate(getArticleLikes.validationScheme), getArticleLikes)
+  router.get('/:id/thumbnail', validate(getThumbnail.validationScheme), getThumbnail)
   router.get('/:id', validate(getArticleById.validationScheme), getArticleById)
 
   router.post('/', requireAuthentication, makeRequireRole(['admin', 'bestuurslid', 'author']), validate(createArticle.validationScheme), createArticle)

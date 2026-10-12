@@ -1,13 +1,49 @@
-import { ArticleType } from '@prisma/client'
+import { ArticleType, Prisma } from '@prisma/client'
 import { prisma } from '../data/index'
 import handleDBError from './handleDBError'
+import { getArticleIdsWithImages, thumbnailPath } from './articleThumbnailService'
 import type { 
   ArticleWithAuthor, 
   CreateArticleRequest, 
   UpdateArticleRequest, 
   GetArticlesRequest, 
-  GetArticlesResponse
+  GetArticlesResponse,
+  ArticleListItem,
 } from '../types/article'
+
+// Lijsten bevatten geen foto's (base64, soms MB's per artikel) maar een thumbnail-URL.
+const articleListSelect = {
+  article_id: true,
+  title: true,
+  content: true,
+  excerpt: true,
+  type: true,
+  author_id: true,
+  published: true,
+  featured: true,
+  created_at: true,
+  updated_at: true,
+  published_at: true,
+  author: {
+    select: {
+      user_id: true,
+      voornaam: true,
+      achternaam: true,
+    }
+  }
+} satisfies Prisma.ArticleSelect
+
+type ArticleListRow = Prisma.ArticleGetPayload<{ select: typeof articleListSelect }>
+
+const withThumbnails = async (articles: ArticleListRow[]): Promise<ArticleListItem[]> => {
+  const withImages = await getArticleIdsWithImages(articles.map((a) => a.article_id))
+  return articles.map((article) => ({
+    ...article,
+    thumbnail_url: withImages.has(article.article_id)
+      ? thumbnailPath(article.article_id, article.updated_at)
+      : null,
+  }))
+}
 
 
 export const createArticle = async (authorId: number, articleData: CreateArticleRequest): Promise<ArticleWithAuthor> => {
@@ -106,6 +142,22 @@ export const getArticles = async (params: GetArticlesRequest = {}): Promise<GetA
       where.type = params.type
     }
 
+    // Zoeken gebeurt in de database, zodat totaal en paginering over de resultaten gaan.
+    // De MySQL-collatie is hoofdletterongevoelig.
+    // % en _ zijn jokertekens in LIKE: escapen zodat "%" niet alles vindt
+    const search = params.search?.trim().replace(/[\\%_]/g, (char) => `\\${char}`)
+    if (search) {
+      where.AND = [
+        {
+          OR: [
+            { title: { contains: search } },
+            { excerpt: { contains: search } },
+            { content: { contains: search } },
+          ],
+        },
+      ]
+    }
+
     const [articles, total] = await Promise.all([
       prisma.article.findMany({
         where,
@@ -116,15 +168,7 @@ export const getArticles = async (params: GetArticlesRequest = {}): Promise<GetA
           { published_at: 'desc' },
           { created_at: 'desc' }
         ],
-        include: {
-          author: {
-            select: {
-              user_id: true,
-              voornaam: true,
-              achternaam: true,
-            }
-          }
-        }
+        select: articleListSelect,
       }),
       prisma.article.count({ where })
     ])
@@ -132,10 +176,7 @@ export const getArticles = async (params: GetArticlesRequest = {}): Promise<GetA
     const totalPages = Math.ceil(total / pageSize)
 
     return {
-      items: articles.map(article => ({
-        ...article,
-        image_urls: article.image_urls as string[] | null
-      })) as ArticleWithAuthor[],
+      items: await withThumbnails(articles),
       total,
       page,
       pageSize,
@@ -146,7 +187,7 @@ export const getArticles = async (params: GetArticlesRequest = {}): Promise<GetA
   }
 }
 
-export const getRecentArticles = async (limit: number = 5): Promise<ArticleWithAuthor[]> => {
+export const getRecentArticles = async (limit: number = 5): Promise<ArticleListItem[]> => {
   try {
     const articles = await prisma.article.findMany({
       where: {
@@ -157,21 +198,10 @@ export const getRecentArticles = async (limit: number = 5): Promise<ArticleWithA
         { featured: 'desc' },
         { published_at: 'desc' }
       ],
-      include: {
-        author: {
-          select: {
-            user_id: true,
-            voornaam: true,
-            achternaam: true,
-          }
-        }
-      }
+      select: articleListSelect,
     })
 
-    return articles.map(article => ({
-      ...article,
-      image_urls: article.image_urls as string[] | null
-    })) as ArticleWithAuthor[]
+    return withThumbnails(articles)
   } catch (error) {
     throw handleDBError(error)
   }
