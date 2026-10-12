@@ -3,7 +3,6 @@ import History from "./components/History"
 import Activities from "./components/Activities"
 import Team from "./components/Team"
 import PresidentsTimeline from "./components/PresidentsTimeline"
-import Interviews from "./components/Interviews"
 import ClubInfo from "./components/Clubinfo"
 
 export default function AboutUs() {
@@ -15,7 +14,6 @@ export default function AboutUs() {
         <ClubInfo />
         <PresidentsTimeline />
         <Team />
-        <Interviews />
         <History />
       </main>
     </div>
