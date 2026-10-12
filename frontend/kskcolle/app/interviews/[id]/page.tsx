@@ -25,10 +25,10 @@ export default async function InterviewPage({ params }: InterviewPageProps) {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link href="/about">
+          <Link href="/interviews">
             <Button variant="ghost" className="mb-4 -ml-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Terug naar Over Ons
+              Terug naar interviews
             </Button>
           </Link>
 

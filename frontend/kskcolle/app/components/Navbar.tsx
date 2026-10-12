@@ -218,7 +218,7 @@ export default function Navbar() {
 
           {/* About Us Dropdown */}
           <div className="relative group">
-            <div className={navTriggerClass(isGroupActive(["/about", "/locatie", "/interviews", "/photos", "/articles"]))}>
+            <div className={navTriggerClass(isGroupActive(["/about", "/locatie", "/photos", "/articles"]))}>
               <Users size={14} />
               <span>Over Ons</span>
               <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
@@ -230,9 +230,6 @@ export default function Navbar() {
                 </Link>
                 <Link href="/locatie" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Locatie
-                </Link>
-                <Link href="/interviews" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
-                  Interviews
                 </Link>
                 <Link href="/photos" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Foto&apos;s
@@ -370,7 +367,7 @@ export default function Navbar() {
 
           {/* Historiek Dropdown */}
           <div className="relative group">
-            <div className={navTriggerClass(isGroupActive(["/erelijsten", "/historiek", "/nationale-elo"]))}>
+            <div className={navTriggerClass(isGroupActive(["/erelijsten", "/historiek", "/nationale-elo", "/interviews"]))}>
               <History size={14} />
               <span>Historiek</span>
               <ChevronDown size={12} className="group-hover:rotate-180 transition-transform duration-200" />
@@ -385,6 +382,9 @@ export default function Navbar() {
                 </Link>
                 <Link href="/nationale-elo" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Nationaal ELO Archief
+                </Link>
+                <Link href="/interviews" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
+                  Interviews met Clubleden
                 </Link>
               </div>
             </div>
@@ -483,13 +483,6 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Locatie
-                  </Link>
-                  <Link
-                    href="/interviews"
-                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Interviews
                   </Link>
                   <Link
                     href="/photos"
@@ -753,6 +746,13 @@ export default function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Nationaal ELO Archief
+                  </Link>
+                  <Link
+                    href="/interviews"
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Interviews met Clubleden
                   </Link>
                 </div>
               )}

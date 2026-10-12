@@ -1,60 +1,53 @@
 import { interviews } from "@/data/interviews"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { User, Calendar, BookOpen } from "lucide-react"
+import { MessageCircle, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
 export default function InterviewsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="text-center">
-            <div className="bg-mainAccent/10 p-2 rounded-lg inline-flex mb-2">
-              <BookOpen className="h-6 w-6 text-mainAccent" />
-            </div>
-            <h1 className="text-2xl font-bold text-textColor mb-1.5">Interviews</h1>
-            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
-              Ontdek de verhalen achter onze clubleden. Van ervaren schakers tot bestuurders, iedereen heeft een uniek
-              verhaal te vertellen over hun schaakpassie.
+    <main className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+      <div className="container mx-auto px-4 py-5">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-textColor flex items-center gap-2">
+              <MessageCircle className="h-6 w-6 text-mainAccent" />
+              Interviews met Clubleden
+            </h1>
+            <p className="text-sm text-gray-600 mt-0.5 max-w-2xl">
+              De verhalen achter onze clubleden: hoe ze het schaken ontdekten, hun mooiste partijen en herinneringen aan
+              KSK Colle.
             </p>
+          </div>
+
+          {/* Raster met portretten */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {interviews.map((interview) => (
+              <Link
+                key={interview.id}
+                href={`/interviews/${interview.id}`}
+                className="group relative aspect-[4/5] overflow-hidden rounded-xl bg-neutral-200 shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-lg"
+              >
+                <Image
+                  src={interview.imageUrl || "/images/image_placeholder.png"}
+                  alt={interview.name}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 text-white">
+                  <h2 className="text-sm sm:text-base font-bold leading-tight drop-shadow">{interview.title}</h2>
+                  <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-white/80 group-hover:text-mainAccent transition-colors">
+                    Lees interview
+                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
-
-      {/* Interviews Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {interviews.map((interview) => (
-            <Card key={interview.id} className="overflow-hidden shadow-md hover:shadow-lg transition-shadow border-neutral-200">
-              <div className="relative h-40">
-                <Image
-                  src={interview.imageUrl || "/placeholder.svg"}
-                  alt={interview.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <CardContent className="p-4">
-                <h3 className="text-base font-bold text-textColor mb-2">{interview.title}</h3>
-
-                <div className="flex items-center gap-2 mb-2 text-sm text-gray-600">
-                  <User className="h-3.5 w-3.5" />
-                  <span>{interview.author}</span>
-                </div>
-
-                <p className="text-gray-600 mb-3 text-sm line-clamp-3">{interview.excerpt}</p>
-
-                <Link href={`/interviews/${interview.id}`}>
-                  <Button variant="accent" className="w-full">Lees volledig interview</Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </main>
-    </div>
+    </main>
   )
 }
