@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink, X } from "lucide-react"
+import { Calendar, MapPin, Clock, Trophy, Euro, Users, Mail, Phone, ExternalLink, X, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import OVJKParticipants from "../info/components/OVJKParticipants"
 import OvjkSponsors from "../../components/OvjkSponsors"
@@ -393,6 +393,45 @@ export default function InfoOVJK2025Page() {
                   <p className="text-sm text-gray-600 text-center">
                     Te betalen bij aanmelding
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Participation */}
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Users className="mr-2" size={20} />
+                  Deelnemen?
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="font-semibold">Ben je geboren in 2017 of later?</p>
+                    <p className="flex items-center mt-1 text-gray-700">
+                      <ArrowRight className="mr-2 text-mainAccent" size={16} />
+                      Gratis deelname
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-semibold">Heb je een bondsaansluiting?</p>
+                    <p className="flex items-center mt-1 text-gray-700">
+                      <ArrowRight className="mr-2 text-mainAccent" size={16} />
+                      Gratis deelname
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-semibold">Heb je geen bondsaansluiting?</p>
+                    <p className="flex items-center mt-1 text-gray-700">
+                      <ArrowRight className="mr-2 text-mainAccent" size={16} />
+                      € 20, om bondslid te worden
+                    </p>
+                    <p className="flex items-center mt-1 text-gray-700">
+                      <ArrowRight className="mr-2 text-mainAccent" size={16} />
+                      Gratis deelname
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
