@@ -682,14 +682,14 @@ export default function Navbar() {
                     Zomerkampen
                   </Link>
                   <Link
-                    href="/youth/info-ovjk-2026"
+                    href="/youth/info-ovjk-2025"
                     className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Info OVJK 2026
                   </Link>
                   <Link
-                    href="/youth/sponsoring-ovjk-2026"
+                    href="/youth/sponsoring-ovjk-2025"
                     className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

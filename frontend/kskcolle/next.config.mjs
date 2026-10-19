@@ -70,6 +70,15 @@ const nextConfig = {
   // Compression
   compress: true,
   
+  // Het mobiele menu linkte een tijd naar "-2026"-adressen die niet bestaan;
+  // gedeelde of opgeslagen links blijven zo werken.
+  async redirects() {
+    return [
+      { source: '/youth/info-ovjk-2026', destination: '/youth/info-ovjk-2025', permanent: false },
+      { source: '/youth/sponsoring-ovjk-2026', destination: '/youth/sponsoring-ovjk-2025', permanent: false },
+    ];
+  },
+
   // Headers for better caching (niet op /_next/static in dev — breekt anders HMR)
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
