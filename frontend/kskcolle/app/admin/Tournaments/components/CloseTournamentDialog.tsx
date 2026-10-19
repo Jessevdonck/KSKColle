@@ -96,8 +96,8 @@ export default function CloseTournamentDialog({
           <div className="py-4">
             <div className="p-3 rounded-lg border border-blue-200 bg-blue-50/50">
               <p className="text-sm text-blue-800">
-                <strong>Let op:</strong> Dit toernooi heeft ELIO rating uitgeschakeld. 
-                Ratings worden niet bijgewerkt bij het afsluiten.
+                <strong>Let op:</strong> enkel de herfst- en lentecompetitie tellen voor de ELIO.
+                De ratings worden bij het afsluiten van dit toernooi niet bijgewerkt.
               </p>
             </div>
           </div>

@@ -46,10 +46,10 @@ export function installTournamentCloseRouter(router: Router) {
         return;
       }
 
-      // Update ratings for all players if requested
-      if (updateRatings) {
-        await ratingService.updateRatingsForTournament(tournamentId);
-      }
+      // Update ratings for all players if requested (enkel herfst/lente telt voor ELIO)
+      const ratingsUpdated = updateRatings
+        ? await ratingService.updateRatingsForTournament(tournamentId)
+        : false;
 
       // Leg het podium vast in de erelijst/palmares. Het podium komt van de
       // frontend (zelfde berekening als de getoonde eindstand); zonder podium
@@ -70,15 +70,15 @@ export function installTournamentCloseRouter(router: Router) {
       shortLivedCacheInvalidatePrefix(SHORT_CACHE_KEY_PREFIX.tournamentList);
       invalidateTournamentDetailCache(tournamentId);
       invalidateTournamentRoundsCache(tournamentId);
-      if (updateRatings) invalidatePublicUsersCache();
+      if (ratingsUpdated) invalidatePublicUsersCache();
 
       ctx.status = 200;
       ctx.body = {
-        message: updateRatings 
+        message: ratingsUpdated
           ? `Tournament "${tournament.naam}" has been closed and ratings have been updated`
           : `Tournament "${tournament.naam}" has been closed without updating ratings`,
         tournamentId: tournamentId,
-        ratingsUpdated: updateRatings,
+        ratingsUpdated,
       };
 
     } catch (error) {

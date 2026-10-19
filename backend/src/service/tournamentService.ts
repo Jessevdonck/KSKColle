@@ -1,3 +1,4 @@
+import { countsForElio } from '../core/ratedCompetitions';
 import { prisma } from "./data";
 import { Prisma } from "@prisma/client";
 import type { Tournament, TournamentUpdateInput } from "../types/tournament";
@@ -822,13 +823,13 @@ export const finalizeTournamentRatings = async (
 export const endTournament = async (tournament_id: number): Promise<void> => {
   const tour = await prisma.tournament.findUnique({
     where: { tournament_id },
-    select: { rating_enabled: true, finished: true }
+    select: { rating_enabled: true, finished: true, naam: true, class_name: true }
   });
   if (!tour) throw ServiceError.notFound("Toernooi niet gevonden");
   if (tour.finished) throw ServiceError.conflict("Toernooi al afgesloten");
 
-  // 1) als rating_enabled: pas Elo toe
-  if (tour.rating_enabled) {
+  // 1) als rating_enabled én herfst/lente: pas Elo toe (andere toernooien tellen niet voor ELIO)
+  if (tour.rating_enabled && countsForElio(tour.naam, tour.class_name)) {
     await finalizeTournamentRatings(tournament_id);
   }
 

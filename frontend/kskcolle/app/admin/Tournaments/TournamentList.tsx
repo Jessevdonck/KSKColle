@@ -12,6 +12,7 @@ import type { Toernooi, MegaschaakTeam } from "@/data/types"
 import { Trophy, Users, Trash2, Eye, Calendar, CheckCircle, Swords, Clock, Settings, User, X, Calculator, Plus, AlertTriangle } from "lucide-react"
 import MegaschaakConfigForm from "./components/MegaschaakConfigForm"
 import CloseTournamentDialog from "./components/CloseTournamentDialog"
+import { countsForElio } from "@/lib/ratedCompetitions"
 import AdminCreateTeamDialog from "./components/AdminCreateTeamDialog"
 import TournamentDayExport from "./components/TournamentDayExport"
 import { axios } from "../../api/index"
@@ -477,7 +478,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
                         </Button>
                         {!t.finished && (
                           <Button
-                            onClick={() => handleClose(t.tournament_id, `${t.naam}${t.class_name ? ` (${t.class_name})` : ''}`, t.rating_enabled)}
+                            onClick={() => handleClose(t.tournament_id, `${t.naam}${t.class_name ? ` (${t.class_name})` : ''}`, t.rating_enabled && countsForElio(t.naam, t.class_name))}
                             size="sm"
                             variant="outline"
                             className="h-7 sm:h-8 text-xs border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"

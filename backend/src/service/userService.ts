@@ -1,3 +1,4 @@
+import { countsForElio } from '../core/ratedCompetitions';
 import type { User as PrismaUser } from "@prisma/client";
 import { prisma } from "./data";
 import type { User, UserUpdateInput, PublicUser, RegisterUserRequest } from '../types/user';
@@ -117,13 +118,7 @@ type HerfstLenteParticipation = {
 };
 
 /** Herfst- of lentecompetitie (geen blitz, zomer, …). */
-function isHerfstOrLenteCompetitie(naam: string, className?: string | null): boolean {
-  const n = naam.toLowerCase();
-  if (n.includes("herfst") || n.includes("herfstcompetitie")) return true;
-  if (n.includes("lentecompetitie") || n.includes("lente competitie")) return true;
-  if (n.includes("lente") && (className ?? "").trim().length > 0) return true;
-  return false;
-}
+const isHerfstOrLenteCompetitie = countsForElio;
 
 /**
  * Verschil = sevilla_rating_change uit de meest recente herfst- of lentecompetitie.

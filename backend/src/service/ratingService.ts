@@ -1,6 +1,7 @@
 import { prisma } from '../data';
 import { invalidatePublicUsersCache } from '../core/shortLivedCache';
 import { currentPeriod } from '../core/period';
+import { countsForElio } from '../core/ratedCompetitions';
 
 export class RatingService {
   private readonly K_FACTOR = 32; // Standard K-factor for tournaments
@@ -21,9 +22,10 @@ export class RatingService {
   }
 
   /**
-   * Update ratings for all players in a tournament using Sevilla data
+   * Update ratings for all players in a tournament using Sevilla data.
+   * Enkel voor de herfst- en lentecompetitie; geeft terug of er iets bijgewerkt is.
    */
-  async updateRatingsForTournament(tournamentId: number): Promise<void> {
+  async updateRatingsForTournament(tournamentId: number): Promise<boolean> {
 
     // Get tournament to find the Sevilla data
     const tournament = await prisma.tournament.findUnique({
@@ -32,6 +34,11 @@ export class RatingService {
 
     if (!tournament) {
       throw new Error(`Tournament ${tournamentId} not found`);
+    }
+
+    // Zomertoernooi, blitz, rapid, … mogen de ELIO niet wijzigen
+    if (!countsForElio(tournament.naam, tournament.class_name)) {
+      return false;
     }
 
     // Get all participations with minimal user data (only what's needed for rating updates)
@@ -86,6 +93,7 @@ export class RatingService {
     }
 
     invalidatePublicUsersCache();
+    return true;
   }
 }
 

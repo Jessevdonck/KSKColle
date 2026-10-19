@@ -1,8 +1,8 @@
 /* scripts/backfill-elo-history-from-tournaments.ts
  * Run: npx tsx src/scripts/backfill-elo-history-from-tournaments.ts
  *
- * Vult EloHistory aan met punten voor toernooien die al vóór deze feature werden
- * afgesloten én effectief voor Elo telden (participations met een sevilla_final_rating).
+ * Vult EloHistory aan met punten voor herfst- en lentecompetities die al vóór deze
+ * feature werden afgesloten (participations met een sevilla_final_rating).
  * Periode = maand van de laatste ronde van dat toernooi (geen exacte afsluitdatum
  * beschikbaar, dit is de beste benadering).
  *
@@ -12,6 +12,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { countsForElio } from "../core/ratedCompetitions";
 
 const prisma = new PrismaClient();
 
@@ -27,6 +28,7 @@ async function main() {
     select: {
       tournament_id: true,
       naam: true,
+      class_name: true,
       rounds: {
         select: { ronde_datum: true },
         orderBy: { ronde_datum: "desc" },
@@ -52,6 +54,8 @@ async function main() {
   let skippedNoDate = 0;
 
   for (const t of tournaments) {
+    // Enkel herfst- en lentecompetitie tellen voor de ELIO-historiek
+    if (!countsForElio(t.naam, t.class_name)) continue;
     const lastRound = t.rounds[0];
     if (!lastRound) {
       skippedNoDate++;
