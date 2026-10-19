@@ -234,7 +234,18 @@ const mapUsersToPublicUsersWithRating = async (
 export const getAllPublicUsers = async (): Promise<PublicUser[]> => {
   try {
     const users = await prisma.user.findMany({
-      where: { NOT: { is_youth: true } },
+      where: {
+        OR: [
+          { NOT: { is_youth: true } },
+          // Jeugdspelers die ook (geldig) volwassen clublidgeld betalen spelen bij
+          // beide mee en staan dus ook in de spelerslijst van de volwassenen.
+          {
+            is_youth: true,
+            lidgeld_betaald: true,
+            lidgeld_periode_eind: { gt: new Date() },
+          },
+        ],
+      },
     });
     const mapped = await mapUsersToPublicUsersWithRating(users, false);
     return mapped.filter(includeInPublicPlayersList);
