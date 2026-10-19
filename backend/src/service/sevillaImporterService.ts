@@ -1,5 +1,12 @@
 import { prisma } from '../data/index';
 import { getLogger } from '../core/logging';
+import {
+  isYouthClassName,
+  isYouthTournamentName,
+  resolveYouthTournamentName,
+  tournamentTypeFromSevilla,
+  type SevillaTournamentType,
+} from './sevillaYouth';
 
 interface SevillaPlayer {
   Pos: number;
@@ -93,6 +100,7 @@ interface SevillaTournament {
   FileName: string;
   License: string;
   Site: string;
+  CompData?: { PairingSyst?: string };
   GroupReport: SevillaGroup[];
 }
 
@@ -145,10 +153,38 @@ export class SevillaImporterService {
     incremental: boolean = false,
   ): Promise<number | number[]> {
     try {
-      const tournamentNameToUse = tournamentName || sevillaData.Name;
       const groups = sevillaData.GroupReport;
+      const isYouth = isYouthTournamentName(tournamentName || sevillaData.Name);
 
-      // Check if there are multiple groups (classes)
+      // Jeugdreeksen zitten in aparte bestanden met soms een andere naam
+      // ("Jeugdcompetitie 2026-2027 Stap 1 en 2" / "Jeugdkampioenschap 2026-2027"):
+      // ze worden samengebracht onder het actieve jeugdtoernooi van hetzelfde seizoen.
+      let tournamentNameToUse = tournamentName || sevillaData.Name;
+      if (isYouth && !tournamentName) {
+        const activeYouth = await prisma.tournament.findMany({
+          where: { is_youth: true, finished: false },
+          select: { naam: true },
+        });
+        tournamentNameToUse = resolveYouthTournamentName(
+          sevillaData.Name,
+          activeYouth.map((t) => t.naam),
+        );
+      }
+
+      // Bij de jeugd volgt het type het paringssysteem uit Sevilla (Stap 1 en 2
+      // round robin, Stap 3+ Zwitsers). Andere toernooien blijven SWISS, zoals
+      // voorheen (o.a. de Lente heeft eigen tiebreak-logica op de website).
+      const tournamentType: SevillaTournamentType = isYouth
+        ? tournamentTypeFromSevilla(sevillaData)
+        : "SWISS";
+
+      // Een reeksnaam wordt gebruikt bij meerdere groepen, of bij een jeugdbestand
+      // met één groep die een stap aanduidt (bv. enkel "Stap 3+").
+      const classNameFor = (group: SevillaGroup): string | null =>
+        groups.length > 1 || (isYouth && isYouthClassName(group.Name))
+          ? group.Name.trim()
+          : null;
+
       if (groups.length > 1) {
         const tournamentIds: number[] = [];
 
@@ -158,15 +194,15 @@ export class SevillaImporterService {
             group,
             sevillaData,
             tournamentNameToUse,
-            group.Name,
+            classNameFor(group),
             incremental,
+            tournamentType,
           );
           tournamentIds.push(tournamentId);
         }
 
         return tournamentIds;
       } else {
-        // Single group - import without class_name (backwards compatible)
         const mainGroup = groups[0];
         if (!mainGroup) {
           throw new Error("No group found in Sevilla data");
@@ -176,8 +212,9 @@ export class SevillaImporterService {
           mainGroup,
           sevillaData,
           tournamentNameToUse,
-          null,
+          classNameFor(mainGroup),
           incremental,
+          tournamentType,
         );
         return tournamentId;
       }
@@ -193,6 +230,7 @@ export class SevillaImporterService {
     tournamentName: string,
     className: string | null,
     incremental: boolean = false,
+    tournamentType: SevillaTournamentType = "SWISS",
   ): Promise<number> {
     try {
       // Get the latest ranking (final standings) for tournament info.
@@ -205,6 +243,7 @@ export class SevillaImporterService {
           tournamentName,
           className,
           incremental,
+          tournamentType,
         );
       }
 
@@ -249,10 +288,18 @@ export class SevillaImporterService {
 
         if (tournament) {
           // Update tournament info if needed
+          const updates: { rondes?: number; type?: SevillaTournamentType } = {};
           if (latestRanking.Round > tournament.rondes) {
+            updates.rondes = latestRanking.Round;
+          }
+          // Enkel bij de jeugd: bij andere toernooien kan het type manueel gekozen zijn
+          if (isYouthTournamentName(tournamentName) && tournament.type !== tournamentType) {
+            updates.type = tournamentType;
+          }
+          if (Object.keys(updates).length > 0) {
             await prisma.tournament.update({
               where: { tournament_id: tournament.tournament_id },
-              data: { rondes: latestRanking.Round },
+              data: updates,
             });
           }
         } else {
@@ -266,7 +313,7 @@ export class SevillaImporterService {
             data: {
               naam: tournamentName,
               rondes: latestRanking.Round,
-              type: "SWISS",
+              type: tournamentType,
               rating_enabled: true,
               finished: false,
               is_youth: isYouthTournament,
@@ -285,7 +332,7 @@ export class SevillaImporterService {
           data: {
             naam: tournamentName,
             rondes: latestRanking.Round,
-            type: "SWISS",
+            type: tournamentType,
             rating_enabled: true,
             finished: false,
             is_youth: isYouthTournament,
@@ -364,6 +411,7 @@ export class SevillaImporterService {
     tournamentName: string,
     className: string | null,
     incremental: boolean,
+    tournamentType: SevillaTournamentType,
   ): Promise<number> {
     if (incremental) {
       const existing = await prisma.tournament.findFirst({
@@ -378,10 +426,10 @@ export class SevillaImporterService {
       data: {
         naam: tournamentName,
         rondes: 0,
-        type: "SWISS",
+        type: tournamentType,
         rating_enabled: true,
         finished: false,
-        is_youth: tournamentName.toLowerCase().includes("jeugd"),
+        is_youth: isYouthTournamentName(tournamentName),
         class_name: className,
       },
     });

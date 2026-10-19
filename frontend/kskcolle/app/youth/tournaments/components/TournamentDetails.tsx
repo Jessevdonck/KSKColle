@@ -293,7 +293,7 @@ export default function TournamentDetails() {
                   <span>{tournament.rondes} rondes</span>
                 </div>
                 <div className="px-1.5 py-0.5 bg-mainAccent/10 text-mainAccent rounded-full text-xs font-medium">
-                  {tournament.type}
+                  {tournament.type === "ROUND_ROBIN" ? "Round robin" : "Zwitsers"}
                 </div>
               </div>
             </div>
