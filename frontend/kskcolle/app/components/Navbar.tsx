@@ -27,6 +27,9 @@ import NotificationBell from "../../components/NotificationBell"
 import useSWR from "swr"
 import { getAll } from "../api/index"
 
+// Google Drive-album "Foto's Jeugdwerking" op de fotopagina
+const YOUTH_PHOTOS_ALBUM = "/photos/1cc466kF5jK0SAkWVfx0DBlwmPG6Heynv"
+
 interface Tournament {
   tournament_id: number
   naam: string
@@ -355,6 +358,9 @@ export default function Navbar() {
                 <a href="https://sites.google.com/view/vlaams-jeugdschaakcriterium/homepage" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
                   Vlaams Jeugdschaakcriterium
                 </a>
+                <Link href={YOUTH_PHOTOS_ALBUM} className="block px-4 py-2 text-sm text-gray-700 rounded-md mx-1 hover:bg-mainAccent/10 hover:text-mainAccent transition-colors">
+                  Foto&apos;s Jeugdwerking
+                </Link>
               </div>
             </div>
           </div>
@@ -704,6 +710,13 @@ export default function Navbar() {
                   >
                     Vlaams Jeugdschaakcriterium
                   </a>
+                  <Link
+                    href={YOUTH_PHOTOS_ALBUM}
+                    className="block font-medium text-gray-700 hover:text-mainAccent hover:bg-mainAccent/10 transition-colors px-3 py-2 rounded-lg"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Foto&apos;s Jeugdwerking
+                  </Link>
                 </div>
               )}
             </div>
