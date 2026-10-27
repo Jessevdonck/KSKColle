@@ -32,13 +32,13 @@ const teachers: Teacher[] = [
     name: "Thomas Buys-Devillé",
     role: "Trainer",
     steps: "Stap 1",
-    image: "/images/Bestuur/Thomas Buys-Devillé.jpg",
+    image: "/images/lesgevers/ThomasBuys.jpg",
   },  
   {
     name: "Jo Tondeleir",
     role: "Trainer",
     steps: "Stap 2",
-    image: "/images/image_placeholder.png",
+    image: "/images/lesgevers/JoTondeleir.jpg",
   },
   {
     name: "Dirk Hermans",
