@@ -13,6 +13,8 @@ export default function PlayerHeader({ player }: { player: User }) {
 
   const ratings = [
     { name: 'Club Rating', value: player.schaakrating_elo },
+    // Hoogste ELIO sinds de ELIO-historiek (grafiek hieronder)
+    ...(player.schaakrating_max ? [{ name: 'Hoogste ELIO', value: player.schaakrating_max }] : []),
   ]
 
   // Alleen uitlichten in het jubileumjaar zelf. Een badge tonen bij iedereen
@@ -101,7 +103,7 @@ export default function PlayerHeader({ player }: { player: User }) {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-3 mt-3 md:mt-0">
+          <div className={`grid gap-3 mt-3 md:mt-0 ${ratings.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
             {ratings.map((rating) => (
               <div key={rating.name} className="bg-white p-3 rounded-lg shadow text-center">
                 <p className="text-sm text-gray-600">{rating.name}</p>

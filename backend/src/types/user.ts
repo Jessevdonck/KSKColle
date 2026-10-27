@@ -12,6 +12,8 @@ export type User = {
   guardian_phone?: string | null;
   geboortedatum?: Date | null;
   schaakrating_elo: number;
+  /** Hoogste ELIO sinds de ELIO-historiek (kolom schaakrating_max). */
+  schaakrating_max?: number | null;
   max_rating?: number | null;           
   rating_difference?: number | null;    
   is_admin?: boolean | null;            
@@ -36,7 +38,7 @@ export type User = {
   bondslidgeld_periode_eind?: Date | null;
 };
 
-export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "guardian_email" | "tel_nummer" | "vast_nummer" | "guardian_phone" | "geboortedatum" | "schaakrating_elo" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles" | "avatar_url" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind"> {
+export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achternaam" | "email" | "guardian_email" | "tel_nummer" | "vast_nummer" | "guardian_phone" | "geboortedatum" | "schaakrating_elo" | "schaakrating_max" | "max_rating" | "rating_difference" | "fide_id" | "lid_sinds" | "roles" | "avatar_url" | "lidgeld_betaald" | "lidgeld_periode_start" | "lidgeld_periode_eind" | "bondslidgeld_betaald" | "bondslidgeld_periode_start" | "bondslidgeld_periode_eind"> {
   /** Geldig lidgeld, bondslidgeld of jeugdlidgeld (niet verlopen). */
   membership_valid?: boolean;
   is_youth?: boolean;
