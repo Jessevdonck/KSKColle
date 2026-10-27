@@ -12,6 +12,17 @@ import OvjkSponsors from "../../components/OvjkSponsors"
 const GOOGLE_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfHNMbtDWrDwVnKP0hcHAFCIcmBWgXlByvLOX6hp2ghNzX9kQ/viewform"
 
+// Uitslagen OVJK 2026 op de site van de KBSB (SWAR-resultaten van club 410)
+const SWAR_RESULTS = "https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410"
+const RESULT_LINKS = [
+  { group: "A", label: "°2007-2010", href: `${SWAR_RESULTS}/251025-0fc342f2-%7B00b08f8a-1388-4753-b416-f31208b1d1ef%7D.html` },
+  { group: "B", label: "°2011-2012", href: `${SWAR_RESULTS}/251025-0fc2c77f-%7Bf57adaa7-79ab-4fad-acc9-c93ce943698e%7D.html` },
+  { group: "C", label: "°2013-2014", href: `${SWAR_RESULTS}/251025-0fc26281-%7B0a0cbc4b-fa10-46cc-9d60-a688dd677c9d%7D.html` },
+  { group: "D", label: "°2015-2016", href: `${SWAR_RESULTS}/251025-0fc1fb19-%7Bd3335918-879b-4d33-bd7a-79ba878c934e%7D.html` },
+  { group: "E", label: "°2017-2018", href: `${SWAR_RESULTS}/261025-14b90370-%7B712dc885-f477-40ce-8611-a05a61d7182f%7D.html` },
+  { group: "F", label: "°2019 of later", href: `${SWAR_RESULTS}/261025-000e9398-%7B40fd947c-5910-4674-aacd-318737396351%7D.html` },
+]
+
 export default function InfoOVJK2025Page() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   // Browsers don't render <iframe> children as a visible fallback (unlike <img>/<object>),
@@ -71,67 +82,25 @@ export default function InfoOVJK2025Page() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                <a
-                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00019704-%7B79d92300-748c-496d-92c8-2ae7fccc048c%7D.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded hover:from-blue-100 hover:to-blue-200 transition-all group"
-                >
-                  <div className="flex items-center space-x-1">
-                    <Trophy className="text-blue-700" size={16} />
-                    <span className="font-semibold text-sm text-gray-800">Groep A</span>
-                  </div>
-                  <ExternalLink className="text-blue-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
-                </a>
-                <a 
-                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-0002e1bf-%7B734b1d9b-d7e6-4b6a-8662-e2ba00064aa4%7D.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-2 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded hover:from-green-100 hover:to-green-200 transition-all group"
-                >
-                  <div className="flex items-center space-x-1">
-                    <Trophy className="text-green-700" size={16} />
-                    <span className="font-semibold text-sm text-gray-800">Groep B</span>
-                  </div>
-                  <ExternalLink className="text-green-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
-                </a>
-                <a 
-                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00035835-%7Bf45d423a-5e17-49f9-b4ef-ed2e49c585dc%7D.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-2 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded hover:from-purple-100 hover:to-purple-200 transition-all group"
-                >
-                  <div className="flex items-center space-x-1">
-                    <Trophy className="text-purple-700" size={16} />
-                    <span className="font-semibold text-sm text-gray-800">Groep C</span>
-                  </div>
-                  <ExternalLink className="text-purple-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
-                </a>
-                <a 
-                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-000390c6-%7B57f2d65b-c71d-4ec2-87cf-f53b5dd83d01%7D.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded hover:from-yellow-100 hover:to-yellow-200 transition-all group"
-                >
-                  <div className="flex items-center space-x-1">
-                    <Trophy className="text-yellow-700" size={16} />
-                    <span className="font-semibold text-sm text-gray-800">Groep D</span>
-                  </div>
-                  <ExternalLink className="text-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
-                </a>
-                <a 
-                  href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-00035491-%7Bbd543f46-4663-4b77-b9e9-eda3adce9cbb%7D.html" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded hover:from-yellow-100 hover:to-yellow-200 transition-all group"
-                >
-                  <div className="flex items-center space-x-1">
-                    <Trophy className="text-yellow-700" size={16} />
-                    <span className="font-semibold text-sm text-gray-800">Groep E & F</span>
-                  </div>
-                  <ExternalLink className="text-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity" size={14} />
-                </a>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {RESULT_LINKS.map((result) => (
+                  <a
+                    key={result.group}
+                    href={result.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between gap-2 p-2 bg-mainAccent/5 border border-mainAccent/20 rounded hover:bg-mainAccent/10 hover:border-mainAccent/40 transition-colors group"
+                  >
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <Trophy className="shrink-0 text-mainAccent" size={16} />
+                      <div className="min-w-0">
+                        <span className="block font-semibold text-sm text-gray-800">Groep {result.group}</span>
+                        <span className="block text-xs text-gray-500 truncate">{result.label}</span>
+                      </div>
+                    </div>
+                    <ExternalLink className="shrink-0 text-mainAccent opacity-60 group-hover:opacity-100 transition-opacity" size={14} />
+                  </a>
+                ))}
               </div>
             </CardContent>
           </Card>

@@ -37,6 +37,27 @@ export default function RapidtoernooiPage() {
           </button>
 
           <div className="space-y-4">
+            {/* Uitslag (SWAR-resultaten van club 410 op de site van de KBSB) */}
+            <Card className="border-mainAccent/20 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-mainAccent text-base">
+                  <Trophy className="mr-2" size={20} />
+                  Uitslag
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <Button asChild variant="accent" size="sm">
+                  <a
+                    href="https://frbe-kbsb.be/sites/manager/Swar/SwarResults/410/251025-12a54c28-%7Bf9fa98b8-c68c-4cce-a853-263d1fe961d9%7D.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Bekijk de uitslag <ExternalLink size={14} />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Registration */}
             <Card className="border-mainAccent/20 shadow-sm">
               <CardHeader className="pb-2">
