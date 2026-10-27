@@ -12,6 +12,7 @@ import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X } from "lucide-re
 import { useState, useEffect, useMemo } from "react"
 import { sortYouthClasses } from "./youthClasses"
 import MobilePairingList from "@/app/components/MobilePairingList"
+import CrossTable from "@/app/toernooien/components/CrossTable"
 import {
   pairingResultBadgeClass,
   pairingResultBadgeText,
@@ -73,7 +74,7 @@ export default function TournamentDetails() {
   const [timeline, setTimeline] = useState<
     ({ kind: "round"; round: Round } | { kind: "makeup"; day: MakeupDay; games: Game[] })[]
   >([])
-  const [activeTab, setActiveTab] = useState<'rounds' | 'standings'>('rounds')
+  const [activeTab, setActiveTab] = useState<'rounds' | 'standings' | 'crosstable'>('rounds')
 
   // 1) Tournament data fetching
   const {
@@ -221,6 +222,11 @@ export default function TournamentDetails() {
     setCurrentIndex((prev) => (prev < timeline.length - 1 ? prev + 1 : 0))
   }
 
+  const isRoundRobin = tournament?.type === "ROUND_ROBIN"
+  useEffect(() => {
+    if (!isRoundRobin && activeTab === 'crosstable') setActiveTab('rounds')
+  }, [isRoundRobin, activeTab])
+
   const currentEntry = timeline[currentIndex]
   const rounds: Round[] = (tournament?.rounds || []).map(round => ({
     ...round,
@@ -359,6 +365,21 @@ export default function TournamentDetails() {
                 Stand
               </div>
             </button>
+            {isRoundRobin && (
+              <button
+                onClick={() => setActiveTab('crosstable')}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                  activeTab === 'crosstable'
+                    ? 'text-mainAccent border-mainAccent'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Kruistabel
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -457,6 +478,23 @@ export default function TournamentDetails() {
             </div>
           </div>
         </div>
+
+        {/* Kruistabel bij gesloten (round robin) reeksen, zoals bij de lentecompetitie */}
+        {isRoundRobin && (
+          <div className={`mt-3 ${activeTab === 'crosstable' ? 'block' : 'hidden xl:block'}`}>
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-gradient-to-r from-mainAccent to-mainAccentDark px-2 py-1.5">
+                <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  Kruistabel
+                </h2>
+              </div>
+              <div className="p-2 pl-0">
+                <CrossTable tournament={tournament} rounds={allRounds} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
