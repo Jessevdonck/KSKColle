@@ -215,9 +215,51 @@ export const getMembershipStatus = (user: {
 };
 
 /**
- * Automatically update user role based on membership status
- * - If user has valid membership: ensure they have 'user' role (and remove 'exlid' if present)
- * - If user has no valid membership: set role to 'exlid' (and remove other roles)
+ * Rollen na een wijziging van het lidmaatschap.
+ * - Geldig lid: 'user' erbij en 'exlid' eraf; alle andere rollen (admin, bestuurslid,
+ *   auteur, puzzlemaster, …) blijven behouden. Vroeger werden de rollen hier opnieuw
+ *   opgebouwd uit een vaste lijst, waardoor o.a. auteur en puzzlemaster verdwenen
+ *   telkens het lidgeld bewaard werd.
+ * - Geen geldig lidmaatschap: enkel 'exlid' (ongewijzigd gedrag).
+ */
+export const rolesForMembership = (
+  currentRoles: string[],
+  isMember: boolean,
+  isAdmin: boolean | null | undefined,
+): string[] => {
+  if (!isMember) return [Role.EXLID];
+
+  const roles = new Set(currentRoles.filter((role) => role !== Role.EXLID));
+  roles.add(Role.USER);
+  if (isAdmin) roles.add(Role.ADMIN);
+  return [...roles];
+};
+
+/**
+ * Rollen uit de database lezen. Sommige records bevatten een "ingepakte" lijst,
+ * bv. ['["bestuurslid","user"]', 'admin']: die wordt mee uitgepakt.
+ */
+const parseRoles = (roles: unknown): string[] => {
+  const parsed = typeof roles === 'string' ? safeJsonParse(roles) : roles;
+  if (!Array.isArray(parsed)) return typeof parsed === 'string' ? [parsed] : [];
+  return [...new Set(parsed.flatMap((role) =>
+    typeof role === 'string' && role.trim().startsWith('[') ? parseRoles(role) : [String(role)],
+  ))];
+};
+
+const safeJsonParse = (value: string): unknown => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+};
+
+const sameRoles = (a: string[], b: string[]) =>
+  JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+
+/**
+ * Automatically update user role based on membership status (zie rolesForMembership)
  */
 const updateUserRoleBasedOnMembership = async (userId: number): Promise<void> => {
   try {
@@ -242,8 +284,7 @@ const updateUserRoleBasedOnMembership = async (userId: number): Promise<void> =>
       return;
     }
 
-    // Parse current roles
-    const currentRoles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
+    const currentRoles = parseRoles(user.roles);
     
     // Check membership status
     const membershipStatus = getMembershipStatus({
@@ -255,41 +296,16 @@ const updateUserRoleBasedOnMembership = async (userId: number): Promise<void> =>
       jeugdlidgeld_periode_eind: user.jeugdlidgeld_periode_eind
     });
 
-    let newRoles: string[] = [];
-
-    if (membershipStatus.isMember) {
-      // User has valid membership - ensure they have 'user' role
-      if (user.is_admin) {
-        // Admin users keep admin + user roles
-        newRoles = [Role.ADMIN, Role.USER];
-      } else if (currentRoles.includes(Role.BESTUURSLID)) {
-        // Bestuurslid users keep bestuurslid + user roles
-        newRoles = [Role.BESTUURSLID, Role.USER];
-      } else {
-        // Regular users just get user role
-        newRoles = [Role.USER];
-      }
-      
-      logger.info('Membership valid - updating roles to active member', { 
-        userId, 
-        oldRoles: currentRoles, 
-        newRoles,
-        membershipStatus 
-      });
-    } else {
-      // User has no valid membership - set to exlid
-      newRoles = [Role.EXLID];
-      
-      logger.info('Membership expired - updating roles to exlid', { 
-        userId, 
-        oldRoles: currentRoles, 
-        newRoles,
-        membershipStatus 
-      });
-    }
+    const newRoles = rolesForMembership(currentRoles, membershipStatus.isMember, user.is_admin);
+    logger.info('Roles based on membership', {
+      userId,
+      oldRoles: currentRoles,
+      newRoles,
+      membershipStatus,
+    });
 
     // Only update if roles actually changed
-    const rolesChanged = JSON.stringify(currentRoles.sort()) !== JSON.stringify(newRoles.sort());
+    const rolesChanged = !sameRoles(currentRoles, newRoles);
     
     if (rolesChanged) {
       await prisma.user.update({
@@ -341,8 +357,7 @@ export const updateAllUserRolesBasedOnMembership = async (): Promise<{
 
     for (const user of users) {
       try {
-        // Parse current roles
-        const currentRoles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
+        const currentRoles = parseRoles(user.roles);
         
         // Check membership status
         const membershipStatus = getMembershipStatus({
@@ -354,24 +369,10 @@ export const updateAllUserRolesBasedOnMembership = async (): Promise<{
           jeugdlidgeld_periode_eind: user.jeugdlidgeld_periode_eind
         });
 
-        let newRoles: string[] = [];
-
-        if (membershipStatus.isMember) {
-          // User has valid membership
-          if (user.is_admin) {
-            newRoles = [Role.ADMIN, Role.USER];
-          } else if (currentRoles.includes(Role.BESTUURSLID)) {
-            newRoles = [Role.BESTUURSLID, Role.USER];
-          } else {
-            newRoles = [Role.USER];
-          }
-        } else {
-          // User has no valid membership
-          newRoles = [Role.EXLID];
-        }
+        const newRoles = rolesForMembership(currentRoles, membershipStatus.isMember, user.is_admin);
 
         // Check if roles need to be updated
-        const rolesChanged = JSON.stringify(currentRoles.sort()) !== JSON.stringify(newRoles.sort());
+        const rolesChanged = !sameRoles(currentRoles, newRoles);
         
         if (rolesChanged) {
           await prisma.user.update({

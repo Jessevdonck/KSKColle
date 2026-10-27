@@ -6,15 +6,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function parseRoles(roles: any): string[] {
-  if (Array.isArray(roles)) {
-    return roles;
-  }
+  let list: unknown = roles
   if (typeof roles === 'string') {
     try {
-      return JSON.parse(roles);
+      list = JSON.parse(roles)
     } catch (e) {
-      return [];
+      return []
     }
   }
-  return [];
+  if (!Array.isArray(list)) return []
+  // Sommige records bevatten een "ingepakte" lijst, bv. ['["bestuurslid","user"]', 'admin']
+  return [...new Set(list.flatMap((role) =>
+    typeof role === 'string' && role.trim().startsWith('[') ? parseRoles(role) : [String(role)],
+  ))]
 }
