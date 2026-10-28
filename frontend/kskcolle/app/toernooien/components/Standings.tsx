@@ -1,5 +1,6 @@
 "use client"
 
+import { sevillaBuchholz, isAbsenceRow } from "@/lib/sevillaBuchholz"
 import Link from "next/link"
 import { Medal, User, X, Calendar } from "lucide-react"
 import { useState } from "react"
@@ -675,6 +676,19 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     }
   })
 
+  // 3b) Zwitsers (o.a. herfst): Buchholz-worst zoals Sevilla (niet-gespeelde rondes, AWM, bye, forfait)
+  const sevillaBhlz = usesBuchholzWorstTieBreak(tournament)
+    ? sevillaBuchholz(
+        tournament.participations.map((p) => p.user.user_id),
+        collectTieBreakGames(rounds, isPlayedGame, false, true),
+        rounds
+          .filter((round) => round.type !== 'MAKEUP')
+          .flatMap((round) => round.games)
+          .filter((g) => isAbsenceRow(g.speler2?.user_id, g.result))
+          .map((g) => ({ player: g.speler1.user_id })),
+      )
+    : null
+
   // 4) finally: bouw array met tieBreak
   // Use tie_break from database if available (set by fix script), otherwise calculate
   const players: PlayerScore[] = Object.entries(calculatedScoreMap).map(([uid, s]) => {
@@ -689,6 +703,9 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
       tie = sbSquaredMap[id] ?? 0
     } else if (isBlitzkampioenschap || tournament.type === "ROUND_ROBIN") {
       tie = sbMap[id] ?? 0
+    } else if (sevillaBhlz) {
+      // Altijd herberekend: een in de DB bewaarde tie_break kan van een oudere berekening zijn
+      tie = sevillaBhlz.get(id)?.buchholzWorst ?? 0
     } else if (participation?.tie_break !== null && participation?.tie_break !== undefined) {
       tie = participation.tie_break
     } else if (usesBuchholzWorstTieBreak(tournament)) {
@@ -724,7 +741,9 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     p.schaakrating_elo = user.schaakrating_elo
   })
 
-  // 5) sorteren: score, dan aantal partijen (minder = beter), dan tie-break, dan rating (lager = beter)
+  // 5) sorteren: score, dan aantal partijen (minder = beter), dan tie-break, dan rating (hoger = beter).
+  // Zwitsers (Bhlz-W, o.a. herfst): enkel punten → Bhlz-W → rating, zonder aantal partijen.
+  const sortOnGamesPlayed = !sevillaBhlz
   players.sort((a, b) => {
     // Eerste criterium: Punten (hoog naar laag)
     if (b.score !== a.score) {
@@ -732,7 +751,7 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     }
 
     // Tweede criterium: Aantal partijen (LAAG naar HOOG - minder partijen = beter)
-    if (a.gamesPlayed !== b.gamesPlayed) {
+    if (sortOnGamesPlayed && a.gamesPlayed !== b.gamesPlayed) {
       return a.gamesPlayed - b.gamesPlayed
     }
 

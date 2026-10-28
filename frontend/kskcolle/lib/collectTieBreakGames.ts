@@ -19,6 +19,11 @@ function sortTieBreakRows(a: TieBreakGameRow, b: TieBreakGameRow): number {
   return b.gameId - a.gameId
 }
 
+function sortPreferRegular(a: TieBreakGameRow, b: TieBreakGameRow): number {
+  if (a.isMakeup !== b.isMakeup) return a.isMakeup ? 1 : -1
+  return b.gameId - a.gameId
+}
+
 export type TieBreakRoundInput = {
   type: "REGULAR" | "MAKEUP"
   games: Array<{
@@ -40,7 +45,14 @@ export function collectTieBreakGames(
   rounds: TieBreakRoundInput[],
   isPlayedGame: (r: string | null) => boolean,
   countEveryPairMeeting: boolean,
+  /**
+   * Bij een partij met een uitslag in de gewone ronde én op een inhaaldag: neem die
+   * van de gewone ronde (bij Sevilla-import de officiële uitslag). Gebruikt voor de
+   * Buchholz; standaard wint de inhaaldag, zoals voorheen.
+   */
+  preferRegular = false,
 ): Array<{ p1: number; p2: number; result: string }> {
+  const order = preferRegular ? sortPreferRegular : sortTieBreakRows
   const rows: TieBreakGameRow[] = []
   for (const round of rounds) {
     const isMakeup = round.type === "MAKEUP"
@@ -61,7 +73,7 @@ export function collectTieBreakGames(
   }
 
   if (!countEveryPairMeeting) {
-    rows.sort(sortTieBreakRows)
+    rows.sort(order)
     const seen = new Set<string>()
     const out: Array<{ p1: number; p2: number; result: string }> = []
     for (const r of rows) {
@@ -87,7 +99,7 @@ export function collectTieBreakGames(
       group.length > 1 &&
       group.some((r) => r.isMakeup || r.hasOriginalLink)
     if (isPostponedDuplicate) {
-      const sorted = [...group].sort(sortTieBreakRows)
+      const sorted = [...group].sort(order)
       out.push({
         p1: sorted[0].p1,
         p2: sorted[0].p2,

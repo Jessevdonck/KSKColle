@@ -4,6 +4,8 @@ import Link from "next/link"
 import { Trophy, Medal, Award, User, X, Calendar } from "lucide-react"
 import { useState } from "react"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
+import { collectTieBreakGames } from "@/lib/collectTieBreakGames"
+import { sevillaBuchholz, isAbsenceRow } from "@/lib/sevillaBuchholz"
 import {
   countsAsSpeeldagPartij,
   isDecidedGameWithOpponentResult,
@@ -657,6 +659,19 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     })
   })
 
+  // 3b) Zwitsers (Stap 3+): Buchholz-worst zoals Sevilla (niet-gespeelde rondes, AWM, bye, forfait)
+  const sevillaBhlz = tournament.type === "SWISS"
+    ? sevillaBuchholz(
+        tournament.participations.map((p) => p.user.user_id),
+        collectTieBreakGames(rounds as any, isPlayedGame, false, true),
+        rounds
+          .filter((round) => round.type !== 'MAKEUP')
+          .flatMap((round) => round.games)
+          .filter((g) => isAbsenceRow(g.speler2?.user_id, g.result))
+          .map((g) => ({ player: g.speler1.user_id })),
+      )
+    : null
+
   // 4) finally: bouw array met tieBreak
   // Use tie_break from database if available (set by fix script), otherwise calculate
   const players: PlayerScore[] = Object.entries(calculatedScoreMap).map(([uid, s]) => {
@@ -665,8 +680,10 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
     const participation = tournament.participations.find(p => p.user.user_id === id)
     let tie: number
 
-    // Use tie_break from database if available, otherwise calculate
-    if (participation?.tie_break !== null && participation?.tie_break !== undefined) {
+    if (sevillaBhlz) {
+      // Altijd herberekend: een in de DB bewaarde tie_break kan van een oudere berekening zijn
+      tie = sevillaBhlz.get(id)?.buchholzWorst ?? 0
+    } else if (participation?.tie_break !== null && participation?.tie_break !== undefined) {
       // Use the value from database (set by fix script)
       tie = participation.tie_break
     } else {
@@ -708,11 +725,12 @@ function calculateStandings(tournament: StandingsProps["tournament"], rounds: St
   })
 
   // 5) sorteren: zelfde volgorde als volwassen stand — score, minder partijen = beter, tie-break, hogere rating = beter
+  // Zwitsers (Bhlz-W): punten → Bhlz-W → rating (hoger = beter); anders eerst minder partijen
   players.sort((a, b) => {
     if (b.score !== a.score) {
       return b.score - a.score
     }
-    if (a.gamesPlayed !== b.gamesPlayed) {
+    if (!sevillaBhlz && a.gamesPlayed !== b.gamesPlayed) {
       return a.gamesPlayed - b.gamesPlayed
     }
     if (b.tieBreak !== a.tieBreak) {

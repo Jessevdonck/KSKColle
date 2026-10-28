@@ -2,6 +2,7 @@
 import { prisma } from "../data";
 import ServiceError from "../core/serviceError";
 import { collectTieBreakGamesFromRaw } from "../core/collectTieBreakGames";
+import { sevillaBuchholz, isAbsenceRow } from "../core/sevillaBuchholz";
 import {
   isDecidedGameWithOpponentResult,
   isDrawResult,
@@ -143,6 +144,18 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
     }
   }
 
+  // 5b) Zwitsers: Buchholz-worst zoals Sevilla (niet-gespeelde rondes, AWM, bye, forfait)
+  const sevillaBhlz =
+    tour.type === "SWISS" && !isLentecompetitie && !isBlitzkampioenschap
+      ? sevillaBuchholz(
+          parts.map((p) => p.user_id),
+          collectTieBreakGamesFromRaw(gamesRaw, isPlayedGame, false, true),
+          gamesRaw
+            .filter((g) => g.round.type === "REGULAR" && isAbsenceRow(g.speler2_id, g.result))
+            .map((g) => ({ player: g.speler1_id })),
+        )
+      : null;
+
   // 6) Update alle deelnames in één transaction
   await prisma.$transaction(
     parts.map(({ user_id, tie_break }) => {
@@ -156,18 +169,8 @@ export async function updateTieBreakAndWins(tournament_id: number): Promise<void
         tieValue = sbSqMap[user_id] ?? 0;
       } else if (isBlitzkampioenschap || tour.type === "ROUND_ROBIN") {
         tieValue = sbMap[user_id] ?? 0;
-      } else if (tour.type === "SWISS") {
-        // Buchholz-worst: Buchholz (includes forfeits) minus de laagste opponent-score (from ALL games)
-        // Standard definition: subtract the lowest opponent score from total Buchholz
-        const opps = buchholzList[user_id]; // Full Buchholz (includes forfeits)
-        const sumBuch = opps!.reduce((a, b) => a + b, 0);
-        if (opps!.length > 0) {
-          // Find the worst opponent from ALL games (including forfeits)
-          const worstOpp = Math.min(...opps!);
-          tieValue = sumBuch - worstOpp;
-        } else {
-          tieValue = 0;
-        }
+      } else if (sevillaBhlz) {
+        tieValue = sevillaBhlz.get(user_id)?.buchholzWorst ?? 0;
       } else {
         // Round Robin: Sonneborn–Berger
         tieValue = sbMap[user_id] ?? 0;
