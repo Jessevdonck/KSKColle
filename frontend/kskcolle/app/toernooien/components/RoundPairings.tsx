@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from '@/lib/gameSorting'
@@ -7,6 +8,9 @@ import {
 } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import MobilePairingList from "@/app/components/MobilePairingList"
+import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
+import { pendingWinChance } from "@/lib/elio"
+import WinChanceBar from "@/app/components/WinChanceBar"
 
 interface PlayerScore {
   user_id: number
@@ -58,9 +62,22 @@ interface RoundPairingsProps {
       result: string | null
     }>
   }>
+  /**
+   * Inhaaldag: zelfde weergave als een ronde, met titel "Inhaaldag N". De partijen staan er
+   * omdat ze uitgesteld zijn, dus "Uitgesteld" wordt hier niet als uitslag getoond.
+   */
+  makeupDayNumber?: number | string
+  /** Extra knop naast de uitslag, bv. uitstel ongedaan maken op een inhaaldag. */
+  renderAction?: (game: NonNullable<RoundPairingsProps["round"]["games"]>[number]) => ReactNode
 }
 
-export default function RoundPairings({ round, tournament, allRounds }: RoundPairingsProps) {
+export default function RoundPairings({ round: roundInput, tournament, allRounds, makeupDayNumber, renderAction }: RoundPairingsProps) {
+  const isMakeupDay = makeupDayNumber !== undefined
+  const round = isMakeupDay
+    ? { ...roundInput, games: roundInput.games?.map((game) => ({ ...game, uitgestelde_datum: undefined })) }
+    : roundInput
+  const title = isMakeupDay ? `Inhaaldag ${makeupDayNumber}` : `Ronde ${round.ronde_nummer}`
+  const badge = isMakeupDay ? "I" : round.ronde_nummer
   const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
     return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
   }
@@ -74,6 +91,16 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
     const player = playerScores.find(p => p.user_id === userId)
     return player ? player.score : 0
   }
+
+  // Winstkans (verwachte score) voor partijen die nog gespeeld moeten worden
+  const winChanceFor = (game: NonNullable<RoundPairingsProps["round"]["games"]>[number]) =>
+    tournament?.is_youth === true || !game.speler2
+      ? null
+      : pendingWinChance(
+          game.speler1.schaakrating_elo,
+          game.speler2.schaakrating_elo,
+          normalizedResultForDisplay(game.result, game.uitgestelde_datum),
+        )
 
   const getByeText = (result: string | null) => {
     if (!result || result === "...") return "Nog te spelen"
@@ -97,18 +124,24 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
         <div className="mb-4">
           <h3 className="text-xl font-bold text-textColor mb-2 flex items-center gap-2">
             <div className="bg-mainAccent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-              {round.ronde_nummer}
+              {badge}
             </div>
-            Ronde {round.ronde_nummer}
+            {title}
           </h3>
         </div>
 
         <div className="text-center py-6">
           <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-            <User className="h-8 w-8 text-mainAccent" />
+            {isMakeupDay ? <Calendar className="h-8 w-8 text-mainAccent" /> : <User className="h-8 w-8 text-mainAccent" />}
           </div>
-          <h4 className="text-base font-semibold text-gray-700 mb-2">Nog geen partijen</h4>
-          <p className="text-gray-500 text-sm">De partijen voor deze ronde zijn nog niet gegenereerd.</p>
+          <h4 className="text-base font-semibold text-gray-700 mb-2">
+            {isMakeupDay ? "Geen uitgestelde partijen" : "Nog geen partijen"}
+          </h4>
+          <p className="text-gray-500 text-sm">
+            {isMakeupDay
+              ? "Er zijn nog geen partijen uitgesteld naar deze inhaaldag."
+              : "De partijen voor deze ronde zijn nog niet gegenereerd."}
+          </p>
         </div>
       </div>
     )
@@ -119,14 +152,14 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
       <div className="mb-3">
         <h3 className="text-lg font-bold text-textColor mb-1.5 flex items-center gap-1.5">
           <div className="bg-mainAccent text-white rounded-full w-5 h-5 flex items-center justify-center text-[0.7em] font-bold">
-            {round.ronde_nummer}
+            {badge}
           </div>
-          Ronde {round.ronde_nummer}
+          {title}
         </h3>
         <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 text-xs text-gray-600">
           <p>
             {round.games.length} partijen
-            {!round.round_id && <span className="text-gray-500 ml-2">(Nog niet gegenereerd)</span>}
+            {!round.round_id && !isMakeupDay && <span className="text-gray-500 ml-2">(Nog niet gegenereerd)</span>}
           </p>
           {round.ronde_datum && (
             <div className="flex items-center gap-4">
@@ -163,7 +196,7 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     <th className="px-1 py-0.5 text-center font-semibold text-xs w-[60px]">Rating</th>
                   )}
                   <th className="px-1 py-0.5 text-center font-semibold text-xs w-[50px]">Punten</th>
-                  <th className="px-1 py-0.5 text-center font-semibold w-[30px]"></th>
+                  <th className="px-1 py-0.5 text-center font-semibold w-[96px]"></th>
                   <th className="px-1 py-0.5 text-left font-semibold text-xs w-[170px]">Zwart</th>
                   {tournament?.is_youth !== true && (
                     <th className="px-1 py-0.5 text-center font-semibold text-xs w-[60px]">Rating</th>
@@ -219,8 +252,16 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                     )}
                   </td>
 
-                  <td className="px-1 py-0.5 text-center w-[30px]">
-                    <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
+                  <td className="px-1 py-0.5 text-center w-[96px]">
+                    {/* Nog te spelen: winstkans tussen wit en zwart; anders het pijltje */}
+                    {(() => {
+                      const chance = winChanceFor(game)
+                      return chance ? (
+                        <WinChanceBar white={chance.white} className="w-full" />
+                      ) : (
+                        <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
+                      )
+                    })()}
                   </td>
 
                   <td className="px-1 py-0.5 w-[170px]">
@@ -247,9 +288,11 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   {tournament?.is_youth !== true && (
                     <td className="px-1 py-0.5 text-center w-[60px]">
                       {game.speler2 ? (
-                        <span className="text-sm font-normal text-yellow-600">
-                          {game.speler2.schaakrating_elo}
-                        </span>
+                        <>
+                          <span className="text-sm font-normal text-yellow-600">
+                            {game.speler2.schaakrating_elo}
+                          </span>
+                        </>
                       ) : (
                         <span className="text-sm text-gray-400">-</span>
                       )}
@@ -266,14 +309,17 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
                   </td>
 
                   <td className="px-1 py-0.5 text-center w-[130px]">
-                    <span
-                      className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${pairingResultBadgeClass(
-                        game.result,
-                        game.uitgestelde_datum,
-                      )}`}
-                    >
-                      {pairingResultBadgeText(game.result, game.uitgestelde_datum)}
-                    </span>
+                    <div className="flex items-center justify-center gap-1">
+                      <span
+                        className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${pairingResultBadgeClass(
+                          game.result,
+                          game.uitgestelde_datum,
+                        )}`}
+                      >
+                        {pairingResultBadgeText(game.result, game.uitgestelde_datum)}
+                      </span>
+                      {renderAction?.(game)}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -288,11 +334,12 @@ export default function RoundPairings({ round, tournament, allRounds }: RoundPai
           getScore={playerScores.length > 0 ? getPlayerScore : null}
           showRating={tournament?.is_youth !== true}
           byeLabel={getByeText}
+          renderAction={renderAction as any}
         />
       </>
       ) : (
         <div className="bg-white rounded-lg border border-neutral-200 shadow-sm p-6 text-center">
-          <div className="text-gray-500 text-lg mb-2">Ronde {round.ronde_nummer}</div>
+          <div className="text-gray-500 text-lg mb-2">{title}</div>
           <div className="text-gray-400 text-sm">
             {!round.round_id ? "Nog niet gegenereerd" : "Geen partijen beschikbaar"}
           </div>

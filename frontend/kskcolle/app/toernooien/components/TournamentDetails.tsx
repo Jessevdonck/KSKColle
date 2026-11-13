@@ -9,7 +9,7 @@ import MegaschaakTab from "./MegaschaakTab"
 import CrossTable from "./CrossTable"
 import { getById, getAll, getAllTournamentRounds, undoPostponeGame, reportAbsence } from "../../api/index"
 import { format, isSameDay, parseISO } from "date-fns"
-import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX, Clock, Swords } from "lucide-react"
+import { Calendar, Trophy, Users, ChevronLeft, ChevronRight, X, UserX, Swords } from "lucide-react"
 import { useState, useEffect } from "react"
 import PostponeGameButton from './PostponeGameButton'
 import { isLentecompetitieTieBreak } from "./tieBreakLente"
@@ -17,10 +17,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '../../contexts/auth'
 import Link from 'next/link'
 import { tournamentDetailKey, tournamentRoundsKey } from "@/lib/swrTournamentKeys"
-import { isDoubleForfeitResult } from "@/lib/gameResultDisplay"
-import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import { DEFAULT_SWR_OPTIONS } from "@/lib/swrConfig"
-import MobilePairingList, { ResultBadge } from "@/app/components/MobilePairingList"
 
 type Game = {
   game_id: number
@@ -837,35 +834,18 @@ export default function TournamentDetails() {
   )
 }
 
-// Component to show a makeup day + associated games
-function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, allRounds }: { 
-  round: any; 
-  games: Game[]; 
-  onGameUndone?: (originalRoundNumber: number) => void; 
+// Inhaaldag: zelfde weergave als een gewone ronde (RoundPairings), plus "uitstel ongedaan maken"
+function MakeupPairings({ round, games, currentUser, tournament, allRounds }: {
+  round: any;
+  games: Game[];
+  onGameUndone?: (originalRoundNumber: number) => void;
   currentUser?: any;
   tournament?: any;
   allRounds?: any[];
 }) {
-  const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
-    return `${voornaam.toLowerCase()}_${achternaam.toLowerCase()}`.replace(/\s+/g, "_")
-  }
-
-  // Calculate player scores (same logic as RoundPairings)
-  // For makeup rounds, we show current standings (all rounds before this makeup day)
-  const playerScores = tournament && allRounds 
-    ? calculateStandingsForMakeupDay(tournament, allRounds) 
-    : []
-  const getPlayerScore = (userId: number) => {
-    const player = playerScores.find(p => p.user_id === userId)
-    return player ? player.score : 0
-  }
-
-  // Check if current user is involved in a game
-  const isUserInvolvedInGame = (game: any) => {
-    if (!currentUser) return false
-    return game.speler1?.user_id === currentUser.user_id || 
-           game.speler2?.user_id === currentUser.user_id
-  }
+  const isUserInvolvedInGame = (game: any) =>
+    !!currentUser &&
+    (game.speler1?.user_id === currentUser.user_id || game.speler2?.user_id === currentUser.user_id)
 
   const handleUndoPostpone = async (gameId: number) => {
     if (!confirm('Weet je zeker dat je het uitstel ongedaan wilt maken? De game wordt teruggeplaatst naar de originele ronde.')) {
@@ -875,330 +855,37 @@ function MakeupPairings({ round, games, onGameUndone, currentUser, tournament, a
     try {
       const result = await undoPostponeGame('', { arg: { game_id: gameId } });
       alert(result.message);
-      
+
       // Refresh the page to show updated data
       window.location.reload();
     } catch (error: any) {
-      // Failed to undo postpone game
       const errorMessage = error?.response?.data?.message || error?.message || 'Kon uitstel niet ongedaan maken';
       alert(`Fout: ${errorMessage}`);
     }
   }
 
-  const getByeText = (result: string | null) => {
-    if (!result || result === "...") return "Nog te spelen"
-    
-    // Check if it's an absent with message result (ABS-0.5, ABS-1, etc.)
-    if (result.startsWith("ABS-")) {
-      return "Abs with msg"
-    }
-    
-    // Check if it's a bye result (e.g., "0.5-0", "1-0", "0-0")
-    if (result.includes("-0") && result !== "0-0") {
-      return "Bye"
-    }
-    
-    return "Bye"
-  }
-
   return (
-    <div className="text-[0.9em]">
-      <div className="mb-3">
-        <h3 className="text-lg font-bold text-textColor mb-1.5 flex items-center gap-1.5">
-          <div className="bg-mainAccent text-white rounded-full w-5 h-5 flex items-center justify-center text-[0.7em] font-bold">
-            I
-          </div>
-          Inhaaldag {round.makeupDayNumber}
-        </h3>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 text-xs text-gray-600">
-          <p>
-            {(games?.length ?? 0)} partijen
-          </p>
-          {(round.ronde_datum || round.date) && (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>{new Date(round.ronde_datum || round.date).toLocaleDateString('nl-NL', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}</span>
-              </div>
-              {round.startuur && (
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{round.startuur}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {(games?.length ?? 0) === 0 ? (
-        <div className="text-center py-6">
-          <div className="bg-mainAccent/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-            <Calendar className="h-8 w-8 text-mainAccent" />
-          </div>
-          <h4 className="text-base font-semibold text-gray-700 mb-2">Geen uitgestelde partijen</h4>
-          <p className="text-gray-500 text-sm">Er zijn nog geen partijen uitgesteld naar deze inhaaldag.</p>
-        </div>
-      ) : (
-        <>
-          {/* Desktop Table View */}
-          <div className="hidden md:block bg-white rounded-lg border border-neutral-200 shadow-sm overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gradient-to-r from-mainAccent to-mainAccentDark text-white">
-                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[45px]">Bord</th>
-                  <th className="px-1 py-0.5 text-left font-semibold text-xs w-[150px]">Wit</th>
-                  {tournament?.is_youth !== true && (
-                    <th className="px-1 py-0.5 text-center font-semibold text-xs w-[60px]">Rating</th>
-                  )}
-                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[50px]">Punten</th>
-                  <th className="px-1 py-0.5 text-center font-semibold w-[30px]"></th>
-                  <th className="px-1 py-0.5 text-left font-semibold text-xs w-[170px]">Zwart</th>
-                  {tournament?.is_youth !== true && (
-                    <th className="px-1 py-0.5 text-center font-semibold text-xs w-[60px]">Rating</th>
-                  )}
-                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[50px]">Punten</th>
-                  <th className="px-1 py-0.5 text-center font-semibold text-xs w-[130px]">Uitslag</th>
-                </tr>
-              </thead>
-              <tbody>
-                {games.map((g, idx) => (
-                  <tr
-                    key={g.game_id}
-                    className={`border-b border-neutral-100 ${
-                      idx % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
-                    } hover:bg-mainAccent/5 transition-colors`}
-                  >
-                    <td className="px-1 py-0.5 text-center w-[45px]">
-                      <div className="bg-mainAccent/10 text-mainAccent rounded-full w-5 h-5 flex items-center justify-center text-[0.7em] font-bold">
-                        {idx + 1}
-                      </div>
-                    </td>
-                    <td className="px-1 py-0.5 w-[150px]">
-                      {g.speler1 && g.speler1.voornaam && g.speler1.achternaam ? (
-                        <Link
-                          href={`/profile/${createUrlFriendlyName(g.speler1.voornaam, g.speler1.achternaam)}`}
-                          className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-1.5 group text-xs truncate"
-                          title={`${g.speler1.voornaam} ${g.speler1.achternaam}`}
-                        >
-                          <div className="w-5 h-5 bg-white border-2 border-neutral-300 rounded-full flex items-center justify-center text-[0.7em] font-bold group-hover:border-mainAccent transition-colors flex-shrink-0">
-                            W
-                          </div>
-                          <span className="truncate">{`${g.speler1.voornaam} ${g.speler1.achternaam}`}</span>
-                        </Link>
-                      ) : (
-                        <div className="flex items-center gap-2 text-gray-500 italic text-sm">
-                          <div className="w-5 h-5 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-[0.7em] flex-shrink-0">
-                            ?
-                          </div>
-                          <span>Speler niet gevonden</span>
-                        </div>
-                      )}
-                    </td>
-                    {tournament?.is_youth !== true && (
-                      <td className="px-1 py-0.5 text-center w-[60px]">
-                        {g.speler1?.schaakrating_elo ? (
-                          <span className="text-sm font-normal text-yellow-600">
-                            {g.speler1.schaakrating_elo}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-gray-400">-</span>
-                        )}
-                      </td>
-                    )}
-                    <td className="px-1 py-0.5 text-center w-[50px]">
-                      {playerScores.length > 0 ? (
-                        <span className="text-sm font-bold text-black">
-                          {getPlayerScore(g.speler1?.user_id || 0)}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-1 py-0.5 text-center w-[30px]">
-                      <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
-                    </td>
-                    <td className="px-1 py-0.5 w-[170px]">
-                      {g.speler2 && g.speler2.voornaam && g.speler2.achternaam ? (
-                        <Link
-                          href={`/profile/${createUrlFriendlyName(g.speler2.voornaam, g.speler2.achternaam)}`}
-                          className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-xs truncate"
-                          title={`${g.speler2.voornaam} ${g.speler2.achternaam}`}
-                        >
-                          <div className="w-5 h-5 bg-gray-800 border-2 border-gray-600 rounded-full flex items-center justify-center text-[0.7em] font-bold text-white group-hover:border-mainAccent transition-colors flex-shrink-0">
-                            Z
-                          </div>
-                          <span className="truncate">{`${g.speler2.voornaam} ${g.speler2.achternaam}`}</span>
-                        </Link>
-                      ) : (
-                        <div className="flex items-center gap-2 text-gray-500 italic text-sm">
-                          <div className="w-5 h-5 bg-gray-200 border-2 border-gray-300 rounded-full flex items-center justify-center text-[0.7em] flex-shrink-0">
-                            -
-                          </div>
-                          <span>{getByeText(g.result)}</span>
-                        </div>
-                      )}
-                    </td>
-                    {tournament?.is_youth !== true && (
-                      <td className="px-1 py-0.5 text-center w-[60px]">
-                        {g.speler2?.schaakrating_elo ? (
-                          <span className="text-sm font-normal text-yellow-600">
-                            {g.speler2.schaakrating_elo}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-gray-400">-</span>
-                        )}
-                      </td>
-                    )}
-                    <td className="px-1 py-0.5 text-center w-[50px]">
-                      {g.speler2 && playerScores.length > 0 ? (
-                        <span className="text-sm font-bold text-black">
-                          {getPlayerScore(g.speler2.user_id)}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-1 py-0.5 text-center w-[130px]">
-                      <div className="flex items-center justify-center gap-2">
-                        <span
-                          className={`px-0.5 py-0.5 rounded text-xs font-medium whitespace-nowrap ${
-                            g.result &&
-                            g.result !== "not_played" &&
-                            g.result !== "..." &&
-                            !isDoubleForfeitResult(g.result)
-                              ? "bg-green-100 text-green-800 border border-green-200"
-                              : "bg-gray-100 text-gray-600 border border-gray-200"
-                          }`}
-                        >
-                          {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "..."}
-                        </span>
-                        {isUserInvolvedInGame(g) && (
-                          <button
-                            onClick={() => handleUndoPostpone(g.game_id)}
-                            className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
-                            title="Uitstel ongedaan maken"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile: compacte lijst (zelfde layout als de rondes) */}
-          <MobilePairingList
-            className="md:hidden"
-            games={games}
-            getScore={playerScores.length > 0 ? getPlayerScore : null}
-            showRating={tournament?.is_youth !== true}
-            byeLabel={getByeText}
-            renderResult={(g) => {
-              const hasResult =
-                !!g.result && g.result !== "not_played" && g.result !== "..." && !isDoubleForfeitResult(g.result)
-              return (
-                <ResultBadge
-                  className={
-                    hasResult
-                      ? "bg-green-100 text-green-800 border border-green-200"
-                      : "bg-gray-100 text-gray-600 border border-gray-200"
-                  }
-                >
-                  {g.result && g.result !== "not_played" && g.result !== "..." ? g.result : "..."}
-                </ResultBadge>
-              )
-            }}
-            renderAction={(g) =>
-              isUserInvolvedInGame(g) && (
-                <button
-                  onClick={() => handleUndoPostpone(g.game_id)}
-                  className="-mr-1 shrink-0 p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
-                  title="Uitstel ongedaan maken"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )
-            }
-          />
-        </>
-      )}
-    </div>
-  )
-}
-
-/**
- * Calculate standings for makeup day (shows current standings from all regular rounds)
- */
-function calculateStandingsForMakeupDay(
-  tournament: any, 
-  rounds: any[]
-): Array<{ user_id: number; voornaam: string; achternaam: string; score: number; gamesPlayed: number; tieBreak: number }> {
-  if (!tournament || !rounds) return []
-
-  // 1) init
-  const scoreMap: Record<number, number> = {}
-  const gamesPlayed: Record<number, number> = {}
-
-  // deelnemers
-  tournament.participations.forEach(({ user }: any) => {
-    scoreMap[user.user_id] = 0
-    gamesPlayed[user.user_id] = 0
-  })
-
-  // 2) score & gamesPlayed - only for regular rounds (not makeup rounds)
-  rounds.forEach(({ games, type: roundType }: any) => {
-    // Skip makeup rounds for points calculation - they don't count for standings
-    const isMakeupRound = roundType === 'MAKEUP'
-    if (isMakeupRound) return
-    
-    // Process all games with results (only for regular rounds)
-    games.forEach(({ speler1, speler2, result }: any) => {
-      const p1 = speler1.user_id
-      const p2 = speler2?.user_id ?? null
-
-      // Only count games that are actually played (not postponed or not yet played)
-      const isPlayed = result && result !== "..." && result !== "uitgesteld" && result !== null
-      
-      if (isPlayed) {
-        if (countsAsSpeeldagPartij(result, p2)) {
-          gamesPlayed[p1]++
-          if (p2) gamesPlayed[p2]++
-        }
-
-        if (result?.startsWith("1-0")) {
-          scoreMap[p1] += 1
-        } else if (result?.startsWith("0-1") && p2) {
-          scoreMap[p2] += 1
-        } else if (["½-½", "1/2-1/2", "-", "1/2-1/2R", "½-½R"].includes(result)) {
-          scoreMap[p1] += 0.5
-          if (p2) scoreMap[p2] += 0.5
-        } else if (result === "0.5-0") {
-          scoreMap[p1] += 0.5
-        } else if (result?.startsWith("ABS-")) {
-          const absScore = parseFloat(result.substring(4)) || 0
-          scoreMap[p1] += absScore
-        }
+    <RoundPairings
+      makeupDayNumber={round.makeupDayNumber}
+      round={{
+        ...round,
+        round_id: round.round_id ?? round.id,
+        ronde_datum: round.ronde_datum || round.date,
+        games,
+      }}
+      tournament={tournament}
+      allRounds={allRounds}
+      renderAction={(game) =>
+        isUserInvolvedInGame(game) ? (
+          <button
+            onClick={() => handleUndoPostpone(game.game_id)}
+            className="shrink-0 p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors"
+            title="Uitstel ongedaan maken"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        ) : null
       }
-    })
-  })
-
-  // 3) return standings
-  return tournament.participations
-    .map(({ user }: any) => ({
-      user_id: user.user_id,
-      voornaam: user.voornaam,
-      achternaam: user.achternaam,
-      score: scoreMap[user.user_id] || 0,
-      gamesPlayed: gamesPlayed[user.user_id] || 0,
-      tieBreak: 0, // Not needed for pairing display
-    }))
+    />
+  )
 }
