@@ -9,6 +9,7 @@ import Image from "next/image"
 import { getRecentArticles } from "../api/index"
 import { Article, articleThumbnailUrl } from "../../data/article"
 import { format } from "date-fns"
+import NextGameCard from "./NextGameCard"
 import { nl } from "date-fns/locale"
 
 const HeroHomepage = () => {
@@ -150,6 +151,9 @@ const HeroHomepage = () => {
             </Link>
           </div>
         </div>
+
+        {/* Ingelogde spelers: eerstvolgende partij (onder de titel, zodat die de blikvanger blijft) */}
+        <NextGameCard />
 
         {/* Articles Section - Carousel */}
         {!loading && articles.length > 0 && (
