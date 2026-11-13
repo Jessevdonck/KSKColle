@@ -104,6 +104,23 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
       participations.map((p) => [p.tournament_id, p.sevilla_rating_change as number])
     );
 
+    // Rating van beide spelers bij de start van elk toernooi (Sevilla), voor
+    // prestatierating en "beste overwinning" op het profiel.
+    const playerIdsInGames = [...new Set(games.flatMap((g) => [g.speler1_id, g.speler2_id]).filter((id): id is number => id != null))];
+    const startRatings = await prisma.participation.findMany({
+      where: {
+        tournament_id: { in: tournamentIds },
+        user_id: { in: playerIdsInGames },
+        sevilla_initial_rating: { not: null },
+      },
+      select: { tournament_id: true, user_id: true, sevilla_initial_rating: true },
+    });
+    const startRating = new Map(
+      startRatings.map((p) => [`${p.tournament_id}:${p.user_id}`, p.sevilla_initial_rating as number])
+    );
+    const ratingAtTime = (tournamentId: number, userId: number | null, current: number | null | undefined) =>
+      userId == null ? null : startRating.get(`${tournamentId}:${userId}`) ?? current ?? null;
+
     const gameIds = games.map((g) => g.game_id);
     const makeupGames =
       gameIds.length === 0
@@ -130,6 +147,14 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
     return games.map((game): GameWithRoundAndTournament => {
       const makeup = makeupByOriginalId.get(game.game_id);
       const useMakeup = makeup && shouldUseMakeupRoundForDisplay(game);
+      const tournamentDto = {
+        tournament_id: game.round.tournament.tournament_id,
+        naam: game.round.tournament.naam,
+        rondes: game.round.tournament.rondes,
+        class_name: game.round.tournament.class_name ?? null,
+        finished: game.round.tournament.finished,
+        is_youth: game.round.tournament.is_youth,
+      };
 
       const roundDto = useMakeup && makeup
         ? {
@@ -140,11 +165,7 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
             startuur: makeup.round.startuur,
             type: "MAKEUP" as const,
             label: makeup.round.label ?? null,
-            tournament: {
-              tournament_id: game.round.tournament.tournament_id,
-              naam: game.round.tournament.naam,
-              rondes: game.round.tournament.rondes,
-            },
+            tournament: tournamentDto,
           }
         : {
             round_id: game.round.round_id,
@@ -154,11 +175,7 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
             startuur: game.round.startuur,
             type: "REGULAR" as const,
             label: game.round.label ?? null,
-            tournament: {
-              tournament_id: game.round.tournament.tournament_id,
-              naam: game.round.tournament.naam,
-              rondes: game.round.tournament.rondes,
-            },
+            tournament: tournamentDto,
           };
 
       return {
@@ -173,6 +190,9 @@ export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRo
         speler2_naam: game.speler2 ? `${game.speler2.voornaam} ${game.speler2.achternaam}` : null,
         speler1_rating: game.speler1.schaakrating_elo ?? null,
         speler2_rating: game.speler2?.schaakrating_elo ?? null,
+        speler1_rating_at_time: ratingAtTime(game.round.tournament_id, game.speler1_id, game.speler1.schaakrating_elo),
+        speler2_rating_at_time: ratingAtTime(game.round.tournament_id, game.speler2_id, game.speler2?.schaakrating_elo),
+        board_position: game.board_position ?? null,
         rating_change_in_tournament: ratingChangeByTournament.get(game.round.tournament_id) ?? null,
         round: roundDto,
       };

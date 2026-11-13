@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { GameWithRoundAndTournament } from "@/data/types"
 import EloHistoryChart from "./EloHistoryChart"
+import PlayerHighlights from "./PlayerHighlights"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import { Trophy, Target, TrendingUp, Calendar, ChevronLeft, ChevronRight } from "lucide-react"
@@ -346,6 +347,9 @@ export default function ProfileStats({ games, playerId, compact, eloHistory = []
               </>
             )}
           </div>
+
+          {/* Prestatierating, beste overwinning, reeks, wit/zwart (zelfde periode) */}
+          <PlayerHighlights games={filteredGames} playerId={playerId} />
 
           {compact && chartKeys.length > 0 ? (
             <Card className="border border-border/50">

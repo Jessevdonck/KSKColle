@@ -55,6 +55,10 @@ export interface GameWithRoundAndTournament {
   speler2_naam: string | null;
   speler1_rating?: number | null;
   speler2_rating?: number | null;
+  /** Rating bij de start van het toernooi (Sevilla), anders de huidige ELIO. */
+  speler1_rating_at_time?: number | null;
+  speler2_rating_at_time?: number | null;
+  board_position?: number | null;
   /** Ratingwinst/verlies in dit toernooi (sevilla_rating_change van de speler). */
   rating_change_in_tournament?: number | null;
   round: {
@@ -69,6 +73,9 @@ export interface GameWithRoundAndTournament {
       tournament_id: number;
       naam: string;
       rondes: number;
+      class_name?: string | null;
+      finished?: boolean;
+      is_youth?: boolean;
     };
   };
 }

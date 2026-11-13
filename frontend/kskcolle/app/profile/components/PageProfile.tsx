@@ -7,6 +7,7 @@ import Palmares from "./Palmares"
 import RecentGames from "./RecentGames"
 import UpcomingGames from "./UpcomingGames"
 import ProfileStats from "./ProfileStats"
+import HeadToHead from "./HeadToHead"
 import AsyncData from "../../components/AsyncData"
 import { getById, getUserEloHistory } from "../../api/index"
 import type { User, GameWithRoundAndTournament } from "../../../data/types"
@@ -105,6 +106,13 @@ export default function PlayerProfile() {
     return false
   })
 
+  // Onderlinge resultaten: alle gespeelde partijen, zonder tijdslimiet
+  const allPlayedGames = uniqueGames.filter(game => {
+    const result =
+      normalizedResultForDisplay(game.result?.trim() ?? null, game.uitgestelde_datum) ?? ""
+    return !!result && result !== "..." && result.toLowerCase() !== "uitgesteld" && result !== "not_played"
+  })
+
   const upcomingOrMakeupGames = uniqueGames.filter(game => {
     const result =
       normalizedResultForDisplay(game.result?.trim() ?? null, game.uitgestelde_datum) ?? ""
@@ -135,6 +143,7 @@ export default function PlayerProfile() {
                 <div className="order-2 lg:order-1 min-w-0">
                   <div className="space-y-4">
                     <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
+                    <HeadToHead games={allPlayedGames} playerId={player.user_id} />
                     <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
                   </div>
                 </div>
