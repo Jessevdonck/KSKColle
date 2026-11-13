@@ -108,6 +108,9 @@ const HeroHomepage = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 relative z-10 flex flex-col justify-center min-h-[calc(100vh-5rem)] py-8">
+        {/* Ingelogde spelers: eerstvolgende partij, boven de titel */}
+        <NextGameCard />
+
         {/* Welcome Section - Naar boven verplaatst */}
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-6">
           <div className="mb-8">
@@ -151,9 +154,6 @@ const HeroHomepage = () => {
             </Link>
           </div>
         </div>
-
-        {/* Ingelogde spelers: eerstvolgende partij (onder de titel, zodat die de blikvanger blijft) */}
-        <NextGameCard />
 
         {/* Articles Section - Carousel */}
         {!loading && articles.length > 0 && (
