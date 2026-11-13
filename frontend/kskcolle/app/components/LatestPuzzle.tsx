@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import useSWR from "swr"
 import { getAllPuzzles, getPuzzleLeaderboard, savePuzzleAttempt, getUserPuzzleAttempt } from "../api/index"
 import { Puzzle, Trophy, Clock, CheckCircle, Medal } from "lucide-react"
@@ -57,6 +57,9 @@ export default function LatestPuzzle() {
   const [startTime, setStartTime] = useState<number | null>(null)
   const [currentTime, setCurrentTime] = useState<number>(0)
   const [userAttempt, setUserAttempt] = useState<any | null>(null)
+  // De timer start pas als het bord in beeld is, niet al bij het laden van de homepage
+  const boardRef = useRef<HTMLDivElement | null>(null)
+  const [isBoardVisible, setIsBoardVisible] = useState(false)
 
   // Get the latest puzzle (first in array since getAllPuzzles sorts by created_at desc)
   const latestPuzzle = puzzles && puzzles.length > 0 ? puzzles[0] : null
@@ -116,8 +119,7 @@ export default function LatestPuzzle() {
         setIsSolved(false)
         setResetCounter(0)
         setErrorSquare(null)
-        const now = Date.now()
-        setStartTime(now)
+        setStartTime(null) // start zodra het bord in beeld komt (zie hieronder)
         setCurrentTime(0)
       } catch (error) {
         console.error("Error initializing puzzle:", error)
@@ -136,6 +138,27 @@ export default function LatestPuzzle() {
       }
     }
   }, [latestPuzzle, userAttempt])
+
+  // Bord in beeld? (minstens de helft zichtbaar)
+  useEffect(() => {
+    const el = boardRef.current
+    if (!el || isBoardVisible) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setIsBoardVisible(true)
+      },
+      { threshold: 0.5 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isBoardVisible, currentGame])
+
+  // Timer starten zodra de (nog niet opgeloste) puzzel voor het eerst in beeld is
+  useEffect(() => {
+    if (isBoardVisible && latestPuzzle && !userAttempt && !isSolved && startTime === null) {
+      setStartTime(Date.now())
+    }
+  }, [isBoardVisible, latestPuzzle, userAttempt, isSolved, startTime])
 
   // Update timer every 100ms
   useEffect(() => {
@@ -382,7 +405,7 @@ export default function LatestPuzzle() {
               </div>
 
               {/* Chess Board */}
-              <div className="mb-6 flex justify-center">
+              <div ref={boardRef} className="mb-6 flex justify-center">
                 {currentGame && (
                   <ChessBoard
                     key={`${currentGame.fen()}-${resetCounter}-${allMoves.length}`}
