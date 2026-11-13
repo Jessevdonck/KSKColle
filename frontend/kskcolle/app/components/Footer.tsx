@@ -42,7 +42,17 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-[#9bafa3] flex flex-col items-center space-y-2">
           <p className="text-lg">&copy; {new Date().getFullYear()} KSK Colle. Alle rechten voorbehouden.</p>
-          <p className="text-sm text-gray-500">Gemaakt door Jesse Vaerendonck</p>
+          <p className="text-sm text-gray-500">
+            Gemaakt door{" "}
+            <a
+              href="https://www.jessevdonck.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-mainAccent underline decoration-mainAccent/40 underline-offset-2 transition-colors hover:text-mainAccentDark hover:decoration-mainAccentDark"
+            >
+              Jesse Vaerendonck
+            </a>
+          </p>
         </div>
       </div>
     </footer>
