@@ -1,213 +1,338 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useMemo, useState } from "react"
+import Link from "next/link"
 import useSWR from "swr"
-import TournamentCard from "../../components/TournamentCard"
 import { getAll } from "../../../api/index"
-import { Archive, Trophy, Search, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Archive, ChevronRight, Search, Trophy, Users, X } from "lucide-react"
 
 const CLASS_ORDER = [
   "Eerste Klasse",
   "Tweede Klasse",
+  "Tweede en Derde Klasse",
   "Derde Klasse",
   "Vierde Klasse",
-  "Vijfde Klasse",
   "Vierde en Vijfde Klasse",
+  "Vijfde Klasse",
   "Zesde Klasse",
   "Zevende Klasse",
 ]
 
-function groupTournamentsByName<T extends { naam: string; class_name?: string | null; participations: unknown[]; rondes: number; tournament_id: number }>(
-  tournaments: T[],
-) {
-  const groups = new Map<string, T[]>()
+type ArchiveTournament = {
+  tournament_id: number
+  naam: string
+  class_name?: string | null
+  is_youth?: boolean
+  rondes: number
+  participations: Array<{
+    user_id: number
+    score?: number | null
+    user?: { user_id: number; voornaam: string; achternaam: string }
+  }>
+  rounds?: Array<{ ronde_datum?: string | null }>
+}
 
-  tournaments.forEach((tournament) => {
-    const group = groups.get(tournament.naam) ?? []
-    group.push(tournament)
-    groups.set(tournament.naam, group)
+type Category = "herfst" | "lente" | "zomer" | "blitz" | "jeugd" | "overige"
+
+const CATEGORIES: Array<{ key: Category | "alle"; label: string }> = [
+  { key: "alle", label: "Alle" },
+  { key: "herfst", label: "Herfst" },
+  { key: "lente", label: "Lente" },
+  { key: "zomer", label: "Zomer" },
+  { key: "blitz", label: "Blitz" },
+  { key: "jeugd", label: "Jeugd" },
+  { key: "overige", label: "Overige" },
+]
+
+function categoryOf(t: { naam: string; is_youth?: boolean }): Category {
+  const n = t.naam.toLowerCase()
+  if (t.is_youth || n.includes("jeugd")) return "jeugd"
+  if (n.includes("herfst")) return "herfst"
+  if (n.includes("lente")) return "lente"
+  if (n.includes("zomer")) return "zomer"
+  if (n.includes("blitz") || n.includes("snelschaak")) return "blitz"
+  return "overige"
+}
+
+const classRank = (c?: string | null) => {
+  if (!c) return -1
+  const i = CLASS_ORDER.indexOf(c)
+  return i === -1 ? CLASS_ORDER.length : i
+}
+
+const normalize = (s: string) =>
+  s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+
+type Group = {
+  key: string
+  name: string
+  category: Category
+  /** Toernooi waarnaar gelinkt wordt (eerste klasse); de detailpagina toont de andere klassen als tabs */
+  linkId: number
+  classes: string[]
+  players: number
+  start: Date | null
+  end: Date | null
+  year: number | null
+  winner: string | null
+  /** Tekst om in te zoeken: naam, klassen, jaar en alle spelers */
+  haystack: string
+}
+
+/** Winnaar enkel als die eenduidig is (hoogste score zonder gelijkstand). */
+function winnerOf(t: ArchiveTournament): string | null {
+  const scored = t.participations.filter((p) => p.user && typeof p.score === "number")
+  if (scored.length === 0) return null
+  const sorted = [...scored].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+  if (sorted.length > 1 && sorted[0].score === sorted[1].score) return null
+  if (!sorted[0].score) return null
+  const u = sorted[0].user!
+  return `${u.voornaam} ${u.achternaam}`.trim()
+}
+
+function buildGroups(tournaments: ArchiveTournament[]): Group[] {
+  const byName = new Map<string, ArchiveTournament[]>()
+  for (const t of tournaments) {
+    const list = byName.get(t.naam) ?? []
+    list.push(t)
+    byName.set(t.naam, list)
+  }
+
+  return [...byName.entries()].map(([name, list]) => {
+    const sorted = [...list].sort((a, b) => classRank(a.class_name) - classRank(b.class_name))
+    const dates = list
+      .flatMap((t) => t.rounds ?? [])
+      .map((r) => (r.ronde_datum ? new Date(r.ronde_datum) : null))
+      .filter((d): d is Date => d !== null && !Number.isNaN(d.getTime()))
+      .sort((a, b) => a.getTime() - b.getTime())
+    const start = dates[0] ?? null
+    const end = dates[dates.length - 1] ?? null
+    const yearFromName = name.match(/(19|20)\d{2}/)?.[0]
+    const year = end ? end.getFullYear() : yearFromName ? Number(yearFromName) : null
+    const players = new Set(list.flatMap((t) => t.participations.map((p) => p.user_id))).size
+    const classes = sorted.map((t) => t.class_name).filter((c): c is string => !!c)
+    const playerNames = list
+      .flatMap((t) => t.participations.map((p) => (p.user ? `${p.user.voornaam} ${p.user.achternaam}` : "")))
+      .join(" ")
+
+    return {
+      key: name,
+      name,
+      category: categoryOf(sorted[0]),
+      linkId: sorted[0].tournament_id,
+      classes,
+      players,
+      start,
+      end,
+      year,
+      winner: winnerOf(sorted[0]),
+      haystack: normalize(`${name} ${classes.join(" ")} ${year ?? ""} ${playerNames}`),
+    }
   })
+}
 
-  return Array.from(groups.entries()).map(([name, groupTournaments]) => ({
-    name,
-    tournaments: groupTournaments.sort((a, b) => {
-      if (!a.class_name && !b.class_name) return 0
-      if (!a.class_name) return 1
-      if (!b.class_name) return -1
+/** Sorteersleutel: laatste speeldatum, anders (enkel eindstand bewaard) midden van het jaar uit de naam */
+const sortTime = (g: Group) => g.end?.getTime() ?? (g.year ? new Date(g.year, 5, 1).getTime() : 0)
 
-      const aIndex = CLASS_ORDER.indexOf(a.class_name)
-      const bIndex = CLASS_ORDER.indexOf(b.class_name)
+const monthYear = (d: Date) => d.toLocaleDateString("nl-BE", { month: "short", year: "numeric" })
 
-      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
-      if (aIndex !== -1) return -1
-      if (bIndex !== -1) return 1
-
-      return a.class_name.localeCompare(b.class_name)
-    }),
-  }))
+function periodLabel(start: Date | null, end: Date | null) {
+  if (!start || !end) return null
+  const sameDay = start.toDateString() === end.toDateString()
+  if (sameDay) return start.toLocaleDateString("nl-BE", { day: "numeric", month: "short", year: "numeric" })
+  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()
+  if (sameMonth) return monthYear(end)
+  const sameYear = start.getFullYear() === end.getFullYear()
+  return sameYear
+    ? `${start.toLocaleDateString("nl-BE", { month: "short" })} – ${monthYear(end)}`
+    : `${monthYear(start)} – ${monthYear(end)}`
 }
 
 export default function TournamentArchive() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const { data: allTournaments, error } = useSWR("tournament?active=false", getAll)
+  const [search, setSearch] = useState("")
+  const [category, setCategory] = useState<Category | "alle">("alle")
+  const { data, error, isLoading } = useSWR<ArchiveTournament[]>("tournament?active=false", getAll)
 
-  useEffect(() => {
-    if (allTournaments || error) {
-      setIsLoading(false)
+  const groups = useMemo(() => buildGroups(data ?? []), [data])
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { alle: groups.length }
+    for (const g of groups) c[g.category] = (c[g.category] ?? 0) + 1
+    return c
+  }, [groups])
+
+  // Meest recente eerst (laatste speeldatum), dan op naam
+  const filtered = useMemo(() => {
+    const terms = normalize(search).split(/\s+/).filter(Boolean)
+    return groups
+      .filter((g) => category === "alle" || g.category === category)
+      .filter((g) => terms.every((t) => g.haystack.includes(t)))
+      .sort((a, b) => sortTime(b) - sortTime(a) || a.name.localeCompare(b.name, "nl"))
+  }, [groups, category, search])
+
+  const byYear = useMemo(() => {
+    const years = new Map<string, Group[]>()
+    for (const g of filtered) {
+      const key = g.year ? String(g.year) : "Onbekend"
+      const list = years.get(key) ?? []
+      list.push(g)
+      years.set(key, list)
     }
-  }, [allTournaments, error])
-
-  // Filter out active tournaments to show only archived ones
-  const archivedTournaments = useMemo(
-    () => allTournaments?.filter((tournament) => !tournament.active) || [],
-    [allTournaments]
-  )
-
-  // Filter tournaments based on search term
-  const filteredTournaments = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return archivedTournaments
-    }
-
-    const searchLower = searchTerm.toLowerCase().trim()
-    return archivedTournaments.filter((tournament) => {
-      const nameMatch = tournament.naam?.toLowerCase().includes(searchLower)
-      const locationMatch = tournament.locatie?.toLowerCase().includes(searchLower)
-      const descriptionMatch = tournament.beschrijving?.toLowerCase().includes(searchLower)
-
-      return nameMatch || locationMatch || descriptionMatch
-    })
-  }, [archivedTournaments, searchTerm])
-
-  const displayTournaments = useMemo(() => {
-    const grouped = groupTournamentsByName(filteredTournaments)
-
-    return grouped.map((group) => {
-      const firstTournament = group.tournaments[0]
-      const totalPlayers = group.tournaments.reduce((sum, t) => sum + t.participations.length, 0)
-      const maxRounds = Math.max(...group.tournaments.map((t) => t.rondes))
-
-      return {
-        ...firstTournament,
-        participations: Array.from({ length: totalPlayers }, (_, i) => ({
-          user_id: i,
-          voornaam: `Player ${i + 1}`,
-          achternaam: "",
-        })),
-        rondes: maxRounds,
-        _isMultiClass: group.tournaments.length > 1,
-        _classCount: group.tournaments.length,
-        _allTournamentIds: group.tournaments.map((t) => t.tournament_id),
-      }
-    })
-  }, [filteredTournaments])
-
-  const clearSearch = () => {
-    setSearchTerm("")
-  }
+    return [...years.entries()]
+  }, [filtered])
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-[#2e2c2c] mb-4 flex items-center justify-center">
-            <Archive className="mr-2 h-10 w-10 text-mainAccent" />
-            Toernooi Archief
-          </h1>
-          <p className="text-xl text-[#2e2c2c]">Bekijk alle afgelopen schaaktoernooien van KSK Colle</p>
+      <div className="mx-auto max-w-4xl px-3 py-5 sm:py-6">
+        {/* Kop */}
+        <div className="mb-3 flex items-end justify-between gap-2">
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-textColor">
+              <Archive className="h-6 w-6 text-mainAccent" />
+              Toernooiarchief
+            </h1>
+            <p className="text-sm text-gray-500">Alle afgelopen toernooien van KSK Colle, meest recente eerst</p>
+          </div>
+          {data && <span className="shrink-0 text-xs text-gray-500 tabular-nums">{groups.length} toernooien</span>}
         </div>
 
-        {/* Search Section */}
-        <div className="max-w-2xl mx-auto mb-8">
+        {/* Zoeken + filters */}
+        <div className="sticky top-14 z-10 -mx-3 mb-3 space-y-2 bg-neutral-50/95 px-3 py-2 backdrop-blur">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <Input
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
               type="text"
-              placeholder="Zoek toernooien op naam, locatie of beschrijving..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-10 py-3 text-lg border-2 border-gray-200 focus:border-[#B17457] focus:ring-[#B17457] rounded-lg"
+              inputMode="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Zoek op toernooi, jaar, klasse of speler…"
+              className="w-full rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-8 text-sm outline-none focus:border-mainAccent focus:ring-1 focus:ring-mainAccent"
+              aria-label="Zoek in het archief"
             />
-            {searchTerm && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearSearch}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center hover:bg-transparent"
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+                aria-label="Zoekterm wissen"
               >
-                <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-              </Button>
+                <X className="h-4 w-4" />
+              </button>
             )}
           </div>
-
-          {/* Search Results Info */}
-          {searchTerm && (
-            <div className="mt-3 text-center">
-              <p className="text-sm text-gray-600">
-                {filteredTournaments.length} resultaten gevonden voor &quot;{searchTerm}&quot;
-              </p>
-            </div>
-          )}
+          <div className="flex gap-1 overflow-x-auto pb-0.5" role="tablist" aria-label="Soort toernooi">
+            {CATEGORIES.filter((c) => c.key === "alle" || counts[c.key]).map((c) => {
+              const active = category === c.key
+              return (
+                <button
+                  key={c.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setCategory(c.key)}
+                  className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    active
+                      ? "border-mainAccent bg-mainAccent text-white"
+                      : "border-neutral-200 bg-white text-gray-600 hover:border-mainAccent/40"
+                  }`}
+                >
+                  {c.label}
+                  <span className={`ml-1 tabular-nums ${active ? "text-white/80" : "text-gray-400"}`}>{counts[c.key] ?? 0}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
+        {/* Lijst */}
         {isLoading ? (
-          <div className="flex items-center justify-center">
-            <div
-              className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#B17457]"
-              data-cy="is_loading"
-            ></div>
+          <div className="space-y-1.5" data-cy="is_loading">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-12 animate-pulse rounded-lg bg-white" />
+            ))}
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center">
-            <div className="text-center text-red-500 bg-red-100 p-6 rounded-lg shadow-md" data-cy="axios_error_message">
-              <h2 className="text-2xl font-bold mb-2">Error</h2>
-              <p>Er is een fout opgetreden bij het laden van het archief</p>
-            </div>
+          <div className="rounded-lg bg-red-50 p-4 text-center text-sm text-red-600" data-cy="axios_error_message">
+            Er is een fout opgetreden bij het laden van het archief.
           </div>
-        ) : displayTournaments && displayTournaments.length > 0 ? (
-          <>
-            <div className="mb-8 text-center">
-              <p className="text-lg text-[#2e2c2c]">
-                <Trophy className="inline mr-2 h-5 w-5 text-mainAccent" />
-                {searchTerm
-                  ? `${displayTournaments.length} van ${groupTournamentsByName(archivedTournaments).length} toernooi${displayTournaments.length !== 1 ? "en" : ""}`
-                  : `${displayTournaments.length} afgelopen toernooi${displayTournaments.length !== 1 ? "en" : ""}`}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {displayTournaments.map((tournament) => (
-                <div key={tournament.tournament_id} className="relative">
-                  <TournamentCard tournament={tournament} />
-                  <div className="absolute top-2 right-2 bg-gray-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                    Afgelopen
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : searchTerm ? (
-          <div className="text-center text-[#2e2c2c] mt-12">
-            <Search className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <p className="text-2xl font-semibold">Geen resultaten gevonden</p>
-            <p className="mt-2">Geen toernooien gevonden voor &quot;{searchTerm}&quot;. Probeer een andere zoekterm.</p>
-            <Button
-              onClick={clearSearch}
-              variant="outline"
-              className="mt-4 border-[#B17457] text-[#B17457] hover:bg-[#B17457] hover:text-white"
-            >
-              Wis zoekopdracht
-            </Button>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-lg bg-white p-6 text-center text-sm text-gray-500" data-cy="no_tournaments_message">
+            {search || category !== "alle" ? (
+              <>
+                Geen toernooien gevonden.{" "}
+                <button
+                  type="button"
+                  className="font-medium text-mainAccent hover:underline"
+                  onClick={() => {
+                    setSearch("")
+                    setCategory("alle")
+                  }}
+                >
+                  Filters wissen
+                </button>
+              </>
+            ) : (
+              "Er zijn nog geen afgelopen toernooien."
+            )}
           </div>
         ) : (
-          <div className="text-center text-[#2e2c2c] mt-12" data-cy="no_tournaments_message">
-            <Archive className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <p className="text-2xl font-semibold">Geen gearchiveerde toernooien gevonden</p>
-            <p className="mt-2">Er zijn momenteel geen afgelopen toernooien in het archief.</p>
+          <div className="space-y-4">
+            {(search || category !== "alle") && (
+              <p className="text-xs text-gray-500">
+                {filtered.length} van {groups.length} toernooien
+              </p>
+            )}
+            {byYear.map(([year, list]) => (
+              <section key={year} aria-labelledby={`jaar-${year}`}>
+                <h2 id={`jaar-${year}`} className="mb-1 flex items-center gap-2 text-sm font-bold text-textColor">
+                  {year}
+                  <span className="h-px flex-1 bg-neutral-200" />
+                  <span className="text-xs font-normal text-gray-400 tabular-nums">{list.length}</span>
+                </h2>
+                <ul className="divide-y divide-neutral-100 overflow-hidden rounded-lg border border-neutral-200 bg-white">
+                  {list.map((g) => (
+                    <li key={g.key}>
+                      <Link
+                        href={`/toernooien/${g.linkId}`}
+                        className="group flex items-center gap-2 px-2.5 py-2 hover:bg-mainAccent/5"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate text-sm font-semibold text-textColor group-hover:text-mainAccent">
+                              {g.name}
+                            </span>
+                            {g.category === "jeugd" && (
+                              <span className="shrink-0 rounded bg-blue-50 px-1 py-px text-[10px] font-medium text-blue-600">Jeugd</span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500">
+                            {periodLabel(g.start, g.end) && <span>{periodLabel(g.start, g.end)}</span>}
+                            {g.classes.length > 1 && <span>{g.classes.length} klassen</span>}
+                            {g.classes.length === 1 && <span>{g.classes[0]}</span>}
+                            <span className="inline-flex items-center gap-0.5">
+                              <Users className="h-3 w-3" />
+                              {g.players}
+                            </span>
+                            {g.winner && (
+                              <span className="inline-flex min-w-0 items-center gap-0.5 text-gray-600">
+                                <Trophy className="h-3 w-3 shrink-0 text-yellow-500" />
+                                <span
+                                  className="truncate"
+                                  title={g.classes.length > 1 && g.classes[0] ? `Winnaar ${g.classes[0]}` : "Winnaar"}
+                                >
+                                  {g.winner}
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-mainAccent" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
           </div>
         )}
       </div>
