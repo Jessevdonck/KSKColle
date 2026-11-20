@@ -1,4 +1,6 @@
-import { countsForElio } from '../core/ratedCompetitions';
+import { countsForBlitz, countsForElio } from '../core/ratedCompetitions';
+import { recalculateBlitzRatings } from './blitzRatingService';
+import { getLogger } from '../core/logging';
 import { prisma } from "./data";
 import { Prisma } from "@prisma/client";
 import type { Tournament, TournamentUpdateInput } from "../types/tournament";
@@ -841,4 +843,14 @@ export const endTournament = async (tournament_id: number): Promise<void> => {
     where: { tournament_id },
     data: { finished: true },
   });
+
+  // 4) blitz: aparte blitzrating herberekenen (telt niet voor de ELIO).
+  // Een fout hier mag het afsluiten zelf niet ongedaan maken.
+  if (countsForBlitz(tour.naam)) {
+    try {
+      await recalculateBlitzRatings();
+    } catch (error) {
+      getLogger().error('Blitzrating herberekenen mislukt', { tournament_id, error });
+    }
+  }
 };

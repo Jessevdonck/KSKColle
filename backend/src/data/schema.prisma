@@ -71,6 +71,7 @@ model User {
   createdPuzzles     Puzzle[]         @relation("PuzzleCreator")
   tournamentHonors   TournamentHonor[]
   eloHistory         EloHistory[]
+  blitzRatingHistory BlitzRatingHistory[]
 
   @@index([is_youth])
 }
@@ -94,6 +95,7 @@ model Tournament {
   calendarEvents     CalendarEvent[] // Calendar events gerelateerd aan dit toernooi
   megaschaakTeams    MegaschaakTeam[]
   honors             TournamentHonor[]
+  blitzRatingHistory BlitzRatingHistory[]
 
   @@index([is_youth])
 }
@@ -365,6 +367,24 @@ model TournamentHonor {
 // Historische ELIO-rating per periode (bv. "2025-01"), geïmporteerd uit een oudere
 // Excel-bijhouding die verder teruggaat dan de eigen toernooigegevens. Voedt de
 // rating-historiekgrafiek op het spelersprofiel.
+/// Aparte blitzrating: één punt per speler per blitz-/snelschaaktoernooi.
+/// Telt niet mee voor de ELIO; wordt volledig herberekend door blitzRatingService.
+model BlitzRatingHistory {
+  blitz_history_id Int        @id @default(autoincrement())
+  user_id          Int
+  tournament_id    Int
+  period           String     // "YYYY-MM" (maand van het toernooi)
+  rating           Int        // blitzrating na dit toernooi
+  rating_change    Int
+  games            Int        // aantal gerate partijen in dit toernooi
+
+  user             User       @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  tournament       Tournament @relation(fields: [tournament_id], references: [tournament_id], onDelete: Cascade)
+
+  @@unique([user_id, tournament_id])
+  @@index([user_id])
+}
+
 model EloHistory {
   elo_history_id Int    @id @default(autoincrement())
   user_id        Int
