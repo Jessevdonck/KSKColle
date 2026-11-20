@@ -1,5 +1,6 @@
 import { countsForBlitz, countsForElio } from '../core/ratedCompetitions';
 import { recalculateBlitzRatings } from './blitzRatingService';
+import { invalidatePublicUsersCache } from '../core/shortLivedCache';
 import { getLogger } from '../core/logging';
 import { prisma } from "./data";
 import { Prisma } from "@prisma/client";
@@ -849,6 +850,7 @@ export const endTournament = async (tournament_id: number): Promise<void> => {
   if (countsForBlitz(tour.naam)) {
     try {
       await recalculateBlitzRatings();
+      invalidatePublicUsersCache();
     } catch (error) {
       getLogger().error('Blitzrating herberekenen mislukt', { tournament_id, error });
     }

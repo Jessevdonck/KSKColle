@@ -1,4 +1,5 @@
 import { countsForElio } from '../core/ratedCompetitions';
+import { getCurrentBlitzRatings } from './blitzRatingService';
 import type { User as PrismaUser } from "@prisma/client";
 import { prisma } from "./data";
 import type { User, UserUpdateInput, PublicUser, RegisterUserRequest } from '../types/user';
@@ -228,6 +229,12 @@ const mapUsersToPublicUsersWithRating = async (
   });
 };
 
+/** Voegt de huidige aparte blitzrating toe (null als iemand nog geen blitz speelde). */
+async function withBlitzRatings<T extends { user_id: number }>(users: T[]): Promise<Array<T & { blitz_rating: number | null }>> {
+  const blitz = await getCurrentBlitzRatings(users.map((u) => u.user_id));
+  return users.map((u) => ({ ...u, blitz_rating: blitz.get(u.user_id) ?? null }));
+}
+
 export const getAllPublicUsers = async (): Promise<PublicUser[]> => {
   try {
     const users = await prisma.user.findMany({
@@ -245,7 +252,7 @@ export const getAllPublicUsers = async (): Promise<PublicUser[]> => {
       },
     });
     const mapped = await mapUsersToPublicUsersWithRating(users, false);
-    return mapped.filter(includeInPublicPlayersList);
+    return withBlitzRatings(mapped.filter(includeInPublicPlayersList));
   } catch (error) {
     throw handleDBError(error);
   }
@@ -258,7 +265,7 @@ export const getPublicYouthUsers = async (): Promise<PublicUser[]> => {
       where: { is_youth: true },
     });
     const mapped = await mapUsersToPublicUsersWithRating(users, true);
-    return mapped.filter(includeInPublicPlayersList);
+    return withBlitzRatings(mapped.filter(includeInPublicPlayersList));
   } catch (error) {
     throw handleDBError(error);
   }
@@ -294,7 +301,8 @@ export const getUserByNaam = async (voornaam: string, achternaam: string): Promi
     if (!user) {
       return null;
     }
-    return makeExposedUser(user);
+    const [withBlitz] = await withBlitzRatings([makeExposedUser(user)]);
+    return withBlitz ?? null;
   } catch (error) {
     throw handleDBError(error);
   }

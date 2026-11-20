@@ -11,11 +11,14 @@ export default function PlayerHeader({ player }: { player: User }) {
   const [avatarUrl, setAvatarUrl] = useState(player.avatar_url)
   const isOwnProfile = currentUser?.user_id === player.user_id
 
-  const ratings = [
+  const ratings: Array<{ name: string; value: number; color?: string }> = [
     { name: 'Club Rating', value: player.schaakrating_elo },
+    // Aparte blitzrating (zelfde kleur als de blitz-lijn in de ratinggrafiek)
+    ...(player.blitz_rating ? [{ name: 'Blitz Rating', value: player.blitz_rating, color: '#0ea5e9' }] : []),
     // Hoogste ELIO sinds de ELIO-historiek (grafiek hieronder)
     ...(player.schaakrating_max ? [{ name: 'Hoogste ELIO', value: player.schaakrating_max }] : []),
   ]
+  const ratingCols = ratings.length >= 3 ? "grid-cols-3" : ratings.length === 2 ? "grid-cols-2" : "grid-cols-1"
 
   // Alleen uitlichten in het jubileumjaar zelf. Een badge tonen bij iedereen
   // die ooit 25 jaar haalde, wekt de indruk dat zij dit jaar hun jubileum vieren.
@@ -103,11 +106,11 @@ export default function PlayerHeader({ player }: { player: User }) {
               </div>
             </div>
           </div>
-          <div className={`grid gap-3 mt-3 md:mt-0 ${ratings.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+          <div className={`grid gap-3 mt-3 md:mt-0 ${ratingCols}`}>
             {ratings.map((rating) => (
               <div key={rating.name} className="bg-white p-3 rounded-lg shadow text-center">
                 <p className="text-sm text-gray-600">{rating.name}</p>
-                <p className="text-xl font-bold text-mainAccent mt-0.5">{rating.value}</p>
+                <p className={`text-xl font-bold mt-0.5 ${rating.color ? "" : "text-mainAccent"}`} style={rating.color ? { color: rating.color } : undefined}>{rating.value}</p>
               </div>
             ))}
           </div>

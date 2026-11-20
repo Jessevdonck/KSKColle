@@ -144,6 +144,25 @@ export async function recalculateBlitzRatings(): Promise<{ tournaments: number; 
   }
 }
 
+/**
+ * Huidige blitzrating per speler (laatste punt). Spelers zonder blitztoernooi
+ * staan niet in de map. Zonder userIds: alle spelers.
+ */
+export async function getCurrentBlitzRatings(userIds?: number[]): Promise<Map<number, number>> {
+  try {
+    const rows = await prisma.blitzRatingHistory.findMany({
+      where: userIds ? { user_id: { in: userIds } } : {},
+      select: { user_id: true, period: true, rating: true, tournament_id: true },
+      orderBy: [{ period: 'asc' }, { tournament_id: 'asc' }],
+    });
+    const out = new Map<number, number>();
+    rows.forEach((r) => out.set(r.user_id, r.rating)); // laatste wint
+    return out;
+  } catch (error) {
+    throw handleDBError(error);
+  }
+}
+
 /** Blitzrating-historiek van een speler, chronologisch. */
 export async function getBlitzHistoryForUser(userId: number) {
   try {

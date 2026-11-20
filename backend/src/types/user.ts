@@ -46,6 +46,8 @@ export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achtern
   jubileum_jaren?: number | null;
   /** Viert dit jaar exact 25 of 50 jaar lidmaatschap (uitlichting spelerslijst). */
   jubileum_dit_jaar?: boolean;
+  /** Huidige aparte blitzrating (null = nog geen blitztoernooi gespeeld). */
+  blitz_rating?: number | null;
 }
 
 

@@ -2,10 +2,13 @@
 
 import { useState, useCallback, type ReactNode } from "react"
 import Link from "next/link"
-import { ChevronUp, ChevronDown, Trophy, TrendingUp, TrendingDown, Minus, User, Award } from "lucide-react"
+import { ChevronUp, ChevronDown, Trophy, TrendingUp, TrendingDown, Minus, User, Award, Zap } from "lucide-react"
 import type { User as UserType } from "@/data/types"
 
 type SortKey = keyof UserType
+
+/** Zelfde kleur als de blitz-lijn in de ratinggrafiek op het profiel */
+const BLITZ_COLOR = "#0ea5e9"
 type SortOrder = "asc" | "desc"
 
 const createUrlFriendlyName = (voornaam: string, achternaam: string) => {
@@ -32,9 +35,10 @@ export default function PlayerTable({
 
   const sortPlayers = useCallback(
     (a: UserType, b: UserType) => {
-      if (a[sortKey] == null || b[sortKey] == null) {
-        return 0
-      }
+      // Lege waarden (bv. geen blitzrating) altijd onderaan, ongeacht de sorteerrichting
+      const aEmpty = a[sortKey] == null
+      const bEmpty = b[sortKey] == null
+      if (aEmpty || bEmpty) return aEmpty === bEmpty ? 0 : aEmpty ? 1 : -1
       if (a[sortKey] < b[sortKey]) return sortOrder === "asc" ? -1 : 1
       if (a[sortKey] > b[sortKey]) return sortOrder === "asc" ? 1 : -1
       return 0
@@ -94,11 +98,15 @@ export default function PlayerTable({
     )
   }
 
+  // Blitzkolom enkel als er spelers met een blitzrating in de lijst staan (niet bij de jeugd)
+  const showBlitz = users.some((u) => u.blitz_rating != null)
+
   const columns = [
     { key: "achternaam" as SortKey, label: "Speler", icon: User },
     { key: "schaakrating_elo" as SortKey, label: "ELIO Rating", icon: Trophy },
     { key: "schaakrating_difference" as SortKey, label: "Verschil", icon: TrendingUp },
     { key: "schaakrating_max" as SortKey, label: "Hoogste Rating", icon: Award },
+    ...(showBlitz ? [{ key: "blitz_rating" as SortKey, label: "Blitz Rating", icon: Zap }] : []),
   ]
 
   return (
@@ -189,6 +197,14 @@ export default function PlayerTable({
                       <span className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</span>
                     </div>
                   </td>
+                  {showBlitz && (
+                    <td className="p-2.5" data-cy="rating_blitz">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-3 w-3" style={{ color: BLITZ_COLOR }} />
+                        <span className="font-medium text-textColor text-sm">{player.blitz_rating ?? "-"}</span>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               )
             })}
@@ -223,7 +239,7 @@ export default function PlayerTable({
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 text-xs">
+                <div className={`grid ${showBlitz ? "grid-cols-4" : "grid-cols-3"} gap-3 text-xs`}>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <Trophy className="h-3 w-3 text-mainAccent" />
@@ -247,6 +263,15 @@ export default function PlayerTable({
                     </div>
                     <div className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</div>
                   </div>
+                  {showBlitz && (
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Zap className="h-3 w-3" style={{ color: BLITZ_COLOR }} />
+                        <span className="text-gray-500">Blitz</span>
+                      </div>
+                      <div className="font-medium text-textColor text-sm">{player.blitz_rating ?? "-"}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
