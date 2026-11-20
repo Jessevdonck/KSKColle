@@ -65,6 +65,25 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
     score: number | null;
     isForfeitLoss: boolean;
     displayValue?: string;
+    /** Aantal partijen tegen deze tegenstander (dubbele rondes: 2) */
+    games?: number;
+  };
+
+  // Dubbele rondes (bv. Lente vijfde klasse): beide partijen optellen i.p.v. overschrijven.
+  // Inhaaldagen bevatten kopieën van partijen uit een gewone ronde: die vullen enkel een lege cel.
+  const mergeCell = (
+    prev: CrossTableCell | undefined,
+    next: CrossTableCell,
+    isMakeup: boolean,
+  ): CrossTableCell => {
+    if (!prev || prev.score === null) return { ...next, games: 1 };
+    if (isMakeup) return prev;
+    return {
+      score: (prev.score ?? 0) + (next.score ?? 0),
+      isForfeitLoss: prev.isForfeitLoss || next.isForfeitLoss,
+      displayValue: undefined,
+      games: (prev.games ?? 1) + 1,
+    };
   };
 
   // Build cross table data - map of playerId -> opponentId -> result metadata
@@ -123,13 +142,17 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
           compactResult === "1-0R" || compactResult === "0-0R";
 
         // Store result from player1's perspective
+        const isMakeup = round.type === "MAKEUP";
         const player1Map = data.get(player1Id);
         if (player1Map && result !== null) {
-          player1Map.set(player2Id, {
-            score: result,
-            isForfeitLoss: player1ForfeitLoss,
-            displayValue,
-          });
+          player1Map.set(
+            player2Id,
+            mergeCell(
+              player1Map.get(player2Id),
+              { score: result, isForfeitLoss: player1ForfeitLoss, displayValue },
+              isMakeup,
+            ),
+          );
         }
 
         // Store result from player2's perspective (inverted)
@@ -143,11 +166,14 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                 : result === 0
                   ? 1
                   : 0.5;
-          player2Map.set(player1Id, {
-            score: player2Score,
-            isForfeitLoss: player2ForfeitLoss,
-            displayValue,
-          });
+          player2Map.set(
+            player1Id,
+            mergeCell(
+              player2Map.get(player1Id),
+              { score: player2Score, isForfeitLoss: player2ForfeitLoss, displayValue },
+              isMakeup,
+            ),
+          );
         }
       });
     });
@@ -156,12 +182,18 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
   }, [standings, rounds]);
 
   // Get result cell class
-  const getResultClass = (result: number | null, isForfeitLoss: boolean) => {
+  const getResultClass = (
+    result: number | null,
+    isForfeitLoss: boolean,
+    games = 1,
+  ) => {
     if (isForfeitLoss) return "bg-gray-300 text-gray-700";
-    if (result === 1) return "bg-green-100 text-green-800";
-    if (result === 0) return "bg-red-100 text-red-800";
-    if (result === 0.5) return "bg-blue-100 text-blue-800";
-    return "bg-gray-50 text-gray-400";
+    if (result === null) return "bg-gray-50 text-gray-400";
+    // Bij meerdere partijen tegen dezelfde tegenstander: kleur volgens het totaal
+    const share = result / Math.max(games, 1);
+    if (share > 0.5) return "bg-green-100 text-green-800";
+    if (share < 0.5) return "bg-red-100 text-red-800";
+    return "bg-blue-100 text-blue-800";
   };
 
   if (standings.length === 0) {
@@ -335,7 +367,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       return (
                         <td
                           key={opponent.user_id}
-                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false)}`}
+                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false, cell?.games ?? 1)}`}
                           style={{ width: "35px", minWidth: "30px" }}
                         >
                           {cell?.displayValue ??
@@ -514,7 +546,7 @@ export default function CrossTable({ tournament, rounds }: CrossTableProps) {
                       return (
                         <td
                           key={opponent.user_id}
-                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false)}`}
+                          className={`border-r border-gray-200 px-1 py-2 text-center font-medium last:border-r-0 ${getResultClass(result, cell?.isForfeitLoss ?? false, cell?.games ?? 1)}`}
                           style={{ width: "35px", minWidth: "30px" }}
                         >
                           {cell?.displayValue ??
