@@ -324,8 +324,10 @@ function FormRow({
       ) : form.length === 0 ? (
         <span className="text-muted-foreground">Nog geen partijen</span>
       ) : (
-        <span className="flex shrink-0 gap-1">
-          {/* oudste links, recentste rechts */}
+        <span className="flex shrink-0 items-center gap-2">
+          {/* Vaste breedte voor 5 vakjes (rechts uitgelijnd), zodat beide rijen onder elkaar staan;
+              oudste links, recentste rechts */}
+          <span className="flex w-[116px] justify-end gap-1">
           {[...form].reverse().map(({ g, s }) => (
             <span
               key={g.game_id}
@@ -337,7 +339,8 @@ function FormRow({
               {s === 1 ? "W" : s === 0 ? "V" : "R"}
             </span>
           ))}
-          <span className="ml-1 tabular-nums text-muted-foreground">
+          </span>
+          <span className="w-10 text-right tabular-nums text-muted-foreground">
             {form.reduce((sum, x) => sum + x.s, 0)}/{form.length}
           </span>
         </span>

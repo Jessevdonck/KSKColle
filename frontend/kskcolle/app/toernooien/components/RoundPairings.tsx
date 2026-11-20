@@ -278,7 +278,7 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
                     {(() => {
                       const chance = winChanceFor(game)
                       return chance ? (
-                        <WinChanceBar white={chance.white} className="w-16 mx-auto" />
+                        <WinChanceBar white={chance.white} className="w-8 mx-auto" />
                       ) : (
                         <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
                       )
