@@ -8,6 +8,7 @@ import type { GameWithRoundAndTournament } from "@/data/types"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 import { countsAsSpeeldagPartij, isDrawResult, normalizeResultFlat } from "@/lib/countsAsSpeeldagPartij"
 import { GameCard } from "./GameCard"
+import { ListPager, usePaged } from "./ListPager"
 
 type Opponent = { id: number; name: string; games: GameWithRoundAndTournament[] }
 
@@ -58,6 +59,9 @@ export default function HeadToHead({ games, playerId }: { games: GameWithRoundAn
     return { wins, draws, losses, score: wins + draws / 2, total: wins + draws + losses, sortedGames }
   }, [selected, playerId])
 
+  // 5 partijen per pagina; terug naar pagina 1 bij een andere tegenstander
+  const paged = usePaged(summary?.sortedGames ?? [], undefined, selected?.id)
+
   if (opponents.length === 0 || !selected || !summary) return null
 
   return (
@@ -94,7 +98,13 @@ export default function HeadToHead({ games, playerId }: { games: GameWithRoundAn
         </div>
 
         <div className="space-y-1">
-          {summary.sortedGames.map((game) => (
+          {paged.pageCount > 1 && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">{summary.sortedGames.length} partijen</span>
+              <ListPager page={paged.page} pageCount={paged.pageCount} setPage={paged.setPage} />
+            </div>
+          )}
+          {paged.visible.map((game) => (
             <GameCard key={game.game_id} game={game} playerId={playerId} compact />
           ))}
         </div>
