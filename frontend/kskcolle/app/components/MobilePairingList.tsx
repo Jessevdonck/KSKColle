@@ -32,6 +32,8 @@ interface MobilePairingListProps {
   renderResult?: (game: PairingGame) => ReactNode
   /** Extra knop naast de uitslag, bv. uitstel ongedaan maken. */
   renderAction?: (game: PairingGame) => ReactNode
+  /** Klik op een partij (niet op een bye): bv. detailvenster openen. */
+  onGameClick?: (game: PairingGame, board: number) => void
   className?: string
 }
 
@@ -50,6 +52,7 @@ export default function MobilePairingList({
   emptyLabel = "...",
   renderResult,
   renderAction,
+  onGameClick,
   className = "",
 }: MobilePairingListProps) {
   return (
@@ -57,7 +60,10 @@ export default function MobilePairingList({
       {games.map((game, index) => (
         <li
           key={game.game_id}
-          className={`flex items-center gap-2 px-2 py-1.5 ${index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"}`}
+          className={`flex items-center gap-2 px-2 py-1.5 ${index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"} ${
+            onGameClick && game.speler2 ? "cursor-pointer active:bg-mainAccent/5" : ""
+          }`}
+          onClick={onGameClick && game.speler2 ? () => onGameClick(game, index + 1) : undefined}
         >
           <span className="w-5 shrink-0 text-center text-xs font-semibold text-gray-400">{index + 1}</span>
           <div className="min-w-0 flex-1 space-y-0.5">
@@ -81,7 +87,7 @@ export default function MobilePairingList({
               </ResultBadge>
             )}
           </div>
-          {renderAction?.(game)}
+          {renderAction && <span onClick={(e) => e.stopPropagation()}>{renderAction(game)}</span>}
         </li>
       ))}
     </ul>
@@ -116,7 +122,11 @@ function PlayerLine({
         aria-hidden
       />
       {player?.voornaam && player.achternaam ? (
-        <Link href={profileHref(player)} className="truncate font-medium text-textColor hover:text-mainAccent">
+        <Link
+          href={profileHref(player)}
+          onClick={(e) => e.stopPropagation()}
+          className="truncate font-medium text-textColor hover:text-mainAccent"
+        >
           {player.voornaam} {player.achternaam}
         </Link>
       ) : (

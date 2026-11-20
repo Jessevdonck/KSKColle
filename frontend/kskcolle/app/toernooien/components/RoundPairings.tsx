@@ -1,4 +1,6 @@
-import type { ReactNode } from "react"
+"use client"
+
+import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import { ChevronRight, User, Calendar, Clock } from "lucide-react"
 import { sortGamesByScore, sortGamesByPairingOrder, sortSevillaGamesWithPostponed } from '@/lib/gameSorting'
@@ -9,8 +11,7 @@ import {
 import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import MobilePairingList from "@/app/components/MobilePairingList"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
-import { pendingWinChance } from "@/lib/elio"
-import WinChanceBar from "@/app/components/WinChanceBar"
+import GameDetailDialog, { type DetailGame } from "./GameDetailDialog"
 
 interface PlayerScore {
   user_id: number
@@ -92,15 +93,13 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
     return player ? player.score : 0
   }
 
-  // Winstkans (verwachte score) voor partijen die nog gespeeld moeten worden
-  const winChanceFor = (game: NonNullable<RoundPairingsProps["round"]["games"]>[number]) =>
-    tournament?.is_youth === true || !game.speler2
-      ? null
-      : pendingWinChance(
-          game.speler1.schaakrating_elo,
-          game.speler2.schaakrating_elo,
-          normalizedResultForDisplay(game.result, game.uitgestelde_datum),
-        )
+  // Detailvenster: klik op een partij (byes niet)
+  const [selected, setSelected] = useState<{ game: DetailGame; board: number } | null>(null)
+  const openDetail = (game: DetailGame, board: number) => {
+    if (game.speler2) setSelected({ game, board })
+  }
+  // Klikken op een naam of actieknop opent niet het detailvenster
+  const stop = (e: { stopPropagation: () => void }) => e.stopPropagation()
 
   const getByeText = (result: string | null) => {
     if (!result || result === "...") return "Nog te spelen"
@@ -216,7 +215,16 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
                   key={game.game_id}
                   className={`border-b border-neutral-100 ${
                     index % 2 === 0 ? "bg-white" : "bg-neutral-50/50"
-                  } hover:bg-mainAccent/5 transition-colors`}
+                  } hover:bg-mainAccent/5 transition-colors ${game.speler2 ? "cursor-pointer" : ""}`}
+                  onClick={() => openDetail(game, index + 1)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      openDetail(game, index + 1)
+                    }
+                  }}
+                  tabIndex={game.speler2 ? 0 : undefined}
+                  title={game.speler2 ? "Klik voor details over deze partij" : undefined}
                 >
                   <td className="px-1 py-0.5 text-center w-[45px]">
                     <div className="bg-mainAccent/10 text-mainAccent rounded-full w-5 h-5 flex items-center justify-center text-[0.7em] font-bold">
@@ -225,6 +233,7 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
                   </td>
                   <td className="px-1 py-0.5 w-[150px]">
                     <Link
+                      onClick={stop}
                       href={`/profile/${createUrlFriendlyName(game.speler1.voornaam, game.speler1.achternaam)}`}
                       className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-1.5 group text-xs truncate"
                       title={`${game.speler1.voornaam} ${game.speler1.achternaam}`}
@@ -253,20 +262,13 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
                   </td>
 
                   <td className="px-1 py-0.5 text-center w-[96px]">
-                    {/* Nog te spelen: winstkans tussen wit en zwart; anders het pijltje */}
-                    {(() => {
-                      const chance = winChanceFor(game)
-                      return chance ? (
-                        <WinChanceBar white={chance.white} className="w-full" />
-                      ) : (
-                        <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
-                      )
-                    })()}
+                    <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
                   </td>
 
                   <td className="px-1 py-0.5 w-[170px]">
                     {game.speler2 ? (
                       <Link
+                        onClick={stop}
                         href={`/profile/${createUrlFriendlyName(game.speler2.voornaam, game.speler2.achternaam)}`}
                         className="font-medium text-textColor hover:text-mainAccent transition-colors flex items-center gap-2 group text-xs truncate"
                         title={`${game.speler2.voornaam} ${game.speler2.achternaam}`}
@@ -318,7 +320,7 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
                       >
                         {pairingResultBadgeText(game.result, game.uitgestelde_datum)}
                       </span>
-                      {renderAction?.(game)}
+                      {renderAction && <span onClick={stop}>{renderAction(game)}</span>}
                     </div>
                   </td>
                 </tr>
@@ -335,6 +337,19 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
           showRating={tournament?.is_youth !== true}
           byeLabel={getByeText}
           renderAction={renderAction as any}
+          onGameClick={(game, board) => openDetail(game as DetailGame, board)}
+        />
+
+        <GameDetailDialog
+          game={selected?.game ?? null}
+          board={selected?.board}
+          onOpenChange={(open) => !open && setSelected(null)}
+          roundTitle={title}
+          roundDate={round.ronde_datum}
+          startuur={round.startuur}
+          tournamentName={tournament ? [tournament.naam, (tournament as any).class_name].filter(Boolean).join(" · ") : undefined}
+          getScore={playerScores.length > 0 ? getPlayerScore : null}
+          showRatings={tournament?.is_youth !== true}
         />
       </>
       ) : (

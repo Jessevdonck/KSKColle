@@ -13,8 +13,8 @@ export default function PlayerHeader({ player }: { player: User }) {
 
   const ratings: Array<{ name: string; value: number; color?: string }> = [
     { name: 'Club Rating', value: player.schaakrating_elo },
-    // Aparte blitzrating (zelfde kleur als de blitz-lijn in de ratinggrafiek)
-    ...(player.blitz_rating ? [{ name: 'Blitz Rating', value: player.blitz_rating, color: '#0ea5e9' }] : []),
+    // Aparte blitzrating (los van de ELIO)
+    ...(player.blitz_rating ? [{ name: 'Blitz Rating', value: player.blitz_rating }] : []),
     // Hoogste ELIO sinds de ELIO-historiek (grafiek hieronder)
     ...(player.schaakrating_max ? [{ name: 'Hoogste ELIO', value: player.schaakrating_max }] : []),
   ]
