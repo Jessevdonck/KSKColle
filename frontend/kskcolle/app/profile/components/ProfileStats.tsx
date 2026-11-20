@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   BarChart,
@@ -103,11 +103,13 @@ interface ProfileStatsProps {
   playerId: number
   compact?: boolean
   eloHistory?: EloHistoryPoint[]
+  /** Aparte blitzrating, getoond als tweede lijn in de ratinggrafiek */
+  blitzHistory?: EloHistoryPoint[]
 }
 
 const COLORS = { win: "#22c55e", loss: "#ef4444", draw: "#eab308" }
 
-export default function ProfileStats({ games, playerId, compact, eloHistory = [] }: ProfileStatsProps) {
+export default function ProfileStats({ games, playerId, compact, eloHistory = [], blitzHistory = [] }: ProfileStatsProps) {
   const [rangePreset, setRangePreset] = useState<RangePreset>("all")
   const [customStart, setCustomStart] = useState("")
   const [customEnd, setCustomEnd] = useState("")
@@ -136,15 +138,18 @@ export default function ProfileStats({ games, playerId, compact, eloHistory = []
     return { filteredGames: filtered, rangeLabel: label, bounds: b }
   }, [games, rangePreset, customStart, customEnd])
 
-  /** ELIO-historiek gefilterd op exact dezelfde (kalender-)periode als de partijen. */
-  const filteredEloHistory = useMemo(() => {
-    return eloHistory.filter(({ period }) => {
+  /** Rating-historiek gefilterd op exact dezelfde (kalender-)periode als de partijen. */
+  const inRange = useCallback(
+    ({ period }: EloHistoryPoint) => {
       const [year, month] = period.split("-").map(Number)
       if (!year || !month) return false
       const date = new Date(year, month - 1, 1)
       return isWithinInterval(date, { start: bounds.start, end: bounds.end })
-    })
-  }, [eloHistory, bounds])
+    },
+    [bounds],
+  )
+  const filteredEloHistory = useMemo(() => eloHistory.filter(inRange), [eloHistory, inRange])
+  const filteredBlitzHistory = useMemo(() => blitzHistory.filter(inRange), [blitzHistory, inRange])
 
   const stats = useMemo(() => {
     let wins = 0,
@@ -527,9 +532,9 @@ export default function ProfileStats({ games, playerId, compact, eloHistory = []
         </>
       )}
 
-      {filteredEloHistory.length > 0 ? (
-        <EloHistoryChart history={filteredEloHistory} compact={compact} />
-      ) : eloHistory.length > 0 ? (
+      {filteredEloHistory.length > 0 || filteredBlitzHistory.length > 0 ? (
+        <EloHistoryChart history={filteredEloHistory} blitzHistory={filteredBlitzHistory} compact={compact} />
+      ) : eloHistory.length > 0 || blitzHistory.length > 0 ? (
         <Card className={compact ? "border border-border/50" : undefined}>
           <CardContent className={compact ? "py-3 px-4" : "pt-6"}>
             <p className="text-muted-foreground text-sm">

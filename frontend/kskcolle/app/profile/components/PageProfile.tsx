@@ -9,7 +9,7 @@ import UpcomingGames from "./UpcomingGames"
 import ProfileStats from "./ProfileStats"
 import HeadToHead from "./HeadToHead"
 import AsyncData from "../../components/AsyncData"
-import { getById, getUserEloHistory } from "../../api/index"
+import { getById, getUserBlitzHistory, getUserEloHistory } from "../../api/index"
 import type { User, GameWithRoundAndTournament } from "../../../data/types"
 import { useAuth } from "../../contexts/auth"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
@@ -49,6 +49,12 @@ export default function PlayerProfile() {
   const { data: eloHistory } = useSWR<Array<{ period: string; rating: number }>>(
     player ? ["eloHistory", player.user_id] : null,
     () => getUserEloHistory(player!.user_id),
+    { revalidateOnFocus: false }
+  )
+
+  const { data: blitzHistory } = useSWR<Array<{ period: string; rating: number }>>(
+    player ? ["blitzHistory", player.user_id] : null,
+    () => getUserBlitzHistory(player!.user_id),
     { revalidateOnFocus: false }
   )
 
@@ -157,6 +163,7 @@ export default function PlayerProfile() {
                     games={playedGamesWithResults}
                     playerId={player.user_id}
                     eloHistory={eloHistory}
+                    blitzHistory={blitzHistory}
                     compact
                   />
                 </div>

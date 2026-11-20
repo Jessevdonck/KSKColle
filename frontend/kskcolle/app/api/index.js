@@ -295,6 +295,12 @@ export const getUserEloHistory = async (userId) => {
   return data.items;
 };
 
+/** Aparte blitzrating (los van de ELIO), één punt per blitztoernooi */
+export const getUserBlitzHistory = async (userId) => {
+  const { data } = await axios.get(`${baseUrl}/elo-history/user/${userId}/blitz`);
+  return data.items;
+};
+
 // Game postpone functions
 export const postponeGame = async (url, { arg: { game_id, makeup_round_id } }) => {
   const { data } = await axios.post(`${baseUrl}/tournamentRounds/postpone`, { 

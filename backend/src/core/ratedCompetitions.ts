@@ -11,3 +11,12 @@ export function countsForElio(naam: string, className?: string | null): boolean 
   if (n.includes("lente") && (className ?? "").trim().length > 0) return true;
   return false;
 }
+
+/**
+ * Blitz-/snelschaakkampioenschap: telt voor de aparte blitzrating
+ * (zie blitzRatingService), nooit voor de ELIO.
+ */
+export function countsForBlitz(naam: string): boolean {
+  const n = naam.toLowerCase();
+  return n.includes("blitz") || n.includes("snelschaak");
+}
