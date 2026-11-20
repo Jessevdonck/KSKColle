@@ -42,3 +42,20 @@ export const performanceRating = (opponentRatings: number[], score: number): num
   const dp = pct >= 50 ? DP_TABLE[pct] : -DP_TABLE[100 - pct]
   return Math.round(average + (dp ?? 0))
 }
+
+/**
+ * Winstkans van wit en zwart (verwachte score) voor een partij die nog gespeeld moet worden.
+ * Null als de partij al beslist is (ook forfait / ½-½R) of een speler geen rating heeft.
+ */
+export const pendingWinChance = (
+  whiteRating: number | null | undefined,
+  blackRating: number | null | undefined,
+  result: string | null | undefined,
+): { white: number; black: number } | null => {
+  if (!hasRatings(whiteRating, blackRating)) return null
+  const flat = normalizeResultFlat(result)
+  const isPending = flat === "" || flat === "..." || flat === "NOT_PLAYED" || flat === "UITGESTELD"
+  if (!isPending) return null
+  const white = expectedScore(whiteRating as number, blackRating as number)
+  return { white, black: 1 - white }
+}

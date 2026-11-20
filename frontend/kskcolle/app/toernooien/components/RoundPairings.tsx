@@ -12,6 +12,8 @@ import { countsAsSpeeldagPartij } from "@/lib/countsAsSpeeldagPartij"
 import MobilePairingList from "@/app/components/MobilePairingList"
 import { normalizedResultForDisplay } from "@/lib/gameResultDisplay"
 import GameDetailDialog, { type DetailGame } from "./GameDetailDialog"
+import { pendingWinChance } from "@/lib/elio"
+import WinChanceBar from "@/app/components/WinChanceBar"
 
 interface PlayerScore {
   user_id: number
@@ -98,6 +100,16 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
   const openDetail = (game: DetailGame, board: number) => {
     if (game.speler2) setSelected({ game, board })
   }
+  // Winstkans (verwachte score) voor partijen die nog gespeeld moeten worden
+  const winChanceFor = (game: NonNullable<RoundPairingsProps["round"]["games"]>[number]) =>
+    tournament?.is_youth === true || !game.speler2
+      ? null
+      : pendingWinChance(
+          game.speler1.schaakrating_elo,
+          game.speler2.schaakrating_elo,
+          normalizedResultForDisplay(game.result, game.uitgestelde_datum),
+        )
+
   // Klikken op een naam of actieknop opent niet het detailvenster
   const stop = (e: { stopPropagation: () => void }) => e.stopPropagation()
 
@@ -262,7 +274,15 @@ export default function RoundPairings({ round: roundInput, tournament, allRounds
                   </td>
 
                   <td className="px-1 py-0.5 text-center w-[96px]">
-                    <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
+                    {/* Nog te spelen: winstkans als balkje (zonder percentages); anders het pijltje */}
+                    {(() => {
+                      const chance = winChanceFor(game)
+                      return chance ? (
+                        <WinChanceBar white={chance.white} className="w-16 mx-auto" />
+                      ) : (
+                        <ChevronRight className="h-3 w-3 text-gray-400 mx-auto" />
+                      )
+                    })()}
                   </td>
 
                   <td className="px-1 py-0.5 w-[170px]">
