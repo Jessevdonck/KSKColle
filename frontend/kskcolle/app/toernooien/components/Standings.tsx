@@ -741,6 +741,18 @@ export function calculateStandings(tournament: StandingsProps["tournament"], rou
     p.schaakrating_elo = user.schaakrating_elo
   })
 
+  // Historische edities waarvan enkel de eindstand bewaard is (geen partijen):
+  // punten en tie-break komen dan rechtstreeks uit de deelname.
+  const hasAnyGame = rounds.some((round) => round.games.length > 0)
+  if (!hasAnyGame) {
+    tournament.participations.forEach(({ user, score, tie_break }) => {
+      const p = players.find((x) => x.user_id === user.user_id)
+      if (!p) return
+      p.score = score ?? 0
+      p.tieBreak = tie_break ?? 0
+    })
+  }
+
   // 5) sorteren: score, dan aantal partijen (minder = beter), dan tie-break, dan rating (hoger = beter).
   // Zwitsers (Bhlz-W, o.a. herfst): enkel punten → Bhlz-W → rating, zonder aantal partijen.
   const sortOnGamesPlayed = !sevillaBhlz
