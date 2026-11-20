@@ -219,29 +219,32 @@ export default function GameDetailDialog({
                 <Stat label="Remise" value={h2h.draws} className="text-purple-600" />
                 <Stat label={`Winst ${black.voornaam}`} value={h2h.blackWins} className="text-red-600" />
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                {h2h.games.length} {h2h.games.length === 1 ? "partij" : "partijen"} in totaal
-                {h2h.games.length > 5 ? ", laatste 5:" : ":"}
-              </p>
+              {h2h.games.length > 5 && (
+                <p className="text-[11px] text-muted-foreground">Laatste 5 van {h2h.games.length}</p>
+              )}
               <ul className="divide-y divide-neutral-100 rounded-lg border border-neutral-200">
                 {h2h.games.slice(0, 5).map((g) => {
-                  const s = scoreFor(g, white.user_id)
+                  // Kleuren zoals in die partij: wit = speler1, zwart = speler2
+                  const gameWhite = g.speler1_id === white.user_id ? white : black
+                  const gameBlack = gameWhite === white ? black : white
+                  const ws = scoreFor(g, g.speler1_id)
+                  const result = ws === 1 ? "1-0" : ws === 0 ? "0-1" : "½-½"
                   return (
-                    <li key={g.game_id} className="flex items-center gap-2 px-2 py-1.5 text-xs">
+                    <li
+                      key={g.game_id}
+                      className="flex items-center gap-2 px-2 py-1.5 text-xs"
+                      title={tournamentLabel(g)}
+                    >
                       <span className="w-14 shrink-0 tabular-nums text-muted-foreground">{fmtDate(g.round?.ronde_datum)}</span>
-                      <span className="min-w-0 flex-1 truncate" title={tournamentLabel(g)}>
-                        {tournamentLabel(g)}
+                      <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                        <ColorDot color="white" />
+                        <span className="min-w-0 truncate">{fullName(gameWhite)}</span>
                       </span>
-                      <span className="hidden sm:inline shrink-0 text-muted-foreground">
-                        {g.speler1_id === white.user_id ? white.voornaam : black.voornaam} had wit
+                      <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                        <ColorDot color="black" />
+                        <span className="min-w-0 truncate">{fullName(gameBlack)}</span>
                       </span>
-                      <span
-                        className={`max-w-[5.5rem] shrink-0 truncate text-right font-semibold ${
-                          s === 1 ? "text-green-600" : s === 0 ? "text-red-600" : "text-purple-600"
-                        }`}
-                      >
-                        {s === 1 ? `${white.voornaam}` : s === 0 ? `${black.voornaam}` : "½-½"}
-                      </span>
+                      <span className="w-8 shrink-0 text-right font-semibold tabular-nums text-textColor">{result}</span>
                     </li>
                   )
                 })}
@@ -346,5 +349,16 @@ function FormRow({
         </span>
       )}
     </div>
+  )
+}
+
+function ColorDot({ color }: { color: "white" | "black" }) {
+  return (
+    <span
+      className={`h-2.5 w-2.5 shrink-0 rounded-full border ${
+        color === "white" ? "bg-white border-gray-500" : "bg-gray-800 border-gray-800"
+      }`}
+      aria-label={color === "white" ? "Wit" : "Zwart"}
+    />
   )
 }
