@@ -230,9 +230,15 @@ const mapUsersToPublicUsersWithRating = async (
 };
 
 /** Voegt de huidige aparte blitzrating toe (null als iemand nog geen blitz speelde). */
-async function withBlitzRatings<T extends { user_id: number }>(users: T[]): Promise<Array<T & { blitz_rating: number | null }>> {
+async function withBlitzRatings<T extends { user_id: number }>(
+  users: T[],
+): Promise<Array<T & { blitz_rating: number | null; blitz_rating_max: number | null }>> {
   const blitz = await getCurrentBlitzRatings(users.map((u) => u.user_id));
-  return users.map((u) => ({ ...u, blitz_rating: blitz.get(u.user_id) ?? null }));
+  return users.map((u) => ({
+    ...u,
+    blitz_rating: blitz.get(u.user_id)?.rating ?? null,
+    blitz_rating_max: blitz.get(u.user_id)?.max ?? null,
+  }));
 }
 
 export const getAllPublicUsers = async (): Promise<PublicUser[]> => {

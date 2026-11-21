@@ -2,7 +2,7 @@
 
 import { useState, useCallback, type ReactNode } from "react"
 import Link from "next/link"
-import { ChevronUp, ChevronDown, Trophy, TrendingUp, TrendingDown, Minus, User, Award, Zap } from "lucide-react"
+import { ChevronUp, ChevronDown, Trophy, User, Award, Zap } from "lucide-react"
 import type { User as UserType } from "@/data/types"
 
 type SortKey = keyof UserType
@@ -66,15 +66,6 @@ export default function PlayerTable({
     return String(difference)
   }
 
-  const getRatingDifferenceIcon = (difference: number | null | undefined) => {
-    if (difference === null || difference === undefined) {
-      return <Minus className="h-3 w-3 text-gray-400" />
-    }
-    if (difference > 0) return <TrendingUp className="h-3 w-3 text-green-500" />
-    if (difference < 0) return <TrendingDown className="h-3 w-3 text-red-500" />
-    return <Minus className="h-3 w-3 text-gray-400" />
-  }
-
   const getRatingDifferenceColor = (difference: number | null | undefined) => {
     if (difference === null || difference === undefined) return "text-gray-500"
     if (difference > 0) return "text-green-600 font-semibold"
@@ -98,16 +89,27 @@ export default function PlayerTable({
     )
   }
 
-  // Blitzkolom enkel als er spelers met een blitzrating in de lijst staan (niet bij de jeugd)
+  // Blitzkolommen enkel als er spelers met een blitzrating in de lijst staan (niet bij de jeugd)
   const showBlitz = users.some((u) => u.blitz_rating != null)
 
   const columns = [
     { key: "achternaam" as SortKey, label: "Speler", icon: User },
     { key: "schaakrating_elo" as SortKey, label: "ELIO Rating", icon: Trophy },
-    { key: "schaakrating_difference" as SortKey, label: "Verschil", icon: TrendingUp },
-    { key: "schaakrating_max" as SortKey, label: "Hoogste Rating", icon: Award },
     ...(showBlitz ? [{ key: "blitz_rating" as SortKey, label: "Blitz Rating", icon: Zap }] : []),
+    { key: "schaakrating_max" as SortKey, label: "Hoogste Clubrating", icon: Award },
+    ...(showBlitz ? [{ key: "blitz_rating_max" as SortKey, label: "Hoogste Blitzrating", icon: Award }] : []),
   ]
+
+  /** Ratingverschil als klein getal rechtsboven de rating */
+  const DiffSup = ({ difference }: { difference: number | null | undefined }) =>
+    difference === null || difference === undefined || difference === 0 ? null : (
+      <sup
+        className={`ml-0.5 text-[10px] font-semibold ${getRatingDifferenceColor(difference)}`}
+        title="Verschil met de vorige rating"
+      >
+        {formatRatingDifference(difference)}
+      </sup>
+    )
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -140,7 +142,10 @@ export default function PlayerTable({
                   onClick={() => handleSort(key)}
                 >
                   <span className="flex items-center gap-2">
-                    <Icon className="h-3 w-3" />
+                    <Icon
+                      className={`h-3 w-3 ${key === "blitz_rating_max" ? "text-yellow-500" : ""}`}
+                      style={key === "blitz_rating" ? { color: BLITZ_COLOR } : undefined}
+                    />
                     {label}
                     <SortIcon columnKey={key} />
                   </span>
@@ -180,17 +185,20 @@ export default function PlayerTable({
                   <td className="p-2.5" data-cy="rating">
                     <div className="flex items-center gap-2">
                       <Trophy className="h-3 w-3 text-mainAccent" />
-                      <span className="text-base font-bold text-textColor">{player.schaakrating_elo}</span>
-                    </div>
-                  </td>
-                  <td className="p-2.5" data-cy="rating_difference">
-                    <div className="flex items-center gap-2">
-                      {getRatingDifferenceIcon(player.schaakrating_difference)}
-                      <span className={`${getRatingDifferenceColor(player.schaakrating_difference)} text-sm`}>
-                        {formatRatingDifference(player.schaakrating_difference)}
+                      <span className="text-base font-bold text-textColor">
+                        {player.schaakrating_elo}
+                        <DiffSup difference={player.schaakrating_difference} />
                       </span>
                     </div>
                   </td>
+                  {showBlitz && (
+                    <td className="p-2.5" data-cy="rating_blitz">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-3 w-3" style={{ color: BLITZ_COLOR }} />
+                        <span className="text-base font-bold text-textColor">{player.blitz_rating ?? "-"}</span>
+                      </div>
+                    </td>
+                  )}
                   <td className="p-2.5" data-cy="rating_max">
                     <div className="flex items-center gap-2">
                       <Award className="h-3 w-3 text-yellow-500" />
@@ -198,10 +206,10 @@ export default function PlayerTable({
                     </div>
                   </td>
                   {showBlitz && (
-                    <td className="p-2.5" data-cy="rating_blitz">
+                    <td className="p-2.5" data-cy="rating_blitz_max">
                       <div className="flex items-center gap-2">
-                        <Zap className="h-3 w-3" style={{ color: BLITZ_COLOR }} />
-                        <span className="font-medium text-textColor text-sm">{player.blitz_rating ?? "-"}</span>
+                        <Award className="h-3 w-3 text-yellow-500" />
+                        <span className="font-medium text-textColor text-sm">{player.blitz_rating_max ?? "-"}</span>
                       </div>
                     </td>
                   )}
@@ -239,29 +247,16 @@ export default function PlayerTable({
                   </Link>
                 </div>
 
-                <div className={`grid ${showBlitz ? "grid-cols-4" : "grid-cols-3"} gap-3 text-xs`}>
+                <div className={`grid ${showBlitz ? "grid-cols-4" : "grid-cols-2"} gap-2 text-xs`}>
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <Trophy className="h-3 w-3 text-mainAccent" />
-                      <span className="text-gray-500">ELO</span>
+                      <span className="text-gray-500">ELIO</span>
                     </div>
-                    <div className="font-bold text-textColor text-sm">{player.schaakrating_elo}</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      {getRatingDifferenceIcon(player.schaakrating_difference)}
-                      <span className="text-gray-500">Verschil</span>
+                    <div className="font-bold text-textColor text-sm">
+                      {player.schaakrating_elo}
+                      <DiffSup difference={player.schaakrating_difference} />
                     </div>
-                    <div className={`${getRatingDifferenceColor(player.schaakrating_difference)} text-sm`}>
-                      {formatRatingDifference(player.schaakrating_difference)}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Award className="h-3 w-3 text-yellow-500" />
-                      <span className="text-gray-500">Max</span>
-                    </div>
-                    <div className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</div>
                   </div>
                   {showBlitz && (
                     <div className="text-center">
@@ -269,7 +264,23 @@ export default function PlayerTable({
                         <Zap className="h-3 w-3" style={{ color: BLITZ_COLOR }} />
                         <span className="text-gray-500">Blitz</span>
                       </div>
-                      <div className="font-medium text-textColor text-sm">{player.blitz_rating ?? "-"}</div>
+                      <div className="font-bold text-textColor text-sm">{player.blitz_rating ?? "-"}</div>
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Award className="h-3 w-3 text-yellow-500" />
+                      <span className="text-gray-500">Max club</span>
+                    </div>
+                    <div className="font-medium text-textColor text-sm">{player.schaakrating_max || "-"}</div>
+                  </div>
+                  {showBlitz && (
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Award className="h-3 w-3 text-yellow-500" />
+                        <span className="text-gray-500">Max blitz</span>
+                      </div>
+                      <div className="font-medium text-textColor text-sm">{player.blitz_rating_max ?? "-"}</div>
                     </div>
                   )}
                 </div>

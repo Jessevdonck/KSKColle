@@ -48,6 +48,8 @@ export interface PublicUser extends Pick<User, "user_id" | "voornaam" | "achtern
   jubileum_dit_jaar?: boolean;
   /** Huidige aparte blitzrating (null = nog geen blitztoernooi gespeeld). */
   blitz_rating?: number | null;
+  /** Hoogste blitzrating ooit (na een blitztoernooi). */
+  blitz_rating_max?: number | null;
 }
 
 

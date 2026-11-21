@@ -16,6 +16,8 @@ export interface User {
   schaakrating_max?: number;
   /** Huidige aparte blitzrating (null = nog geen blitztoernooi gespeeld) */
   blitz_rating?: number | null;
+  /** Hoogste blitzrating ooit */
+  blitz_rating_max?: number | null;
   is_admin?: boolean;
   is_youth?: boolean;
   fide_id?: number;
