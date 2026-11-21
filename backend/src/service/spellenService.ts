@@ -62,6 +62,43 @@ export const getSpelById = async (game_id: number) => {
   }
 };
 
+/**
+ * Afwezigheden van een speler (rij zonder tegenstander met "ABS-…" of "0-0") in gewone
+ * rondes. Byes vallen erbuiten. Gebruikt voor de vorm in het detailvenster van een partij.
+ */
+export const getAbsencesByPlayerId = async (playerId: number) => {
+  try {
+    const rows = await prisma.game.findMany({
+      where: {
+        speler1_id: playerId,
+        speler2_id: null,
+        OR: [{ result: { startsWith: 'ABS' } }, { result: '0-0' }],
+        round: { type: 'REGULAR' },
+      },
+      select: {
+        game_id: true,
+        round_id: true,
+        speler1_id: true,
+        speler2_id: true,
+        result: true,
+        round: {
+          select: {
+            round_id: true,
+            tournament_id: true,
+            ronde_nummer: true,
+            ronde_datum: true,
+            type: true,
+            tournament: { select: { tournament_id: true, naam: true, class_name: true } },
+          },
+        },
+      },
+    });
+    return rows;
+  } catch (error) {
+    throw handleDBError(error);
+  }
+};
+
 export const getSpellenByPlayerId = async (playerId: number): Promise<GameWithRoundAndTournament[]> => {
   try {
     const games = await prisma.game.findMany({

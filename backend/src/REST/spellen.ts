@@ -183,21 +183,27 @@ getSpellenByPlayerId.validationScheme = {
  * @apiParam {Number} id The ID of the player.
  * 
  * @apiSuccess {Object[]} items List of public spellen for the given player.
+ * @apiSuccess {Object[]} absences Afwezigheden (rij zonder tegenstander, "ABS-…" of "0-0") in gewone rondes.
  * @apiError (400) BadRequest Invalid data provided.
  * @apiError (404) NotFound No spellen found for the given player.
  */
 const getPublicSpellenByPlayerId = async (ctx: KoaContext<GetAllSpellenResponse, IdParams>) => {
   const playerId = Number(ctx.params.id);
-  const spellen = await spellenService.getSpellenByPlayerId(playerId);
+  const [spellen, absences] = await Promise.all([
+    spellenService.getSpellenByPlayerId(playerId),
+    spellenService.getAbsencesByPlayerId(playerId),
+  ]);
 
-  if (!spellen || spellen.length === 0) {
+  if ((!spellen || spellen.length === 0) && absences.length === 0) {
     ctx.status = 404;
     return;
   }
 
   ctx.body = {
-    items: spellen,
-  };
+    items: spellen ?? [],
+    // Afwezigheden apart, zodat bestaande lijsten (enkel partijen) ongewijzigd blijven
+    absences,
+  } as any;
 };
 
 getPublicSpellenByPlayerId.validationScheme = {

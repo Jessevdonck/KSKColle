@@ -13,7 +13,7 @@ import {
   pairingResultBadgeClass,
   pairingResultBadgeText,
 } from "@/lib/gameResultDisplay"
-import { countsAsSpeeldagPartij, isDrawResult, normalizeResultFlat } from "@/lib/countsAsSpeeldagPartij"
+import { countsAsSpeeldagPartij, isDrawResult, isForfeitResult, normalizeResultFlat } from "@/lib/countsAsSpeeldagPartij"
 
 export type DetailPlayer = {
   user_id: number
@@ -62,6 +62,42 @@ function scoreFor(game: GameWithRoundAndTournament, playerId: number): number | 
   return 0 // dubbel forfait
 }
 
+type FormEntry = { g: GameWithRoundAndTournament; kind: "W" | "R" | "V" | "Afw"; s: number | null }
+
+/**
+ * Vormvakje voor `playerId`: W/R/V voor gespeelde partijen, "Afw" bij afwezigheid
+ * (afwezig met/zonder bericht of forfaitverlies). Null voor byes en nog te spelen partijen.
+ */
+function formEntryFor(game: GameWithRoundAndTournament, playerId: number): FormEntry | null {
+  const result = normalizedResultForDisplay(game.result ?? null, game.uitgestelde_datum)
+  const flat = normalizeResultFlat(result)
+  if (!flat || flat === "..." || flat === "NOT_PLAYED" || flat === "UITGESTELD") return null
+  if (game.speler2_id == null) {
+    // zonder tegenstander: afwezigheid telt als "Afw", een bye niet
+    return flat.startsWith("ABS") || flat === "0-0" ? { g: game, kind: "Afw", s: null } : null
+  }
+  const s = scoreFor(game, playerId)
+  if (s === null) return null
+  if (isDrawResult(result)) return { g: game, kind: "R", s: 0.5 }
+  if (isForfeitResult(result) && s === 0) return { g: game, kind: "Afw", s: null }
+  return { g: game, kind: s === 1 ? "W" : "V", s }
+}
+
+/**
+ * Inhaaldagen bevatten een kopie van de oorspronkelijke partij: die niet dubbel tellen.
+ */
+function withoutMakeupCopies(games: GameWithRoundAndTournament[]): GameWithRoundAndTournament[] {
+  const ids = new Set(games.map((g) => g.game_id))
+  const pairKey = (g: GameWithRoundAndTournament) =>
+    `${g.round?.tournament_id}:${Math.min(g.speler1_id, g.speler2_id ?? 0)}-${Math.max(g.speler1_id, g.speler2_id ?? 0)}`
+  const regularPairs = new Set(games.filter((g) => g.round?.type !== "MAKEUP").map(pairKey))
+  return games.filter((g) => {
+    if (g.round?.type !== "MAKEUP") return true
+    if (g.original_game_id && ids.has(g.original_game_id)) return false
+    return !regularPairs.has(pairKey(g))
+  })
+}
+
 const byDateDesc = (a: GameWithRoundAndTournament, b: GameWithRoundAndTournament) =>
   new Date(b.round?.ronde_datum ?? 0).getTime() - new Date(a.round?.ronde_datum ?? 0).getTime()
 
@@ -75,13 +111,19 @@ const fmtDate = (d: Date | string | null | undefined, long = false) =>
 const tournamentLabel = (g: GameWithRoundAndTournament) =>
   [g.round?.tournament?.naam, g.round?.tournament?.class_name].filter(Boolean).join(" · ")
 
-/** Alle partijen van een speler (zelfde publieke bron als het profiel). */
+/**
+ * Alle partijen van een speler (zelfde publieke bron als het profiel), aangevuld met
+ * zijn afwezigheden (zonder tegenstander) voor de vorm.
+ */
 function usePlayerGames(userId: number | undefined, enabled: boolean) {
   return useSWR<GameWithRoundAndTournament[]>(
     enabled && userId ? ["gameDetailPlayerGames", userId] : null,
     () =>
       getById(`spel/speler/${userId}/public`)
-        .then((d: { items?: GameWithRoundAndTournament[] }) => d.items ?? [])
+        .then((d: { items?: GameWithRoundAndTournament[]; absences?: GameWithRoundAndTournament[] }) => [
+          ...(d.items ?? []),
+          ...(d.absences ?? []).map((a) => ({ ...a, speler2_id: null, uitgestelde_datum: null })),
+        ])
         .catch(() => []),
     { revalidateOnFocus: false },
   )
@@ -107,7 +149,7 @@ export default function GameDetailDialog({
 
   const h2h = useMemo(() => {
     if (!white || !black || !whiteGames) return null
-    const games = whiteGames
+    const games = withoutMakeupCopies(whiteGames)
       .filter((g) => g.game_id !== game?.game_id)
       .filter((g) => (g.speler1_id === black.user_id || g.speler2_id === black.user_id) && scoreFor(g, white.user_id) !== null)
       .sort(byDateDesc)
@@ -121,14 +163,14 @@ export default function GameDetailDialog({
     return { games, whiteWins, draws, blackWins }
   }, [whiteGames, white, black, game?.game_id])
 
-  // Vorm: laatste 5 beslist partijen vóór deze ronde (ronde zelf niet meegeteld)
+  // Vorm: laatste 5 partijen of afwezigheden vóór deze ronde (ronde zelf niet meegeteld)
   const formOf = (games: GameWithRoundAndTournament[] | undefined, playerId: number | undefined) => {
     if (!games || !playerId) return null
     const cutoff = roundDate ? new Date(roundDate).getTime() : Number.POSITIVE_INFINITY
-    return games
+    return withoutMakeupCopies(games)
       .filter((g) => g.game_id !== game?.game_id && new Date(g.round?.ronde_datum ?? 0).getTime() < cutoff)
-      .map((g) => ({ g, s: scoreFor(g, playerId) }))
-      .filter((x): x is { g: GameWithRoundAndTournament; s: number } => x.s !== null)
+      .map((g) => formEntryFor(g, playerId))
+      .filter((x): x is FormEntry => x !== null)
       .sort((a, b) => byDateDesc(a.g, b.g))
       .slice(0, 5)
   }
@@ -316,9 +358,10 @@ function FormRow({
   loading,
 }: {
   name: string
-  form: Array<{ g: GameWithRoundAndTournament; s: number }> | null
+  form: FormEntry[] | null
   loading: boolean
 }) {
+  const played = form?.filter((x) => x.s !== null) ?? []
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="min-w-0 flex-1 truncate">{name}</span>
@@ -330,21 +373,22 @@ function FormRow({
         <span className="flex shrink-0 items-center gap-2">
           {/* Vaste breedte voor 5 vakjes (rechts uitgelijnd), zodat beide rijen onder elkaar staan;
               oudste links, recentste rechts */}
-          <span className="flex w-[116px] justify-end gap-1">
-          {[...form].reverse().map(({ g, s }) => (
-            <span
-              key={g.game_id}
-              title={`${fmtDate(g.round?.ronde_datum)} · ${tournamentLabel(g)}`}
-              className={`flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white ${
-                s === 1 ? "bg-green-500" : s === 0 ? "bg-red-500" : "bg-yellow-500"
-              }`}
-            >
-              {s === 1 ? "W" : s === 0 ? "V" : "R"}
-            </span>
-          ))}
+          <span className="flex w-[136px] justify-end gap-1">
+            {[...form].reverse().map(({ g, kind }) => (
+              <span
+                key={g.game_id}
+                title={`${fmtDate(g.round?.ronde_datum)} · ${tournamentLabel(g)}${kind === "Afw" ? " · afwezig" : ""}`}
+                className={`flex h-5 w-6 items-center justify-center rounded font-bold text-white ${
+                  kind === "Afw" ? "bg-gray-400 text-[9px]" : "text-[10px]"
+                } ${kind === "W" ? "bg-green-500" : kind === "V" ? "bg-red-500" : kind === "R" ? "bg-yellow-500" : ""}`}
+              >
+                {kind}
+              </span>
+            ))}
           </span>
+          {/* Score enkel over gespeelde partijen (afwezigheden niet) */}
           <span className="w-10 text-right tabular-nums text-muted-foreground">
-            {form.reduce((sum, x) => sum + x.s, 0)}/{form.length}
+            {played.length > 0 ? `${played.reduce((sum, x) => sum + (x.s ?? 0), 0)}/${played.length}` : "–"}
           </span>
         </span>
       )}
