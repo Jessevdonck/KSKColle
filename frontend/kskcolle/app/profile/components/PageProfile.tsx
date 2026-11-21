@@ -163,13 +163,14 @@ export default function PlayerProfile() {
 
           {/* Onderste rij: partijen · palmares · statistieken */}
           <div className="mt-3 grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.6fr)_minmax(0,0.85fr)]">
+            {/* Kolommen in evenwicht: links de lopende zaken, midden palmares + recente partijen */}
             <div className="order-2 min-w-0 space-y-3 lg:order-1">
               <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
               <HeadToHead games={allPlayedGames} playerId={player.user_id} />
-              <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
             </div>
-            <div className="order-1 min-w-0 lg:order-2">
+            <div className="order-1 min-w-0 space-y-3 lg:order-2">
               <Palmares playerId={player.user_id} voornaam={player.voornaam} achternaam={player.achternaam} />
+              <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
             </div>
             <div className="order-3 min-w-0">
               <ProfileStatTiles games={allPlayedGames} playerId={player.user_id} />

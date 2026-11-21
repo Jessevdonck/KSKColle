@@ -163,7 +163,7 @@ export default function Palmares({
           <span className="flex items-center gap-1"><Medal className="h-3.5 w-3.5 text-amber-700" /> {telling.brons}</span>
         </div>
       </div>
-      <div className="max-h-[560px] overflow-auto">
+      <div className="max-h-[420px] overflow-auto">
         <table className="w-full border-collapse text-xs">
           <thead className="sticky top-0 z-10 bg-gray-50">
             <tr>
