@@ -105,7 +105,7 @@ export default function PlayerTable({
     difference === null || difference === undefined || difference === 0 ? null : (
       <sup
         className={`ml-0.5 text-[10px] font-semibold ${getRatingDifferenceColor(difference)}`}
-        title="Verschil met de vorige rating"
+        title="Verschil na de laatste verwerking"
       >
         {formatRatingDifference(difference)}
       </sup>
@@ -195,7 +195,10 @@ export default function PlayerTable({
                     <td className="p-2.5" data-cy="rating_blitz">
                       <div className="flex items-center gap-2">
                         <Zap className="h-3 w-3" style={{ color: BLITZ_COLOR }} />
-                        <span className="text-base font-bold text-textColor">{player.blitz_rating ?? "-"}</span>
+                        <span className="text-base font-bold text-textColor">
+                          {player.blitz_rating ?? "-"}
+                          {player.blitz_rating != null && <DiffSup difference={player.blitz_rating_difference} />}
+                        </span>
                       </div>
                     </td>
                   )}
@@ -264,7 +267,10 @@ export default function PlayerTable({
                         <Zap className="h-3 w-3" style={{ color: BLITZ_COLOR }} />
                         <span className="text-gray-500">Blitz</span>
                       </div>
-                      <div className="font-bold text-textColor text-sm">{player.blitz_rating ?? "-"}</div>
+                      <div className="font-bold text-textColor text-sm">
+                        {player.blitz_rating ?? "-"}
+                        {player.blitz_rating != null && <DiffSup difference={player.blitz_rating_difference} />}
+                      </div>
                     </div>
                   )}
                   <div className="text-center">
