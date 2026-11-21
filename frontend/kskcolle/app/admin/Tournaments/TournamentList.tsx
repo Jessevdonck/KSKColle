@@ -85,12 +85,15 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
       // Bereken het podium met dezelfde logica als de getoonde eindstand,
       // zodat winnaars automatisch in de erelijsten en palmaressen komen.
       let podium: Array<{ user_id: number; position: number }> | undefined
+      // Volledige eindstand (voor de palmares-tabel op de profielen)
+      let ranking: number[] | undefined
       try {
         const tournament = await getById(`tournament/${arg.id}`)
         const standings = calculateStandings(tournament, tournament.rounds)
         podium = standings
           .slice(0, 3)
           .map((player, index) => ({ user_id: player.user_id, position: index + 1 }))
+        ranking = standings.map((player) => player.user_id)
       } catch (e) {
         // Backend berekent zelf een fallback-podium als dit misgaat
         console.error("Kon podium niet berekenen:", e)
@@ -98,7 +101,7 @@ export default function TournamentList({ onSelectTournament }: TournamentListPro
 
       const { data } = await axios.post(
         `/tournament/${arg.id}/close`,
-        { updateRatings: arg.updateRatings, podium }
+        { updateRatings: arg.updateRatings, podium, ranking }
       );
       return data;
     },

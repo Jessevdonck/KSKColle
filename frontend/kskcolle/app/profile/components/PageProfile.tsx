@@ -6,7 +6,9 @@ import PlayerHeader from "./PlayerHeader"
 import Palmares from "./Palmares"
 import RecentGames from "./RecentGames"
 import UpcomingGames from "./UpcomingGames"
-import ProfileStats from "./ProfileStats"
+import EloHistoryChart from "./EloHistoryChart"
+import ResultsDonut from "./ResultsDonut"
+import ProfileStatTiles from "./ProfileStatTiles"
 import HeadToHead from "./HeadToHead"
 import AsyncData from "../../components/AsyncData"
 import { getById, getUserBlitzHistory, getUserEloHistory } from "../../api/index"
@@ -141,33 +143,36 @@ export default function PlayerProfile() {
   return (
     <AsyncData loading={isLoading} error={error}>
       {player && (
-        <div className="container mx-auto px-4 py-4 md:py-6 min-h-screen">
-          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div className="mx-auto min-h-screen max-w-[1400px] px-3 py-4 md:px-4 md:py-5">
+          {/* Bovenste rij: spelerskaart · ratinggrafiek · resultaten */}
+          <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.6fr)_minmax(0,0.85fr)]">
             <PlayerHeader player={player} />
-            <div className="p-4 md:p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4 lg:gap-6 items-start">
-                <div className="order-2 lg:order-1 min-w-0">
-                  <div className="space-y-4">
-                    <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
-                    <HeadToHead games={allPlayedGames} playerId={player.user_id} />
-                    <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
-                  </div>
+            <div className="min-w-0 [&>*]:h-full">
+              {(eloHistory?.length ?? 0) + (blitzHistory?.length ?? 0) > 0 ? (
+                <EloHistoryChart history={eloHistory ?? []} blitzHistory={blitzHistory ?? []} compact />
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-lg border border-border/50 bg-white p-4 text-sm text-muted-foreground">
+                  Nog geen ratinghistoriek.
                 </div>
-                <div className="order-1 lg:order-2 min-w-0 space-y-4">
-                  <Palmares
-                    playerId={player.user_id}
-                    voornaam={player.voornaam}
-                    achternaam={player.achternaam}
-                  />
-                  <ProfileStats
-                    games={playedGamesWithResults}
-                    playerId={player.user_id}
-                    eloHistory={eloHistory}
-                    blitzHistory={blitzHistory}
-                    compact
-                  />
-                </div>
-              </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <ResultsDonut games={allPlayedGames} playerId={player.user_id} />
+            </div>
+          </div>
+
+          {/* Onderste rij: partijen · palmares · statistieken */}
+          <div className="mt-3 grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.6fr)_minmax(0,0.85fr)]">
+            <div className="order-2 min-w-0 space-y-3 lg:order-1">
+              <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
+              <HeadToHead games={allPlayedGames} playerId={player.user_id} />
+              <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
+            </div>
+            <div className="order-1 min-w-0 lg:order-2">
+              <Palmares playerId={player.user_id} voornaam={player.voornaam} achternaam={player.achternaam} />
+            </div>
+            <div className="order-3 min-w-0">
+              <ProfileStatTiles games={allPlayedGames} playerId={player.user_id} />
             </div>
           </div>
         </div>

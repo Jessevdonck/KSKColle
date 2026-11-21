@@ -289,6 +289,12 @@ export const getUserHonors = async (userId) => {
   return data.items;
 };
 
+/** Eindrang per afgesloten toernooi (palmares-tabel op het profiel) */
+export const getUserPlacements = async (userId) => {
+  const { data } = await axios.get(`${baseUrl}/honors/user/${userId}/placements`);
+  return data.items;
+};
+
 // Historische ELIO-rating (uit oude Excel-bijhouding, per periode "YYYY-MM")
 export const getUserEloHistory = async (userId) => {
   const { data } = await axios.get(`${baseUrl}/elo-history/user/${userId}`);

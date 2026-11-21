@@ -44,7 +44,16 @@ const formatScore = (score: number) => (Number.isInteger(score) ? String(score) 
  * Hoogtepunten van een speler in de gekozen periode: prestatierating, beste overwinning,
  * langste reeks zonder verlies en score met wit/zwart.
  */
-export default function PlayerHighlights({ games, playerId }: { games: GameWithRoundAndTournament[]; playerId: number }) {
+export default function PlayerHighlights({
+  games,
+  playerId,
+  stacked = false,
+}: {
+  games: GameWithRoundAndTournament[]
+  playerId: number
+  /** Tegels onder elkaar (zijkolom op het profiel) i.p.v. naast elkaar */
+  stacked?: boolean
+}) {
   const h = useMemo(() => {
     const played = playedGames(games, playerId)
 
@@ -77,7 +86,7 @@ export default function PlayerHighlights({ games, playerId }: { games: GameWithR
   if (h.white.games + h.black.games === 0) return null
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <div className={stacked ? "grid grid-cols-2 lg:grid-cols-1 gap-2" : "grid grid-cols-2 sm:grid-cols-4 gap-2"}>
       <Tile icon={<Gauge className="h-3.5 w-3.5 text-mainAccent" />} label="Prestatierating">
         <div className="text-lg font-bold text-textColor">{h.tpr ?? "–"}</div>
         <div className="text-[11px] text-muted-foreground">{h.ratedCount} gerate partijen</div>

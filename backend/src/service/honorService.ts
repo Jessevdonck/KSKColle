@@ -187,3 +187,104 @@ export async function getAllHonors() {
     throw handleDBError(error);
   }
 }
+
+export type PlacementCategory = 'herfst' | 'lente' | 'zomer' | 'blitz' | 'jeugd' | 'overige';
+
+export interface Placement {
+  tournament_id: number;
+  naam: string;
+  class_name: string | null;
+  /** Jaar uit de toernooinaam (seizoen "Herfstcompetitie 2024-2025" -> 2025, zoals de erelijsten), anders van de laatste ronde */
+  jaar: number | null;
+  category: PlacementCategory;
+  /** Eindrang (1 = winnaar) */
+  rank: number;
+  /** Gelijk geëindigd met andere spelers zonder beslissende tiebreak */
+  shared: boolean;
+  players: number;
+}
+
+const placementCategory = (naam: string, isYouth: boolean): PlacementCategory => {
+  const n = naam.toLowerCase();
+  if (isYouth || n.includes('jeugd')) return 'jeugd';
+  if (n.includes('herfst')) return 'herfst';
+  if (n.includes('lente')) return 'lente';
+  if (n.includes('zomer')) return 'zomer';
+  if (n.includes('blitz') || n.includes('snelschaak')) return 'blitz';
+  return 'overige';
+};
+
+/**
+ * Eindrang van een speler in elk afgesloten toernooi waaraan hij deelnam (palmares-tabel).
+ *
+ * Voorkeur: de officiële eindrang (final_rank, vastgelegd bij het afsluiten), dan een
+ * vastgelegd podium (erelijst). Anders: 1 + aantal spelers met meer punten (bij gelijke
+ * punten de opgeslagen tie-break, als beide die hebben); blijft het gelijk, dan is de
+ * plaats gedeeld.
+ */
+export async function getPlacementsForUser(userId: number): Promise<Placement[]> {
+  try {
+    const mine = await prisma.participation.findMany({
+      where: { user_id: userId, tournament: { finished: true } },
+      select: { tournament_id: true },
+    });
+    const ids = mine.map((p) => p.tournament_id);
+    if (ids.length === 0) return [];
+
+    const [tournaments, honors] = await Promise.all([
+      prisma.tournament.findMany({
+        where: { tournament_id: { in: ids } },
+        select: {
+          tournament_id: true,
+          naam: true,
+          class_name: true,
+          is_youth: true,
+          participations: { select: { user_id: true, score: true, tie_break: true, final_rank: true } },
+          rounds: { select: { ronde_datum: true }, orderBy: { ronde_datum: 'desc' }, take: 1 },
+        },
+      }),
+      prisma.tournamentHonor.findMany({
+        where: { tournament_id: { in: ids }, user_id: userId },
+        select: { tournament_id: true, position: true },
+      }),
+    ]);
+    const honorBy = new Map(honors.map((h) => [h.tournament_id, h.position]));
+
+    return tournaments.map((t) => {
+      const me = t.participations.find((p) => p.user_id === userId)!;
+      const myScore = me.score ?? 0;
+      let better = 0;
+      let tied = 0;
+      for (const p of t.participations) {
+        if (p.user_id === userId) continue;
+        const s = p.score ?? 0;
+        if (s > myScore) better++;
+        else if (s === myScore) {
+          if (p.tie_break != null && me.tie_break != null && p.tie_break !== me.tie_break) {
+            if (p.tie_break > me.tie_break) better++;
+          } else {
+            tied++;
+          }
+        }
+      }
+      const honor = honorBy.get(t.tournament_id);
+      // Officiële eindrang (bij het afsluiten vastgelegd) gaat voor
+      const official = me.final_rank ?? null;
+      // Seizoenen ("Herfstcompetitie 2024-2025") tellen voor het eindjaar, zoals in de erelijsten
+      const yearInName = t.naam.match(/(19|20)\d{2}/g)?.at(-1);
+      const lastRound = t.rounds[0]?.ronde_datum;
+      return {
+        tournament_id: t.tournament_id,
+        naam: t.naam,
+        class_name: t.class_name,
+        jaar: yearInName ? Number(yearInName) : lastRound ? lastRound.getFullYear() : null,
+        category: placementCategory(t.naam, t.is_youth),
+        rank: official ?? honor ?? better + 1,
+        shared: official != null || honor != null ? false : tied > 0,
+        players: t.participations.length,
+      };
+    });
+  } catch (error) {
+    throw handleDBError(error);
+  }
+}

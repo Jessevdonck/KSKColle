@@ -148,6 +148,9 @@ model Participation {
   tie_break          Float?           @default(0)
 
   wins               Int?             @default(0)
+
+  /// Officiële eindrang (1 = winnaar), vastgelegd bij het afsluiten (zelfde berekening als de getoonde eindstand)
+  final_rank         Int?
   
   // Sevilla rating data
   sevilla_initial_rating Int?         // Rating bij start van de competitie (IRtg uit Sevilla, of snapshot bij inschrijving)

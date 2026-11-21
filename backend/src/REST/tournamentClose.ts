@@ -3,6 +3,8 @@ import { requireAuthentication, makeRequireRole } from '../core/auth';
 import { ratingService } from '../service/ratingService';
 import { saveTournamentPodium, type PodiumEntry } from '../service/honorService';
 import { prisma } from '../data';
+import { countsForBlitz } from '../core/ratedCompetitions';
+import { recalculateBlitzRatings } from '../service/blitzRatingService';
 import {
   shortLivedCacheInvalidatePrefix,
   SHORT_CACHE_KEY_PREFIX,
@@ -18,9 +20,11 @@ export function installTournamentCloseRouter(router: Router) {
   router.post('/tournament/:id/close', requireAuthentication, requireAdmin, async (ctx) => {
     try {
       const tournamentId = parseInt(ctx.params.id || '0');
-      const { updateRatings = true, podium } = ctx.request.body as {
+      const { updateRatings = true, podium, ranking } = ctx.request.body as {
         updateRatings?: boolean;
         podium?: PodiumEntry[];
+        /** Volledige eindstand (user_id's in volgorde), zelfde berekening als de getoonde stand */
+        ranking?: number[];
       };
       
       if (isNaN(tournamentId)) {
@@ -61,11 +65,39 @@ export function installTournamentCloseRouter(router: Router) {
         console.error('Error saving tournament podium:', honorError);
       }
 
+      // Eindrang per speler bewaren (palmares op het profiel)
+      if (Array.isArray(ranking) && ranking.length > 0) {
+        try {
+          await prisma.$transaction(
+            ranking
+              .filter((id) => Number.isInteger(id))
+              .map((userId, index) =>
+                prisma.participation.updateMany({
+                  where: { tournament_id: tournamentId, user_id: userId },
+                  data: { final_rank: index + 1 },
+                }),
+              ),
+          );
+        } catch (rankError) {
+          console.error('Error saving final ranking:', rankError);
+        }
+      }
+
       // Mark tournament as finished
       await prisma.tournament.update({
         where: { tournament_id: tournamentId },
         data: { finished: true },
       });
+
+      // Blitz: aparte blitzrating herberekenen (telt niet voor de ELIO)
+      if (countsForBlitz(tournament.naam)) {
+        try {
+          await recalculateBlitzRatings();
+          invalidatePublicUsersCache();
+        } catch (blitzError) {
+          console.error('Error recalculating blitz ratings:', blitzError);
+        }
+      }
 
       shortLivedCacheInvalidatePrefix(SHORT_CACHE_KEY_PREFIX.tournamentList);
       invalidateTournamentDetailCache(tournamentId);

@@ -37,6 +37,21 @@ getUserHonors.validationScheme = {
   },
 };
 
+/**
+ * @api {get} /honors/user/:user_id/placements Get final placements for a user
+ * @apiName GetUserPlacements
+ * @apiGroup Honor
+ *
+ * @apiParam {Number} user_id De ID van de speler.
+ *
+ * @apiSuccess {Object[]} items Eindrang per afgesloten toernooi (palmares-tabel op het profiel).
+ */
+const getUserPlacements = async (ctx: any) => {
+  const userId = Number(ctx.params.user_id);
+  ctx.body = { items: await honorService.getPlacementsForUser(userId) };
+};
+getUserPlacements.validationScheme = getUserHonors.validationScheme;
+
 export default (parent: Router<ChessAppState, ChessAppContext>) => {
   const router = new Router({
     prefix: '/honors',
@@ -45,6 +60,7 @@ export default (parent: Router<ChessAppState, ChessAppContext>) => {
   // Publiek leesbaar: erelijsten en profielen zijn ook publiek
   router.get('/', validate(getAllHonors.validationScheme), getAllHonors);
   router.get('/user/:user_id', validate(getUserHonors.validationScheme), getUserHonors);
+  router.get('/user/:user_id/placements', validate(getUserPlacements.validationScheme), getUserPlacements);
 
   parent.use(router.routes()).use(router.allowedMethods());
 };
