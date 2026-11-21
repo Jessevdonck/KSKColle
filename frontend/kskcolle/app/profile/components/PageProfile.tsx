@@ -162,10 +162,17 @@ export default function PlayerProfile() {
           <div className="mb-2 flex justify-end">
             <PeriodSelect value={period} onChange={setPeriod} />
           </div>
-          {/* Bovenste rij: spelerskaart · ratinggrafiek · resultaten */}
-          <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.6fr)_minmax(0,0.85fr)]">
-            <PlayerHeader player={player} />
-            <div className="min-w-0 [&>*]:h-full">
+          {/*
+            Desktop: twee rijen van drie kolommen (spelerskaart · ratinggrafiek · resultaten,
+            daaronder partijen · palmares + recente partijen · statistieken).
+            Mobiel: één lijst; de kolom-wrappers vallen weg (contents) en de volgorde komt uit order-*.
+          */}
+          <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.6fr)_minmax(0,0.85fr)]">
+            {/* Bovenste rij */}
+            <div className="order-1 min-w-0 lg:order-none">
+              <PlayerHeader player={player} />
+            </div>
+            <div className="order-8 min-w-0 lg:order-none [&>*]:h-full">
               {periodElo.length + periodBlitz.length > 0 ? (
                 <EloHistoryChart history={periodElo} blitzHistory={periodBlitz} compact />
               ) : (
@@ -176,23 +183,28 @@ export default function PlayerProfile() {
                 </div>
               )}
             </div>
-            <div className="min-w-0">
+            <div className="order-3 min-w-0 lg:order-none">
               <ResultsDonut games={periodGames} playerId={player.user_id} />
             </div>
-          </div>
 
-          {/* Onderste rij: partijen · palmares · statistieken */}
-          <div className="mt-3 grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.6fr)_minmax(0,0.85fr)]">
-            {/* Kolommen in evenwicht: links de lopende zaken, midden palmares + recente partijen */}
-            <div className="order-2 min-w-0 space-y-3 lg:order-1">
-              <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
-              <HeadToHead games={allPlayedGames} playerId={player.user_id} />
+            {/* Onderste rij: links de lopende zaken, midden palmares + recente partijen, rechts statistieken */}
+            <div className="contents lg:block lg:min-w-0 lg:space-y-3 lg:self-start">
+              <div className="order-4 min-w-0 lg:order-none">
+                <UpcomingGames games={upcomingOrMakeupGames} playerId={player.user_id} compact />
+              </div>
+              <div className="order-6 min-w-0 lg:order-none">
+                <HeadToHead games={allPlayedGames} playerId={player.user_id} />
+              </div>
             </div>
-            <div className="order-1 min-w-0 space-y-3 lg:order-2">
-              <Palmares playerId={player.user_id} voornaam={player.voornaam} achternaam={player.achternaam} />
-              <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
+            <div className="contents lg:block lg:min-w-0 lg:space-y-3 lg:self-start">
+              <div className="order-7 min-w-0 lg:order-none empty:hidden">
+                <Palmares playerId={player.user_id} voornaam={player.voornaam} achternaam={player.achternaam} />
+              </div>
+              <div className="order-5 min-w-0 lg:order-none">
+                <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
+              </div>
             </div>
-            <div className="order-3 min-w-0">
+            <div className="order-2 min-w-0 lg:order-none lg:self-start">
               <ProfileStatTiles games={periodGames} playerId={player.user_id} />
             </div>
           </div>
