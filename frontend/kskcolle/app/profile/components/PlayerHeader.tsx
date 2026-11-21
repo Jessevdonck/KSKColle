@@ -30,7 +30,7 @@ export default function PlayerHeader({ player }: { player: User }) {
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         {/* Foto */}
-        <div className="flex shrink-0 justify-center rounded-lg bg-white p-3 shadow-sm sm:w-44">
+        <div className="flex shrink-0 justify-center sm:w-36">
           {isOwnProfile ? (
             <AvatarUpload
               currentAvatarUrl={avatarUrl}
