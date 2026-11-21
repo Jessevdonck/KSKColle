@@ -32,7 +32,7 @@ export default function ProfileStatTiles({ games, playerId }: { games: GameWithR
   if (s.total === 0) {
     return (
       <div className="rounded border border-border/50 bg-white px-3 py-2 text-sm text-muted-foreground">
-        Nog geen gespeelde partijen.
+        Geen gespeelde partijen in deze periode.
       </div>
     )
   }

@@ -60,7 +60,7 @@ const bucketToCategory = (bucket: string): Category =>
 const MEDAL: Record<number, string> = { 1: "bg-yellow-400 text-yellow-950", 2: "bg-gray-300 text-gray-800", 3: "bg-amber-700 text-white" }
 
 /**
- * Palmares als tabel: per jaar een rij, per competitie een kolom (Clubkampioenschap per klasse),
+ * Palmares als tabel: per jaar een rij, per competitie een kolom (Lentecompetitie per klasse),
  * met de eindrang (medaille voor de top 3). Combineert de eindrang uit de database met de
  * historische erelijsten voor jaren die (nog) niet in de database zitten.
  */
@@ -170,7 +170,7 @@ export default function Palmares({
               <th rowSpan={lenteCols.length ? 2 : 1} className={`${th} border-l-0 text-left`}>Jaar</th>
               {showHerfst && <th rowSpan={lenteCols.length ? 2 : 1} className={th}>Herfst</th>}
               {lenteCols.length > 0 && (
-                <th colSpan={lenteCols.length} className={th}>Clubkampioenschap</th>
+                <th colSpan={lenteCols.length} className={th}>Lentecompetitie</th>
               )}
               {other.map((c) => (
                 <th key={c.key} rowSpan={lenteCols.length ? 2 : 1} className={th}>{c.label}</th>

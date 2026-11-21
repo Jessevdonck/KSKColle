@@ -9,6 +9,8 @@ import UpcomingGames from "./UpcomingGames"
 import EloHistoryChart from "./EloHistoryChart"
 import ResultsDonut from "./ResultsDonut"
 import ProfileStatTiles from "./ProfileStatTiles"
+import PeriodSelect, { periodBounds, type Period } from "./PeriodSelect"
+import { useState } from "react"
 import HeadToHead from "./HeadToHead"
 import AsyncData from "../../components/AsyncData"
 import { getById, getUserBlitzHistory, getUserEloHistory } from "../../api/index"
@@ -31,6 +33,8 @@ function slugToNameParts(slug: string | undefined): { voornaam: string; achterna
 
 export default function PlayerProfile() {
   const { user: currentUser } = useAuth()
+  // Periode voor de statistieken (grafiek, resultaten, tegels)
+  const [period, setPeriod] = useState<Period>({ preset: "all", customStart: "", customEnd: "" })
   const params = useParams()
   const slug = typeof params.name === "string" ? params.name : params.name?.[0]
   const nameParts = slugToNameParts(slug)
@@ -132,6 +136,17 @@ export default function PlayerProfile() {
     )
   })
 
+  // Statistieken binnen de gekozen periode
+  const bounds = periodBounds(period)
+  const inPeriod = (d: Date) => d >= bounds.start && d <= bounds.end
+  const periodGames = allPlayedGames.filter((g) => g.round?.ronde_datum && inPeriod(new Date(g.round.ronde_datum)))
+  const periodOf = (h: { period: string }) => {
+    const [y, m] = h.period.split("-").map(Number)
+    return !!y && !!m && inPeriod(new Date(y, m - 1, 1))
+  }
+  const periodElo = (eloHistory ?? []).filter(periodOf)
+  const periodBlitz = (blitzHistory ?? []).filter(periodOf)
+
   if (!nameParts) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
@@ -144,20 +159,25 @@ export default function PlayerProfile() {
     <AsyncData loading={isLoading} error={error}>
       {player && (
         <div className="mx-auto min-h-screen max-w-[1400px] px-3 py-4 md:px-4 md:py-5">
+          <div className="mb-2 flex justify-end">
+            <PeriodSelect value={period} onChange={setPeriod} />
+          </div>
           {/* Bovenste rij: spelerskaart · ratinggrafiek · resultaten */}
           <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.6fr)_minmax(0,0.85fr)]">
             <PlayerHeader player={player} />
             <div className="min-w-0 [&>*]:h-full">
-              {(eloHistory?.length ?? 0) + (blitzHistory?.length ?? 0) > 0 ? (
-                <EloHistoryChart history={eloHistory ?? []} blitzHistory={blitzHistory ?? []} compact />
+              {periodElo.length + periodBlitz.length > 0 ? (
+                <EloHistoryChart history={periodElo} blitzHistory={periodBlitz} compact />
               ) : (
                 <div className="flex h-full items-center justify-center rounded-lg border border-border/50 bg-white p-4 text-sm text-muted-foreground">
-                  Nog geen ratinghistoriek.
+                  {(eloHistory?.length ?? 0) + (blitzHistory?.length ?? 0) > 0
+                    ? "Geen ratingdata in deze periode."
+                    : "Nog geen ratinghistoriek."}
                 </div>
               )}
             </div>
             <div className="min-w-0">
-              <ResultsDonut games={allPlayedGames} playerId={player.user_id} />
+              <ResultsDonut games={periodGames} playerId={player.user_id} />
             </div>
           </div>
 
@@ -173,7 +193,7 @@ export default function PlayerProfile() {
               <RecentGames games={playedGamesWithResults} playerId={player.user_id} compact />
             </div>
             <div className="order-3 min-w-0">
-              <ProfileStatTiles games={allPlayedGames} playerId={player.user_id} />
+              <ProfileStatTiles games={periodGames} playerId={player.user_id} />
             </div>
           </div>
         </div>

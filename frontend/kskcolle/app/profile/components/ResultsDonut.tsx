@@ -21,7 +21,7 @@ const OUTCOMES: Array<{ key: Outcome; label: string; color: string }> = [
 ]
 
 const SETS: Record<SetKey, { label: string; dot: string }> = {
-  elio: { label: "ELIO", dot: "var(--main-accent)" },
+  elio: { label: "Club", dot: "var(--main-accent)" },
   blitz: { label: "Blitz", dot: "#0ea5e9" },
 }
 
@@ -42,7 +42,7 @@ function outcomeOf(game: GameWithRoundAndTournament, playerId: number): Outcome 
 }
 
 /**
- * Resultaten als cirkel(s): ELIO (klassieke toernooien) en Blitz apart, elk aan/uit te zetten.
+ * Resultaten als cirkel(s): Club (klassieke toernooien) en Blitz apart, elk aan/uit te zetten.
  * Een klik op een stuk van de cirkel toont de partijen die erin zitten.
  */
 export default function ResultsDonut({ games, playerId }: { games: GameWithRoundAndTournament[]; playerId: number }) {
@@ -72,7 +72,19 @@ export default function ResultsDonut({ games, playerId }: { games: GameWithRound
   const toggle = (key: SetKey) =>
     setVisible((v) => (v[key] && shown.length === 1 ? v : { ...v, [key]: !v[key] }))
 
-  if (available.length === 0) return null
+  if (available.length === 0) {
+    return (
+      <Card className="h-full border border-border/50">
+        <CardHeader className="px-4 py-3">
+          <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+            <PieIcon className="h-4 w-4 text-mainAccent" />
+            Resultaten
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-4 pb-4 pt-0 text-sm text-muted-foreground">Geen gespeelde partijen in deze periode.</CardContent>
+      </Card>
+    )
+  }
 
   const selectedGames = selected ? grouped[selected.set][selected.outcome] : []
 
@@ -129,11 +141,14 @@ export default function ResultsDonut({ games, playerId }: { games: GameWithRound
                         <Cell key={d.key} fill={d.color} className="cursor-pointer outline-none" />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(v: number, n: string) => [`${v} partijen`, n]} />
+                    <Tooltip
+                      formatter={(v: number, n: string) => [`${v} partijen`, n]}
+                      wrapperStyle={{ zIndex: 20 }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
                 {/* Midden: aantal partijen */}
-                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <div className="pointer-events-none absolute inset-0 z-0 flex flex-col items-center justify-center">
                   <span className="text-lg font-bold tabular-nums text-textColor">{total(key)}</span>
                   <span className="text-[10px] uppercase text-muted-foreground">{SETS[key].label}</span>
                 </div>
